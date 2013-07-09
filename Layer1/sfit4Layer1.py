@@ -6,28 +6,33 @@
 #
 # Purpose:
 #       This program is the 1st order processing for sfit:
-#           
+#           -- Runs refmaker to create a reference profile
+#           -- Runs pspec to create t15asc file from type bnr
+#           -- Runs sfit4
+#           -- Creates an output directory structure to host data
 #
 #
-# Input files:
-#			1) 
-#
-#
-# Output files:
-#
+# External called functions:
+#        This program calls sfitClasses and Layer1Mods
 #
 #
 # Notes:
-#       1) 
+#       1) Command line arguments tell the program where the Layer 1
+#          input file resides and where to write the log file
+#       2) Options include:
+#          -i   <filename>   : Path and filename to Layer 1 input file
+#          -l   <path>       : Path to write log file. Name of log file
+#                              is determined by system time stamp
 #
 #
 # Usage:
-#
-#
+#      ./sfit4Layer1 -i <filename> -l <path>
 #
 # Examples:
+#      Runs sfit4Layer1 with input file Layer1input.py and writes log files to 
+#      the directory /User/testuser/logs/:
 #
-#
+#      ./sfit4Layer1 -i /User/testuser/Layer1input.py -l /User/testuser/logs/
 #
 #
 # Version History:
@@ -60,7 +65,7 @@ from Layer1Mods import refMkrNCAR, t15ascPrep
                         #-------------------------#
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'sfit4Layer1.py -i <file> -l <path> --bnr_off '
+    print 'sfit4Layer1.py -i <file> -l <path> '
 
 def convertList(varList):
     ''' Converts numbers represented as a string in a list to float '''
@@ -102,7 +107,7 @@ def main(argv):
     # Retrieve command line arguments
     #--------------------------------
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:l:','bnr_off')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:l:')
 
     except getopt.GetoptError as err:
         print str(err)
@@ -158,9 +163,7 @@ def main(argv):
     mainInF.getInputs(logFile)              
 
     #--------------------------------------------
-    # Program Looping strucutre. See Notes
-    #  |
-    #   > Fle structure:
+    # Program Looping structure. See Notes
     #      Level1 - LOC             (Input/Output)
     #       Level2 - ctl file         (Output)
     #        Level3 - Spectral db     (Output)

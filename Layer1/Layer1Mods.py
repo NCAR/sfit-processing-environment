@@ -3,16 +3,20 @@
 #        Layer1Mods.py
 #
 # Purpose:
-#       This 
+#       This file contains various modules used by sfit layer 1 processing. These modules 
+#       are intended to be user specific. They have been seperated from the main code such
+#       that they can easily be tailored to the user. Currently there are two modules:
+#       1) reMkrNCAR  -- This is a simple module to build a reference profile.
+#       2) t15ascPrep -- This module creates a pspec.input file and runs pspec to create
+#                        t15asc files from bnr file type.
 #
 #
 # External Subprocess Calls:
-#			
-#
+#	1) Call to sfitClasses to run subProcRun. This handles stdout and stderr of a sub-process call		
 #
 #
 # Notes:
-#       1) I
+#       1)
 #			
 #
 #

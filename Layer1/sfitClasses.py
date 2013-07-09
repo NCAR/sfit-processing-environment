@@ -3,17 +3,19 @@
 #        sfitClass.py
 #
 # Purpose:
-#       This is a collection of classes used in layer 1 processing of sfit4
+#       This is a collection of classes and functions used in layer 1 processing of sfit4
 #
 #
 # External Subprocess Calls:
-#			
+#	Only python internal modules called		
 #
 #
 #
 # Notes:
-#       1) I
-#			
+#       1) The majority of these classes are related to different types of input files:
+#            -- Ctl file
+#	     -- Spectral DB file		
+#            -- Layer 1 input file
 #
 #
 # Version History:
@@ -31,13 +33,11 @@ import itertools
 import sys
 import subprocess
 
-
-
-
-#------------------------------------------------------------------------------------------------------------------------------------
-# Define functions
-#------------------------------------------------------------------------------------------------------------------------------------
+                                            #------------------#
+                                            # Define functions #
+                                            #------------------#
 def subProcRun( fname ):
+    '''This runs a system command and directs the stdout and stderr'''
     rtn = subprocess.Popen( fname, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
     outstr = ''
     while True:
@@ -56,14 +56,16 @@ def nearestDate(daysList, year, month, day=1):
     testDate = datetime.date(year, month, day)
     return min( daysList, key=lambda x:abs(x-testDate) )
 
-#----------------------------------------------
-# This is an extension of the datetime module.
-# Adds functionality to create a list of days.
-# 
-#----------------------------------------------
 
+
+                                                #----------------#
+                                                # Define classes #
+                                                #----------------#
 class DateRange:
-
+    '''
+    This is an extension of the datetime module.
+    Adds functionality to create a list of days.
+    '''
     def __init__(self,iyear,imnth,iday,fyear,fmnth,fday, incr=1):
         self.i_date   = datetime.date(iyear,imnth,iday)                                                     # Initial Day
         self.f_date   = datetime.date(fyear,fmnth,fday)                                                     # Final Day
@@ -90,6 +92,7 @@ class DateRange:
 
 
 class InputFile:
+    ''' Class for input files with generic method to check the existance of file'''
     def __init__(self,fname,logging=False):
         self.fname = fname
         try:
@@ -100,14 +103,13 @@ class InputFile:
             sys.exit()         
 
 
-#-----------------------------------------------
-# This class deals with batch processing Layer 1
-# input files. Reads in input values. Input file
-# is treated as an actual python script and 
-# inputs are read in using execfile
-#----------------------------------------------
 class Layer1InputFile(InputFile):
-   
+    '''
+    This class deals with batch processing Layer 1
+    input files. Reads in input values. Input file 
+    is treated as an actual python script and 
+    inputs are read in using execfile
+    '''   
     def __init__(self,fname,logging=False):
         InputFile.__init__(self,fname,logging)
         self.inputs  = {}
@@ -119,6 +121,8 @@ class Layer1InputFile(InputFile):
             #sys.exit()
             
     def getInputs(self,logging=False):
+        ''' Layer 1 input file is treated as a python
+            script '''
         try:
             execfile(self.fname, self.inputs)
         except IOError as errmsg:
@@ -135,6 +139,10 @@ class Layer1InputFile(InputFile):
 #
 #----------------------------------------------
 class CtlInputFile(InputFile):
+    '''
+    This class deals with reading in ctl files to dictionary and replacing
+    values in ctl file
+    '''
 
     def __init__(self,fname,logging=False):
         InputFile.__init__(self,fname,logging)
@@ -142,7 +150,8 @@ class CtlInputFile(InputFile):
                    
                    
     def __convrtD(self,rhs):
-        ''''''
+        '''This identifies numbers specified in scientific notation with d 
+           for double precision and converts them to floats'''
         if 'd' in rhs.lower():                               # Test and handle strings containing D (ie 1.0D0)
             mant,trsh,expo = rhs.lower().partition('d')
             try:
@@ -159,7 +168,8 @@ class CtlInputFile(InputFile):
         
         
     def getInputs(self):
-        ''''''
+        '''Ingests ctl file inputs to a dictionary with the ctl file
+           parameter as the key'''
         with open(self.fname) as fopen:
             
             gas_flg = True
@@ -246,6 +256,9 @@ class CtlInputFile(InputFile):
         #self.nuLower = nu[0]   # Pull off lower wavenumber
         
     def replVar(self,teststr,repVal):
+        '''
+        Replaces a value in the ctl file based on parameter name
+        '''
         with open(self.fname,'r') as fopen:  
             lines = fopen.readlines()
             
@@ -264,7 +277,10 @@ class CtlInputFile(InputFile):
 #----------------------------------------------
         
 class DbInputFile(InputFile):
-    
+    '''
+    This class deals with reading and filtering 
+    the spectral database file.
+    '''    
     def __init__(self,fname,logging=False):
         ''' Initializations '''
         InputFile.__init__(self,fname,logging)
@@ -278,15 +294,15 @@ class DbInputFile(InputFile):
             reads everything in as a string. Certain values must be converted
             to floats'''
         with open(self.fname) as fname:
-            reader = csv.DictReader(fname,delimiter=' ',skipinitialspace=True)          # Read csv file
+            reader = csv.DictReader(fname,delimiter=' ',skipinitialspace=True)                   # Read csv file
             for row in reader:
                 for col,val in row.iteritems():
                     try:
-                        val = float(val)                          # Convert string to float
+                        val = float(val)                                                         # Convert string to float
                     except ValueError:
                         pass
                     
-                    self.dbInputs.setdefault(col,[]).append(val)  # Construct input dictionary
+                    self.dbInputs.setdefault(col,[]).append(val)                                 # Construct input dictionary
                 
 
     def dbFilterDate(self,DateRangeClass,fltDict=False):#=self.dbInputs):
@@ -299,7 +315,7 @@ class DbInputFile(InputFile):
         for ind,val in enumerate(fltDict['Date']):
             valstr = str(int(val))
             datestmp = [int(valstr[0:4]),int(valstr[4:6]),int(valstr[6:])]                       # Convert date to integer
-            #datestmp = [int(x) for x in val.split('/')]                                          # Convert date to integer (For date delimited by '/'
+            #datestmp = [int(x) for x in val.split('/')]                                         # Convert date to integer (For date delimited by '/'
             if DateRangeClass.inRange(datestmp[0], datestmp[1], datestmp[2]):                    # Check if date stamp in spectral db is within range
                 inds.append(ind)
         dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())  # Rebuild filtered dictionary. Syntax compatible with python 2.6   

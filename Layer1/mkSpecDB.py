@@ -26,7 +26,8 @@
 #
 #
 # Notes:
-#       1) 
+#       1) This program assumes that there is a common string subset to the name of the 
+#          raw OPUS files!!!!!!!! This is set in variable <dataFileTag>. Change if necessary!!!
 #
 #
 # Usage:
@@ -36,7 +37,7 @@
 #              -d           Base directory for data
 #              -o           Output spectral DB file
 #              -l           Directory for logfile
-#              --bnr_off
+#              --bnr_off    Flag to not create bnr files (only creates database file)
 #
 # Examples:
 #    ./mkSpecDB.py -s mlo -b /Home/Code/ckopus -d /Home/Data/mlo/ -o /Home/Data/mlo/SpectralDBfile.txt
@@ -65,7 +66,7 @@ import datetime as dt
                         #-------------------------#
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'mkSpecDB.py -s <station tag> -b <file> -d <path> -o <file> -l <path> '
+    print 'mkSpecDB.py -s <station tag> -b <file> -d <path> -o <file> -l <path> --bnr_off'
 
         
 def ckDir(dirName):
@@ -99,7 +100,7 @@ def main(argv):
     # Retrieve command line arguments
     #--------------------------------
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 's:b:d:o:l:')
+        opts, args = getopt.getopt(sys.argv[1:], 's:b:d:o:l:', 'bnr_off')
 
     except getopt.GetoptError as err:
         print str(err)

@@ -4,12 +4,13 @@
 #
 # Purpose:
 #       This is the main input file for sfit4Layer1 processing. Contains directories, flags,
-#       etc for processing
+#       etc for processing Layer 1. 
 #           
 #
-#
 # Notes:
-#       1) 
+#       1) The input file is read in as a python file, therefore you should follow python
+#          syntax when editing.
+#       2) The extension of this file should be .py !!!!
 #
 #
 #
@@ -22,21 +23,21 @@
 #----------------------------------------------------------------------------------------
 
 
-#--------------
-# Location List
-#--------------
+#---------
+# Location 
+#---------
 loc = 'mlo'
 
-#-----------
-# Date Range
-#-----------
+#------------------------------
+# Date Range of data to process
+#------------------------------
 # Starting 
 iyear = 2012               # Year
 imnth = 9                  # Month
 iday  = 1                  # Day
 
 # Ending
-fyear = 2012               # Year
+fyear = 2012               # Yea#r
 fmnth = 9                  # Month
 fday  = 20                 # Day
 
@@ -62,27 +63,26 @@ ctlList   = [['/Users/ebaumer/Data/TestBed/ctlFiles/sfit4.ctl',1,0,'','VerA']]
              #['/Users/ebaumer/Data/TesBed/cntrl/c.ctl',1,0,'','VerC'],
              #['/Users/ebaumer/Data/TesBed/cntrl/d.ctl',1,0,'','VerD'] ]
 
-spcdbFile = '/Users/ebaumer/Data/TestBed/mlo/spectralDBtest.txt'                          # Spectral DB File
+spcdbFile = '/Users/ebaumer/Data/TestBed/mlo/spectralDBtest.txt'            # Spectral DB File
 
 # Optional files
-statFile   = '/Users/ebaumer/Data/TestBed/mlo/stations.layers'                # Station layer file
+statFile   = '/Users/ebaumer/Data/TestBed/mlo/stations.layers'              # Station layer file
 
 #--------------------
 # Flags and Constants
 #--------------------
-sfitVer          = '394lp'                                          # sfit version
-waterVer         = 2                                                # water version (Not currently used!!!)
-ratio_flg        = 0                                                # ratioflag : 1=ratio, 0=not (Not currently used!!)
-spc_flg          = 0                                                # Flag taken from spcListFile; Data file type (Not currently used!!)
-UTC_shft         = 0                                                # UTC shift to zero (Not currently used!!)                                                                   
-nu_margin        = 2                                                # Margin to extend the total band for pspec based on 
-                                                                    # input from ctl file [cm^-1] (Not currently used!!)
+#waterVer         = 2                                                # water version (Not currently used!!!)
+#ratio_flg        = 0                                                # ratioflag : 1=ratio, 0=not (Not currently used!!)
+#spc_flg          = 0                                                # Flag taken from spcListFile; Data file type (Not currently used!!)
+#UTC_shft         = 0                                                # UTC shift to zero (Not currently used!!)                                                                   
+#nu_margin        = 2                                                # Margin to extend the total band for pspec based on 
+                                                                    ## input from ctl file [cm^-1] (Not currently used!!)
 numDataBlks      = 1                                                # number of data blocks in the output ascii file
                                                                     # = [# binary formatted spectra] X [# fit regions] (often but not necessarily)
                                                                     # fit regions are read from sfit4.ctl file  
-pspecFlg         = 1
-refmkrFlg        = 1
-sfitFlg          = 1
+pspecFlg         = 1                                                # 1 = run pspec, 0 = do not run pspec
+refmkrFlg        = 1                                                # 1 = run refmaker, 0 = do not run refmaker
+sfitFlg          = 1                                                # 1 = run sfit, 0 = do not run sfit
 
 #---------------------------------------------
 # filter bands and regions for calculating SNR
