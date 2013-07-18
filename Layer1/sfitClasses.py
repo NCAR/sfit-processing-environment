@@ -89,6 +89,22 @@ class DateRange:
         if not daysList:
             daysList = self.dateList
         return min( daysList, key=lambda x:abs(x-testDate) )
+    
+    def yearList(self):
+        ''' Gives a list of unique years within DateRange '''
+        years = [ singDate.year for singDate in self.dateList]               # Find years for all date entries
+        years = list(set(years))                                             # Determine all unique years
+        return years
+
+    def daysInYear(self,year):
+        ''' Returns an ordered list of days from DateRange within a specified year '''
+        if isinstance(year,int):
+            newyears = [inYear for inYear in self.dateList if inYear.year == year]
+            return newyears
+        else:
+            print 'Error!! Year must be type int for daysInYear'
+            return False
+        
 
 
 class InputFile:
