@@ -53,7 +53,7 @@ DaysProcDir   = '/Users/ebaumer/Data/TestBed2'                           # Path 
 # Files
 #------
 outputDBfile  = '/Users/ebaumer/Data/TestBed2/spDB_mlo_1995.dat'         # Path and filename of spectral database file
-Fckopus       = '/Users/ebaumer/Code/ckopusV1.1/ckopus'                  # ckopus executable file
+Fckopus       = '/Users/ebaumer/Code/ckopus_Compiled/ckopus'                  # ckopus executable file
 
 #----------------------
 # General Logical Flags

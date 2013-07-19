@@ -94,6 +94,7 @@ class DateRange:
         ''' Gives a list of unique years within DateRange '''
         years = [ singDate.year for singDate in self.dateList]               # Find years for all date entries
         years = list(set(years))                                             # Determine all unique years
+        years.sort()
         return years
 
     def daysInYear(self,year):

@@ -171,8 +171,7 @@ def main(argv):
     #-----------------------------
     # Initializations and defaults
     #-----------------------------
-    #ckopus = '/data/bin/ckopus'
-    ckopus = '/Users/ebaumer/Code/ckopusV1.1/ckopus'          # Default path for ckopus executable. This is used for commandline option to 
+    ckopus = '/data/bin/ckopus'          # Default path for ckopus executable. This is used for commandline option to 
                                          # just create a list of folders with OPUS data in them                                  
     datapath = False
     
@@ -362,9 +361,14 @@ def main(argv):
                 # ckopus with -D option to get one line 
                 # parameter list for database
                 #--------------------------------------
-                paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-D']   # Build initial parameter list for ckopus call
-                paramList.extend(DBinputs['ckopusFlgs'])                      # Add flags from input file to parameter list
-                paramList.append(indvfile)                                    # Add OPUS filename to parameter list
+                if ( DBinputs['SBlockType'] and isinstance(DBinputs['SBlockType'],str) ):
+                    SBlockTemp = DBinputs['SBlockType']
+                else:
+                    SBlockTemp = ''                 
+                    
+                paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-D'+SBlockTemp]   # Build initial parameter list for ckopus call
+                paramList.extend(DBinputs['ckopusFlgs'])                                 # Add flags from input file to parameter list
+                paramList.append(indvfile)                                               # Add OPUS filename to parameter list
                 
                 #if (DBinputs['loc'].lower() == 'mlo') and (indvday < dt.date(1995,01,01)):
                     #paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-U','-t-150',indvfile]
