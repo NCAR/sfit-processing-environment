@@ -364,7 +364,7 @@ def main(argv):
                 if ( DBinputs['SBlockType'] and isinstance(DBinputs['SBlockType'],str) ):
                     SBlockTemp = DBinputs['SBlockType']
                 else:
-                    SBlockTemp = ''                 
+                    SBlockTemp = 'NONE'                 
                     
                 paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-D'+SBlockTemp]   # Build initial parameter list for ckopus call
                 paramList.extend(DBinputs['ckopusFlgs'])                                 # Add flags from input file to parameter list
