@@ -63,59 +63,16 @@ import subprocess as sp
 import shutil
 import logging
 import datetime as dt
+import DateRange as dr
+
                         #-------------------------------------#
                         # Define helper functions and classes #
                         #-------------------------------------#
-
-class DateRange():
-    '''
-    This is an extension of the datetime module.
-    Adds functionality to create a list of days.
-    '''
-    def __init__(self,iyear,imnth,iday,fyear,fmnth,fday, incr=1):
-        self.i_date   = dt.date(iyear,imnth,iday)                                                     
-        self.f_date   = dt.date(fyear,fmnth,fday)                                                     
-        self.dateList =[self.i_date + dt.timedelta(days=i) for i in range(0, self.numDays(), incr)]   
-    
-    def numDays(self):
-        '''Counts the number of days between start date and end date'''
-        return (self.f_date + dt.timedelta(days=1) - self.i_date).days
-    
-    def inRange(self,crntyear,crntmonth,crntday):
-        '''Determines if a specified date is within the date ranged initialized'''
-        crntdate = dt.date(crntyear,crntmonth,crntday)
-        if self.i_date <= crntdate <= self.f_date:
-            return True
-        else:
-            return False
-
-    def nearestDate(self, year, month, day=1, daysList=False):
-        ''' Finds the nearest date from a list of days based on a given year, month, and day'''
-        testDate = dt.date(year, month, day)
-        if not daysList:
-            daysList = self.dateList
-        return min( daysList, key=lambda x:abs(x-testDate) )
-    
-    def yearList(self):
-        ''' Gives a list of unique years within DateRange '''
-        years = [ singDate.year for singDate in self.dateList]               
-        years = list(set(years))  
-        years.sort()
-        return years
-
-    def daysInYear(self,year):
-        ''' Returns an ordered list of days from DateRange within a specified year '''
-        if isinstance(year,int):
-            newyears = [inYear for inYear in self.dateList if inYear.year == year]
-            return newyears
-        else:
-            print 'Error!! Year must be type int for daysInYear'
-            return False
             
                                                      
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'mkSpecDB.py -s <station tag> -b <file> -d <path> -o <file> -l <path> --bnr_off'
+    print 'mkSpecDB.py -i <File> -D <Directory>'
 
         
 def ckDir(dirName):
@@ -210,7 +167,7 @@ def main(argv):
             
             # check if '/' is included at end of path
             if not( datapath.endswith('/') ):
-                datapath = datapath + '/'
+                datapath += '/'
                 
             # Check if directory exists
             ckDir(datapath)
@@ -293,7 +250,7 @@ def main(argv):
     #-------------------
     # Call to date class
     #-------------------
-    DOI      = DateRange(DBinputs['iyear'],DBinputs['imnth'],DBinputs['iday'],      # Create a dateRange instance object
+    DOI      = dr.DateRange(DBinputs['iyear'],DBinputs['imnth'],DBinputs['iday'],      # Create a dateRange instance object
                          DBinputs['fyear'],DBinputs['fmnth'],DBinputs['fday'])      
     daysList = DOI.dateList                                                         # Create a list of days within date range
     
