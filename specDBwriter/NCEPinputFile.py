@@ -30,7 +30,7 @@ loc = 'mlo'                                    # Three letter station identifier
 #----------------
 # Year to process
 #----------------
-year = 1992                                    # Year to process
+year = 2000                                    # Year to process
 
 #------
 # Flags

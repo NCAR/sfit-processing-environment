@@ -106,6 +106,8 @@ def readNMCFile(fname,dataDict,statstr,dateTime):
                 #daystr  = "{0:02d}".format(dateTime.day)                 
                 #dataDict.setdefault('YYYYMMDD',[]).append(yrstr+mnthstr+daystr)
                 return dataDict
+        dataDict.setdefault(dateTime,[]).extend([-999.99]*18)
+        return dataDict
             
 
                             #----------------------------#
@@ -257,7 +259,7 @@ def main(argv):
             # layers and nmc data. Use Interpolated Univariate
             # Spline
             #-------------------------------------------------
-            TempNewDict.setdefault(datekey,[]).extend(intrpUniSpl(HgtData,TempData)(statLayers))
+            TempNewDict.setdefault(datekey,[]).extend(intrpUniSpl(HgtData,TempData,k=3)(statLayers))
 
                
     #------------------------------------------
