@@ -60,6 +60,7 @@ import shutil
 from Layer1Mods import refMkrNCAR, t15ascPrep
 
 
+
                         #-------------------------#
                         # Define helper functions #
                         #-------------------------#
@@ -76,18 +77,22 @@ def convertList(varList):
             pass
     return varList
 
-def ckDirMk(dirName,logFile=False):
+def ckDirMk(dirName,logFlg=False):
     ''' '''
     if not ( os.path.exists(dirName) ):
         os.makedirs( dirName )
-        if logFile: logFile.info( 'Created folder %s' % dirName )         
+        if logFlg: logFlg.info( 'Created folder %s' % dirName )         
         
-def ckDir(dirName,logFile=False):
+def ckDir(dirName,logFlg=False,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
         print 'Input Directory %s does not exist' % (dirName)
-        if logFile: logFile.error('Directory %s does not exist' % dirName )
-        sys.exit()         
+        if logFlg: logFlg.error('Directory %s does not exist' % dirName )
+        if exit: sys.exit()
+        return False
+    else:
+        return True    
+        
         
 
                             #----------------------------#
@@ -184,7 +189,7 @@ def main(argv):
         
         # Check for existance of Input folder
         wrkInputDir1 = mainInF.inputs['BaseDirInput'] + loc + '/'        
-        ckDir( wrkInputDir1, logFile )
+        ckDir( wrkInputDir1, logFlg=logFile, exitFlg=True )
             
         # Check for the existance of Output folder and create if DNE
         wrkOutputDir1 = mainInF.inputs['BaseDirOutput'] + loc + '/'
@@ -242,10 +247,10 @@ def main(argv):
             #------------------------------------------
             # Level 3 -- Loop through spectral db lines
             #------------------------------------------
-            for ind in range(0, len(dbFltData_2['Date'])):  
+            for spcDBind in range(0, len(dbFltData_2['Date'])):  
                 
                 # Get date of observations
-                daystr = str(int(dbFltData_2['Date'][ind]))
+                daystr = str(int(dbFltData_2['Date'][spcDBind]))
                 day    = dt.datetime(int(daystr[0:4]),int(daystr[4:6]),int(daystr[6:]))
                             
                 #----------------------------------------
@@ -261,7 +266,7 @@ def main(argv):
                 # If this folder does not exist => there is no 
                 # Data for this day
                 wrkInputDir2 = wrkInputDir1 + yrstr + mnthstr + daystr + '/'               
-                ckDir( wrkInputDir2, logFile )                       
+                ckDir( wrkInputDir2, logFlg=logFile, exitFlg=True )                       
                 
                 # Check for the existance of YYYYMMDD Output folder and create if DNE
                 wrkOutputDir2 = wrkOutputDir1 + yrstr + mnthstr + daystr + '/'  
@@ -272,7 +277,7 @@ def main(argv):
                 ckDirMk( wrkOutputDir3, logFile )                     
         
                 # Check for the existance of Output folder <TimeStamp> and create if DNE
-                wrkOutputDir4 = wrkOutputDir3 + str(int(dbFltData_2['TStamp'][ctl_ind])) + '/' 
+                wrkOutputDir4 = wrkOutputDir3 + str(int(dbFltData_2['TStamp'][spcDBind])) + '/' 
                 ckDirMk( wrkOutputDir4, logFile )               
                 
                 # Check for the existance of Output folder <Version> and create if DNE
@@ -323,7 +328,7 @@ def main(argv):
                                     #----------------------------#
                 if mainInF.inputs['pspecFlg']:
                     
-                    rtn = t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, ctl_ind, logFile)
+                    rtn = t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_ind, logFile)
                                         
                                         
                                     #----------------------------#
@@ -336,7 +341,8 @@ def main(argv):
                     #-------------
                     # Run Refmaker
                     #-------------
-                    rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMpath'], wrkOutputDir5, logFile)
+                    rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMpath'], wrkOutputDir5, \
+                                     mainInF.inputs['refMkrLvl'], mainInF.inputs['wVer'], dbFltData_2, spcDBind, logFile)
                                 
                     
                                     #----------------------------#

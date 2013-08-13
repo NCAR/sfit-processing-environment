@@ -33,13 +33,13 @@ loc = 'mlo'
 #------------------------------
 # Starting 
 iyear = 2012               # Year
-imnth = 9                  # Month
+imnth = 1                  # Month
 iday  = 1                  # Day
 
 # Ending
 fyear = 2012               # Yea#r
-fmnth = 9                  # Month
-fday  = 20                 # Day
+fmnth = 12                  # Month
+fday  = 31                 # Day
 
 
 #------------
@@ -63,7 +63,7 @@ ctlList   = [['/Users/ebaumer/Data/TestBed/ctlFiles/sfit4.ctl',1,0,'','VerA']]
              #['/Users/ebaumer/Data/TesBed/cntrl/c.ctl',1,0,'','VerC'],
              #['/Users/ebaumer/Data/TesBed/cntrl/d.ctl',1,0,'','VerD'] ]
 
-spcdbFile = '/Users/ebaumer/Data/TestBed/mlo/spectralDBtest.txt'            # Spectral DB File
+spcdbFile = '/Users/ebaumer/Data/TestBed/mlo/HRspDB_mlo_2012.dat'            # Spectral DB File
 
 # Optional files
 statFile   = '/Users/ebaumer/Data/TestBed/mlo/stations.layers'              # Station layer file
@@ -76,13 +76,15 @@ statFile   = '/Users/ebaumer/Data/TestBed/mlo/stations.layers'              # St
 #spc_flg          = 0                                                # Flag taken from spcListFile; Data file type (Not currently used!!)
 #UTC_shft         = 0                                                # UTC shift to zero (Not currently used!!)                                                                   
 #nu_margin        = 2                                                # Margin to extend the total band for pspec based on 
-                                                                    ## input from ctl file [cm^-1] (Not currently used!!)
+                                                                     # input from ctl file [cm^-1] (Not currently used!!)
 numDataBlks      = 1                                                # number of data blocks in the output ascii file
                                                                     # = [# binary formatted spectra] X [# fit regions] (often but not necessarily)
                                                                     # fit regions are read from sfit4.ctl file  
 pspecFlg         = 1                                                # 1 = run pspec, 0 = do not run pspec
 refmkrFlg        = 1                                                # 1 = run refmaker, 0 = do not run refmaker
 sfitFlg          = 1                                                # 1 = run sfit, 0 = do not run sfit
+refMkrLvl        = 1
+wVer             = 2
 
 #---------------------------------------------
 # filter bands and regions for calculating SNR

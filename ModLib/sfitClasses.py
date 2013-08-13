@@ -310,7 +310,7 @@ class DbInputFile(InputFile):
             that the delimiter is a single space. csv reader automatically
             reads everything in as a string. Certain values must be converted
             to floats'''
-        with open(self.fname) as fname:
+        with open(self.fname,'rb') as fname:
             reader = csv.DictReader(fname,delimiter=' ',skipinitialspace=True)                   # Read csv file
             for row in reader:
                 for col,val in row.iteritems():
@@ -319,8 +319,8 @@ class DbInputFile(InputFile):
                     except ValueError:
                         pass
                     
-                    self.dbInputs.setdefault(col,[]).append(val)                                 # Construct input dictionary
-                
+                    self.dbInputs.setdefault(col,[]).append(val)                                 # Construct input dictionary                  
+                    if '' in self.dbInputs: del self.dbInputs['']                                # Sometimes empty key is created (not sure why). This removes it.
 
     def dbFilterDate(self,DateRangeClass,fltDict=False):#=self.dbInputs):
         ''' Filter spectral db dicitonary based on date range class previously established'''
