@@ -49,7 +49,7 @@ BaseDirInput     = '/Users/ebaumer/Data/TestBed/'                           # In
 BaseDirOutput    = '/Users/ebaumer/Data/TestBed/Output/'                    # Output base directory
 binDir           = '/Users/ebaumer/Data/TestBed/d0.9.2/'                    # binary directory
 ilsDir           = '/Users/ebaumer/Data/TestBed/ilsFiles/'                  # Directory for ILS files
-WACCMpath        = '/Users/ebaumer/Data/TestBed/mlo/WACCM/'                 # Directory to WACCM files
+
 
 #------
 # Files
@@ -63,7 +63,9 @@ ctlList   = [['/Users/ebaumer/Data/TestBed/ctlFiles/sfit4.ctl',1,0,'','VerA']]
              #['/Users/ebaumer/Data/TesBed/cntrl/c.ctl',1,0,'','VerC'],
              #['/Users/ebaumer/Data/TesBed/cntrl/d.ctl',1,0,'','VerD'] ]
 
-spcdbFile = '/Users/ebaumer/Data/TestBed/mlo/HRspDB_mlo_2012.dat'            # Spectral DB File
+spcdbFile = '/Users/ebaumer/Data/TestBed/mlo/HRspDB_mlo_2012.dat'           # Spectral DB File
+WACCMfile = '/Users/ebaumer/Data/TestBed/mlo/WACCM/WACCMref_V6.mlo'         # WACCM profile to use
+
 
 # Optional files
 statFile   = '/Users/ebaumer/Data/TestBed/mlo/stations.layers'              # Station layer file

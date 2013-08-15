@@ -92,6 +92,16 @@ def ckDir(dirName,logFlg=False,exitFlg=False):
         return False
     else:
         return True    
+
+def ckFile(fName,logFlg=False,exit=False):
+    '''Check if a file exists'''
+    if not os.path.isfile(fName):
+        print 'File %s does not exist' % (fName)
+        if logFlg: logFlg.error('Unable to find file: %s' % fName)
+        if exit: sys.exit()
+        return False
+    else:
+        return True    
         
         
 
@@ -165,8 +175,21 @@ def main(argv):
     #----------------------------------------------
     # Initialize main input variables as dicitonary
     #----------------------------------------------           
-    mainInF.getInputs(logFile)              
-
+    mainInF.getInputs(logFile)   
+    
+    #-----------------------------
+    # Check the existance of files
+    #-----------------------------
+    # Spectral Database file
+    ckFile(mainInF.inputs['scpdbFile'],logFlg=logFile,exit=True)
+    
+    # WACCM profile file
+    ckFile(mainInF.inputs['WACCMfile'],logFlg=logFile,exit=True)
+    
+    # ctl files
+    for ctlFile in mainInF.inputs['ctlList']:
+        ckFile(ctlFile[0],logFlg=logFile,exit=True)
+    
     #--------------------------------------------
     # Program Looping structure. See Notes
     #      Level1 - LOC             (Input/Output)
@@ -341,7 +364,7 @@ def main(argv):
                     #-------------
                     # Run Refmaker
                     #-------------
-                    rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMpath'], wrkOutputDir5, \
+                    rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMfile'], wrkOutputDir5, \
                                      mainInF.inputs['refMkrLvl'], mainInF.inputs['wVer'], dbFltData_2, spcDBind, logFile)
                                 
                     

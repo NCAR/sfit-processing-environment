@@ -311,6 +311,7 @@ class DbInputFile(InputFile):
             reads everything in as a string. Certain values must be converted
             to floats'''
         with open(self.fname,'rb') as fname:
+            # Currently only reads white space delimited file. Need to make general****
             reader = csv.DictReader(fname,delimiter=' ',skipinitialspace=True)                   # Read csv file
             for row in reader:
                 for col,val in row.iteritems():

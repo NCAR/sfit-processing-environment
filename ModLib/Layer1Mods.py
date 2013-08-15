@@ -136,7 +136,7 @@ def refMkrNCAR(zptwPath, WACCMpath, outPath, lvl, wVer, specDB, spcDBind, loggin
     #----------------
     # Find WACCM File
     #----------------
-    WACCMfiles = glob.glob(WACCMpath + 'WACCMref*.MLO')
+    WACCMfiles = glob.glob(WACCMpath + 'WACCMref*')
     
     if len(WACCMfiles) > 1:                 # If more than one WACCM file found trigger warning and use first one
         print 'Found more than one WACCM file. Using file: ' + WACCMfiles[0]
