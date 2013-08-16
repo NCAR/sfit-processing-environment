@@ -49,7 +49,7 @@ import sfitClasses as sc
                                 #-------------------------#
 
 
-def refMkrNCAR(zptwPath, WACCMpath, outPath, lvl, wVer, specDB, spcDBind, logging=False):
+def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, specDB, spcDBind, logging=False):
     ''' '''
     #----------------------------------------------
     # refMkrNCAR level options for creating 
@@ -71,7 +71,7 @@ def refMkrNCAR(zptwPath, WACCMpath, outPath, lvl, wVer, specDB, spcDBind, loggin
     #--------------------------    
     try:
         os.path.isdir(zptwPath)     # Path for zpt and water profile
-        os.path.isdir(WACCMpath)    # Path for WACCM profile
+        os.path.isfile(WACCMfile)    # Path for WACCM profile
         os.path.isdir(outPath)      # Outpath for reference.prf
     except OSError as errmsg:
         print errmsg
@@ -131,25 +131,7 @@ def refMkrNCAR(zptwPath, WACCMpath, outPath, lvl, wVer, specDB, spcDBind, loggin
             waterInd = waterVer.index(max(waterVer))
             
     waterFile = waterFiles[waterInd] 
-    
-    
-    #----------------
-    # Find WACCM File
-    #----------------
-    WACCMfiles = glob.glob(WACCMpath + 'WACCMref*')
-    
-    if len(WACCMfiles) > 1:                 # If more than one WACCM file found trigger warning and use first one
-        print 'Found more than one WACCM file. Using file: ' + WACCMfiles[0]
-        if logging: logging.info('Using WACCM file: ' + WACCMfiles[0])
-        WACCMfile = WACCMfiles[0]
-        
-    elif len(WACCMfiles) == 0:              # If no zptw files found trigger error
-        print 'No WACCM files found in: ' + WACCMpath
-        if logging: logging.error('No WACCM files found in: ' + WACCMfiles)
-        sys.exit()    
-        
-    else:
-        WACCMfile = WACCMfiles[0]
+       
         
     #----------------------------------
     # Concate ZPT, water, and WACCM  
@@ -258,7 +240,7 @@ def refMkrNCAR(zptwPath, WACCMpath, outPath, lvl, wVer, specDB, spcDBind, loggin
 # Copy bnr file to output folder
 def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_ind, logging):
     
-    bnrFname = str(int(dbFltData_2['TStamp'][spcDBind])) + '.bnr'
+    bnrFname = "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '.bnr'
     
     if not os.path.isfile(wrkOutputDir5+bnrFname):
         try:

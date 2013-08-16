@@ -181,7 +181,7 @@ def main(argv):
     # Check the existance of files
     #-----------------------------
     # Spectral Database file
-    ckFile(mainInF.inputs['scpdbFile'],logFlg=logFile,exit=True)
+    ckFile(mainInF.inputs['spcdbFile'],logFlg=logFile,exit=True)
     
     # WACCM profile file
     ckFile(mainInF.inputs['WACCMfile'],logFlg=logFile,exit=True)
@@ -274,16 +274,16 @@ def main(argv):
                 
                 # Get date of observations
                 daystr = str(int(dbFltData_2['Date'][spcDBind]))
-                day    = dt.datetime(int(daystr[0:4]),int(daystr[4:6]),int(daystr[6:]))
+                obsDay = dt.datetime(int(daystr[0:4]),int(daystr[4:6]),int(daystr[6:]))
                             
                 #----------------------------------------
                 # Check the existance of input and output 
                 # directory structure
                 #----------------------------------------            
                 # Find year month and day strings
-                yrstr   = "{0:02d}".format(day.year)
-                mnthstr = "{0:02d}".format(day.month)
-                daystr  = "{0:02d}".format(day.day)   
+                yrstr   = "{0:02d}".format(obsDay.year)
+                mnthstr = "{0:02d}".format(obsDay.month)
+                daystr  = "{0:02d}".format(obsDay.day)   
                 
                 # Check for existance of YYYYMMDD Input folder
                 # If this folder does not exist => there is no 
@@ -322,21 +322,25 @@ def main(argv):
                 ilsFileList = glob.glob(mainInF.inputs['ilsDir'] + 'ils*')
                 
                 # Create a date list of ils files present
-                ilsMnthYr = []
+                ilsYYYYMMDD = []
                 for ilsFile in ilsFileList:
                     ilsFileNpath = os.path.basename(ilsFile)
-                    match = re.match(r'\s*ils(\d\d)(\d\d\d\d).*',ilsFileNpath)
-                    ilsMnthYr.append([int(match.group(1)),int(match.group(2))])
+                    match = re.match(r'\s*ils(\d\d\d\d)(\d\d)(\d\d).*',ilsFileNpath)
+                    ilsYYYYMMDD.append([int(match.group(1)),int(match.group(2)),int(match.group(3))])
                                     
-                ilsDateList = [ dt.date(year,month,1) for month, year in ilsMnthYr ]
+                ilsDateList = [ dt.date(ilsyear,ilsmonth,ilsday) for ilsyear, ilsmonth, ilsday in ilsYYYYMMDD ]
                 
                 # Find the ils date nearest to the current day
-                nearstDay = sc.nearestDate(ilsDateList,day.year,day.month)
+                nearstDay     = sc.nearestDate(ilsDateList,obsDay.year,obsDay.month,obsDay.day)
                 nearstDayMnth = "{0:02d}".format(nearstDay.month)
                 nearstDayYr   = "{0:02d}".format(nearstDay.year)
+                nearstDayDay  = "{0:02d}".format(nearstDay.day)
+                nearstDaystr  = nearstDayYr + nearstDayMnth + nearstDayDay
                 
-                # Create ils file name including path
-                ilsFname = mainInF.inputs['ilsDir'] + 'ils' + nearstDayMnth + nearstDayYr + '.dat'
+                # Get File path and name for nearest ils file
+                for ilsFile in ilsFileList:
+                    if nearstDaystr in os.path.basename(ilsFile):
+                        ilsFname = ilsFile
                 
                 # Replace ils file name in ctl file
                 teststr = ['file.in.modulation_fcn', 'file.in.phase_fcn']

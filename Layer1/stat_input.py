@@ -64,7 +64,7 @@ ctlList   = [['/Users/ebaumer/Data/TestBed/ctlFiles/sfit4.ctl',1,0,'','VerA']]
              #['/Users/ebaumer/Data/TesBed/cntrl/d.ctl',1,0,'','VerD'] ]
 
 spcdbFile = '/Users/ebaumer/Data/TestBed/mlo/HRspDB_mlo_2012.dat'           # Spectral DB File
-WACCMfile = '/Users/ebaumer/Data/TestBed/mlo/WACCM/WACCMref_V6.mlo'         # WACCM profile to use
+WACCMfile = '/Users/ebaumer/Data/TestBed/mlo/waccm/WACCMref_V6.mlo'         # WACCM profile to use
 
 
 # Optional files
