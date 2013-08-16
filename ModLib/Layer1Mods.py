@@ -267,15 +267,29 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
         fname.write( mainInF.inputs['fltrBndInputs'] )
         fname.write('# number of data blocks in the output ascii file\n')
         fname.write( str(mainInF.inputs['numDataBlks']) + '\n')
-        fname.write('# Specify data block:\n')
+        fname.write('# Specify data block (Each block contains at least 2 lines):\n')
         fname.write('# bnr file name\n')
-        fname.write('# Radius of Earth, zero fill factor, ratioflg\n')
-        fname.write('# Ratio file name (bnr format) if ratioflag eq 1, skip if 0\n')
+        fname.write('# Radius of Earth (ROE), zero fill factor (nterp), ratioflg (rflag), file open flag (fflag)\n')
+        fname.write('# roe - radius of earth [km]\n')
+        fname.write('# nterp -  zero fill factor\n')
+        fname.write('#     nterp =  0 - skip resample & resolution degradation\n')
+        fname.write('#     nterp =  1 - minimally sample at opdmax\n')
+        fname.write('#     nterp >  1 - interpolate nterp-1 points upon minimal sampled spacing\n')
+        fname.write('#     note: OPDMAX is taken from sfit4.ctl file\n')
+        fname.write('# rflag - ratio flag, to ratio the spectra with another low resolution spectral file (eg spectral envelope)\n')
+        fname.write('# fflag -  file open flag\n')
+        fname.write('#     fflag = 0 for fortran unformatted file\n')
+        fname.write('#     fflag = 1 for open as steam or binary or c-type file (gfortran uses stream)\n')
+        fname.write('# ratio file name in bnr format\n')
+        fname.write('#     if rflag eq 1 this file has to exist\n')
+        fname.write('#     skip if rflag eq 0 \n')
         fname.write( bnrFname + '\n') 
-        fname.write( str(dbFltData_2['ROE'][spcDBind]) + '   ' + str(mainInF.inputs['ctlList'][ctl_ind][1]) + \
-                     '     ' + str(mainInF.inputs['ctlList'][ctl_ind][2]) + '\n' )
+        fname.write( str(dbFltData_2['ROE'][spcDBind])          + '   '   +           # ROE
+                     str(mainInF.inputs['ctlList'][ctl_ind][1]) + '     ' +           # Zero Fill factor
+                     str(mainInF.inputs['ctlList'][ctl_ind][2]) + '     ' +           # Ratio flag
+                     str(mainInF.inputs['ctlList'][ctl_ind][3]) +'\n' )                # File open flag
         if mainInF.inputs['ctlList'][ctl_ind][2]:
-            fname.write( mainInF.inputs['ctlList'][ctl_ind][3] + '\n' )
+            fname.write( mainInF.inputs['ctlList'][ctl_ind][4] + '\n' )
         else:
             fname.write('#\n')
     

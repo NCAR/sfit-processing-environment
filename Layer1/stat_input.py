@@ -54,14 +54,14 @@ ilsDir           = '/Users/ebaumer/Data/TestBed/ilsFiles/'                  # Di
 #------
 # Files
 #------
-#              Control file Path/name, Zero fill flag, Ratio flag, Ratio File Name, Version Name
-ctlList   = [['/Users/ebaumer/Data/TestBed/ctlFiles/sfit4.ctl',1,0,'','VerA']]
+#              Control file Path/name, Zero fill factor, Ratio flag, File open flag, Ratio File Name, Version Name
+ctlList   = [['/Users/ebaumer/Data/TestBed/ctlFiles/sfit4.ctl',1,0,0,'','VerA']]
 
 
-#ctlList   = [['/Users/ebaumer/Data/TesBed/cntrl/a.ctl',1,0,'','VerA'],     # List of control files to process
-             #['/Users/ebaumer/Data/TesBed/cntrl/b.ctl',1,0,'','VerB'],     # [File_Name, Zero_Fill_Flag, Ratio_Flag, Ratio_File_Name, Version_Name]
-             #['/Users/ebaumer/Data/TesBed/cntrl/c.ctl',1,0,'','VerC'],
-             #['/Users/ebaumer/Data/TesBed/cntrl/d.ctl',1,0,'','VerD'] ]
+#ctlList   = [['/Users/ebaumer/Data/TesBed/cntrl/a.ctl',1,0,0,'','VerA'],     # List of control files to process
+             #['/Users/ebaumer/Data/TesBed/cntrl/b.ctl',1,0,0,'','VerB'],     # [File_Name, Zero_Fill_Flag, Ratio_Flag, Ratio_File_Name, Version_Name]
+             #['/Users/ebaumer/Data/TesBed/cntrl/c.ctl',1,0,0,'','VerC'],
+             #['/Users/ebaumer/Data/TesBed/cntrl/d.ctl',1,0,0,'','VerD'] ]
 
 spcdbFile = '/Users/ebaumer/Data/TestBed/mlo/HRspDB_mlo_2012.dat'           # Spectral DB File
 WACCMfile = '/Users/ebaumer/Data/TestBed/mlo/waccm/WACCMref_V6.mlo'         # WACCM profile to use

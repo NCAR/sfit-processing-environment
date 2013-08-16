@@ -1,4 +1,4 @@
-#! /usr/bin/python2.7
+#! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
 # Name:
@@ -304,7 +304,7 @@ def main(argv):
                 ckDirMk( wrkOutputDir4, logFile )               
                 
                 # Check for the existance of Output folder <Version> and create if DNE
-                wrkOutputDir5 = wrkOutputDir4 + mainInF.inputs['ctlList'][ctl_ind][4] + '/' 
+                wrkOutputDir5 = wrkOutputDir4 + mainInF.inputs['ctlList'][ctl_ind][5] + '/' 
                 ckDirMk( wrkOutputDir5, logFile )          
                 
                 #-------------------------------
