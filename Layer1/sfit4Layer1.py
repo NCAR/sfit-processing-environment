@@ -1,4 +1,4 @@
-#! /usr/local/python-2.7/bin/python
+#! /usr/bin/python2.7
 
 #----------------------------------------------------------------------------------------
 # Name:
@@ -184,8 +184,7 @@ def main(argv):
         else:
             print 'Unhandled option: ' + opt
             sys.exit()
-            
-                                     
+                                                
     #--------------------
     # Initialize log file
     #--------------------
@@ -193,7 +192,6 @@ def main(argv):
     if logFile:
         logFile.info('Input data file ' + mainInF.fname )
         logFile.info('Log file path '   + log_fpath     )
-
 
     #----------------------------------------------
     # Initialize main input variables as dicitonary
@@ -223,7 +221,7 @@ def main(argv):
     
     # Establish Date Range
     inDateRange = sc.DateRange(mainInF.inputs['iyear'],mainInF.inputs['imnth'],mainInF.inputs['iday'],
-                            mainInF.inputs['fyear'],mainInF.inputs['fmnth'],mainInF.inputs['fday'])
+                               mainInF.inputs['fyear'],mainInF.inputs['fmnth'],mainInF.inputs['fday'])
         
     
     #--------------------
@@ -267,6 +265,14 @@ def main(argv):
             ctlFile   = ctlFileList[0]
             ctlFileGlb = sc.CtlInputFile(ctlFile,logFile)
             ctlFileGlb.getInputs()
+                                
+            #-------------------------
+            # Filter spectral db based
+            # on filter ID
+            #-------------------------                                
+            #if mainInF.inputs['ctlList'][5]:
+                #fltrID      = str(mainInF.inputs['ctlList'][5]) 
+                #dbFltData_2 = dbData.dbFilter 
                                 
             #-------------------------
             # Filter spectral db based
@@ -341,7 +347,7 @@ def main(argv):
                 ckDirMk( wrkOutputDir4, logFile )               
                 
                 # Check for the existance of Output folder <Version> and create if DNE
-                wrkOutputDir5 = wrkOutputDir4 + mainInF.inputs['ctlList'][ctl_ind][5] + '/' 
+                wrkOutputDir5 = wrkOutputDir4 + mainInF.inputs['ctlList'][ctl_ind][6] + '/' 
                 if not ckDirMk( wrkOutputDir5, logFile ):
                     # Remove all files in Output directory if previously exists!!
                     for f in glob.glob(wrkOutputDir5+'*'): os.remove(f)

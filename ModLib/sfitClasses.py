@@ -38,12 +38,13 @@ import subprocess
                                             #------------------#
 def subProcRun( fname, logFlg=False ):
     '''This runs a system command and directs the stdout and stderr'''
-    rtn = subprocess.Popen( fname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
+    #rtn = subprocess.Popen( fname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
+    rtn = subprocess.Popen( fname, stderr=subprocess.PIPE )
     outstr = ''
-    for line in iter(rtn.stdout.readline, b''):
-        print line
+    for line in iter(rtn.stderr.readline, b''):
+        print 'STDERR from SFIT4: ' + line.rstrip()
         if logFlg: outstr += line
-            
+        
     if logFlg: logFlg.info(outstr)
     
     return True
@@ -349,10 +350,20 @@ class DbInputFile(InputFile):
             if ( nuLower >= val1 and nuUpper <= val2 ):                                          # Check if wavenumber is within range of ctl files
                 inds.append(ind)
         
-        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())  # Rebuild filtered dictionary. Syntax compatible with python 2.6
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
         #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
         return dbFltInputs
 
-
-
-    
+    def dbFilterFltrID(self,fltrID,fltDict=False):
+        ''' Filter spectral DB dictionary based on filter ID specification'''
+        inds = []
+        
+        if not fltDict: fltDict = self.dbInputs
+        
+        for ind,val in enumerate(fltDict['Flt']):
+            if str(val) == str(fltrID):
+                inds.append(ind)
+        
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
+        
+        return dbFltInputs

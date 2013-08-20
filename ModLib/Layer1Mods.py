@@ -287,7 +287,7 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
         fname.write( str(dbFltData_2['ROE'][spcDBind])          + '   '   +           # ROE
                      str(mainInF.inputs['ctlList'][ctl_ind][1]) + '     ' +           # Zero Fill factor
                      str(mainInF.inputs['ctlList'][ctl_ind][2]) + '     ' +           # Ratio flag
-                     str(mainInF.inputs['ctlList'][ctl_ind][3]) +'\n' )                # File open flag
+                     str(mainInF.inputs['ctlList'][ctl_ind][3]) +'\n' )               # File open flag
         if mainInF.inputs['ctlList'][ctl_ind][2]:
             fname.write( mainInF.inputs['ctlList'][ctl_ind][4] + '\n' )
         else:
