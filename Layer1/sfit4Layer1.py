@@ -66,7 +66,11 @@ from Layer1Mods import refMkrNCAR, t15ascPrep
                         #-------------------------#
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'sfit4Layer1.py -i <file> -l <path> '
+    print 'sfit4Layer1.py -i <file> -l <path> -P <int> -?'
+    print '  -i <file> : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file'
+    print '  -l <path> : Flag to create log files of processing. <path> is directory where log files are created '
+    print '  -P <int>  : Pause run starting at run number <int>. <int> is an integer to start processing at'
+    print '  -?        : Show all flags'
 
 def convertList(varList):
     ''' Converts numbers represented as a string in a list to float '''
@@ -81,13 +85,16 @@ def ckDirMk(dirName,logFlg=False):
     ''' '''
     if not ( os.path.exists(dirName) ):
         os.makedirs( dirName )
-        if logFlg: logFlg.info( 'Created folder %s' % dirName )         
+        if logFlg: logFlg.info( 'Created folder %s' % dirName)  
+        return False
+    else:
+        return True
         
 def ckDir(dirName,logFlg=False,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
         print 'Input Directory %s does not exist' % (dirName)
-        if logFlg: logFlg.error('Directory %s does not exist' % dirName )
+        if logFlg: logFlg.error('Directory %s does not exist' % dirName)
         if exit: sys.exit()
         return False
     else:
@@ -116,13 +123,14 @@ def main(argv):
     #------------------
     # Set default flags
     #------------------
-    logFile = False
-
+    logFile  = False
+    pauseFlg = False
+    
     #--------------------------------
     # Retrieve command line arguments
     #--------------------------------
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:l:')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:l:P:?')
 
     except getopt.GetoptError as err:
         print str(err)
@@ -138,6 +146,21 @@ def main(argv):
 
             # Input file instance
             mainInF = sc.Layer1InputFile(arg)
+            
+        # Pause after skip option
+        elif opt == '-P':
+            pauseFlg = True
+            try:
+                nskips = int(arg) - 1
+                if nskips < 0: raise ValueError
+            except ValueError:
+                print 'Argument for -P flag: %s, needs to be an integer > 0' % arg
+                sys.exit()
+                
+        # Show all command line flags
+        elif opt == '-?':
+            usage()
+            sys.exit()
             
         # Check log file flag and path
         elif opt == '-l':
@@ -169,7 +192,7 @@ def main(argv):
     # Write initial log data  
     if logFile:
         logFile.info('Input data file ' + mainInF.fname )
-        logFile.info('Log file path '   + log_fpath          )
+        logFile.info('Log file path '   + log_fpath     )
 
 
     #----------------------------------------------
@@ -242,8 +265,8 @@ def main(argv):
             # and get inputs
             #-----------------------------  
             ctlFile   = ctlFileList[0]
-            ctlFileCl = sc.CtlInputFile(ctlFile,logFile)
-            ctlFileCl.getInputs()
+            ctlFileGlb = sc.CtlInputFile(ctlFile,logFile)
+            ctlFileGlb.getInputs()
                                 
             #-------------------------
             # Filter spectral db based
@@ -252,10 +275,10 @@ def main(argv):
             #-------------------------
             # Find the upper and lower bands from the ctl file
             nu = []
-            for band in ctlFileCl.inputs['band']:
+            for band in ctlFileGlb.inputs['band']:
                 bandstr = str(int(band))
-                nu.append(ctlFileCl.inputs['band.'+bandstr+'.nu_start'][0])
-                nu.append(ctlFileCl.inputs['band.'+bandstr+'.nu_stop'][0] )
+                nu.append(ctlFileGlb.inputs['band.'+bandstr+'.nu_start'][0])
+                nu.append(ctlFileGlb.inputs['band.'+bandstr+'.nu_stop'][0] )
             
             nu.sort()                                    # Sort wavenumbers
             nuUpper = nu[-1]                             # Get upper wavenumber
@@ -270,8 +293,22 @@ def main(argv):
             #------------------------------------------
             # Level 3 -- Loop through spectral db lines
             #------------------------------------------
-            for spcDBind in range(0, len(dbFltData_2['Date'])):  
+            nobs = len(dbFltData_2['Date'])
+            for spcDBind in range(0, nobs):  
                 
+                #-------------------------------------------------------------
+                # If pause after skip flag is initialized, do several things:
+                # 1) Check if number of skips exceeds total number of filtered
+                #    observations
+                # 2) Skip to specified starting point
+                # 3) Pause after first run
+                #-------------------------------------------------------------
+                if pauseFlg and (nskips > len(dbFltData_2['Date'])):
+                    print 'Specified starting point in -P option (%d) is greater than number of observations in filtered database (%d)' %(nskips,nobs)
+                    sys.exit()
+                
+                if pauseFlg and (spcDBind < nskips): continue
+                                 
                 # Get date of observations
                 daystr = str(int(dbFltData_2['Date'][spcDBind]))
                 obsDay = dt.datetime(int(daystr[0:4]),int(daystr[4:6]),int(daystr[6:]))
@@ -296,7 +333,7 @@ def main(argv):
                 ckDirMk( wrkOutputDir2, logFile )    
                 
                 # Check for the existance of Output folder <GAS> and create if DNE
-                wrkOutputDir3 = wrkOutputDir2 + ctlFileCl.primGas + '/' 
+                wrkOutputDir3 = wrkOutputDir2 + ctlFileGlb.primGas + '/' 
                 ckDirMk( wrkOutputDir3, logFile )                     
         
                 # Check for the existance of Output folder <TimeStamp> and create if DNE
@@ -305,18 +342,44 @@ def main(argv):
                 
                 # Check for the existance of Output folder <Version> and create if DNE
                 wrkOutputDir5 = wrkOutputDir4 + mainInF.inputs['ctlList'][ctl_ind][5] + '/' 
-                ckDirMk( wrkOutputDir5, logFile )          
+                if not ckDirMk( wrkOutputDir5, logFile ):
+                    # Remove all files in Output directory if previously exists!!
+                    for f in glob.glob(wrkOutputDir5+'*'): os.remove(f)
                 
                 #-------------------------------
                 # Copy relavent files from input
                 # directory to output directoy
                 #-------------------------------
+                #-----------------------------------
                 # Copy control file to Output folder
                 # First check if location to copy ctl is 
                 # the same location as original ctl file
+                #-----------------------------------
                 ctlPath,ctlFname = os.path.split(mainInF.inputs['ctlList'][ctl_ind][0])
                 if not( ctlPath in wrkOutputDir5 ):
                     shutil.copyfile(mainInF.inputs['ctlList'][ctl_ind][0], wrkOutputDir5 + 'sfit4.ctl')
+                
+                #----------------------------------
+                # Copy hbin details to output folder
+                # ** Assuming that the hbin.dtl and
+                # hbin.input files are in the same
+                # location as the global ctl file
+                #----------------------------------
+                try:
+                    shutil.copyfile(ctlPath + '/hbin.dtl', wrkOutputDir5 + '/hbin.dtl')            # Copy hbin.dtl file
+                except IOError:
+                    print 'Unable to copy file: %s' % (ctlPath + '/hbin.dtl')
+                    if logFile: logging.error(IOError)
+                    
+                try:
+                    shutil.copyfile(ctlPath + '/hbin.input', wrkOutputDir5 + '/hbin.input')          # Copy hbin.input file
+                except IOError:
+                    print 'Unable to copy file: %s' % (ctlPath + '/hbin.input')
+                    if logFile: logging.error(IOError)
+                                   
+                      
+                # Create instance of local control file (ctl file in working directory)
+                ctlFileLcl = sc.CtlInputFile(wrkOutputDir5 + 'sfit4.ctl',logFile)
                          
                 # Determine which ILS file to use 
                 ilsFileList = glob.glob(mainInF.inputs['ilsDir'] + 'ils*')
@@ -342,19 +405,18 @@ def main(argv):
                     if nearstDaystr in os.path.basename(ilsFile):
                         ilsFname = ilsFile
                 
-                # Replace ils file name in ctl file
+                # Replace ils file name in local ctl file (within working directory)
                 teststr = ['file.in.modulation_fcn', 'file.in.phase_fcn']
                 repVal  = [ilsFname        , ilsFname   ]
-                ctlFileCl.replVar(teststr,repVal)
-
+                ctlFileLcl.replVar(teststr,repVal)
+    
                     
                                     #----------------------------#
                                     #                            #
                                     #      --- Run pspec---      #
                                     #                            #
                                     #----------------------------#
-                if mainInF.inputs['pspecFlg']:
-                    
+                if mainInF.inputs['pspecFlg']:                    
                     rtn = t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_ind, logFile)
                                         
                                         
@@ -363,8 +425,7 @@ def main(argv):
                                     #    --- Run Refmaker---     #
                                     #                            #
                                     #----------------------------#
-                if mainInF.inputs['refmkrFlg']:
-                    
+                if mainInF.inputs['refmkrFlg']:                   
                     #-------------
                     # Run Refmaker
                     #-------------
@@ -397,9 +458,7 @@ def main(argv):
                     #---------------------
                     # Run sfit4 executable
                     #---------------------
-                    stdout,stderr = sc.subProcRun( [mainInF.inputs['binDir'] + 'sfit4'] )
-                    
-                    if logFile: logFile.info( '\n' + stdout + stderr )
+                    sc.subProcRun( [mainInF.inputs['binDir'] + 'sfit4'] ,logFile)
                     
                     #if ( stderr is None or not stderr):
                             #if log_flg:
@@ -409,8 +468,19 @@ def main(argv):
                             #if log_flg:
                                     #logFile.error('Error running sfit4 \n' + stdout)
                             #sys.exit()   
-
-
+    
+                    if pauseFlg:
+                        while True:
+                            user_input = raw_input('Paused processing....\n Enter: 0 to exit, 1 to continue to next, 2 to continue all\n >>> ')
+                            try:
+                                user_input = int(user_input)
+                                if not any(user_input == val for val in [0,1,2]): raise ValueError
+                                break
+                            except ValueError:
+                                print 'Please enter 0, 1, or 2'
+                                
+                        if   user_input == 0: sys.exit()
+                        elif user_input == 2: pauseFlg = False
 
 
 if __name__ == "__main__":

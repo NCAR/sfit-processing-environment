@@ -308,9 +308,7 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
     # Call to pspec
     #--------------
     print 'Running pspec for ctl file: ' + mainInF.inputs['ctlList'][ctl_ind][0] 
-    stdout,stderr = sc.subProcRun( [mainInF.inputs['binDir'] + 'pspec'] )           # Subprocess call to run pspec
-                    
-    if logging: logging.info( '\n' + stdout + stderr )
+    sc.subProcRun( [mainInF.inputs['binDir'] + 'pspec'] )           # Subprocess call to run pspec
 
     #if ( stderr is None or not stderr ):
             #if log_flg:

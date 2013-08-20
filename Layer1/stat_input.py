@@ -34,12 +34,12 @@ loc = 'mlo'
 # Starting 
 iyear = 2012               # Year
 imnth = 1                  # Month
-iday  = 1                  # Day
+iday  = 24                  # Day
 
 # Ending
 fyear = 2012               # Yea#r
-fmnth = 12                  # Month
-fday  = 31                 # Day
+fmnth = 1                  # Month
+fday  = 24                 # Day
 
 
 #------------
@@ -47,14 +47,28 @@ fday  = 31                 # Day
 #------------
 BaseDirInput     = '/Users/ebaumer/Data/TestBed/'                           # Input base directory
 BaseDirOutput    = '/Users/ebaumer/Data/TestBed/Output/'                    # Output base directory
-binDir           = '/Users/ebaumer/Data/TestBed/d0.9.2/'                    # binary directory
+binDir           = '/Users/ebaumer/Data/TestBed/src/'                    # binary directory
 ilsDir           = '/Users/ebaumer/Data/TestBed/ilsFiles/'                  # Directory for ILS files
 
 
 #------
 # Files
 #------
-#              Control file Path/name, Zero fill factor, Ratio flag, File open flag, Ratio File Name, Version Name
+# FORMAT=>[Control file Path/name, Zero fill factor, Ratio flag, File open flag, Ratio File Name, Version Name] 
+#             Control file Path/name (str) -- full name and path to control file 
+#             Zero fill factor (nterp)  (int)
+#                  nterp =  0 - skip resample & resolution degradation
+#                  nterp =  1 - minimally sample at opdmax
+#                  nterp >  1 - interpolate nterp-1 points upon minimal sampled spacing
+#                  note: OPDMAX is taken from sfit4.ctl file
+#             Ratio flag (rflag) (int)-- flag to indicate whether to ratio the spectra with another low resolution spectral file (eg spectral envelope)
+#             File open flag (fflag) (int)
+#                  fflag = 0 for fortran unformatted file
+#                  fflag = 1 for open as steam or binary or c-type file (gfortran uses stream)
+#             Ratio file name in bnr format (str)
+#                  if rflag = 1 --> must have filename
+#                  if rflag = 0 --> No filename specified
+#             Filter ID (fID) (str) -- Filter ID used
 ctlList   = [['/Users/ebaumer/Data/TestBed/ctlFiles/sfit4.ctl',1,0,0,'','VerA']]
 
 

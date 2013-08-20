@@ -36,20 +36,17 @@ import subprocess
                                             #------------------#
                                             # Define functions #
                                             #------------------#
-def subProcRun( fname ):
+def subProcRun( fname, logFlg=False ):
     '''This runs a system command and directs the stdout and stderr'''
-    rtn = subprocess.Popen( fname, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+    rtn = subprocess.Popen( fname, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
     outstr = ''
-    while True:
-            out = rtn.stdout.read(1)
-            if ( out == '' and rtn.poll() != None ):
-                    break
-            if out != '':
-                    outstr += out
-                    sys.stdout.write(out)
-                    sys.stdout.flush()
-    stdout, stderr = rtn.communicate()
-    return (outstr,stderr)
+    for line in iter(rtn.stdout.readline, b''):
+        print line
+        if logFlg: outstr += line
+            
+    if logFlg: logFlg.info(outstr)
+    
+    return True
 
 def nearestDate(daysList, year, month, day=1):
     ''' Finds the nearest date from a list of days based on a given year, month, and day'''
