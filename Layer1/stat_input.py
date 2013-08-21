@@ -49,7 +49,7 @@ BaseDirInput     = '/Users/ebaumer/Data/TestBed/'                           # In
 BaseDirOutput    = '/Users/ebaumer/Data/TestBed/Output/'                    # Output base directory
 binDir           = '/Users/ebaumer/Data/TestBed/src/'                       # binary directory
 ilsDir           = '/Users/ebaumer/Data/TestBed/ilsFiles/'                  # Directory for ILS files
-FltrDir          = '/Users/ebaumer/Data/TestBed/fltrFiles/'                 # Directory for filter files
+RatioDir          = '/Users/ebaumer/Data/TestBed/fltrFiles/'                 # Directory for ratio files
 
 #------
 # Files
@@ -88,20 +88,24 @@ statFile   = '/Users/ebaumer/Data/TestBed/mlo/stations.layers'              # St
 #--------------------
 # Flags and Constants
 #--------------------
-#waterVer         = 2                                                # water version (Not currently used!!!)
-#ratio_flg        = 0                                                # ratioflag : 1=ratio, 0=not (Not currently used!!)
-#spc_flg          = 0                                                # Flag taken from spcListFile; Data file type (Not currently used!!)
-#UTC_shft         = 0                                                # UTC shift to zero (Not currently used!!)                                                                   
-#nu_margin        = 2                                                # Margin to extend the total band for pspec based on 
-                                                                     # input from ctl file [cm^-1] (Not currently used!!)
-numDataBlks      = 1                                                # number of data blocks in the output ascii file
-                                                                    # = [# binary formatted spectra] X [# fit regions] (often but not necessarily)
-                                                                    # fit regions are read from sfit4.ctl file  
-pspecFlg         = 1                                                # 1 = run pspec, 0 = do not run pspec
-refmkrFlg        = 1                                                # 1 = run refmaker, 0 = do not run refmaker
-sfitFlg          = 1                                                # 1 = run sfit, 0 = do not run sfit
-refMkrLvl        = 1
-wVer             = 2
+numDataBlks = 1                                                # number of Spectral data blocks in the output ascii file
+                                                               #    = [# binary formatted spectra] X [# fit regions] (often but not necessarily)
+                                                               # fit regions are read from sfit4.ctl file  
+
+pspecFlg    = 1                                                # 1 = run pspec,    0 = do not run pspec
+refmkrFlg   = 1                                                # 1 = run refmaker, 0 = do not run refmaker
+sfitFlg     = 1                                                # 1 = run sfit,     0 = do not run sfit
+lstFlg      = 1                                                # Flag to create list file. Output file which has meta data and a list of all directories processed
+
+refMkrLvl   = 1                                                # Version of reference maker to use. 
+                                                               #    0 = Use pre-existing zpt file. Concatonate with water and WACCM profiles
+                                                               #    1 = Use pre-existing zpt file. Concatonate with water and WACCM profiles. Replace
+                                                               #        surface pressure and temperature with values in database file. If those values
+                                                               #        are not present, then default to original zpt file
+
+wVer        = 2                                                # Version of water profile to use.
+                                                               #    <0 => Get the latest water version file
+                                                               #   >=0 => Get user specified water version file. Latest file is taken if unable to find user specified
 
 #---------------------------------------------
 # filter bands and regions for calculating SNR
