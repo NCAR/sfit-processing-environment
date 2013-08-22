@@ -37,19 +37,20 @@ imnth = 1                  # Month
 iday  = 24                  # Day
 
 # Ending
-fyear = 2012               # Yea#r
+fyear = 2012               # Year
 fmnth = 1                  # Month
-fday  = 25                 # Day
+fday  = 26                 # Day
 
 
 #------------
 # directories
 #------------
-BaseDirInput     = '/Users/ebaumer/Data/TestBed/'                           # Input base directory
-BaseDirOutput    = '/Users/ebaumer/Data/TestBed/Output/'                    # Output base directory
-binDir           = '/Users/ebaumer/Data/TestBed/src/'                       # binary directory
-ilsDir           = '/Users/ebaumer/Data/TestBed/ilsFiles/'                  # Directory for ILS files
-RatioDir          = '/Users/ebaumer/Data/TestBed/fltrFiles/'                 # Directory for ratio files
+BaseDirInput     = '/Users/ebaumer/Data/TestBed/'                  # Input base directory
+BaseDirOutput    = '/Users/ebaumer/Data/TestBed/Output/'           # Output base directory
+binDir           = '/Users/ebaumer/Data/TestBed/src/'              # binary directory
+ilsDir           = '/Users/ebaumer/Data/TestBed/ilsFiles/'         # Directory for ILS files
+RatioDir         = '/Users/ebaumer/Data/TestBed/fltrFiles/'        # Directory for ratio files ** Currently NOT used
+logDirOutput     = '/Users/ebaumer/Data/TestBed/'                  # Directory to write log files and list files
 
 #------
 # Files

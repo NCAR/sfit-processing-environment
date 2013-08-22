@@ -127,7 +127,7 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, specDB, spcDBind, loggin
             waterInd = waterVer.index(wVer)
         except ValueError:
             print 'Water version %d not found, using latest version' % wVer
-            if logging: logging.error('Water version %d not found, using latest version')
+            if logging: logging.error('Water version %d not found, using latest version'% wVer)
             waterInd = waterVer.index(max(waterVer))
             
     waterFile = waterFiles[waterInd] 
