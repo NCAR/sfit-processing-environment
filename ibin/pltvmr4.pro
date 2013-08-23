@@ -1,4 +1,4 @@
-pro pltvmr4, ps=ps, thicklines=thicklines, big=big
+pro pltvmr4, ps=ps, thicklines=thicklines, big=big, dir=dir
 
 	;print, ' usage : pltvmr4, /ps, /thick'
 
@@ -33,22 +33,30 @@ pro pltvmr4, ps=ps, thicklines=thicklines, big=big
 	encap = 0
 	plottop = 120
 
-; set up file names
-	setfilenames, pbpfile, stfile
-
-; read in statevector file
+; read in sfit4.ctl file
 	rc = 0
-	rc = readstat4( stat, stfile )
-
+	ctlfile = 'sfit4.ctl'
+	if( keyword_set( dir ) )then ctlfile=dir + ctlfile
+	rc = readsctl4( ctl, ctlfile )
 	if( rc ne 0 ) then begin
-		printf, -2,'could not read st file: ', stfile
+		printf, -2,'could not read sfit4.ctl file: ', ctlfile
 		stop
 	endif
+
+   ; read in statevector file
+   rc = 0
+   stfile = ctl.statevec
+   rc = readstat4( stat, stfile )
+   if( rc ne 0 ) then begin
+      printf, -2,'could not read statevec: ', statevec
+      stop
+   endif
 
    print, ''
    if( stat.ngas GT 0 )then print, stat.ngas, transpose(stat.gas[0,0:stat.ngas-1])
 
-   nlev =  readlayr( stgrd, 'station.layers' )
+   stlfile = ctl.stalayers
+   nlev =  readlayr( stgrd, stlfile )
 
 	; 0 = x, 1 = ps
 	for tops = 0 , ps do begin
@@ -107,7 +115,7 @@ pro pltvmr4, ps=ps, thicklines=thicklines, big=big
 
 	endfor ; tops
 
-	print, ' pltpbp .done.', format='(/,a,/)'
+	print, ' pltvmr4 .done.', format='(/,a,/)'
 
 end
 
@@ -250,62 +258,3 @@ print, ex, scl
 
 END
 
-; set file names  --------------------------------------------------------------------
-
-pro setfilenames, pbfile, stfile
-
-; spectra, fit & difference 	: pbpfile
-pbfile = 'pbpfile';
-
-; profile & apriori				: statevec
-stfile = 'statevec';
-
-end
-
-
-function exponent, axis, index, number
-
-	; a special case.
-	if number eq 0 then return, '0'
-
-	; assuming multiples of 10 with format.
-	ex = string(number, format='(e8.0)')
-	pt = strpos(ex, '.')
-
-	first = strmid(ex, 0, pt)
-	sign = strmid(ex, pt+2, 1)
-	thisexponent = strmid(ex, pt+3)
-
-	;print, number, ex, first
-	;help, first, sign
-
-	; shave off leading zero in exponent
-	while strmid(thisexponent, 0, 1) eq '0' do thisexponent = strmid(thisexponent, 1)
-
-	; fix for sign and missing zero problem.
-	if (long(thisexponent) eq 0) then begin
-		sign = ''
-		thisexponent = '0'
-	endif
-
-	; make the exponent a superscript.
-	if sign eq '-' then begin
-
-	if( strtrim(first,2) eq '1' ) then begin
-		return, '10!u' + sign + thisexponent + '!n'
-	endif else begin
-		return, first + 'x10!u' + sign + thisexponent + '!n'
-	endelse
-
-	endif else begin
-	if strtrim(first,2) eq '1' then begin
-		if strtrim(thisexponent,2) eq '0' then return, '1'
-		if strtrim(thisexponent,2) eq '1' then return, '10'
-		return, '10!u' + thisexponent + '!n'
-		endif else begin
-			return, first + 'x10!u' + thisexponent + '!n'
-		endelse
-	endelse
-
-
-	end

@@ -140,6 +140,9 @@ function readstat4, sts, file, rev=rev, quiet=quiet
 
     READF, lun, dum & READF, lun, nprm
     sts.nprm = nprm
+
+    if( nprm eq 0 ) then return, 0
+
     aprm     = dblarr(nprm)
 
     buf = ''

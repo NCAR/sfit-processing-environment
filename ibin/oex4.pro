@@ -12,7 +12,7 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 	FORWARD_FUNCTION plotak, plotaegv, plotk, covarplot, plotbnr
 	FORWARD_FUNCTION Exponent, plotgases
 
-   funcs = [ 'readstat4', 'usesite', 'usemol','readstat4', 'readnxn', 'readlayr','readpbp4', 'exponent', 'readsctl4' ]
+   funcs = [ 'readstat4', 'usesite', 'usemol', 'readnxn4', 'readlayr','readpbp4', 'exponent', 'readsctl4' ]
    resolve_routine, funcs, /either
 
 	PRINT, ' Usage : oex, site="mlo | tab | acf", /ps, /nsm, /thick, ftype= "B" | "L"'
@@ -84,6 +84,7 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 
 ; read in statevector file - local to sfit4.ctl
 	rc = 0
+	stfile = ctl.statevec
 	if( keyword_set( dir ) )then stfile = dir + ctl.statevec
 	rc = readstat4( stat, stfile )
 	if( rc ne 0 ) then begin
@@ -102,22 +103,23 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 
 ; read in k matrix file
 	rc = 0
+	kfile = ctl.k_matrix
 	if( keyword_set( dir ) )then kfile = dir + ctl.k_matrix
 	rc = readkmat4( kmf, kfile )
-	;help, kmf
 	if( rc ne 0 ) then begin
 		printf, -2,'could not read k file: ', kfile
 		stop
 	endif
 
 ; Read in Averaging kernels file
-;	rc = 0
-;	rc = readnxn( ak, akfile )
-;
-;	IF( rc NE 0 ) THEN BEGIN
-;		PRINTF, -2,'Could not read ak file: ', akfile
-;		STOP
-;	ENDIF
+	rc = 0
+   akfile = ctl.ak_matrix
+	if( keyword_set( dir ) )then akfile = dir + ctl.ak_matrix
+	rc = readnxn4( ak, akfile )
+	if( rc ne 0 ) then begin
+		printf, -2,'could not read ak file: ', akfile
+		stop
+	endif
 
 ; Read in Smoothing Error file
 ;	rc = 0
@@ -198,7 +200,10 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 		;		tek, lthick, plottop, rms, vmrng )
 
 		; plot averaging kernels
-		;rc = plotak( ak, stat, toPS, ppos, psiz, tek, lthick, plottop, usite, auc, prfs )
+		rc = plotak( ak, stat, toPS, ppos, psiz, tek, lthick, plottop, usite, auc )
+
+		; plot averaging kernels
+		rc = plotak( ak, stat, toPS, ppos, psiz, tek, lthick, plottop, usite, auc, /nrm )
 
 		; plot eigenvectors
 		;IF( aevcrc EQ 0 ) THEN BEGIN
@@ -982,21 +987,32 @@ END
 
 ; Plot averaging kernels --------------------------------------------------------------------
 
-FUNCTION plotak, ak, stat, toPS, ppos, psiz, tek, lthick, plottop, site, auc, prfs
+FUNCTION plotak, ak, stat, toPS, ppos, psiz, tek, lthick, plottop, site, auc, nrm=nrm
 
 	!P.MULTI = [ 0, 2, 1 ]
 
 	yrng = [0.,plottop]
-   nlev = prfs.nlev
-   v = prfs.avmr     ; not rvmr!
-   z = prfs.zbar
-   y = prfs.zbnd
+   nlev = stat.nlev
+   v    = stat.vmr[0,0,*]  ; top to bottom
+   z    = stat.z
 
-   ; scale apriori relative kernel for vmrs
    mat = dblarr(nlev,nlev)
-   for i=0, nlev-1 do begin
-      for j=0, nlev-1 do mat[i,j] = ak.mat[i,j] *v[i]/v[j]
-   endfor
+   mat = ak.mat
+   ;mat = transpose(ak.mat)
+   print, v[0], mat[0,0:2]
+
+   XTITL = 'Fractional Value'
+   ; scale apriori relative kernel for vmrs
+   if( keyword_set( nrm ) )then begin
+      XTITL = 'VMR Normalized Value'
+      for i=0, nlev-1 do begin
+         for j=0, nlev-1 do mat[i,j] = mat[i,j] * v[i] / v[j]
+      endfor
+   endif
+
+;openw, lun1, 'nak.out', /get_lun
+;printf, lun1,mat
+;free_lun, lun1
 
 	; set up windows
 	IF toPS THEN BEGIN
@@ -1031,7 +1047,7 @@ FUNCTION plotak, ak, stat, toPS, ppos, psiz, tek, lthick, plottop, site, auc, pr
 		YTICKLEN = 0.06, $
 		XTICKLEN = 0.03,		$
 		TITLE = 'All Averging Kernels', $
-		XTITLE = 'Fractional Value',	$
+		XTITLE = xtitl,	$
 		XTICKS=4, $
 		XRANGE=[mn,mx]
 
@@ -1044,7 +1060,9 @@ FUNCTION plotak, ak, stat, toPS, ppos, psiz, tek, lthick, plottop, site, auc, pr
 		; 0,1 are black and white, resp, which we want to skip
 		IF( cc eq 0 )THEN cc = 2
 		; Switching kernels to rows - second index
-		OPLOT, mat[i,*], z, COLOR = cc, THICK = lthick
+		;OPLOT, mat[i,*], z, COLOR = cc, THICK = lthick
+		; with ak mat not transposed use first index as rox from ak file
+		OPLOT, mat[*,i], z, COLOR = cc, THICK = lthick
 	   XYOUTS, xr[0], z[i], STRING(z[i],FORMAT='(i2)'), COLOR=cc, NOCLIP=0
 	ENDFOR
 
@@ -1067,7 +1085,7 @@ FUNCTION plotak, ak, stat, toPS, ppos, psiz, tek, lthick, plottop, site, auc, pr
 	; plot summed averaging kernels on right
 	PLOT, TOTAL( mat, 1 ), z, /NODATA, YRANGE=yrng, XRANGE = [-0.5, 1.5], $
 		YTITLE = 'Altitude [km]', YTICKLEN = 0.06, XTICKLEN = 0.03, $
-		TITLE = 'Summed Partial Kernels', XTITLE = 'Fractional Value'
+		TITLE = 'Summed Partial Kernels', XTITLE = xtitl
 
 	smaks = DBLARR( nlev, nband )
 
