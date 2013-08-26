@@ -9,7 +9,7 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 ; reads in sfit 4 output
 ; still to do error matrix, bnr file
 
-	FORWARD_FUNCTION plotak, plotaegv, plotk, covarplot, plotbnr
+	FORWARD_FUNCTION plotak, plotaegv, plotk, covarplot, plotbnr, readgasf
 	FORWARD_FUNCTION Exponent, plotgases
 
    funcs = [ 'readstat4', 'usesite', 'usemol', 'readnxn4', 'readlayr','readpbp4', 'exponent', 'readsctl4' ]
@@ -74,7 +74,8 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 
 ; read in pbpfile - local to sfit4.cfl
 	rc = 0
-	if( keyword_set( dir ) )then pbpfile = dir + ctl.pbpfile
+	pbpfile = ctl.pbpfile
+	if( keyword_set( dir ) )then pbpfile = dir + pbpfile
 	rc = readpbp4( pbp, pbpfile )
 	if( rc ne 0 ) then begin
 		printf, -2,'could not read pbp file: ', pbpfile
@@ -85,7 +86,7 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 ; read in statevector file - local to sfit4.ctl
 	rc = 0
 	stfile = ctl.statevec
-	if( keyword_set( dir ) )then stfile = dir + ctl.statevec
+	if( keyword_set( dir ) )then stfile = dir + stfile
 	rc = readstat4( stat, stfile )
 	if( rc ne 0 ) then begin
 		printf, -2,'could not read st file: ', stfile
