@@ -77,7 +77,7 @@ function readprfs4, prfs, file, rev=rev, quiet=quiet
    endfor
 
 
-   print, 'Read ', file, ' file done'
+   print, 'Readprfs4 : ', file, ' file done'
 
 	free_lun, lun
 	return, 0

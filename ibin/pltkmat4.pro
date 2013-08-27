@@ -5,32 +5,28 @@ pro pltkmat4, ps=ps, thicklines=thicklines, big=big, file=file, wind=wind
 ;adapted 18/3/2010 to add in total column amount from retrieval rb
 
 forward_function plotk
-funcs = [ 'readpbp4', 'readstat4','readkmat4' ]
+funcs = [ 'readstat4','readkmat4', 'readsctl4', 'readsum4' ]
 resolve_routine, funcs, /either
 
 
 print, ' usage : pltkmat4, /ps, /thick, /big'
 
 if( not keyword_set( thicklines )) then begin
-   print, '  main : keyword thicklines  not set.'
    print, '  main : setting default thicklines=0 -> use thin lines.'
    thicklines = 0  		 ;  0 means thin lines, 1 means thick lines
 endif
 
 if( not keyword_set( ps )) then begin
-   print, '  main : keyword ps not set.'
    print, '  main : setting default ps=0 -> do not create ps output.'
    ps = 0
 endif
 
 if( not keyword_set( file )) then begin
-   print, '  main : keyword file not set.'
    kfile = 'k.output'
    print, '  main : setting default file : ', kfile
 endif else kfile = file
 
 if( not keyword_set( wind )) then begin
-   print, '  main : keyword wind not set.'
    print, '  main : setting default wind=0.'
    wind = 0
 endif
@@ -48,8 +44,19 @@ endelse
 encap   = 0
 plottop = 120
 
+; read in sfit4.ctl file
+	rc = 0
+	ctlfile = 'sfit4.ctl'
+;	if( keyword_set( dir ) )then ctlfile=dir + ctlfile
+	rc = readsctl4( ctl, ctlfile )
+	if( rc ne 0 ) then begin
+		printf, -2,'could not read sfit4.ctl file: ', ctlfile
+		stop
+	endif
+
 ; Read in K matrix file
 rc = 0
+kfile = ctl.k_matrix
 rc = readkmat4( kmf, kfile )
 ;HELP, kmf
 IF( rc NE 0 ) THEN BEGIN
@@ -58,11 +65,10 @@ IF( rc NE 0 ) THEN BEGIN
 ENDIF
 
 rc = 0
-pbpfile = 'pbpfile'
-rc = readpbp4( pbp, pbpfile )
-;HELP, pbp
+smmfile = ctl.summary
+rc = readsum4( smf, smmfile )
 IF( rc NE 0 ) THEN BEGIN
-   PRINTF, -2,'Could not read pbpfile: ', pbpfile
+   PRINTF, -2,'Could not read summary file: ', smmfile
    STOP
 ENDIF
 
@@ -83,7 +89,7 @@ ENDIF
 		thick = 1.0
 		IF toPS THEN BEGIN ;1
 			SET_PLOT, 'PS'
-			psfile = 'oex.ps'
+			psfile = 'kmat.ps'
 			PRINT, 'Saving ps file to : ', psfile
 			DEVICE, /COLOR, /LANDSCAPE, $
 			FILENAME = psfile, ENCAPSULATED = encap, BITS=8
@@ -120,7 +126,7 @@ ENDIF
 
 
 			; 2d countour of K matrix
-		rc = plotk( kmf, stat, pbp, toPS, ppos, psiz, stickthick, plottop )
+		rc = plotk( kmf, stat, smf, toPS, ppos, psiz, stickthick, plottop )
 
 		IF( toPS ) THEN DEVICE, /CLOSE_FILE
 
@@ -133,9 +139,9 @@ end
 
 ; Contour plot K Matrix ------------------------------------------------------------------
 
-FUNCTION plotk, kmf, stat, pbp, toPS, ppos, psiz, stickthick, plottop
+FUNCTION plotk, kmf, stat, smf, toPS, ppos, psiz, stickthick, plottop
 
-	nfit = pbp[0].nfit
+	nfit = smf.nfit
 	!P.MULTI = [nfit+1,nfit,nfit,0,0]
 
 	cbpos = FLTARR(4)
@@ -179,7 +185,7 @@ FUNCTION plotk, kmf, stat, pbp, toPS, ppos, psiz, stickthick, plottop
 
    ; plot low to high altitudes
 	mat  = -REVERSE( mat[ 0:npts-1, ismx:ismx+nlev-1 ], 2); *1000.0
-
+	;mat  = -mat[ 0:npts-1, ismx:ismx+nlev-1 ]
 	title = ' Jacobian Matrix : ' + STRING( nlev, npts, FORMAT='( i2,"x",i5 )' )
 
 	div = 0
@@ -242,7 +248,8 @@ FUNCTION plotk, kmf, stat, pbp, toPS, ppos, psiz, stickthick, plottop
 	FOR kk = 0, nfit-1 DO BEGIN
 
 		thispos = ctpos
-		pratio = FLOAT( pbp[kk].npt ) / FLOAT( npts	)
+		print, kk, smf.npts[kk], smf.wstr[kk], smf.wstp[kk], smf.nspac[kk]
+		pratio = FLOAT( smf.npts[kk] ) / FLOAT( npts	)
 
 		pw = pratio * pwidth
 
@@ -259,13 +266,13 @@ FUNCTION plotk, kmf, stat, pbp, toPS, ppos, psiz, stickthick, plottop
 			thispos[0] = thispos[0] + 0.0005
 		ENDELSE
 
-		npt      = pbp[kk].npt
-		x        = pbp[kk].wnu[0:npt-1]
+		npt       = smf.npts[kk]
+		x         = smf.wstr[kk] + indgen(npt)*smf.nspac[kk]
 		thismat   = mat[ pointoff:pointoff+npt-1, * ]
 		pointoff  = pointoff + npt
 
-      nulo = pbp[kk].nulo
-      nuhi = pbp[kk].nuhi
+      nulo = smf.wstr[kk]
+      nuhi = smf.wstp[kk]
       IF( NOT toPS ) THEN PRINT, ' wv # range : ', kk, nulo, nuhi, pw
 
       leftmost_tick = floor(nulo / tick_interval)*tick_interval + tick_interval

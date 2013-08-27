@@ -60,8 +60,9 @@ function readsctl4, ctl, file
 
    endfor
 
-print, 'readctl4 done.'
-return, 0
+   print, 'Readsctl4 : ', file, ' file done'
+	free_lun, lun
+   return, 0
 
 stop
 end

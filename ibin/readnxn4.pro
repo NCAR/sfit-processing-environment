@@ -1,41 +1,57 @@
-FUNCTION readnxn, nxn, file, rev=rev, quiet=quiet
+function readnxn4, nxn, file, rev=rev, quiet=quiet
 
 ; Read in n by n file --------------------------------------------------------------------
 ;  such as SM.out an SS.out
 
 
-	OPENR, lun, file, /GET_LUN, ERROR=ioerr
-	IF( ioerr NE 0 ) THEN BEGIN
-		PRINTF, -2, !ERR_STRING
-		RETURN, 1
-	ENDIF
+	openr, lun, file, /get_lun, error=ioerr
+	if( ioerr ne 0 ) then begin
+		printf, -2, !err_string
+		return, 1
+	endif
+
+   buf = ''
+	readf, lun, buf
+	subs = strsplit( buf, /extract, count=count )
+	ver = subs(0)
+	tag = subs(1)
+   ttl = subs(2:count-1)
 
 	n = 0
-	READF, lun, n
+	readf, lun, n, n1
+	if( n ne n1 )then begin
+	   print, 'readnxn4 : matrix should be square : ', n, n1
+	   stop
+	endif
 	;print, ' readnxn, n : ', n
-	mat = DBLARR( n, n )
-	READF, lun, mat
+
+	nxn = {		               $
+	   ver   : ver,            $
+      tag   : tag,            $
+      ttl   : ttl,            $
+		n	   : n,		  			$
+		mat	: dblarr( n, n )	$
+	}
+
+	mat = dblarr( n, n )
+	readf, lun, mat
 
    if( keyword_set(rev) )then begin
-      if( ~keyword_set(quiet) )then print, 'Readnxn: Reversing each dimension'
-      mat = REVERSE( mat, 1 )
-      mat = REVERSE( mat, 2 )
+      if( ~keyword_set(quiet) )then print, 'Readnxn4: Reversing each dimension'
+      mat = reverse( mat, 1 )
+      mat = reverse( mat, 2 )
    endif
 
 	; transpose so get mak(k,*) is a 'row' (kernel)
-	mat = TRANSPOSE( mat )
+	;mat = transpose( mat )
 
-	nxn = {		               $
-		n	   : 0,		  			$
-		mat	: DBLARR( n, n )	$
-	}
-	nxn.n   = n
 	nxn.mat = mat
-
 	mat = 0
 
-	FREE_LUN, lun
-	RETURN, 0
-END
+   print, 'Readnxn4 : ', file, ' file done'
+	free_lun, lun
+	return, 0
+
+end
 
 

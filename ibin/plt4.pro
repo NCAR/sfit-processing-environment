@@ -3,6 +3,8 @@ pro plt4, file=file, last=last, site=site, big=big
 ; August 2013
 ; reads a list file of completed retrievals from sfit4Layer1.py and calls oex4
 
+   close, /all
+
    if( not keyword_set( file )) then begin
       print, '  main : enter a layer1 list file'
       stop
