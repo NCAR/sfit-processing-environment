@@ -9,6 +9,7 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 ; reads in sfit 4 output
 ; still to do error matrix, bnr file
 
+   close,/all
 	FORWARD_FUNCTION plotak, plotaegv, plotk, covarplot, plotbnr, readgasf
 	FORWARD_FUNCTION Exponent, plotgases
 
@@ -71,6 +72,15 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 		stop
 	endif
 
+; read summary file
+   rc = 0
+   smmfile = ctl.summary
+	if( keyword_set( dir ) )then smmfile = dir + smmfile
+   rc = readsum4( smf, smmfile )
+   if( rc ne 0 ) then begin
+      printf, -2,'could not read summary file: ', smmfile
+      stop
+   endif
 
 ; read in pbpfile - local to sfit4.cfl
 	rc = 0
@@ -183,7 +193,7 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 		ENDELSE
 
 		; plot spectra
-      rc = plotgases( pbp, toPS, ppos, psiz, tek, lthick, summary, nsum, stat, oldgas, A.mol, dir )
+      rc = plotgases( pbp, toPS, ppos, psiz, tek, lthick, summary, stat, A.mol, dir )
 
       ; plot vmr profiles from statevector
       for ii=0 , stat.ngas-1 do begin
@@ -194,7 +204,7 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
       if( stat.iftm )then rc = plott( stat, stgrd, tops, ppos, psiz, tek, lthick, plottop )
 
 		; 2d countour of K matrix
-		rc = plotk( kmf, stat, pbp, toPS, ppos, psiz, stickthick, plottop )
+		rc = plotk( kmf, stat, smf, toPS, ppos, psiz, stickthick, plottop )
 
 		; plot Smooth & Measurement error, profiles
 		;rc = ploterrs( sserr, smerr, stat, kmf, toPS, ppos, psiz, A.vmrscl, A.vmrunits, $
@@ -381,7 +391,7 @@ END
 
 ; plot spectra --------------------------------------------------------------------
 
-function plotgases, pbp, tops, ppos, psiz, tek, lthick, summary, nsum, stat, oldgas, mol, dir
+function plotgases, pbp, tops, ppos, psiz, tek, lthick, summary, stat, mol, dir
 
    suffix = 'final'
 
@@ -451,7 +461,7 @@ function plotgases, pbp, tops, ppos, psiz, tek, lthick, summary, nsum, stat, old
 
 		titl = 'FTS Retrieval : ' + gases + string( ', %rms=',sqrt(rms[1]),format='(a,f6.3)')
 
-		; plot difference on top
+		; plot difference on top from pbpfile
 		plot, pbp[kk].wnu[0:npt1], difs, position = dfpos, yticks = 4, title = titl,   $
 			/nodata, ytitle='% difference', charsize = 1.4, xtickname = replicate(' ',30), xticklen = 0.08, $
 			xstyle=1 ;	$
@@ -807,10 +817,11 @@ END
 
 ; Contour plot K Matrix ------------------------------------------------------------------
 
-FUNCTION plotk, kmf, stat, pbp, toPS, ppos, psiz, stickthick, plottop
+FUNCTION plotk, kmf, stat, smf, toPS, ppos, psiz, stickthick, plottop
 
-	nfit = pbp[0].nfit
-	;!P.MULTI = [nfit+1,nfit,2,0,0]
+	nfit = smf.nfit
+	nbnd = smf.nbnd
+	print, ' plotk : nfits in nbands : ', nfit, nbnd
 
 	cbpos = FLTARR(4)
 	ctpos = FLTARR(4)
@@ -844,12 +855,19 @@ FUNCTION plotk, kmf, stat, pbp, toPS, ppos, psiz, stickthick, plottop
 	nlev = kmf.nlev
 	ismx = kmf.ismx
 	npts = kmf.npts
+	z = stat.z
 
-	; kmat is npar x npts in sfit 4 & from readkmat4
-   ;help, kmf.mat
-   mat = transpose(kmf.mat)
+	;help, z
+	; kmat is npts x npar in sfit 4 & from readkmat4
+   print, 'k matrix :'
+   help, kmf.mat
+   mat = kmf.mat[ ismx:ismx+nlev-1, 0:npts-1 ]
    ;help, mat
-	mat  = REVERSE( mat[ 0:npts-1, ismx:ismx+nlev-1 ], 2); *1000.0
+   mat = transpose( mat )
+   print, 'k matrix target to plot:'
+   help, mat
+
+	;mat  = REVERSE( mat[ 0:npts-1, ismx:ismx+nlev-1 ], 2); *1000.0
 
 	title = ' Jacobian Matrix : ' + STRING( nlev, npts, FORMAT='( i2,"x",i5 )' )
 ;	mat = kmf.kmat *1000.0
@@ -864,8 +882,6 @@ FUNCTION plotk, kmf, stat, pbp, toPS, ppos, psiz, stickthick, plottop
 		div = div +1
 		mat = mat * 10.
 	ENDWHILE
-
-	z = stat.z
 
 	; set up contours
 	ndiv = 7
@@ -911,68 +927,81 @@ FUNCTION plotk, kmf, stat, pbp, toPS, ppos, psiz, stickthick, plottop
 	tick_interval = 1
 	minor = 10
 
-	FOR kk = 0, nfit-1 DO BEGIN
+	FOR kk = 0, nbnd-1 DO BEGIN
 
-		thispos = ctpos
-		pratio = FLOAT( pbp[kk].npt ) / FLOAT( npts	)
+	   jscan = smf.nscn(kk)
 
-		pw = pratio * pwidth
+      for j = 0, jscan-1 do begin
 
-		thispos[0] = ctpos[0] + offset
-		thispos[2] = ctpos[0] + offset + pw
-		offset = offset + pw
+         print , ' plotting band : ', kk, ' scan : ', j
+         thispos = ctpos
+         print, kk, smf.npts[kk], smf.wstr[kk], smf.wstp[kk], smf.nspac[kk]
+         pratio = FLOAT( smf.npts[kk] ) / FLOAT( npts	)
+         ;pratio = FLOAT( pbp[kk].npt ) / FLOAT( npts	)
 
-		IF( kk EQ 0 ) THEN BEGIN
-			thispos[2] = thispos[2] - 0.01
-		ENDIF ELSE IF( kk EQ nfit -1 ) THEN BEGIN
-			thispos[0] = thispos[0] + 0.01
-		ENDIF ELSE BEGIN
-			thispos[2] = thispos[2] - 0.0005
-			thispos[0] = thispos[0] + 0.0005
-		ENDELSE
+         pw = pratio * pwidth
 
-		npt      = pbp[kk].npt
-		x        = pbp[kk].wnu[0:npt-1]
-		thismat   = mat[ pointoff:pointoff+npt-1, * ]
-		pointoff  = pointoff + npt
+         thispos[0] = ctpos[0] + offset
+         thispos[2] = ctpos[0] + offset + pw
+         offset = offset + pw
 
-      nulo = pbp[kk].nulo
-      nuhi = pbp[kk].nuhi
-      IF( NOT toPS ) THEN PRINT, ' wv # range : ', kk, nulo, nuhi, pw
+         IF( kk EQ 0 ) THEN BEGIN
+            thispos[2] = thispos[2] - 0.01
+         ENDIF ELSE IF( kk EQ nfit -1 ) THEN BEGIN
+            thispos[0] = thispos[0] + 0.01
+         ENDIF ELSE BEGIN
+            thispos[2] = thispos[2] - 0.0005
+            thispos[0] = thispos[0] + 0.0005
+         ENDELSE
 
-      leftmost_tick = floor(nulo / tick_interval)*tick_interval + tick_interval
-      rightmost_tick = floor(nuhi / tick_interval)*tick_interval
+         ;npt      = pbp[kk].npt
+         ;x        = pbp[kk].wnu[0:npt-1]
+         npt       = smf.npts[kk]
+         x         = smf.wstr[kk] + indgen(npt)*smf.nspac[kk]
+         thismat   = mat[ pointoff:pointoff+npt-1, * ]
+         pointoff  = pointoff + npt
 
-      num_ticks = (rightmost_tick - leftmost_tick) / tick_interval + 1
-      if (not toPS) then begin
-         print, 'number of major ticks: ',num_ticks
-         if (num_ticks eq 1) then begin
-            print, 'Warning: only 1 major tick for interval, no minor tick marks will show'
+         ;nulo = pbp[kk].nulo
+         ;nuhi = pbp[kk].nuhi
+         nulo = smf.wstr[kk]
+         nuhi = smf.wstp[kk]
+         IF( NOT toPS ) THEN PRINT, ' wv # range : ', kk, nulo, nuhi, pw
+
+         leftmost_tick = floor(nulo / tick_interval)*tick_interval + tick_interval
+         rightmost_tick = floor(nuhi / tick_interval)*tick_interval
+
+         num_ticks = (rightmost_tick - leftmost_tick) / tick_interval + 1
+         if (not toPS) then begin
+            print, 'number of major ticks: ',num_ticks
+            if (num_ticks eq 1) then begin
+               print, 'Warning: only 1 major tick for interval, no minor tick marks will show'
+            endif
+            if (num_ticks eq 0) then begin
+               print, 'Warning: no major ticks for interval, no major or minor tick marks will show'
+            endif
          endif
-         if (num_ticks eq 0) then begin
-            print, 'Warning: no major ticks for interval, no major or minor tick marks will show'
-         endif
-      endif
 
-      ;Set character size along y-axis to have characters only for left-most plot
-      ys = 0
-      IF( kk eq 0 ) THEN BEGIN
-      ys = ycharsz
-      ENDIF ELSE BEGIN
-      ys = 0.0001;Small enough to suppress characters showing up
-      ;If set to 0, IDL scales to a small, but visible size
-      ENDELSE
+         ;Set character size along y-axis to have characters only for left-most plot
+         ys = 0
+         IF( kk eq 0 ) THEN BEGIN
+         ys = ycharsz
+         ENDIF ELSE BEGIN
+         ys = 0.0001;Small enough to suppress characters showing up
+         ;If set to 0, IDL scales to a small, but visible size
+         ENDELSE
 
-      CONTOUR, thismat, x, z, POSITION = thispos, NLEVELS = nclr-40,$
-         YRANGE = [0.0, plottop], /FILL, /noerase, $
-         CHARSIZE = charsz, YTICKLEN = -0.02, XTICKLEN = -0.02,$
-         YTITLE = 'Altitude [km]', xtitle = '', XCHARSIZE = xcharsz,$
-         YCHARSIZE = ys,$
-         XRANGE = [nulo,nuhi],$
-         XSTYLE = 1,$
-         XTICKINTERVAL = tick_interval,$
-         XMINOR = minor
+         CONTOUR, thismat, x, z, POSITION = thispos, NLEVELS = nclr-40,$
+            YRANGE = [0.0, plottop], /FILL, /noerase, $
+            CHARSIZE = charsz, YTICKLEN = -0.02, XTICKLEN = -0.02,$
+            YTITLE = 'Altitude [km]', xtitle = '', XCHARSIZE = xcharsz,$
+            YCHARSIZE = ys,$
+            XRANGE = [nulo,nuhi],$
+            XSTYLE = 1,$
+            XTICKINTERVAL = tick_interval,$
+            XMINOR = minor
 
+
+         endfor
 
 	ENDFOR
 
@@ -1000,7 +1029,7 @@ FUNCTION plotak, ak, stat, toPS, ppos, psiz, tek, lthick, plottop, site, auc, nr
    mat = dblarr(nlev,nlev)
    mat = ak.mat
    ;mat = transpose(ak.mat)
-   print, v[0], mat[0,0:2]
+   ;print, v[0], mat[0,0:2]
 
    XTITL = 'Fractional Value'
    ; scale apriori relative kernel for vmrs
@@ -1070,7 +1099,6 @@ FUNCTION plotak, ak, stat, toPS, ppos, psiz, tek, lthick, plottop, site, auc, nr
 	; sum several kernels
 	; from ground - IRWG
 	IF( site NE 'ACF' ) THEN BEGIN
-		PRINT, '!!!! Plotting Ground-based Summed Kernels!!!!'
 		bnds  = [ [0, 8], [8, 17], [17, 26], [26, 40], [0, 120], [0,5], [0,8], [0,11] ]
 		bname = [ ' 0- 8km', ' 8-17km', '17-26km', '26-40km', ' 0-120km', 'Prior Cont', ' 0-5km', ' 0-8km',' 0-11km' ]
 		nband = 8

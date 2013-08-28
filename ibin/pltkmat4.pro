@@ -64,6 +64,7 @@ IF( rc NE 0 ) THEN BEGIN
    STOP
 ENDIF
 
+; read summary file
 rc = 0
 smmfile = ctl.summary
 rc = readsum4( smf, smmfile )

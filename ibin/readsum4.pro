@@ -18,6 +18,7 @@ function readsum4, sumf, file
 	tag = subs(1)
    ttl = subs(2:count-1)
 
+; read headers for all spectra (fits)
    buf = ''
    readf, lun, buf
    readf, lun, nfit
@@ -28,6 +29,7 @@ function readsum4, sumf, file
       spechead[i] = buf
    endfor
 
+; read data for all retrieved gases
    buf = ''
    readf, lun, buf
    readf, lun, nret
@@ -39,13 +41,14 @@ function readsum4, sumf, file
       sret[i] = buf
    endfor
 
+; read data by band
    buf = ''
    readf, lun, buf
    readf, lun, nband
    readf, lun, buf
    ;print, buf
    sband = strarr(nband)
-   sjscn = strarr(nband)
+   sjscn = strarr(nband, 10)
    nscnb = intarr(nband)
    npts = intarr(nband)
    wstrt = fltarr(nband)
@@ -64,14 +67,19 @@ function readsum4, sumf, file
       wstrt[i]    = subs[1] + 0.0D0
       wstop[i]    = subs[2] + 0.0D0
       nspac[i]     = subs[3] + 0.0D0
-      for j=0, nscnb[i]-1 do readf, lun, buf
+      for j=0, nscnb[i]-1 do begin
+         readf, lun, buf
+         sjscn(i,j) = buf
+      endfor
    endfor
 
+; read retparm list
    readf, lun, buf
    readf, lun, buf
    parms = ''
    readf, lun, parms
 
+; store data
    sumf = {                $
       ver  : ver,          $
       tag  : tag,          $
@@ -87,8 +95,11 @@ function readsum4, sumf, file
       shead : spechead,		$
 		sret : sret,			$
 		sbnd : sband,			$
+		sjscn : sjscn,			$
 		parms : parms	      $
 		}
+
+help, sumf
 
    free_lun, lun
    return, 0
