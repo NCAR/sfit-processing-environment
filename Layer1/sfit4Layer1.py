@@ -1,4 +1,4 @@
-#! /usr/bin/python2.7
+#! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
 # Name:
@@ -316,7 +316,7 @@ def main(argv):
                 lstFile.info('VersionName   = ' + mainInF.inputs['ctlList'][ctl_ind][6])
                 lstFile.info('# End List File Meta-Data')
                 lstFile.info('')
-                lstFile.info('TimeStamp    Directory ')            
+                lstFile.info('Date         TimeStamp    Directory ')            
                 
             #-----------------------------
             # Initialize ctl file instance
@@ -595,7 +595,7 @@ def main(argv):
                                     else: break
                             
                             if cmpltFlg:
-                                lstFile.info("{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '       ' + wrkOutputDir4)
+                                lstFile.info("{0:<13}".format(int(dbFltData_2['Date'][spcDBind])) + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '       ' + wrkOutputDir4)
                                 
                         #---------------------------
                         # Continuation for Pause flg

@@ -1,64 +1,76 @@
-pro gather, site=site, mol=mol, co2isotope=co2isotope, plt=plt, lstFile=lstFile, specDBfile=specDBfile
+pro gather, site=site, mol=mol, co2isotope=co2isotope, plt=plt, lstFile=lstFile, specDBfile=specDBfile, ctlfile=ctlfile
 
 close,/all
-;**************************************
-
+;******************************************************************************************************************
+;
+; Purpose: This program is designed to collect information from multiple sfit4 fits for storing in IDL save file and
+;          eventualy HDF file for submission. The *.lst file dictates which sfit4 fits to process
+;
+;
+;
 ; Keywords:
 ;   site       --  Three letter identifier of site
 ;   mol        --  Molecular species of interest
 ;   plt        --  Command to do intermediate plots
 ;   lstFile    --  Path and name of list file to read
 ;   specDBfile --  Path and name of spectral database file to read
-
-; Nov 2012
-; added usesite info
-; added readlayr
-; added readstat added /rev keyword
-; added readnxn added /rev keyword
-; removed all the reverse stuff here
-; added forward function, resolve_routine
-; this can handle co18o o13co from the co2 isotope output
-; this now has one loop over lfileread's 'nlat' - all obs in the .l file
-
-
-; This program is designed to collect together the necessary information
-; for making HDF files.
-; It uses the mol.l file to start the process - i.e. you can filter the data in
-; mol.l and only those remaining are used.
 ;
-; Bec  June 22 2010
 ;
-;Adapted to incorporate the zerolevel shift which is now in the l, q and qc files.
-;Bec Sept 6 2010
+; Notes:
+;  From list file we get the following parameters:
+;     1) Directory of output
+;     2) Date
+;     3) Time
+;     
+;  From spectral database file we get the following parameters:
+;     1) Date
+;     2) Time
+;     3) Opus filename
+;     4) SNR -- singal to noise ratio
+;     5) Latitude [North]
+;     6) Longitude [West]
+;     7) Altitude [m]
+;     8) Solar azmith angle
+;     9) Solar zenith angle
+;     10) Scan duration
+;     
+;  From the statvec fiel we get the following parameters
+;     
 ;
-;**************************************
+;
+;
+;******************************************************************************************************************
 
+;-------------------------------------------------
+; Initialize subroutines/functions used in program
+;-------------------------------------------------
 forward_function gomkstrct
 
 funcs = [ 'usesite4', 'usemol', 'lfileread', 'mkjday', 'readstat', 'readnxn', 'readlayr' ]
 resolve_routine, funcs, /either
 
-;---------------------
-; Check user input for 
-;---------------------
+;---------------------------------
+; Check user input in program call
+;---------------------------------
 if( ~keyword_set( site ) || ~keyword_set( mol ) || ~keyword_set(lstFile) || ~keyword_set(specDBfile) ) then begin
    print, ' example usage : gatherd, site="tab", mol="co2", lstFile="/home/usr/mlo_1_1_13.lst", specDBfile="/home/usr/specDB_mlo_2013.dat"'
    stop
 endif
-
 
 ; based on the site, set a few more variables
 lcmol = STRLOWCASE(mol)
 ucmol = STRUPCASE(mol)
 ucsite= STRUPCASE(site)
 
+;-----------------------------------------------------------
+; Gather information on the station location and primary gas
+;-----------------------------------------------------------
 usemol, ucsite, ucmol, Ag     ; Returns Ag
 usesite, ucsite, As, Ag       ; Returns As
 
-
-;------------------------
-; Open and read list file
-;------------------------
+;-------------------------
+; Open and read *.lst file
+;-------------------------
 ; Determine number of lines in file
 nlines = file_lines(lstFile)
   
@@ -74,63 +86,187 @@ buf     = ''
 i       = 0
   
 ; Read header and count lines
-while( not strcmp(buf, 'TimeStamp', 9 ) ) do begin
+while( not strcmp(buf, 'Date', 9 ) ) do begin
   readf, fid_lstFile, buf
   i ++
 endwhile
   
 ; Determine remaining lines
 nsize = nlines-i
-Tstamps =  strarr(nsize)                  ; Create array for reading in timestamps
-lDirs   =  strarr(nsize)                  ; Create array for reading in directories
+lDates   =  strarr(nsize)                  ; Create array for reading in Dates
+lTstamps =  strarr(nsize)                  ; Create array for reading in timestamps
+lDirs    =  strarr(nsize)                  ; Create array for reading in directories
   
 ; Read relavent data
 for j = 0, nsize-1 do begin
   readf, fid_lstFile, buf
   subs = strsplit( buf,' ',/extract, count=nitms)
-  Tstamps[j] = subs[0]
-  lDirs[j]   = subs[1]
+  lDates[j]   = subs[0]
+  lTstamps[j] = subs[1]
+  lDirs[j]    = subs[2]
 endfor
 
 ; Close file
 free_lun, fid_lstFile
 
+;------------------------------------------
+; Search for duplicate entries in list file
+; and remove 
+;------------------------------------------
+newDate    = lDates*1000000 + lTstamps
+unq_ind    = uniq(newDate,sort(newDate))
+
+if nsize ne size(unq_ind,/n_elements) do begin    ; Found duplicate entries
+  lDates   = lDates[unq_ind]
+  lTstamps = lTstamps[unq_ind]
+  lDirs    = lDirs[unq_ind]  
+  nsize    = size(lDates,/n_elements)
+endif
 
 ;-------------------------------------
 ; Open and read spectral database file
 ;-------------------------------------
 ; Determine number of lines in file
-getHdrs = ['Filename','TStamp','Date','SNR','Alt','SAzm','SZen','Dur']
 nlines = file_lines(specDBfile)
+; Headers for data to extract from spectral DB file
+getHdrs = ['Filename','TStamp','Date','SNR','N_Lat','W_Lon','Alt','SAzm','SZen','Dur']
+;Hdr ind      0         1        2      3     4       5       6     7      8      9
+nhdrs    = intarr(size(getHdrs,/n_elements))
+Filename = strarr(nsize)
+Tstamp   = strarr(nsize)
+Date     = strarr(nsize)
+snr      = fltarr(nsize)
+n_lat    = fltarr(nsize)
+w_lon    = fltarr(nsize)
+alt      = fltarr(nsize)
+SAzm     = fltarr(nsize)
+SZen     = fltarr(nsize)
+Dur      = fltarr(nsize)
+Dir      = strarr(nsize)
 
 ; Open file
 openr, fid_specDBfile, specDBfile, /get_lun, error=ioerr
 if( ioerr ne 0 ) then begin
   printf, -2, !err_string
   stop
+  
 endif
 
+buf = ''
 ; First line of spectral DB is the header
 readf, fid_specDBfile, buf
 header = strsplit(buf,' ', /extract, count=nheaders)
- 
 
+; Find the indices for each header to extract
+for i = 0, (size(getHdrs,/n_elements)-1) do begin
+  nhdrs[i] = where(header eq getHdrs[i])
+  
+endfor
 
+buf = ''
+; Read data in spectral database
+for i = 0, (nlines-2) do begin
+  readf, fid_specDBfile, buf
+  subs = strsplit( buf, ' ', /extract, count=nitms )
+  
+  tempDate   = subs[nhdrs[2]]
+  tempTstamp = subs[nhdrs[1]]
+  
+  ; If date and timestamp from DB match an entry in list file grab data
+  testMatch = strmatch(lDates, tempDate) + strmatch(lTstamps, tempTstamp)
+  indMatch  = where(testMatch eq 2)
+  
+  if size(indMatch,/n_elements) gt 1) then begin
+    print, 'Duplicate Entries in list file found'
+    exit
+    
+  endif
+  
+  if indMatch gt 0 then begin
+    Filename[i] = subs[nhdrs[0]]
+    Tstamp[i]   = subs[nhdrs[1]] 
+    Date[i]     = subs[nhdrs[2]] 
+    snr[i]      = subs[nhdrs[3]] + 0.0
+    n_lat[i]    = subs[nhdrs[4]] + 0.0
+    w_lon[i]    = subs[nhdrs[5]] + 0.0
+    alt[i]      = subs[nhdrs[6]] + 0.0
+    SAzm[i]     = subs[nhdrs[7]] + 0.0
+    SZen[i]     = subs[nhdrs[8]] + 0.0
+    Dur[i]      = subs[nhdrs[9]] + 0.0
+    Dir[i]      = lDirs[indMatch]
+    
+  endif
 
+endfor
 
-; get layering data for this site
-print, ' Opening file : ', As.infodir + 'station.layers'
-klay = readlayr( grd, As.infodir + 'station.layers' )
+;------------------------------------------------
+; Manipulate Date and Tstamps to get YYYY, MM, DD
+; DOY, etc and convert Date and Tstamp to int
+;------------------------------------------------
+YYYY     = intarr(nsize)
+MM       = intarr(nsize)
+DD       = intarr(nsize)
+HH       = intarr(nsize)
+MM       = intarr(nsize)
+SS       = intarr(nsize)
+DOY      = intarr(nsize)
+timefrac = fltarr(nsize)
+jd2000   = julday(1,1,2000, 00, 00, 00)
+
+for i = 0, nsize-1 do begin
+  YYYY[i]     = strmid(Date[i],0,4)   + 0
+  MM[i]       = strmid(Date[i],4,2)   + 0
+  DD[i]       = strmid(Date[i],6,2)   + 0
+  HH[i]       = strmid(Tstamp[i],0,2) + 0
+  MM[i]       = strmid(Tstamp[i],2,2) + 0
+  SS[i]       = strmid(Tstamp[i],4,2) + 0
+  
+  ; Date conversions
+  DOY[i]      = JULDAY( MM[i], DD[i], YYYY[i], HH[i], MM[i], SS[i] )  - JULDAY( 1, 1, YYYY[i], 0, 0, 0 ) +1
+  timefrac[i] = double(HH[i]) + (double(MM[i]) + double(SS[i]) /60.0d) /60.0d
+  daysinyear  = JULDAY( 12, 31, YYYY[i], 0, 0, 0 )  - JULDAY( 1, 1, YYYY[i], 0, 0, 0 ) +1
+  daytfrac[i] = YYYY[i] + (DOY[i] + timefrac[i]/24.D)/daysinyear
+  mjd2k[i]    = JULDAY( MM[i], DD[i], YYYY[i], HH[i], MM[i], SS[i] ) - jd2000
+endfor
+
+;-------------------------------------------
+; Get layering info from station.layers file
+;-------------------------------------------
+print, ' Opening file : ', As.infodir + '/local/station.layers'
+klay = readlayr( grd, As.infodir + '/local/station.layers' )
 nlayers = klay-1
 
-junk = ''
-lfilename   = lcmol + extension + '.l'
-qfilename   = lcmol + extension + '.q'
-qcfileaname = lcmol + extension + '.qc'
+                ;--------------------------------------------------;
+                ; Loop through observations to collect output data ;
+                ;--------------------------------------------------;
+for i = 0, nsize-1 do begin
+  
+  ;----------------------------------------
+  ; Read control file from output directory
+  ;----------------------------------------  
+  ctlFname = Dir[i] + 'sfit4.ctl'
+  readsctl4, ctlData, ctlFname
+  
+  ;----------------------------------------
+  ; Read statvec file from output directory
+  ; From statvec we get:
+  ;    -- pressure, temperature, apriori vmr
+  ;       retrieved vmr, 
+  ;----------------------------------------  
+  statvecFname = Dir[i] + 'statevec'
+  readstat4, statvecData, statvecFname
+  
+  
+  
+  
+  
+  
+  
+  
+endfor
 
-; read in all entries from lfile
-lfileread, lfilename, lines, nlayers, nlat, dates, ndate
-;print, dates
+
+
 
 ;structure initialization
 gomkstrct, nlat, nlayers, datastructure, co2isotope=co2isotope
@@ -149,14 +285,14 @@ for i=0, nlat-1 do begin
    datastructure(i).int_time       = lines[i].dur
    datastructure(i).sza            = lines[i].sza
    datastructure(i).azi            = lines[i].sazm
-   datastructure(i).iterations     = lines[i].itr
-   datastructure(i).zcorrect       = lines[i].zerof
-   datastructure(i).rms            = lines[i].rms
-   datastructure(i).dofs           = lines[i].dofs
-   datastructure(i).snr            = lines[i].snr
-   datastructure(i).rettc          = lines[i].col
+   datastructure(i).iterations     = lines[i].itr             ;*
+   datastructure(i).zcorrect       = lines[i].zerof           ;*
+   datastructure(i).rms            = lines[i].rms             ;*
+   datastructure(i).dofs           = lines[i].dofs            ;*
+   datastructure(i).snr            = lines[i].snr           
+   datastructure(i).rettc          = lines[i].col             ;*
    datastructure(i).alt_index      = indgen(nlayers, /long)+1
-   datastructure(i).latitude       = As.lat
+   datastructure(i).latitude       = As.lat                   
    datastructure(i).longitude      = As.lon
    datastructure(i).alt_instrument = As.alt
    datastructure(i).datetime       = lines[i].mjd2k
@@ -313,6 +449,11 @@ for i=0, nlat-1 do begin
 
 endfor ; next entry
 
+
+
+;****************************************************************************************************
+
+
 print, 'ready to save'
 
 
@@ -458,8 +599,13 @@ endif else begin
    int_time:0.D},nlat)
 
 endelse
+
+
+
+
 return
 end
+
 
 
 
