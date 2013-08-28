@@ -24,8 +24,21 @@
 #
 #
 # Notes:
-#       1) 
+#       1) MLO data has E_radians and W_radians readings. Which one to use depends on if the
+#          sun is in the eastern or western hemisphere. Hemisphere can be derived looking at 
+#          solar azimuth angle:
+#                                    N(180)
+#                                      |
+#                                      |
+#                           W(90)------|-------E(270)
+#                                      |
+#                                      |
+#                                     S(0)
+#          If Sazm < 180 use W_radians
+#          If Sazm > 180 use E_radians
 #
+#
+# 
 #
 # Usage:
 #     appendSpecDB.py -i <File> 
@@ -220,9 +233,27 @@ def main(argv):
                     if not row[0].startswith('#'):
                         houseData.setdefault('DateTime',[]).append(dt.datetime(int(row[0][0:4]),int(row[0][4:6]),int(row[0][6:8]),\
                                                                                int(row[1][0:2]),int(row[1][3:5]),int(row[1][6:8])))
-                        houseData.setdefault('Temp',[]).append(float(row[11]))
-                        houseData.setdefault('Pres',[]).append(float(row[14]))
-                        houseData.setdefault('RH',[]).append(float(row[15]))
+                        
+                        if DBinputs['loc'].lower() == 'mlo':
+                            houseData.setdefault('Temp',[]).append(float(row[10]))
+                            houseData.setdefault('RH',[]).append(float(row[12]))      
+                            houseData.setdefault('E_Radiance',[]).append(float(row[29]))
+                            houseData.setdefault('W_Radiance',[]).append(float(row[30]))
+                            
+                            # These values are not present in the mlo house log data
+                            houseData.setdefault('Pres',[]).append(-9999)
+                            houseData.setdefault('Det_Intern_T_Swtch',[]).append(-9999)
+                            houseData.setdefault('Ext_Solar_Sens',[]).append(-9999)
+                            #houseData.setdefault('Quad_Sens',[]).append(-9999)                            
+                            
+                        elif DBinputs['loc'].lower() == 'tab':
+                            houseData.setdefault('Temp',[]).append(float(row[11]))
+                            houseData.setdefault('Pres',[]).append(float(row[14]))
+                            houseData.setdefault('RH',[]).append(float(row[15]))      
+                            houseData.setdefault('Det_Intern_T_Swtch',[]).append(float(row[20]))
+                            houseData.setdefault('Ext_Solar_Sens',[]).append(float(row[26]))
+                            houseData.setdefault('Quad_Sens',[]).append(float(row[27]))     
+                          
         except IOError:
             print 'Unable to find house data file: %s' % DBinputs['houseFile']
             
@@ -288,9 +319,10 @@ def main(argv):
     # time set in the user input file. If no data exits set values
     # to -999. Also, remove -999 values from house and external data
     #---------------------------------------------------------------
-    for dateTime in specDBinputs['DateTime']:        
+    for ind,dateTime in enumerate(specDBinputs['DateTime']):        
         idate     = dateTime
-        fdate     = dateTime + dt.timedelta(minutes=DBinputs['nmins'])
+        fdateH    = dateTime + dt.timedelta(minutes=DBinputs['nminsHouse'])
+        fdateS    = dateTime + dt.timedelta(minutes=DBinputs['nminsStation'])
               
         #----------------------------------
         # If no house data exists for
@@ -300,28 +332,57 @@ def main(argv):
             specDBinputs.setdefault('HouseTemp',[]).append('-9999')
             specDBinputs.setdefault('HousePres',[]).append('-9999')
             specDBinputs.setdefault('HouseRH',[]).append('-99')
+            specDBinputs.setdefault('Ext_Solar_Sens',[]).append('-9999')
+            specDBinputs.setdefault('Quad_Sens',[]).append('-9999')
+            specDBinputs.setdefault('Det_Intern_T_Swtch',[]).append('-9999')            
         
         else:
             # Filter house data dictionary
-            fltrdData = filterDict(houseData,idate,fdate)  
+            fltrdData = filterDict(houseData,idate,fdateH)  
             # Find averages
             HouseTemp = np.array(fltrdData['Temp'])
             HousePres = np.array(fltrdData['Pres'])
             HouseRH   = np.array(fltrdData['RH']  )
-            avgTemp   = np.mean(HouseTemp[HouseTemp > -100])
-            avgPres   = np.mean(HousePres[HousePres > 0   ])
-            avgRH     = np.mean(HouseRH[HouseRH     > 0   ])
+            SolarSen  = np.array(fltrdData['Ext_Solar_Sens'])
+            DetIntT   = np.array(fltrdData['Det_Intern_T_Swtch'])
+            
+            #--------------------------------------------------------------
+            # If processing mlo have to determine whether to use E_radiance
+            # or W_radiance for the Ext_Solar_Sens depending on Sazim angle
+            #--------------------------------------------------------------
+            if DBinputs['loc'].lower() == 'mlo':
+                Sazm  = float(specDBinputs['SAzm'][ind])
+                if Sazm <= 180:  QuadSen   = np.array(fltrdData['W_Radiance'])
+                else:            QuadSen   = np.array(fltrdData['W_Radiance'])         
+            else:                QuadSen   = np.array(fltrdData['Quad_Sens'])         
+            
+            avgTemp   = np.mean(HouseTemp[HouseTemp > -50 ])
+            avgPres   = np.mean(HousePres[HousePres >= 0   ])
+            avgRH     = np.mean(HouseRH[HouseRH     >= 0   ])
+            avgSS     = np.mean(SolarSen[SolarSen   >= 0   ])
+            avgQS     = np.mean(QuadSen[QuadSen     >= 0   ])
+            avgDIT    = np.mean(DetIntT[DetIntT     >= 0   ])
+            
             if np.isnan(avgTemp): avgTemp = '-9999'     
             else: avgTemp = str(round(avgTemp,2))
             if np.isnan(avgPres): avgPres = '-9999'
             else: avgPres = str(round(avgPres,2))
             if np.isnan(avgRH):   avgRH   = '-99'
-            else: avgRH = str(round(avgRH,2))
-            
+            else: avgRH = str(round(avgRH,2)) 
+            if np.isnan(avgSS):   avgSS   = '-9999'
+            else: avgSS = str(round(avgSS,2))
+            if np.isnan(avgQS):   avgQS   = '-9999'
+            else: avgQS = str(round(avgQS,2))
+            if np.isnan(avgDIT):   avgDIT   = '-9999'
+            else: avgDIT = str(round(avgDIT,2))
+                    
             # Assign averages to main dictionary
             specDBinputs.setdefault('HouseTemp',[]).append(avgTemp)
             specDBinputs.setdefault('HousePres',[]).append(avgPres)
-            specDBinputs.setdefault('HouseRH',[]).append(avgRH)            
+            specDBinputs.setdefault('HouseRH',[]).append(avgRH)   
+            specDBinputs.setdefault('Ext_Solar_Sens',[]).append(avgSS)   
+            specDBinputs.setdefault('Quad_Sens',[]).append(avgQS)   
+            specDBinputs.setdefault('Det_Intern_T_Swtch',[]).append(avgDIT)   
     
         #---------------------------------------
         # If no external station data exists for
@@ -331,16 +392,17 @@ def main(argv):
             specDBinputs.setdefault('ExtStatTemp',[]).append('-9999')
             specDBinputs.setdefault('ExtStatPres',[]).append('-9999')
             specDBinputs.setdefault('ExtStatRH',[]).append('-99')   
+
         else:
             # Filter external station data dictionary
-            fltrdData = filterDict(statData,idate,fdate)     
+            fltrdData = filterDict(statData,idate,fdateS)     
             # Find averages
             StatTemp  = np.array(fltrdData['Temp'])
             StatPres  = np.array(fltrdData['Pres'])
             StatRH    = np.array(fltrdData['RH']  )
-            avgTemp   = np.mean(StatTemp[StatTemp > -100])
+            avgTemp   = np.mean(StatTemp[StatTemp > -50 ])
             avgPres   = np.mean(StatPres[StatPres > 0   ])
-            avgRH     = np.mean(StatRH[StatRH     > 0   ])
+            avgRH     = np.mean(StatRH[StatRH     >= 0   ])
             if np.isnan(avgTemp): avgTemp = '-9999'     
             else: avgTemp = str(round(avgTemp,2))
             if np.isnan(avgPres): avgPres = '-9999'
@@ -357,7 +419,7 @@ def main(argv):
     # Write new data to spectral DB file
     #-----------------------------------
     # Append spectral DB file header with new house and external station data variables
-    DBfieldNames.extend(['HouseTemp','HousePres','HouseRH','ExtStatTemp','ExtStatPres','ExtStatRH'])
+    DBfieldNames.extend(['HouseTemp','HousePres','HouseRH','ExtStatTemp','ExtStatPres','ExtStatRH','Ext_Solar_Sens','Quad_Sens','Det_Intern_T_Swtch'])
     
     # Sort specDBinputs based on DateTime key
     specDBinputs = sortDict(specDBinputs,'DateTime')
