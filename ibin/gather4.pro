@@ -1,4 +1,4 @@
-pro gather, site=site, mol=mol, co2isotope=co2isotope, plt=plt, lstFile=lstFile, specDBfile=specDBfile, ctlfile=ctlfile
+pro gather, site=site, mol=mol, plt=plt, lstFile=lstFile, specDBfile=specDBfile, ctlfile=ctlfile, outfile=outfile
 
 close,/all
 ;******************************************************************************************************************
@@ -44,16 +44,16 @@ close,/all
 ;-------------------------------------------------
 ; Initialize subroutines/functions used in program
 ;-------------------------------------------------
-forward_function gomkstrct
+forward_function initstrct
 
-funcs = [ 'usesite4', 'usemol', 'lfileread', 'mkjday', 'readstat', 'readnxn', 'readlayr' ]
+funcs = [ 'usesite4', 'usemol', 'readrfmd4', 'readnxn4', 'readprfs4']
 resolve_routine, funcs, /either
 
 ;---------------------------------
 ; Check user input in program call
 ;---------------------------------
-if( ~keyword_set( site ) || ~keyword_set( mol ) || ~keyword_set(lstFile) || ~keyword_set(specDBfile) ) then begin
-   print, ' example usage : gatherd, site="tab", mol="co2", lstFile="/home/usr/mlo_1_1_13.lst", specDBfile="/home/usr/specDB_mlo_2013.dat"'
+if( ~keyword_set( site ) || ~keyword_set( mol ) || ~keyword_set(lstFile) || ~keyword_set(specDBfile) || ~keyword_set(specDBfile) ) then begin
+   print, ' example usage : gatherd, site="tab", mol="co2", lstFile="/home/usr/mlo_1_1_13.lst", specDBfile="/home/usr/specDB_mlo_2013.dat", outfile="/home/usr/MLO_2013.sav" '
    stop
 endif
 
@@ -81,11 +81,9 @@ if( ioerr ne 0 ) then begin
   stop
 endif
   
-; Initialize values
-buf     = ''
-i       = 0
-  
 ; Read header and count lines
+buf = ''
+i   = 0
 while( not strcmp(buf, 'Date', 9 ) ) do begin
   readf, fid_lstFile, buf
   i ++
@@ -123,26 +121,29 @@ if nsize ne size(unq_ind,/n_elements) do begin    ; Found duplicate entries
   nsize    = size(lDates,/n_elements)
 endif
 
+;-------------------------------------------
+; Get layering info from station.layers file
+;-------------------------------------------
+print, ' Opening file : ', As.infodir + '/local/station.layers'
+klay = readlayr( grd, As.infodir + '/local/station.layers' )
+nlayers = klay-1
+
+;--------------------------------------------------
+; Now that we have the number of spectra and number
+; of layers for the spectra we can initialize the 
+; datastructure to read data to
+;--------------------------------------------------
+initstrct, nsize, nlayers, ds
+
 ;-------------------------------------
 ; Open and read spectral database file
 ;-------------------------------------
 ; Determine number of lines in file
 nlines = file_lines(specDBfile)
 ; Headers for data to extract from spectral DB file
-getHdrs = ['Filename','TStamp','Date','SNR','N_Lat','W_Lon','Alt','SAzm','SZen','Dur']
-;Hdr ind      0         1        2      3     4       5       6     7      8      9
+getHdrs = ['Filename','TStamp','Date','SNR','N_Lat','W_Lon','Alt','SAzm','SZen','Dur','HouseRH','ExtStatRH','Ext_Solar_Sens','Quad_Sens','Det_Intern_T_Swtch']
+;Hdr ind      0         1        2      3     4       5       6     7      8      9      10         11           12             13               14
 nhdrs    = intarr(size(getHdrs,/n_elements))
-Filename = strarr(nsize)
-Tstamp   = strarr(nsize)
-Date     = strarr(nsize)
-snr      = fltarr(nsize)
-n_lat    = fltarr(nsize)
-w_lon    = fltarr(nsize)
-alt      = fltarr(nsize)
-SAzm     = fltarr(nsize)
-SZen     = fltarr(nsize)
-Dur      = fltarr(nsize)
-Dir      = strarr(nsize)
 
 ; Open file
 openr, fid_specDBfile, specDBfile, /get_lun, error=ioerr
@@ -152,8 +153,8 @@ if( ioerr ne 0 ) then begin
   
 endif
 
-buf = ''
 ; First line of spectral DB is the header
+buf = ''
 readf, fid_specDBfile, buf
 header = strsplit(buf,' ', /extract, count=nheaders)
 
@@ -163,8 +164,8 @@ for i = 0, (size(getHdrs,/n_elements)-1) do begin
   
 endfor
 
-buf = ''
 ; Read data in spectral database
+buf = ''
 for i = 0, (nlines-2) do begin
   readf, fid_specDBfile, buf
   subs = strsplit( buf, ' ', /extract, count=nitms )
@@ -182,18 +183,37 @@ for i = 0, (nlines-2) do begin
     
   endif
   
-  if indMatch gt 0 then begin
-    Filename[i] = subs[nhdrs[0]]
-    Tstamp[i]   = subs[nhdrs[1]] 
-    Date[i]     = subs[nhdrs[2]] 
-    snr[i]      = subs[nhdrs[3]] + 0.0
-    n_lat[i]    = subs[nhdrs[4]] + 0.0
-    w_lon[i]    = subs[nhdrs[5]] + 0.0
-    alt[i]      = subs[nhdrs[6]] + 0.0
-    SAzm[i]     = subs[nhdrs[7]] + 0.0
-    SZen[i]     = subs[nhdrs[8]] + 0.0
-    Dur[i]      = subs[nhdrs[9]] + 0.0
-    Dir[i]      = lDirs[indMatch]
+  if indMatch gt 0 then begin   
+    ds[i].spectraname    = subs[nhdrs[0]]
+    ds[i].hhmmss         = subs[nhdrs[1]] 
+    ds[i].yyyymmdd       = subs[nhdrs[2]] 
+    ds[i].snr            = subs[nhdrs[3]]  + 0.0D0
+    ds[i].latitude       = subs[nhdrs[4]]  + 0.0D0
+    ds[i].longitude      = subs[nhdrs[5]]  + 0.0D0
+    ds[i].alt_instrument = subs[nhdrs[6]]  + 0.0D0
+    ds[i].azi            = subs[nhdrs[7]]  + 0.0D0
+    ds[i].sza            = subs[nhdrs[8]]  + 0.0D0
+    ds[i].int_time       = subs[nhdrs[9]]  + 0.0D0
+    ds[i].external_solar_sensor       = subs[nhdrs[12]] + 0.0D0
+    ds[i].guider_quad_sensor_sum      = subs[nhdrs[13]] + 0.0D0
+    ds[i].detector_intern_temp_switch = subs[nhdrs[14]] + 0.0D0
+    ds[i].directory      = lDirs[indMatch]
+    
+    ; Inputs related to station.layers file
+    ds[i].alt_index = indgen(nlayers, /long) + 1
+    ds[i].altitude  = grd.midp[0:nlayers-1]    
+    
+    ;----------------------------------------
+    ; Determine Outside RH. First choice is 
+    ; external station RH. If this is missing
+    ; default to house log RH
+    ;----------------------------------------
+    HouseRH  = subs[nhdrs[10]] + 0.0D0
+    ExtStaRH = subs[nhdrs[11]] + 0.0D0
+    
+    if ( HouseRH lt 0 ) then ds[i].outside_relative_humitidy = ExtStaRH
+    endif else               ds[i].outside_relative_humitidy = HouseRH  
+    endelse
     
   endif
 
@@ -203,38 +223,31 @@ endfor
 ; Manipulate Date and Tstamps to get YYYY, MM, DD
 ; DOY, etc and convert Date and Tstamp to int
 ;------------------------------------------------
-YYYY     = intarr(nsize)
-MM       = intarr(nsize)
-DD       = intarr(nsize)
-HH       = intarr(nsize)
-MM       = intarr(nsize)
-SS       = intarr(nsize)
-DOY      = intarr(nsize)
-timefrac = fltarr(nsize)
 jd2000   = julday(1,1,2000, 00, 00, 00)
 
 for i = 0, nsize-1 do begin
-  YYYY[i]     = strmid(Date[i],0,4)   + 0
-  MM[i]       = strmid(Date[i],4,2)   + 0
-  DD[i]       = strmid(Date[i],6,2)   + 0
-  HH[i]       = strmid(Tstamp[i],0,2) + 0
-  MM[i]       = strmid(Tstamp[i],2,2) + 0
-  SS[i]       = strmid(Tstamp[i],4,2) + 0
+  ds[i].year  = strmid(ds[i].yyyymmdd,0,4) + 0
+  ds[i].month = strmid(ds[i].yyyymmdd,4,2) + 0
+  ds[i].day   = strmid(ds[i].yyyymmdd,6,2) + 0
+  HH          = strmid(ds[i].hhmmss,0,2)   + 0
+  MM          = strmid(ds[i].hhmmss,2,2)   + 0
+  SS          = strmid(ds[i].hhmmss,4,2)   + 0
   
   ; Date conversions
-  DOY[i]      = JULDAY( MM[i], DD[i], YYYY[i], HH[i], MM[i], SS[i] )  - JULDAY( 1, 1, YYYY[i], 0, 0, 0 ) +1
-  timefrac[i] = double(HH[i]) + (double(MM[i]) + double(SS[i]) /60.0d) /60.0d
-  daysinyear  = JULDAY( 12, 31, YYYY[i], 0, 0, 0 )  - JULDAY( 1, 1, YYYY[i], 0, 0, 0 ) +1
-  daytfrac[i] = YYYY[i] + (DOY[i] + timefrac[i]/24.D)/daysinyear
-  mjd2k[i]    = JULDAY( MM[i], DD[i], YYYY[i], HH[i], MM[i], SS[i] ) - jd2000
+  ds[i].doy      = JULDAY( ds[i].month, ds[i].day, ds[i].year, HH, MM, SS )  - JULDAY( 1, 1, ds[i].year, 0, 0, 0 ) +1
+  ds[i].hrs      = double(HH) + (double(MM) + double(SS) /60.0d) /60.0d
+  daysinyear     = JULDAY( 12, 31, ds[i].year, 0, 0, 0 )  - JULDAY( 1, 1, ds[i].year, 0, 0, 0 ) +1
+  ds[i].tyr      = ds[i].year + (ds[i].doy + ds[i].hrs/24.D)/daysinyear
+  ds[i].datetime = JULDAY( ds[i].month, ds[i].day, ds[i].year, HH, MM, SS ) - jd2000
 endfor
 
-;-------------------------------------------
-; Get layering info from station.layers file
-;-------------------------------------------
-print, ' Opening file : ', As.infodir + '/local/station.layers'
-klay = readlayr( grd, As.infodir + '/local/station.layers' )
-nlayers = klay-1
+;--------------------------------------------
+; Create Dummy variables. These are variables
+; that are to be stored in the save files;
+; however, are not currently read in. Set
+; to missing value -999
+;--------------------------------------------
+ds.zcorrect = make_array(nsize,/float, value=-999)
 
                 ;--------------------------------------------------;
                 ; Loop through observations to collect output data ;
@@ -244,364 +257,197 @@ for i = 0, nsize-1 do begin
   ;----------------------------------------
   ; Read control file from output directory
   ;----------------------------------------  
-  ctlFname = Dir[i] + 'sfit4.ctl'
-  readsctl4, ctlData, ctlFname
+;  ctlFname = ds[i].directory + 'sfit4.ctl'
+;  readsctl4, ctlData, ctlFname
+  
+   ;----------------------------------------
+   ; Read summary file from output directory
+   ;----------------------------------------
+   readsum4, sumf, ds[i].directory + 'summary' 
+   
+   ds[i].iterations = sumf.itr
+   ds[i].rms        = sumf.rms
+   ds[i].dofs       = sumf.dofs
+   ;ds[i].rettc      = ?????
   
   ;----------------------------------------
   ; Read statvec file from output directory
-  ; From statvec we get:
-  ;    -- pressure, temperature, apriori vmr
-  ;       retrieved vmr, 
   ;----------------------------------------  
-  statvecFname = Dir[i] + 'statevec'
+  statvecFname = ds[i].directory + 'statevec'
   readstat4, statvecData, statvecFname
   
+  ds[i].p      = statvecData.p[0:nlayers-1]
+  ds[i].t      = statvecData.t[0:nlayers-1]
+  ds[i].aprtc  = statvecData.col[0,0]
+  ds[i].aprvmr = statvecData.vmr[0,0,0:nlayers-1]
+  ds[i].retvmr = statvecData.vmr[1,0,0:nlayers-1] 
+   
+  dum = where((statvecData.pnam[0:statvecData.nprm-1] eq 'BckGrdSlp'), count)
+  if ( count ge 1 ) then ds[i].bslope = mean(statvecData.prm[1,0:dum])
   
+  dum = where(((statvecData.pnam[0:statvecData.nprm-1] eq 'SWNumShft' ) or ( statvecData.pnam[0:statvecData.nprm-1] eq 'IWNumShft')), count)
+  if ( count ge 1 ) then ds[i].wshift = mean(statvecData.prm[1,0:dum])
   
+  dum = where((statvecData.pnam[0:statvecData.nprm-1] eq 'ZeroLev'), count)
+  if ( count ge 1 ) then ds[i].zerolev = mean(statvecData.prm[1,0:dum])
   
+  dum = where((statvecData.pnam[0:statvecData.nprm-1] eq 'SPhsErr'), count)
+  if ( count ge 1 ) then ds[i].phase = mean(statvecData.prm[1,0:dum])
   
+  ds[i].alt_boundaries[0,*] = grd.alts[1:nlayers]
+  ds[i].alt_boundaries[1,*] = grd.alts[0:nlayers-1]
   
+  ;--------------------------------------------------------------
+  ; Read surface pressure and temperature from reference.prf file
+  ;--------------------------------------------------------------
+  readrfmd4, refm, ds[i].directory + 'reference.prf', /zpt
   
+  ; Determine if alt decreasing: updn=1 or alt increasing: updn=0
+  if ( refm.updn eq 1 ) then begin
+    ds[i].surface_pressure    = refm.prfs[1,-1]
+    ds[i].surface_temperature = refm.prfs[2,-1]
+  endif else if ( ref.updn eq 2 ) then begin
+    ds[i].surface_pressure    = refm.prfs[1,0]
+    ds[i].surface_temperature = refm.prfs[2,0]
+  endif
   
-endfor
-
-
-
-
-;structure initialization
-gomkstrct, nlat, nlayers, datastructure, co2isotope=co2isotope
-
-;loop over retrievals & store pertinent data from file into data structure
-for i=0, nlat-1 do begin
-
-   datastructure(i).directory      = lines[i].directory
-   datastructure(i).spectraname    = lines[i].opusfile
-   datastructure(i).year           = lines[i].yyyy
-   datastructure(i).month          = lines[i].mm
-   datastructure(i).day            = lines[i].dd
-   datastructure(i).hrs            = lines[i].tstamp
-   datastructure(i).doy            = lines[i].doy
-   datastructure(i).tyr            = lines[i].dstamp
-   datastructure(i).int_time       = lines[i].dur
-   datastructure(i).sza            = lines[i].sza
-   datastructure(i).azi            = lines[i].sazm
-   datastructure(i).iterations     = lines[i].itr             ;*
-   datastructure(i).zcorrect       = lines[i].zerof           ;*
-   datastructure(i).rms            = lines[i].rms             ;*
-   datastructure(i).dofs           = lines[i].dofs            ;*
-   datastructure(i).snr            = lines[i].snr           
-   datastructure(i).rettc          = lines[i].col             ;*
-   datastructure(i).alt_index      = indgen(nlayers, /long)+1
-   datastructure(i).latitude       = As.lat                   
-   datastructure(i).longitude      = As.lon
-   datastructure(i).alt_instrument = As.alt
-   datastructure(i).datetime       = lines[i].mjd2k
-
-   if( keyword_set( co2isotope ))then getiso, datastructure[i], nlayers
-
-   ;collect z, p, t, apriori and retrieved of mol of interest from statevector file
-
-   statevecfile = datastructure[i].directory + '/statevec'
-   rc = readstat( sts, statevecfile, statevector )
-
-   datastructure(i).altitude  = grd.midp[0:nlayers-1]
-   datastructure(i).p         = sts.p[0:nlayers-1]
-   datastructure(i).t         = sts.t[0:nlayers-1]
-   datastructure(i).aprtc     = sts.col[0,0]
-   datastructure(i).aprvmr    = sts.vmr[0,0,0:nlayers-1]
-   datastructure(i).retvmr    = sts.vmr[1,0,0:nlayers-1]
-
-   print, datastructure(i).directory, datastructure(i).datetime, datastructure[i].tyr, datastructure(i).hrs, sts.col[1,0]
-
-   blah=where((sts.pnam[0:sts.nprm-1] eq 'BckGrdSlp'), nb)
-   if( nb ge 1 )then datastructure(i).bslope = mean(sts.prm[1,0:blah])
-
-   blah=where(((sts.pnam[0:sts.nprm-1] eq 'SWNumShft' ) or ( sts.pnam[0:sts.nprm-1] eq 'IWNumShft')), nb)
-   if( nb ge 1 )then datastructure(i).wshift = mean(sts.prm[1,0:blah])
-
-   blah=where((sts.pnam[0:sts.nprm-1] eq 'ZeroLev'), nb)
-   if( nb ge 1 )then datastructure(i).zerolev = mean(sts.prm[1,0:blah])
-
-   blah=where((sts.pnam[0:sts.nprm-1] eq 'SPhsErr'), nb)
-   if( nb ge 1 )then datastructure(i).phase = mean(sts.prm[1,0:blah])
-
-   datastructure(i).alt_boundaries[0,*] = grd.alts[1:nlayers]
-   datastructure(i).alt_boundaries[1,*] = grd.alts[0:nlayers-1]
-
-   ;get the surface pressure and temperature
-
-   datastructure(i).surface_pressure    = -9.0000E+004
-   datastructure(i).surface_temperature = -9.0000E+004
-
-   point_lun, surflun, 0
-   while( ~ EOF(surflun) )do begin
-      junk = ''
-      readf, surflun, junk
-      temp = strsplit(junk,/extract)
-      if( temp(0) eq lines[i].date )then begin
-         datastructure(i).surface_pressure    = double(temp(1))
-         datastructure(i).surface_temperature = double(temp(2))+273.15
-      endif
-   endwhile
-
-   if( datastructure(i).surface_pressure eq '-999.9' )then datastructure(i).surface_pressure    = -9.0000E+004
-   if( datastructure(i).surface_temperature lt 0.0 )then   datastructure(i).surface_temperature = -9.0000E+004
-
-   ;collect the AK
-   avk      = fltarr(nlayers,nlayers)
-   avk_norm = fltarr(nlayers,nlayers)
-   AKfile   = datastructure[i].directory + '/AK.out'
-   rc       = readnxn( avk, AKfile )
-   if( avk.n NE nlayers )then stop,'nlayers and ak.n not equal'
-
-   ;normalize the ak so relative to a priori
-   for ii=0,nlayers-1  do begin
-      for jj=0, nlayers-1 do begin
-         avk_norm(ii,jj)=avk.mat(ii,jj)*(datastructure(i).aprvmr(ii)/datastructure(i).aprvmr(jj))
-      endfor
-   endfor
-
-   ; get the airmass for the total column averaging kernel,
-   msfile  = datastructure[i].directory + '/fasc.ms'
-   temparr = fltarr(nlayers)
-   msarr   = fltarr(nlayers)
-   openr,1,msfile
-   readf,1,junk
-   readf,1,temparr
-   readf,1,junk
-   readf,1,temparr
-   readf,1,junk
-   readf,1,msarr
-   close,1
-
-   ; Calculate the total column averaging kernel
-   sum  = fltarr(nlayers)
-   atc  = fltarr(nlayers)
-   atc2 = fltarr(nlayers)
-   atc3 = fltarr(nlayers)
-   for jj=0, nlayers-1 do begin
-      for ii=0, nlayers-1 do begin
-         sum(ii)= msarr(ii)*avk_norm(ii,jj)
-      endfor
-      atc(jj)  = (total(sum))/msarr(jj)
-      atc3(jj) = total(avk_norm(*,jj)) ;this one is just a sum of each layer. No airmass weighting = sensitivity.
-   endfor
-
-   if( keyword_set( plt ))then begin
-      tek_color
-      set_plot,'x'
-      device,decompose=0
-      window,2
-      !p.multi=[0,2,2]
-      plot, avk_norm(0,*), datastructure(i).altitude, xrange=[-2,2]
-      for ii=0, nlayers-1 do oplot, avk_norm(ii,*), datastructure(i).altitude, color=ii+2
-      oplot, atc3, datastructure(i).altitude
-      plot, datastructure(i).aprvmr, datastructure(i).altitude
-      oplot, datastructure(i).retvmr, datastructure(i).altitude, color=2
-      plot, atc, datastructure(i).altitude
-      ;device,/close
-   endif
-
-   datastructure(i).ak   = avk_norm ;reverse(reverse(avk_norm,1),2)
-   datastructure(i).aktc = atc ;reverse(atc)
-   datastructure(i).sens = atc3 ;reverse(atc3)
-
-   ;a priori water vapour
-   h2oprof=fltarr(nlayers)
-
-   fascmixfile = datastructure[i].directory + '/fasc.mix'
-   openr,1, fascmixfile
-   readf,1, junk
-   readf,1, h2oprof
-   close,1
-
-   ;calculate the column
-   h2ocol=total(h2oprof*msarr)
-
-   ;calculate the retrieved columns here too
-   retlaycol = fltarr(nlayers)
-   retlaycol = datastructure(i).retvmr*msarr ;reverse(msarr)
-   aprlaycol = fltarr(nlayers)
-   aprlaycol = datastructure(i).aprvmr*msarr ;reverse(msarr)
-
-   ;and put in the structure
-   datastructure(i).aprh2ovmr = h2oprof ;reverse(h2oprof)
-   datastructure(i).aprh2otc  = h2ocol
-   datastructure(i).ms        = msarr ;reverse(msarr)
-   datastructure(i).retlaycol = retlaycol
-   datastructure(i).aprlaycol = aprlaycol
-
-   ;a sanity check
-   ;print, 'retlaycol=', retlaycol
-   ;print, 'total from retlaycol=',  total(retlaycol)
-   ;print, 'total column from l=', datastructure(i).rettc
-
-   external_solar_sensor = 0.0
-   detector_intern_temp_switch = 0.0
-   guider_quad_sensor_sum = 0.0
-   outside_relative_humidity = 0.0
-
-
-   datastructure[i].external_solar_sensor = external_solar_sensor
-   datastructure[i].detector_intern_temp_switch = detector_intern_temp_switch
-   datastructure[i].guider_quad_sensor_sum = guider_quad_sensor_sum
-   datastructure[i].outside_relative_humidity = outside_relative_humidity
+  ;-------------------------------------
+  ; Read Averaging Kernal data AK.target
+  ;-------------------------------------
+  readnxn4, akData, ds[i].directory + 'ak.target'
+  if (akData.n ne nlayers ) then stop, 'akData.n and nlayers NOT equal'
+  
+  ; Normalize Averaging Kernal relative to a priori
+  for ii = 0, nlayers-1  do begin
+    for jj = 0, nlayers-1 do begin
+      ds[i].ak[ii,jj] = avk.mat[ii,jj] * ( ds[i].aprvmr[ii] / ds[i].aprvmr[jj] )
+    endfor
+  endfor  
+  
+  ;-----------------------------------------------
+  ; Calculate the total column averaging kernel.
+  ; Need to get retrieved airmass for total column 
+  ; averaging kernel from rprs.table
+  ;-----------------------------------------------
+  readprfs4, rprfs, ds[i].directory + 'rprfs.table'
+  tmpsum   = fltarr(nlayers)
+  ds[i].ms = rprfs.a                                    ; Air-mass profile (same in a prior prf table or retreived prf table)
+  
+  for jj = 0, nlayers-1 do begin
+    for ii = 0, nlayers-1 do begin
+      tmpsum[ii] = rprfs.a[ii] * ds[i].ak[ii,jj]
+    endfor
+    ds[i].aktc[jj] = ( total(tmpsum) ) / rprfs.a[jj]
+    ds[i].sens[jj] = total( ds[i].ak[*,jj] )            ; This is suming all layers without airmass weighting => sensitivity.
+  endfor
+  
+  ;----------------------
+  ; Intermediate plotting
+  ;----------------------
+  if( keyword_set( plt ) ) then begin
+    tek_color
+    set_plot, 'x'
+    device, decompose=0
+    window, 2
+    !p.multi=[0,2,2]
+    plot,  ds[i].ak[0,*], ds[i].altitude, xrange=[-2,2]
+    for ii = 0, nlayers-1 do oplot, ds[i].ak[ii,*], ds[i].altitude, color=ii+2    
+    oplot, ds[i].sens,    ds[i].altitude
+    plot,  ds[i].aprvmr,  ds[i].altitude
+    oplot, ds[i].retvmr,  ds[i].altitude, color=2
+    plot,  ds[i].aktc,    ds[i].altitude
+    ;device,/close
+  endif 
+  
+  ;-----------------
+  ; Get water vapour
+  ;-----------------
+  readprfs4, aprfs, ds[i].directory + 'aprfs.table'
+  
+  ; A priori
+  ds[i].aprh2ovmr = aprfs.vmr[*,0]                       ; H2O profile
+  ds[i].aprh2otc  = total( aprfs.vmr[*,0] * rprfs.a )    ; Total column H2O
+  ds[i].aprlaycol = ds[i].aprvmr * rprfs.a               ;
+  
+  ; Retrieved
+  ds[i].retlaycol = ds[i].retvmr * rprfs.a               ;
 
 endfor ; next entry
 
-
-
-;****************************************************************************************************
-
-
+;---------------------------
+; Save data to IDL save file
+;---------------------------
 print, 'ready to save'
 
-
-;*******************************
-;Save the output by year and for all
-
-if extension eq '' then output_filename=mol+'new_all.sav'
-if extension ne '' then output_filename=mol+extension+'new_all.sav'
-
 ;reorder first by datetime so that we ensure chronological order
-sorting = sort(datastructure.datetime)
-data    = datastructure(sorting)
+ds = ds( sort( ds.datetime ) )
 
-;data=datastructure
-save, data, filename=output_filename
-print,'Data structure for all retrievals saved as ', output_filename
-
-;for i=1995, 2050 do begin
-; il=where(datastructure.year eq i, nil)
-; if nil ne 0 then begin
-;  if extension eq '' then output_filename=mol+'_'+strtrim(string(i),2)+'.sav'
-;  if extension ne '' then output_filename=mol+extension+'_'+strtrim(string(i),2)+'.sav'
-;  data=datastructure(il)
-;  save, data, filename=output_filename
-;  print,'Data structure for ', strtrim(string(i),2), ' saved as ', output_filename
-; endif
-;endfor
-
+save, ds, filename=outfile
+print,'Data structure for all retrievals saved as ', outfile
 
 end
 
 
-; make the data structure
-pro gomkstrct, nlat, nlayers, datastructure, co2isotope=co2isotope
+;___________________________________________________________________________
+;                            SUBROUTINES
+;___________________________________________________________________________
+                            
 
-if( keyword_set( co2isotope ))then begin
-
-   datastructure = REPLICATE({h224, $
-   spectraname :'',$ ;x
-   directory:'',$ ;x
-   snr:0.0,$ ;x
-   p:fltarr(nlayers),$ ;x
-   t:fltarr(nlayers),$ ;x
-   ms:fltarr(nlayers),$
-   rms:0.0,$ ;x
-   dofs:0.0,$ ;x
-   sza:0.D,$ ;x
-   azi:0.D,$ ;x
-   iterations:0,$
-   zcorrect:0.D,$
-   wshift:0.D,$
-   zerolev:0.D,$
-   bslope:0.D,$
-   phase:0.D,$
-   aprvmr:fltarr(nlayers),$ ;x
-   aprlaycol:fltarr(nlayers),$
-   retvmr:fltarr(nlayers),$ ;x
-   retlaycol:fltarr(nlayers),$
-
-   retvmr13:fltarr(nlayers),$ ;x
-   retlaycol13:fltarr(nlayers),$
-
-   retvmr18:fltarr(nlayers),$ ;x
-   retlaycol18:fltarr(nlayers),$
-
-   aprtc:0.D,$ ;x
-   rettc:0.D,$ ;x
-   aprh2ovmr:fltarr(nlayers),$;x
-   aprh2otc:0.D,$;x
-   year:0,$ ;x
-   month:0,$ ;x
-   day:0,$ ;x
-   hrs:0.D,$ ;x
-   doy:0.D,$ ;x
-   tyr:0.D,$ ;x
-   datetime:0.D,$ ;x
-   latitude:0.0,$ ;x
-   longitude:0.0,$ ;x
-   alt_instrument:0.0,$; x
-   surface_pressure:0.D,$; x
-   surface_temperature:0.D,$; x
-   alt_index:lonarr(nlayers),$ ;x
-   alt_boundaries:fltarr(2,nlayers),$ ;x
-   altitude:fltarr(nlayers),$ ;x
-   ak:fltarr(nlayers,nlayers),$ ;x ;check directions and normalize....
-   aktc:fltarr(nlayers),$ ; x plot and check we have the direction right!
-   sens:fltarr(nlayers),$
-   external_solar_sensor:0.D,$
-   detector_intern_temp_switch:0.D,$
-   guider_quad_sensor_sum:0.D,$
-   outside_relative_humidity:0.D,$
-   int_time:0.D},nlat)
-
-endif else begin
-
-   datastructure = REPLICATE({h224, $
-   spectraname                : '',$
-   directory                  : '',$
-   snr                        : 0.0,$
-   p                          : fltarr(nlayers),$
-   t                          : fltarr(nlayers),$
-   ms                         : fltarr(nlayers),$
-   rms                        : 0.0,$
-   dofs                       : 0.0,$
-   sza                        : 0.D,$
-   azi:0.D,$ ;x
-   iterations:0,$
-   zcorrect:0.D,$
-   wshift:0.D,$
-   zerolev:0.D,$
-   bslope:0.D,$
-   phase:0.D,$
-   aprvmr:fltarr(nlayers),$ ;x
-   aprlaycol:fltarr(nlayers),$
-   retvmr:fltarr(nlayers),$ ;x
-   retlaycol:fltarr(nlayers),$
-   aprtc:0.D,$ ;x
-   rettc:0.D,$ ;x
-   aprh2ovmr:fltarr(nlayers),$;x
-   aprh2otc:0.D,$;x
-   year                       :0,$ ;x
-   month                      :0,$ ;x
-   day                        :0,$ ;x
-   hrs                        :0.D,$ ;x
-   doy                        :0.D,$ ;x
-   tyr                        :0.D,$ ;x
-   datetime                   :0.D,$ ;x
-   latitude:0.0,$ ;x
-   longitude:0.0,$ ;x
-   alt_instrument:0.0,$; x
-   surface_pressure:0.D,$; x
-   surface_temperature:0.D,$; x
-   alt_index:lonarr(nlayers),$ ;x
-   alt_boundaries:fltarr(2,nlayers),$ ;x
-   altitude:fltarr(nlayers),$ ;x
-   ak:fltarr(nlayers,nlayers),$ ;x ;check directions and normalize....
-   aktc:fltarr(nlayers),$ ; x plot and check we have the direction right!
-   sens:fltarr(nlayers),$
-   external_solar_sensor:0.D,$
-   detector_intern_temp_switch:0.D,$
-   guider_quad_sensor_sum:0.D,$
-   outside_relative_humidity:0.D,$
-   int_time:0.D},nlat)
-
-endelse
-
-
-
+pro initstrct, npnts, nlayers, datastructure
+;--------------------------------------------
+; Subroutine to initialize data structure for 
+; save file
+;--------------------------------------------
+ datastructure = REPLICATE({h224, $                ; What is h224 ??????
+ spectraname                :'',$                  ; OPUS file name
+ directory                  :'',$                  ; Output directory location
+ hhmmss                     :'',$                  ; Time stamp of observation HHMMSS     [String!!!]
+ yyyymmdd                   :'',$                  ; Date stamp of observation YYYYMMDD   [String!!!]
+ snr                        :0.0,$                 ; Signal to noise ratio as given by OPUS file
+ p                          :fltarr(nlayers),$     ; Pressure levels [mbar]
+ t                          :fltarr(nlayers),$     ;
+ ms                         :fltarr(nlayers),$     ;
+ rms                        :0.0,$                 ;
+ dofs                       :0.0,$                 ;
+ sza                        :0.D0,$                ;
+ azi                        :0.D0,$                ;
+ iterations                 :0,$                   ;
+ zcorrect                   :0.D0,$                ;
+ wshift                     :0.D0,$                ;
+ zerolev                    :0.D0,$                ;
+ bslope                     :0.D0,$                ;
+ phase                      :0.D0,$                ;
+ aprvmr                     :fltarr(nlayers),$     ;
+ aprlaycol                  :fltarr(nlayers),$     ;
+ retvmr                     :fltarr(nlayers),$     ;
+ retlaycol                  :fltarr(nlayers),$     ;
+ aprtc                      :0.D0,$                ;
+ rettc                      :0.D0,$                ; Gas total column ????????????
+ aprh2ovmr                  :fltarr(nlayers),$     ;
+ aprh2otc                   :0.D0,$                ;
+ year                       :0,$                   ; Year [YYYY]
+ month                      :0,$                   ; Month [MM]
+ day                        :0,$                   ; Day [DD]
+ hrs                        :0.D0,$                ; Hours plus fractional hours  hh.fffffff
+ doy                        :0.D0,$                ; Day of the year
+ tyr                        :0.D0,$                ; Days plus fractional days    ddd.ffffff
+ datetime                   :0.D0,$                ; mjd2k date
+ latitude                   :0.00,$                ; Latitude of instrument []
+ longitude                  :0.00,$                ; Longitude of insturment []
+ alt_instrument             :0.00,$                ; Altitude of insturment [m]
+ surface_pressure           :0.D0,$                ; Surface Pressure [mbar]
+ surface_temperature        :0.D0,$                ; Surface temperature [C]
+ alt_index                  :lonarr(nlayers),$     ;
+ alt_boundaries             :fltarr(2,nlayers),$   ;
+ altitude                   :fltarr(nlayers),$     ;
+ ak                         :fltarr(nlayers,nlayers),$ ;check directions and normalize....
+ aktc                       :fltarr(nlayers),$     ; x plot and check we have the direction right!
+ sens                       :fltarr(nlayers),$     ;
+ external_solar_sensor      :0.D0,$                ; External solar sensor (for MLO either E_radiance or W_radiance) [volts]
+ detector_intern_temp_switch:0.D0,$                ; Detector Internal Temperature Switch []
+ guider_quad_sensor_sum     :0.D0,$                ; Quad solar sensor from house log data [volts]
+ outside_relative_humidity  :0.D0,$                ; Outside relative humidity. From either house log or external station data [%]
+ int_time                   :0.D0      },npnts)
 
 return
 end

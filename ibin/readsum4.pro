@@ -78,6 +78,14 @@ function readsum4, sumf, file
    readf, lun, buf
    parms = ''
    readf, lun, parms
+   subs = strsplit( parms, /extract, count=count )
+   fitrms  = subs[0] + 0.0D0
+   chi_2_y = subs[1] + 0.0D0
+   dofstrg = subs[3] + 0.0D0
+   itr     = subs[5] + 0
+   convTF  = subs[7] 
+   divwarn = subs[8]
+
 
 ; store data
    sumf = {                $
@@ -88,15 +96,20 @@ function readsum4, sumf, file
       nret : nret,         $
       nbnd : nband,        $
       nscn : nscnb,        $
-      npts : npts,        $
+      npts : npts,         $
       wstr : wstrt,        $
       wstp : wstop,        $
-      nspac : nspac, $
-      shead : spechead,		$
-		sret : sret,			$
-		sbnd : sband,			$
-		sjscn : sjscn,			$
-		parms : parms	      $
+     nspac : nspac,        $
+     shead : spechead,		 $
+		  sret : sret,			   $
+		  sbnd : sband,		     $
+		 sjscn : sjscn,			   $
+		fitrms : fitrms	       $
+	 chi_2_y : chi_2_y       $
+	 dofstrg : dofstrg       $
+		   itr : itr           $
+		convTF : convTF        $
+	 divwarn : divwarn       $
 		}
 
 help, sumf
