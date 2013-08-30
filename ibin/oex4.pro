@@ -11,9 +11,9 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 
    close,/all
 	FORWARD_FUNCTION plotak, plotaegv, plotk, covarplot, plotbnr, readgasf
-	FORWARD_FUNCTION Exponent, plotgases
+	FORWARD_FUNCTION plotgases
 
-   funcs = [ 'readstat4', 'usesite', 'usemol', 'readnxn4', 'readlayr','readpbp4', 'exponent', 'readsctl4' ]
+   funcs = [ 'readstat4', 'usemol', 'readnxn4', 'readlayr','readpbp4', 'exponent', 'readsctl4' ]
    resolve_routine, funcs, /either
 
 	PRINT, ' Usage : oex, site="mlo | tab | acf", /ps, /nsm, /thick, ftype= "B" | "L"'
