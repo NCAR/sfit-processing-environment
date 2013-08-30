@@ -104,11 +104,11 @@ function readsum4, sumf, file
 		  sret : sret,			   $
 		  sbnd : sband,		     $
 		 sjscn : sjscn,			   $
-		fitrms : fitrms	       $
-	 chi_2_y : chi_2_y       $
-	 dofstrg : dofstrg       $
-		   itr : itr           $
-		convTF : convTF        $
+		fitrms : fitrms,	     $
+	 chi_2_y : chi_2_y,      $
+	 dofstrg : dofstrg,      $
+		   itr : itr,          $
+		convTF : convTF,       $
 	 divwarn : divwarn       $
 		}
 
