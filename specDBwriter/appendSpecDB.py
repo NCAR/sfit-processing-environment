@@ -443,7 +443,7 @@ def main(argv):
             #strformat = '{0:<15} {1:<10} {2:<10} {3:<10} {4:<10} {5:<10} {6:<10} {7:<10} {8:<10} {9:<10} {10:<10} {11:<10} {12:<10} {13:<10} {14:<10} {15:<10} '+\
             #            '{16:<10} {17:<10} {18:<10} {19:<10} {20:<5} {21:<13} {22:<13} {23:<10} {24:<10} {25:<10} {26:<10} {27:<10} {28:<10} {29:<10} {30:<15} {31:<15} {32:<15} \n'      
             strformat = ['{0:<15}'] + [' {'+str(i)+':<12}' for i in range(1,len(DBfieldNames))]
-            strformat = ''.join(strformat).lstrip() + '\n'
+            strformat = ''.join(strformat).lstrip().rstrip() + '\n'
             
             fopen.write(strformat.format(*[k for k in sorted(specDBinputs,key=order.get)]))
             for row in zip(*[specDBinputs[k] for k in sorted(specDBinputs, key=order.get)]):

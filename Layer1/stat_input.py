@@ -11,8 +11,12 @@
 #       1) The input file is read in as a python file, therefore you should follow python
 #          syntax when editing.
 #       2) The extension of this file should be .py !!!!
-#
-#
+#       3) The following inputs need to be specified through the ctl file and are not currently
+#          part of the input file:
+#              -- file.in.sa_matrix
+#              -- file.in.isotope
+#              -- file.in.solarlines
+#              -- file.in.linelist
 #
 # Version History:
 #       Created, May, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
@@ -48,8 +52,9 @@ fday  = 26                 # Day
 BaseDirInput     = '/Users/ebaumer/Data/TestBed/'                  # Input base directory
 BaseDirOutput    = '/Users/ebaumer/Data/TestBed/Output/'           # Output base directory
 binDir           = '/Users/ebaumer/Data/TestBed/src/'              # binary directory
-ilsDir           = '/Users/ebaumer/Data/TestBed/ilsFiles/'         # Directory for ILS files
-RatioDir         = '/Users/ebaumer/Data/TestBed/fltrFiles/'        # Directory for ratio files ** Currently NOT used
+ilsDir           = ''
+#ilsDir           = '/Users/ebaumer/Data/TestBed/ilsFiles/'         # Directory for ILS files. Use empty string ('') to indicate no ILS file!!
+RatioDir         = '/Users/ebaumer/Data/TestBed/fltrFiles/'        # Directory for ratio files ** Currently NOT used **
 logDirOutput     = '/Users/ebaumer/Data/TestBed/'                  # Directory to write log files and list files
 
 #------

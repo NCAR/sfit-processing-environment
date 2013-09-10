@@ -312,6 +312,12 @@ class DbInputFile(InputFile):
             # Currently only reads white space delimited file. Need to make general****
             reader = csv.DictReader(fname,delimiter=' ',skipinitialspace=True)                   # Read csv file
             for row in reader:
+                #------------------------------------------------------
+                # DictReader will add a None key and value if there are
+                # extra spaces at the end of database line.
+                #------------------------------------------------------
+                if None in row: del row[None]                    
+                
                 for col,val in row.iteritems():
                     try:
                         val = float(val)                                                         # Convert string to float

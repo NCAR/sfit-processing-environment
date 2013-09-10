@@ -455,36 +455,41 @@ def main(argv):
                     # Create instance of local control file (ctl file in working directory)
                     ctlFileLcl = sc.CtlInputFile(wrkOutputDir4 + 'sfit4.ctl',logFile)
                              
-                    # Determine which ILS file to use 
-                    ilsFileList = glob.glob(mainInF.inputs['ilsDir'] + 'ils*')
-                    
-                    # Create a date list of ils files present
-                    ilsYYYYMMDD = []
-                    for ilsFile in ilsFileList:
-                        ilsFileNpath = os.path.basename(ilsFile)
-                        match = re.match(r'\s*ils(\d\d\d\d)(\d\d)(\d\d).*',ilsFileNpath)
-                        ilsYYYYMMDD.append([int(match.group(1)),int(match.group(2)),int(match.group(3))])
-                                        
-                    ilsDateList = [ dt.date(ilsyear,ilsmonth,ilsday) for ilsyear, ilsmonth, ilsday in ilsYYYYMMDD ]
-                    
-                    # Find the ils date nearest to the current day
-                    nearstDay     = sc.nearestDate(ilsDateList,obsDay.year,obsDay.month,obsDay.day)
-                    nearstDayMnth = "{0:02d}".format(nearstDay.month)
-                    nearstDayYr   = "{0:02d}".format(nearstDay.year)
-                    nearstDayDay  = "{0:02d}".format(nearstDay.day)
-                    nearstDaystr  = nearstDayYr + nearstDayMnth + nearstDayDay
-                    
-                    # Get File path and name for nearest ils file
-                    for ilsFile in ilsFileList:
-                        if nearstDaystr in os.path.basename(ilsFile):
-                            ilsFname = ilsFile
-                            
-                    if logFile: logFile.info('Using ils file: ' + ilsFname)
-                    
-                    # Replace ils file name in local ctl file (within working directory)
-                    teststr = ['file.in.modulation_fcn', 'file.in.phase_fcn']
-                    repVal  = [ilsFname        , ilsFname   ]
-                    ctlFileLcl.replVar(teststr,repVal)
+                    #-------------------------------------------------
+                    # Determine whether to use ILS file. Empty string
+                    # '' => no ILS file.
+                    #-------------------------------------------------
+                    if mainInF.inputs['ilsDir']:                   
+                        # Determine which ILS file to use 
+                        ilsFileList = glob.glob(mainInF.inputs['ilsDir'] + 'ils*')
+            
+                        # Create a date list of ils files present
+                        ilsYYYYMMDD = []
+                        for ilsFile in ilsFileList:
+                            ilsFileNpath = os.path.basename(ilsFile)
+                            match = re.match(r'\s*ils(\d\d\d\d)(\d\d)(\d\d).*',ilsFileNpath)
+                            ilsYYYYMMDD.append([int(match.group(1)),int(match.group(2)),int(match.group(3))])
+                                            
+                        ilsDateList = [ dt.date(ilsyear,ilsmonth,ilsday) for ilsyear, ilsmonth, ilsday in ilsYYYYMMDD ]
+                        
+                        # Find the ils date nearest to the current day
+                        nearstDay     = sc.nearestDate(ilsDateList,obsDay.year,obsDay.month,obsDay.day)
+                        nearstDayMnth = "{0:02d}".format(nearstDay.month)
+                        nearstDayYr   = "{0:02d}".format(nearstDay.year)
+                        nearstDayDay  = "{0:02d}".format(nearstDay.day)
+                        nearstDaystr  = nearstDayYr + nearstDayMnth + nearstDayDay
+                        
+                        # Get File path and name for nearest ils file
+                        for ilsFile in ilsFileList:
+                            if nearstDaystr in os.path.basename(ilsFile):
+                                ilsFname = ilsFile
+                                
+                        if logFile: logFile.info('Using ils file: ' + ilsFname)
+                        
+                        # Replace ils file name in local ctl file (within working directory)
+                        teststr = ['file.in.modulation_fcn', 'file.in.phase_fcn']
+                        repVal  = [ilsFname        , ilsFname   ]
+                        ctlFileLcl.replVar(teststr,repVal)
                     
                     #---------------------------
                     # Message strings for output

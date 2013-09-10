@@ -52,7 +52,7 @@ resolve_routine, funcs, /either
 ;---------------------------------
 ; Check user input in program call
 ;---------------------------------
-if( ~keyword_set( site ) || ~keyword_set( mol ) || ~keyword_set(lstFile) || ~keyword_set(specDBfile) || ~keyword_set(specDBfile) ) then begin
+if( ~keyword_set( site ) || ~keyword_set( mol ) || ~keyword_set(lstFile) || ~keyword_set(specDBfile) || ~keyword_set(outfile) ) then begin
    print, ' example usage : gatherd, site="tab", mol="co2", lstFile="/home/usr/mlo_1_1_13.lst", specDBfile="/home/usr/specDB_mlo_2013.dat", outfile="/home/usr/MLO_2013.sav" '
    stop
 endif

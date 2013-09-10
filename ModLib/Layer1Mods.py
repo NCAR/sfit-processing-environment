@@ -50,7 +50,7 @@ import sfitClasses as sc
 
 
 def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, specDB, spcDBind, logging=False):
-    ''' '''
+    ''' Reference maker for NCAR. Insert your own version here. '''
     #----------------------------------------------
     # refMkrNCAR level options for creating 
     # reference.prf
@@ -215,12 +215,56 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, specDB, spcDBind, loggin
                     if 'pressure' in line.lower():
                         nlnum        = linenum + nlines
                         oldPres      = lines[nlnum].split()[-1].rstrip(',')
+                        
+                        #----------------------------------------------------
+                        # Compare NCEP pressure with new updated pressure
+                        #  1) If updated surface pressure is less than NCEP
+                        #     one level above surface throw error
+                        #  2) If the absolute value of the difference between
+                        #     NCEP and external station surface pressure is
+                        #     greater than 15 hPa warning is thrown
+                        #----------------------------------------------------
+                        if (float(lines[nlnum].split()[-2].rstrip(',')) > float(oldPres)):
+                            if logging:
+                                logging.error('Surface pressure error for reference profile: ' + refFile)
+                                logging.error('External surface pressure < NCEP pressure one level above surface => Non-hydrostatic equilibrium!!')
+                            print 'Surface pressure error for reference profile: ' + refFile
+                            print 'External surface pressure < NCEP pressure one level above surface => Non-hydrostatic equilibrium!!'
+                        elif ( abs(float(oldPres) - float(newPres)) > 15):
+                            if logging:
+                                logging.warning('Surface pressure warning for reference profile: ' + refFile)
+                                logging.warning('Difference between NCEP and external station surface pressure > 15 hPa')
+                            print 'Surface pressure warning for reference profile: ' + refFile
+                            print 'Difference between NCEP and external station surface pressure > 15 hPa'
+                                                 
                         lines[nlnum] = lines[nlnum].replace(oldPres,newPres)
             
                 if NCEPtempFlg == False:
                     if 'temper' in line.lower():
                         nlnum        = linenum + nlines
                         oldTemp      = lines[nlnum].split()[-1].rstrip(',')
+                        
+                        #------------------------------------------------------
+                        # Compare NCEP temperature with new updated temperature
+                        #  1) If updated surface temperature is less than NCEP
+                        #     one level above surface throw error
+                        #  2) If the absolute value of the difference between
+                        #     NCEP and external station surface temperature is
+                        #     greater than 10 DegC warning is thrown
+                        #------------------------------------------------------
+                        if (float(lines[nlnum].split()[-2].rstrip(',')) > float(oldTemp)):
+                            if logging:
+                                logging.error('Surface Temperature error for reference profile: ' + refFile)
+                                logging.error('External surface Temperature < NCEP Temperature one level above surface => Non-hydrostatic equilibrium!!')
+                            print 'Surface Temperature error for reference profile: ' + refFile
+                            print 'External surface temperature < NCEP temperature one level above surface => Non-hydrostatic equilibrium!!'
+                        elif ( abs(float(oldTemp) - float(newTemp)) > 10):
+                            if logging:
+                                logging.warning('Surface temperature warning for reference profile: ' + refFile)
+                                logging.warning('Difference between NCEP and external station surface temperature > 10 DegC')
+                            print 'Surface temperature warning for reference profile: ' + refFile
+                            print 'Difference between NCEP and external station surface temperature > 10 DegC'                        
+  
                         lines[nlnum] = lines[nlnum].replace(oldTemp,newTemp)                    
                               
             
