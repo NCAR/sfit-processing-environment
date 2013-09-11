@@ -103,7 +103,7 @@ refmkrFlg   = 1                                                # 1 = run refmake
 sfitFlg     = 1                                                # 1 = run sfit,     0 = do not run sfit
 lstFlg      = 1                                                # Flag to create list file. Output file which has meta data and a list of all directories processed
 
-refMkrLvl   = 1                                                # Version of reference maker to use. 
+refMkrLvl   = 0                                                # Version of reference maker to use. 
                                                                #    0 = Use pre-existing zpt file. Concatonate with water and WACCM profiles
                                                                #    1 = Use pre-existing zpt file. Concatonate with water and WACCM profiles. Replace
                                                                #        surface pressure and temperature with values in database file. If those values

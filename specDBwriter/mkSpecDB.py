@@ -1,5 +1,6 @@
 #! /usr/local/python-2.7/bin/python
 
+# Change the above line to point to the location of your python executable
 
 #----------------------------------------------------------------------------------------
 # Name:
