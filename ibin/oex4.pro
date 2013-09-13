@@ -10,7 +10,7 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 ; still to do error matrix, bnr file
 
    close,/all
-	FORWARD_FUNCTION plotak, plotaegv, plotk, covarplot, plotbnr, readgasf
+	FORWARD_FUNCTION plotak, plotaegv, plotk, covarplot, plotbnr, readgasf, plotprfs
 	FORWARD_FUNCTION plotgases
 
    funcs = [ 'readstat4', 'usemol', 'readnxn4', 'readlayr','readpbp4', 'exponent', 'readsctl4' ]
