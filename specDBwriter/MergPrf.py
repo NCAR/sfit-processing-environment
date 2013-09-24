@@ -388,9 +388,9 @@ def main(argv):
         #--------------------
         if not waccmFlg:
             # Pressure
-            plt.plot(PressOut,Z,'r', label='Interpolated Pressure')
-            plt.plot(waccmP[:,mnthInd],Z,'b',label='WACCM V5 Pressure')
-            plt.plot(tmpNMCPres,heightNMCprf,'k',label='NCEP nmc Pressure')
+            plt.plot(PressOut,Z,'rx-', label='Interpolated Pressure')
+            plt.plot(waccmP[:,mnthInd],Z,'bx-',label='WACCM V5 Pressure')
+            plt.plot(tmpNMCPres,heightNMCprf,'kx-',label='NCEP nmc Pressure')
             plt.legend()
             plt.xlabel('Pressure [mbar]')
             plt.ylabel('log(Height) [km]')
@@ -405,9 +405,9 @@ def main(argv):
             plt.close()
             
             # Temperature
-            plt.plot(TempOut,Z,'r', label='Interpolated Temperature')
-            plt.plot(waccmT[:,mnthInd],Z,'b',label='WACCM V5 Temperature')
-            plt.plot(tempNMCprf,heightNMCprf,'k',label='NCEP nmc Temperature')
+            plt.plot(TempOut,Z,'rx-', label='Interpolated Temperature')
+            plt.plot(waccmT[:,mnthInd],Z,'bx-',label='WACCM V5 Temperature')
+            plt.plot(tempNMCprf,heightNMCprf,'kx-',label='NCEP nmc Temperature')
             plt.legend()
             plt.xlabel('Temperature [C]')
             plt.ylabel('Height [km]')

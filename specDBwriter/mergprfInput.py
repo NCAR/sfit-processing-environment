@@ -47,21 +47,21 @@ fday  = 20                 # Day
 #------
 npntSkip = 1
 Pintrp   = 3
-Tintrp   = 1
+Tintrp   = 2
 
 #------------
 # Directories
 #------------
-NCEPDir     = '/Users/ebaumer/Data/TestBed2/'
-outBaseDir  = '/Users/ebaumer/Data/TestBed2/'
-#NCEPDir    = '/data/Campaign/' + loc.upper() + '/NCEP_nmc/'                                # Directory of NCEP nmc data
-#outBaseDir = '/data1/' + loc.lower() + '/'                                                 # Base directory for output
+#NCEPDir     = '/Users/ebaumer/Data/TestBed2/'
+#outBaseDir  = '/Users/ebaumer/Data/TestBed2/'
+NCEPDir    = '/data/Campaign/' + loc.upper() + '/NCEP_nmc/'                                # Directory of NCEP nmc data
+outBaseDir = '/data1/' + loc.lower() + '/'                                                 # Base directory for output
 
 #------
 # Files
 #------
-WACCMfile = '/Users/ebaumer/Data/TestBed2/WACCM_pTW-meanV5.MLO'
-#WACCMfile = '/data/Campaign/' + loc.upper() + '/waccm/WACCM_pTW-meanV5.' + loc.upper()     # WACCM monthly mean file
+#WACCMfile = '/Users/ebaumer/Data/TestBed2/WACCM_pTW-meanV5.MLO'
+WACCMfile = '/data/Campaign/' + loc.upper() + '/waccm/WACCM_pTW-meanV5.' + loc.upper()     # WACCM monthly mean file
 
 
 
