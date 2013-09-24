@@ -241,6 +241,20 @@ def main(argv):
     for i,snglDay in enumerate(daysList):       
         waccmFlg = False
         
+        #---------------------------
+        # Determine output directory
+        #---------------------------
+        mnthstr = "{0:02d}".format(snglDay.month)
+        yearstr = "{0:02d}".format(snglDay.year)
+        daystr  = "{0:02d}".format(snglDay.day)        
+        outDir  = inputs['outBaseDir'] + yearstr+mnthstr+daystr + '/'  
+        
+        #------------------------------
+        # If input directory is missing
+        # skip to next day
+        #------------------------------
+        if not ckDir(outDir): continue
+        
         #------------------------------------
         # Open and read yearly NCEP nmc files
         #------------------------------------
@@ -351,15 +365,7 @@ def main(argv):
         # Write to log if NCEP data is not used
         #--------------------------------------
         if waccmFlg and logFile: logFile.error('NCEP nmc data not complete, WACCM profiles used for date: ' + str(snglDay) )    
-            
-        #-------------------
-        # Write output files
-        #-------------------
-        mnthstr = "{0:02d}".format(snglDay.month)
-        yearstr = "{0:02d}".format(snglDay.year)
-        daystr  = "{0:02d}".format(snglDay.day)        
-        outDir  = inputs['outBaseDir'] + yearstr+mnthstr+daystr + '/'
-         
+           
         #-------------------
         # Write out ZPT file
         #-------------------
