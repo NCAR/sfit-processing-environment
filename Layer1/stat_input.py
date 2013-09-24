@@ -102,7 +102,7 @@ pspecFlg    = 1                                                # 1 = run pspec, 
 refmkrFlg   = 1                                                # 1 = run refmaker, 0 = do not run refmaker
 sfitFlg     = 1                                                # 1 = run sfit,     0 = do not run sfit
 lstFlg      = 1                                                # Flag to create list file. Output file which has meta data and a list of all directories processed
-errFlg      = 1                                                # 1 = run error analysis, 0 = do not run error analysis
+errFlg      = 0                                                # 1 = run error analysis, 0 = do not run error analysis
 
 refMkrLvl   = 0                                                # Version of reference maker to use. 
                                                                #    0 = Use pre-existing zpt file. Concatonate with water and WACCM profiles

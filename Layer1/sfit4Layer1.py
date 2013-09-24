@@ -59,7 +59,7 @@ import glob
 import re
 import sfitClasses as sc
 import shutil
-from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis
+from Layer1Mods import refMkrNCAR, t15ascPrep#, errAnalysis
 
 
 
@@ -322,8 +322,8 @@ def main(argv):
                 lstFile.info('ctl_File       = ' + mainInF.inputs['ctlList'][ctl_ind][0])
                 lstFile.info('FilterID       = ' + mainInF.inputs['ctlList'][ctl_ind][5])
                 lstFile.info('VersionName    = ' + mainInF.inputs['ctlList'][ctl_ind][6])
-                lstFile.info('Site           = ' + mainInF.inputs['loc'])
-                lstFile.info('statnLyrs_file = ' + ctlFileGlb.inputs['file.in.stalayers'])
+                lstFile.info('Site           = ' + mainInF.inputs['loc'][0])
+                lstFile.info('statnLyrs_file = ' + ctlFileGlb.inputs['file.in.stalayers'][0])
                 lstFile.info('primGas        = ' + ctlFileGlb.primGas)
                 lstFile.info('specDBfile     = ' + mainInF.inputs['spcdbFile'])
                 lstFile.info('# End List File Meta-Data')

@@ -1,4 +1,4 @@
-pro gather4, lstFile=lstFile, outfile=outfile
+pro gather4, lstFile=lstFile, outfile=outfile, plt=plt
 
 close,/all
 ;******************************************************************************************************************
@@ -53,7 +53,7 @@ resolve_routine, funcs, /either
 ; Check user input in program call
 ;---------------------------------
 if( ~keyword_set(lstFile) ) then begin
-   print, ' example usage : gather4, lstFile="/home/usr/mlo_1_1_13.lst" [, outfile="/home/usr/MLO_2013.sav"] '
+   print, ' example usage : gather4, lstFile="/home/usr/mlo_1_1_13.lst" [, outfile="/home/usr/MLO_2013.sav", /plt] '
    stop
 endif
 
@@ -91,10 +91,22 @@ buf = ''
 i   = 0
 while ~strcmp(buf, 'Date', 4, /fold_case )  do begin
   readf, fid_lstFile, buf
-  if strcmp(buf, 'statnLyrs_file', 16, /fold_case) then stlyrFile  = buf[count-1]
-  if strcmp(buf, 'primGas', 7, /fold_case)         then mol        = buf[count-1]
-  if strcmp(buf, 'specDBfile', 10, /fold_case)     then specDBfile = buf[count-1]
-  if strcmp(buf, 'site', 4, /fold_case)            then site       = buf[count-1]
+  if strcmp(buf, 'statnLyrs_file', 14, /fold_case) then begin
+    subs       = strsplit( buf,' ',/extract, count=nitms )
+    stlyrFile  = subs[nitms-1]
+  endif
+  if strcmp(buf, 'primGas', 7, /fold_case)         then begin
+    subs = strsplit( buf,' ',/extract, count=nitms )
+    mol  = subs[nitms-1]
+  endif
+  if strcmp(buf, 'specDBfile', 10, /fold_case)     then begin
+    subs       = strsplit( buf,' ',/extract, count=nitms )
+    specDBfile = subs[nitms-1]
+  endif
+  if strcmp(buf, 'site', 4, /fold_case)            then begin
+    subs = strsplit( buf,' ',/extract, count=nitms )
+    site = subs[nitms-1]
+  endif
   i++
 endwhile
 
