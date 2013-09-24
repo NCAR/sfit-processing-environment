@@ -24,7 +24,7 @@
 #
 #
 # Usage:
-#     MergPrf.py -i <File> -l
+#     MergPrf.py -i <File> -l <Dir>
 #              -i           Input file for MergPrf.py
 #
 # Examples:
@@ -105,7 +105,7 @@ def main(argv):
     #---------------------------------
     #------------------------------------------------------------------------------------------------------------#                                             
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:l')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:l:')
 
     except getopt.GetoptError as err:
         print str(err)
@@ -128,6 +128,8 @@ def main(argv):
             
         # Option for Log File
         elif opt == '-l':
+            if arg: logDir = arg
+            else:   logDir = os.getcwd() +'/'
             logFile = True        
             
         #------------------
@@ -173,6 +175,16 @@ def main(argv):
     # check if '/' is included at end of path
     if not( inputs['outBaseDir'].endswith('/') ):
         inputs['outBaseDir'] = inputs['outBaseDir'] + '/'       
+
+    if logFile:
+        # Check directory for log file                         
+        if not ckDir(logDir):
+            print 'Log File directory does not exist: ' + logDir
+            sys.exit()
+            
+        # check if '/' is included at end of path
+        if not( logDir.endswith('/') ):
+            logDir = logDir + '/'       
 
     # Check for station layer file if doing interpolation 
     ckFile(inputs['WACCMfile'],True)
