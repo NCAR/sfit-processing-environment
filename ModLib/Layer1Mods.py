@@ -99,7 +99,7 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, specDB, spcDBind, loggin
     #--------------
     # Find ZPT file
     #--------------
-    zptFiles = glob.glob(zptwPath + 'zpt*')
+    zptFiles = glob.glob(zptwPath + 'ZPT.nmc*')
     
     # If more than one zpt file found trigger warning and use first one 
     if len(zptFiles) > 1:                 
