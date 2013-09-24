@@ -195,7 +195,7 @@ def main(argv):
     if logFile:   
         logFile = logging.getLogger('1')
         logFile.setLevel(logging.INFO)
-        hdlr1   = logging.FileHandler(inputs['outBaseDir'] + 'MissingNMCzpt.log',mode='w')
+        hdlr1   = logging.FileHandler(logDir+ 'MissingNMCzpt.log',mode='w')
         fmt1    = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s','%a, %d %b %Y %H:%M:%S')
         hdlr1.setFormatter(fmt1)
         logFile.addHandler(hdlr1)  
