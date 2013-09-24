@@ -357,14 +357,14 @@ def main(argv):
             # Write altitude
             fopen.write("     ALTITUDE [km] \n")
             for row in segmnt(Z, 5):
-                strformat = ','.join('{:>12.4E}' for i in row) + ', \n'
+                strformat = ','.join('{:>12.4f}' for i in row) + ', \n'
                 fopen.write(strformat.format(*row))
             
             # Write Pressure
             if waccmFlg: fopen.write("     PRESSURE from WACCM V5 monthly mean [mbar] \n")
             else:        fopen.write("     PRESSURE from interpolated NCEP nmc (up to {:5.2f}km) and WACCM V5 monthly mean [mbar] \n".format(nmcTop))
             for row in segmnt(PressOut,5):
-                strformat = ','.join('{:>12.4f}' for i in row) + ', \n'
+                strformat = ','.join('{:>12.4E}' for i in row) + ', \n'
                 fopen.write(strformat.format(*row))                
                                                                               
             # Write Temperature
