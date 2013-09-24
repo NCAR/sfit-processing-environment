@@ -357,7 +357,7 @@ def main(argv):
             # Write altitude
             fopen.write("     ALTITUDE [km] \n")
             for row in segmnt(Z, 5):
-                strformat = ','.join('{:>12.4f}' for i in row) + ', \n'
+                strformat = ','.join('{:>12.4E}' for i in row) + ', \n'
                 fopen.write(strformat.format(*row))
             
             # Write Pressure
