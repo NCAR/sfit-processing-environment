@@ -269,7 +269,7 @@ def main(argv):
         # according to date
         #--------------------------------
         dateInd = np.where(nmcDate == snglDay)[0][0]
-        mnthInd = snglDay.month      
+        mnthInd = (snglDay.month - 1)   # -1 because January is in 0th column      
         
         #-------------------------------------
         # If date is entirely missing from nmc
