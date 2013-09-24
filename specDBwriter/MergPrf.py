@@ -258,7 +258,7 @@ def main(argv):
         #------------------------------------
         # Open and read yearly NCEP nmc files
         #------------------------------------
-        if (i == 0 or (snglDay.year != daysList[i-1].year) ):
+        if (not('nmcDate' in locals()) or (snglDay.year != daysList[i-1].year) ):
             NMChgtFname  = inputs['NCEPDir'] + 'HgtNMC_' +  inputs['loc'].lower() + '_' + str(snglDay.year) + '.dat'
             NMCTempFname = inputs['NCEPDir'] + 'TempNMC_' + inputs['loc'].lower() + '_' + str(snglDay.year) + '.dat'
 
