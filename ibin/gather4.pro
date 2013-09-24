@@ -1,4 +1,4 @@
-pro gather4, site=site, mol=mol, plt=plt, lstFile=lstFile, specDBfile=specDBfile, outfile=outfile
+pro gather4, lstFile=lstFile, outfile=outfile
 
 close,/all
 ;******************************************************************************************************************
@@ -52,21 +52,19 @@ resolve_routine, funcs, /either
 ;---------------------------------
 ; Check user input in program call
 ;---------------------------------
-if( ~keyword_set( site ) || ~keyword_set( mol ) || ~keyword_set(lstFile) || ~keyword_set(specDBfile) || ~keyword_set(outfile) ) then begin
-   print, ' example usage : gatherd, site="tab", mol="co2", lstFile="/home/usr/mlo_1_1_13.lst", specDBfile="/home/usr/specDB_mlo_2013.dat", outfile="/home/usr/MLO_2013.sav" '
+if( ~keyword_set(lstFile) ) then begin
+   print, ' example usage : gather4, lstFile="/home/usr/mlo_1_1_13.lst" [, outfile="/home/usr/MLO_2013.sav"] '
    stop
 endif
 
-; based on the site, set a few more variables
-lcmol = STRLOWCASE(mol)
-ucmol = STRUPCASE(mol)
-ucsite= STRUPCASE(site)
-
-;-----------------------------------------------------------
-; Gather information on the station location and primary gas
-;-----------------------------------------------------------
-usemol, ucsite, ucmol, Ag     ; Returns Ag
-usesite, ucsite, As, Ag       ; Returns As
+;---------------------------------
+; If user does not specify outfile
+; set default
+;---------------------------------
+if ~keyword_set(outfile) then begin
+  cd, current=wrkDir
+  outfile = wrkDir + '/GthrdData.sav'
+endif
 
 ;-------------------------
 ; Open and read *.lst file
@@ -81,14 +79,26 @@ if( ioerr ne 0 ) then begin
   stop
 endif
   
-; Read header and count lines
+;---------------------------------------------  
+; Read header and count lines. From the header
+; get the following information:
+; 1) Primary Gas
+; 2) Spectral DB file
+; 3) Location
+; 4) Station layers file
+;---------------------------------------------
 buf = ''
 i   = 0
 while ~strcmp(buf, 'Date', 4, /fold_case )  do begin
   readf, fid_lstFile, buf
+  if strcmp(buf, 'statnLyrs_file', 16, /fold_case) then stlyrFile  = buf[count-1]
+  if strcmp(buf, 'primGas', 7, /fold_case)         then mol        = buf[count-1]
+  if strcmp(buf, 'specDBfile', 10, /fold_case)     then specDBfile = buf[count-1]
+  if strcmp(buf, 'site', 4, /fold_case)            then site       = buf[count-1]
   i++
 endwhile
-  
+
+ 
 ; Determine remaining lines
 nsize = nlines-i
 lDates   =  strarr(nsize)                  ; Create array for reading in Dates
@@ -107,6 +117,17 @@ endfor
 ; Close file
 free_lun, fid_lstFile
 
+; based on the site, set a few more variables
+lcmol = STRLOWCASE(mol)
+ucmol = STRUPCASE(mol)
+ucsite= STRUPCASE(site)
+
+;-----------------------------------------------------------
+; Gather information on the station location and primary gas
+;-----------------------------------------------------------
+usemol, ucsite, ucmol, Ag     ; Returns Ag
+usesite, ucsite, As, Ag       ; Returns As
+
 ;------------------------------------------
 ; Search for duplicate entries in list file
 ; and remove 
@@ -124,9 +145,7 @@ endif
 ;-------------------------------------------
 ; Get layering info from station.layers file
 ;-------------------------------------------
-print, ' Opening file : ', As.infodir + 'local/station.layers'
-klay = readlayr4( grd, '/Users/ebaumer/Data/TestBed/mlo/station.layers' )
-;klay = readlayr( grd, As.infodir + 'local/station.layers' )
+klay    = readlayr4( grd, stlyrFile )
 nlayers = klay-1
 
 ;--------------------------------------------------
@@ -257,12 +276,6 @@ ds.zcorrect = make_array(nsize,/float, value=-999)
                 ; Loop through observations to collect output data ;
                 ;--------------------------------------------------;
 for i = 0, nsize-1 do begin
-  
-  ;----------------------------------------
-  ; Read control file from output directory
-  ;----------------------------------------  
-;  ctlFname = ds[i].directory + 'sfit4.ctl'
-;  readsctl4, ctlData, ctlFname
   
    ;----------------------------------------
    ; Read summary file from output directory

@@ -59,7 +59,7 @@ import glob
 import re
 import sfitClasses as sc
 import shutil
-from Layer1Mods import refMkrNCAR, t15ascPrep
+from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis
 
 
 
@@ -304,29 +304,33 @@ def main(argv):
         #--------------------------------------
         for ctl_ind,ctlFileList in enumerate(mainInF.inputs['ctlList']):
             
-            
-            #-----------------------------
-            # Write Meta-data to list file
-            #-----------------------------
-            if lstFlg:
-                lstFile.info('# Begin List File Meta-Data')
-                lstFile.info('Database_File = ' + mainInF.inputs['spcdbFile'])
-                lstFile.info('WACCM_File    = ' + mainInF.inputs['WACCMfile'])
-                lstFile.info('ctl_File      = ' + mainInF.inputs['ctlList'][ctl_ind][0])
-                lstFile.info('FilterID      = ' + mainInF.inputs['ctlList'][ctl_ind][5])
-                lstFile.info('VersionName   = ' + mainInF.inputs['ctlList'][ctl_ind][6])
-                lstFile.info('# End List File Meta-Data')
-                lstFile.info('')
-                lstFile.info('Date         TimeStamp    Directory ')            
-                
             #-----------------------------
             # Initialize ctl file instance
             # and get inputs
             #-----------------------------  
             ctlFile   = ctlFileList[0]
             ctlFileGlb = sc.CtlInputFile(ctlFile,logFile)
-            ctlFileGlb.getInputs()
-                                
+            ctlFileGlb.getInputs() 
+            
+            #-----------------------------
+            # Write Meta-data to list file
+            #-----------------------------
+            if lstFlg:
+                lstFile.info('# Begin List File Meta-Data')
+                lstFile.info('Database_File  = ' + mainInF.inputs['spcdbFile'])
+                lstFile.info('WACCM_File     = ' + mainInF.inputs['WACCMfile'])
+                lstFile.info('ctl_File       = ' + mainInF.inputs['ctlList'][ctl_ind][0])
+                lstFile.info('FilterID       = ' + mainInF.inputs['ctlList'][ctl_ind][5])
+                lstFile.info('VersionName    = ' + mainInF.inputs['ctlList'][ctl_ind][6])
+                lstFile.info('Site           = ' + mainInF.inputs['loc'])
+                lstFile.info('statnLyrs_file = ' + ctlFileGlb.inputs['file.in.stalayers'])
+                lstFile.info('primGas        = ' + ctlFileGlb.primGas)
+                lstFile.info('specDBfile     = ' + mainInF.inputs['spcdbFile'])
+                lstFile.info('# End List File Meta-Data')
+                lstFile.info('')
+                lstFile.info('Date         TimeStamp    Directory ')            
+                
+
             #-------------------------
             # Filter spectral db based
             # on filter ID
@@ -602,6 +606,20 @@ def main(argv):
                             
                             if cmpltFlg:
                                 lstFile.info("{0:<13}".format(int(dbFltData_2['Date'][spcDBind])) + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '       ' + wrkOutputDir4)
+                                
+                                
+   
+                                #----------------------------#
+                                #                            #
+                                #   --- Error Analysis ---   #
+                                #                            #
+                                #----------------------------#
+                        if mainInF.inputs['errFlg']:
+                            if logFile: 
+                                logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)                            
+                                
+                            rtn = errAnalysis( ctlFileGlb, wrkOutputDir4, logFile )
+                                
                                 
                         #---------------------------
                         # Continuation for Pause flg
