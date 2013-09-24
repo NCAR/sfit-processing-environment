@@ -380,7 +380,7 @@ def main(argv):
         with open(outDir+'w-120.v1','w') as fopen:
             fopen.write('    1     H2O from WACCM V5 monthly mean \n')
             for row in segmnt(waccmW[:,mnthInd],5):
-                strformat = ','.join('{:>12.4f}' for i in row) + ', \n'
+                strformat = ','.join('{:>12.4E}' for i in row) + ', \n'
                 fopen.write(strformat.format(*row))              
             
         #--------------------
