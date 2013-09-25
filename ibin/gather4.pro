@@ -76,6 +76,7 @@ nlines = file_lines(lstFile)
 openr, fid_lstFile, lstFile, /get_lun, error=ioerr
 if( ioerr ne 0 ) then begin
   printf, -2, !err_string
+  free_lun, fid_lstFile
   stop
 endif
   

@@ -7,6 +7,7 @@ function readnxn4, nxn, file, rev=rev, quiet=quiet
 	openr, lun, file, /get_lun, error=ioerr
 	if( ioerr ne 0 ) then begin
 		printf, -2, !err_string
+		free_lun, lun
 		return, 1
 	endif
 
@@ -21,6 +22,7 @@ function readnxn4, nxn, file, rev=rev, quiet=quiet
 	readf, lun, n, n1
 	if( n ne n1 )then begin
 	   print, 'readnxn4 : matrix should be square : ', n, n1
+	   free_lun, lun
 	   stop
 	endif
 	;print, ' readnxn, n : ', n

@@ -8,8 +8,6 @@ function readsum4, sumf, file
 		return, 1
 	endif
 
-   openr, lun, file, /get_lun
-
    buf = ''
    dum = 0
 	readf, lun, buf

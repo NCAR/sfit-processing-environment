@@ -10,6 +10,7 @@ function readprfs4, prfs, file, rev=rev, quiet=quiet
 	openr, lun, file, /get_lun, error=ioerr
 	if( ioerr ne 0 ) then begin
 		printf, -2, !err_string
+		free_lun, lun
 		return, 1
 	endif
 
@@ -58,6 +59,7 @@ function readprfs4, prfs, file, rev=rev, quiet=quiet
    subs = strsplit( buf, /extract, count=count )
    if( count ne ngas + 5 )then begin
       print, 'error in number of columns'
+      free_lun, lun
       stop
    endif
 

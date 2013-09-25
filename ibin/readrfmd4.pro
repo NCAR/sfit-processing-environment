@@ -5,10 +5,10 @@ function readrfmd4, refm, file, zpt=zpt
 	openr, lun, file, /get_lun, error=ioerr
 	if( ioerr ne 0 ) then begin
 		printf, -2, !err_string
+		free_lun, lun
 		return, 1
 	endif
 
-   ;openr, lun, file, /get_lun
 
    nlines = 10
 
