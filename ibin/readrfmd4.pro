@@ -8,7 +8,7 @@ function readrfmd4, refm, file, zpt=zpt
 		return, 1
 	endif
 
-   openr, lun, file, /get_lun
+   ;openr, lun, file, /get_lun
 
    nlines = 10
 

@@ -254,6 +254,11 @@ for i = 0, (nlines-2) do begin
 
 endfor
 
+;-----------------------------
+; Close spectral database file
+;-----------------------------
+free_lun, fid_specDBfile
+
 ;------------------------------------------------
 ; Manipulate Date and Tstamps to get YYYY, MM, DD
 ; DOY, etc and convert Date and Tstamp to int
