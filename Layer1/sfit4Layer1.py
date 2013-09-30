@@ -200,7 +200,7 @@ def main(argv):
         
         logFile = logging.getLogger('1')
         logFile.setLevel(logging.INFO)
-        hdlr1   = logging.FileHandler(log_fpath + 'Layer1.log',mode='w')
+        hdlr1   = logging.FileHandler(log_fpath + ctlFileGlb.primGas + '.log',mode='w')
         fmt1    = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s','%a, %d %b %Y %H:%M:%S')
         hdlr1.setFormatter(fmt1)
         logFile.addHandler(hdlr1)  
@@ -222,10 +222,9 @@ def main(argv):
 
         # check if path is valide
         ckDir(lst_fpath)       
-        
         lstFile = logging.getLogger('2')
         lstFile.setLevel(logging.INFO)
-        hdlr2   = logging.FileHandler(lst_fpath + 'Layer1.lst',mode='w')
+        hdlr2   = logging.FileHandler(lst_fpath + ctlFileGlb.primGas + '.lst',mode='w')
         fmt2    = logging.Formatter('')
         hdlr2.setFormatter(fmt2)
         lstFile.addHandler(hdlr2)   
@@ -403,22 +402,18 @@ def main(argv):
                     wrkInputDir2 = wrkInputDir1 + yrstr + mnthstr + daystr + '/'               
                     ckDir( wrkInputDir2, logFlg=logFile, exitFlg=True )                       
                     
-                    # Check for the existance of <GAS> Output folder and create if DNE
-                    wrkOutputDir2 = wrkOutputDir1 + ctlFileGlb.primGas  + '/'  
-                    ckDirMk( wrkOutputDir2, logFile )    
-                    
                     # Check for the existance of Output folder <Version> and create if DNE
                     if mainInF.inputs['ctlList'][ctl_ind][6]:
-                        wrkOutputDir3 = wrkOutputDir2 + mainInF.inputs['ctlList'][ctl_ind][6] + '/' 
-                        ckDirMk( wrkOutputDir3, logFile )             
+                        wrkOutputDir2 = wrkOutputDir1 + mainInF.inputs['ctlList'][ctl_ind][6] + '/' 
+                        ckDirMk( wrkOutputDir2, logFile )             
                     else:
-                        wrkOutputDir3 = wrkOutputDir2
+                        wrkOutputDir2 = wrkOutputDir1
             
                     # Check for the existance of Output folder <Date>.<TimeStamp> and create if DNE
-                    wrkOutputDir4 = wrkOutputDir3 + datestr + '.' + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '/' 
-                    if not ckDirMk( wrkOutputDir4, logFile ):
+                    wrkOutputDir3 = wrkOutputDir2 + datestr + '.' + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '/' 
+                    if not ckDirMk( wrkOutputDir3, logFile ):
                         # Remove all files in Output directory if previously exists!!
-                        for f in glob.glob(wrkOutputDir4+'*'): os.remove(f)   
+                        for f in glob.glob(wrkOutputDir3+'*'): os.remove(f)   
                     
                     #-------------------------------
                     # Copy relavent files from input
@@ -431,10 +426,10 @@ def main(argv):
                     #-----------------------------------
                     ctlPath,ctlFname = os.path.split(mainInF.inputs['ctlList'][ctl_ind][0])
                     try:
-                        shutil.copyfile(mainInF.inputs['ctlList'][ctl_ind][0], wrkOutputDir4 + 'sfit4.ctl')
+                        shutil.copyfile(mainInF.inputs['ctlList'][ctl_ind][0], wrkOutputDir3 + 'sfit4.ctl')
                     except IOError:
-                        print 'Unable to copy template ctl file to working directory: %s' % wrkOutputDir4
-                        if logFile: logFile.critical('Unable to copy template ctl file to working directory: %s' % wrkOutputDir4)
+                        print 'Unable to copy template ctl file to working directory: %s' % wrkOutputDir3
+                        if logFile: logFile.critical('Unable to copy template ctl file to working directory: %s' % wrkOutputDir3)
                         sys.exit()
                     
                     #----------------------------------
@@ -444,20 +439,20 @@ def main(argv):
                     # location as the global ctl file
                     #----------------------------------
                     try:
-                        shutil.copyfile(ctlPath + '/hbin.dtl', wrkOutputDir4 + '/hbin.dtl')            # Copy hbin.dtl file
+                        shutil.copyfile(ctlPath + '/hbin.dtl', wrkOutputDir3 + '/hbin.dtl')            # Copy hbin.dtl file
                     except IOError:
                         print 'Unable to copy file: %s' % (ctlPath + '/hbin.dtl')
                         if logFile: logFile.error(IOError)
                         
                     try:
-                        shutil.copyfile(ctlPath + '/hbin.input', wrkOutputDir4 + '/hbin.input')          # Copy hbin.input file
+                        shutil.copyfile(ctlPath + '/hbin.input', wrkOutputDir3 + '/hbin.input')          # Copy hbin.input file
                     except IOError:
                         print 'Unable to copy file: %s' % (ctlPath + '/hbin.input')
                         if logFile: logFile.error(IOError)
                                        
                           
                     # Create instance of local control file (ctl file in working directory)
-                    ctlFileLcl = sc.CtlInputFile(wrkOutputDir4 + 'sfit4.ctl',logFile)
+                    ctlFileLcl = sc.CtlInputFile(wrkOutputDir3 + 'sfit4.ctl',logFile)
                              
                     #-------------------------------------------------
                     # Determine whether to use ILS file. Empty string
@@ -512,7 +507,7 @@ def main(argv):
                         print 'Processing spectral observation date: %s' % msgstr2
                         print '*****************************************************'
                         
-                        rtn = t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir4, mainInF, spcDBind, ctl_ind, logFile)
+                        rtn = t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir3, mainInF, spcDBind, ctl_ind, logFile)
                         
                         if logFile: 
                             logFile.info('Ran PSPEC for ctl file: %s' % msgstr1)
@@ -533,7 +528,7 @@ def main(argv):
                         print 'Processing spectral observation date: %s' % msgstr2
                         print '*****************************************************'
                         
-                        rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMfile'], wrkOutputDir4, \
+                        rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMfile'], wrkOutputDir3, \
                                          mainInF.inputs['refMkrLvl'], mainInF.inputs['wVer'], dbFltData_2, spcDBind, logFile)
                         if logFile: 
                             logFile.info('Ran REFMKRNCAR for ctl file: %s' % msgstr1)
@@ -553,7 +548,7 @@ def main(argv):
                         print '*****************************************************'
                         print 'Running SFIT4 for ctl file: %s' % msgstr1
                         print 'Processing spectral observation date: %s' % msgstr2
-                        print 'Ouput Directory: %s' % wrkOutputDir4
+                        print 'Ouput Directory: %s' % wrkOutputDir3
                         print '*****************************************************'
                         
                         if logFile: 
@@ -565,7 +560,7 @@ def main(argv):
                         # output directory to run pspec
                         #------------------------------
                         try:
-                            os.chdir(wrkOutputDir4)
+                            os.chdir(wrkOutputDir3)
                         except OSError as errmsg:
                             if logFile: logFile.error(errmsg)
                             sys.exit()
@@ -589,14 +584,14 @@ def main(argv):
                         # Change permissions of all files in 
                         # working directory
                         #-----------------------------------
-                        for f in glob.glob(wrkOutputDir4 + '*'):
+                        for f in glob.glob(wrkOutputDir3 + '*'):
                             os.chmod(f,0777)
     
                         #----------------------------------------------
                         # If succesfull run, write details to list file
                         #----------------------------------------------
                         if lstFlg:
-                            fname    = wrkOutputDir4 +'sfit4.dtl'
+                            fname    = wrkOutputDir3 +'sfit4.dtl'
                             cmpltFlg = False
                             with open(fname,'r') as fopen:
                                 for ind,line in enumerate(reversed(fopen.readlines())):
@@ -618,7 +613,7 @@ def main(argv):
                             if logFile: 
                                 logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)                            
                                 
-                            rtn = errAnalysis( ctlFileGlb, wrkOutputDir4, logFile )
+                            rtn = errAnalysis( ctlFileGlb, wrkOutputDir3, logFile )
                                 
                                 
                         #---------------------------
