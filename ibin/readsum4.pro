@@ -32,11 +32,16 @@ function readsum4, sumf, file
    readf, lun, buf
    readf, lun, nret
    readf, lun, buf
-   sret = strarr(nret)
+   sret      = strarr(nret)
+   prmgas_tc = fltarr(1)
+   h20_tc    = fltarr(1)
    for i=0, nret-1 do begin
       buf = ''
       readf, lun, buf
       sret[i] = buf
+      subs = strsplit( buf, /extract, count=count)
+      if (i eq 0)                               then prmgas_tc = subs[4] + 0.0D0
+      if strcmp(subs[1], 'H2O', 3, /fold_case ) then h20_tc    = subs[4] + 0.0D0
    endfor
 
 ; read data by band
@@ -48,7 +53,7 @@ function readsum4, sumf, file
    sband = strarr(nband)
    sjscn = strarr(nband, 10)
    nscnb = intarr(nband)
-   npts = intarr(nband)
+   npts  = intarr(nband)
    wstrt = fltarr(nband)
    wstop = fltarr(nband)
    nspac = fltarr(nband)
@@ -107,7 +112,9 @@ function readsum4, sumf, file
 	 dofstrg : dofstrg,      $
 		   itr : itr,          $
 		convTF : convTF,       $
-	 divwarn : divwarn       $
+	 divwarn : divwarn,      $
+ prmgas_tc : prmgas_tc,    $
+    h20_tc : h20_tc        $
 		}
 
 help, sumf

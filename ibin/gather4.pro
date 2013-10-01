@@ -303,7 +303,8 @@ for i = 0, nsize-1 do begin
    ds[i].iterations = sumf.itr
    ds[i].rms        = sumf.fitrms
    ds[i].dofs       = sumf.dofstrg
-   ;ds[i].rettc      = ?????
+   ds[i].prmgas_tc  = sumf.prmgas_tc
+   ds[i].h20_tc     = sumf.h20_tc    
   
   ;----------------------------------------
   ; Read statvec file from output directory
@@ -368,6 +369,12 @@ for i = 0, nsize-1 do begin
   tmpsum   = fltarr(nlayers)
   ds[i].ms = rprfs.a                                    ; Air-mass profile (same in a prior prf table or retreived prf table)
   
+  ;--------------------------
+  ; Get retrieved H2O profile
+  ;--------------------------
+  H2Oind        = where(rprfs.name eq 'H2O', /null)
+  ds[i].h2o_vmr = rprfs.vmr[*,H2Oind]
+  
   for jj = 0, nlayers-1 do begin
     for ii = 0, nlayers-1 do begin
       tmpsum[ii] = rprfs.a[ii] * ds[i].ak[ii,jj]
@@ -394,14 +401,14 @@ for i = 0, nsize-1 do begin
     ;device,/close
   endif 
   
-  ;-----------------
-  ; Get water vapour
-  ;-----------------
+  ;----------------------
+  ; Get a priori profiles
+  ;----------------------
   dum = readprfs4( aprfs, ds[i].directory + 'aprfs.table' )
   
   ; A priori
-  ds[i].aprh2ovmr = aprfs.vmr[*,0]                       ; H2O profile
-  ds[i].aprh2otc  = total( aprfs.vmr[*,0] * rprfs.a )    ; Total column H2O
+  ;ds[i].aprh2ovmr = aprfs.vmr[*,0]                       ; H2O profile
+  ;ds[i].aprh2otc  = total( aprfs.vmr[*,0] * rprfs.a )    ; Total column H2O
   ds[i].aprlaycol = ds[i].aprvmr * rprfs.a               ;
   
   ; Retrieved
@@ -456,9 +463,9 @@ return, datastructure = REPLICATE({h224, $                ; What is h224 ??????
         retvmr                     :fltarr(nlayers),$     ;
         retlaycol                  :fltarr(nlayers),$     ;
         aprtc                      :0.D0,$                ;
-        rettc                      :0.D0,$                ; Gas total column ????????????
-        aprh2ovmr                  :fltarr(nlayers),$     ;
-        aprh2otc                   :0.D0,$                ;
+        prmgas_tc                  :0.D0,$                ; Primary retrieved gas total column amount (Old name = rettc)
+        h2o_vmr                    :fltarr(nlayers),$     ; Retrieved H2O vmr profile (old name = aprh2ovmr) 
+        h20_tc                     :0.D0,$                ; H2O retrieved total column amount (Old name = aprh2otc)
         year                       :0,$                   ; Year [YYYY]
         month                      :0,$                   ; Month [MM]
         day                        :0,$                   ; Day [DD]
