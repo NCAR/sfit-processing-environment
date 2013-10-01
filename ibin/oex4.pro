@@ -214,7 +214,7 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 		rc = plotak( ak, stat, toPS, ppos, psiz, tek, lthick, plottop, usite, auc )
 
 		; plot averaging kernels
-		rc = plotak( ak, stat, toPS, ppos, psiz, tek, lthick, plottop, usite, auc, /nrm )
+		;rc = plotak( ak, stat, toPS, ppos, psiz, tek, lthick, plottop, usite, auc, /nrm )
 
 		; plot eigenvectors
 		;IF( aevcrc EQ 0 ) THEN BEGIN
