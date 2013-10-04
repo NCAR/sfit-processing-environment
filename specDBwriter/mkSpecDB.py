@@ -341,7 +341,7 @@ def main(argv):
                 
                 # Some OPUS files may not contain any data and therefore
                 # pass back an error
-                if 'error' in stdoutParam:
+                if 'error' in stdoutParam or not(stdoutParam):
                     continue
                 
                 fopen.write( stdoutParam )
