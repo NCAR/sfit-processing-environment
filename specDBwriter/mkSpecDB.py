@@ -213,6 +213,8 @@ def main(argv):
                     if checkOPUS(ckopus,indvfile):                     
                         fopen.write('%s\n' % dirs)
                         break
+                    
+        print 'Finished creating processed folder list....'
         sys.exit()
         
     #----------------
@@ -393,13 +395,21 @@ def main(argv):
                     rtn = sp.Popen( paramList, stdout=sp.PIPE, stderr=sp.PIPE )
                     stdoutParam, stderr = rtn.communicate()       
                     
+                    #-----------------------------------------------------
+                    # Find name of file. This may not correspond to SBlock
+                    # name if SBlock name is set to NONE. Name of file
+                    # is printed in stderr of subprocess
+                    #-----------------------------------------------------
+                    ind = stderr.find('Closed bnr file:')
+                    bnrFname = stderr[ind:].strip().split()[-1]
+                                        
                     #------------------------------------------------
                     # Change name of file to correspond to time stamp
                     #------------------------------------------------
-                    if os.path.isfile('/'.join([fpath,SBlock+'.bnr'])):
-                        shutil.move(fpath+'/'+SBlock+'.bnr', fpath+'/'+TStamp+'.bnr')
+                    if os.path.isfile('/'.join([fpath,bnrFname])):
+                        shutil.move(fpath+'/'+bnrFname, fpath+'/'+TStamp+'.bnr')
                     else:
-                        print 'Unable to move file: %s to %s' %(indvfile,TStamp+'.bnr')
+                        print 'Unable to move file: %s to %s' %(indvfile,fpath+'/'+TStamp+'.bnr')
                         
     #-------------------------------------------
     # Write list of folders that where processed
