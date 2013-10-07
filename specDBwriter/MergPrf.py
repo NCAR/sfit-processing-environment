@@ -258,7 +258,7 @@ def main(argv):
         #------------------------------------
         # Open and read yearly NCEP nmc files
         #------------------------------------
-        if (not('nmcDate' in locals()) or (snglDay.year != daysList[i-1].year) ):
+        if (not('nmcDate' in locals()) or (snglDay.year != lastyr) ):
             NMChgtFname  = inputs['NCEPDir'] + 'HgtNMC_' +  inputs['loc'].lower() + '_' + str(snglDay.year) + '.dat'
             NMCTempFname = inputs['NCEPDir'] + 'TempNMC_' + inputs['loc'].lower() + '_' + str(snglDay.year) + '.dat'
 
@@ -282,6 +282,11 @@ def main(argv):
                 lines = fopen.readlines()
             
             nmcTempData = np.array( [ [float(x) for x in line.strip().split()[1:]] for line in lines if not('#' in line) ] )
+            
+            #-----------------------------------
+            # Set year of last profile processed
+            #-----------------------------------
+            lastyr = snglDay.year
                         
         #--------------------------------------------------
         # Merge Pressure, Temperatuer, and H2O data
