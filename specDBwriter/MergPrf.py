@@ -299,20 +299,24 @@ def main(argv):
         # Get NCEP nmc and WACCM profiles
         # according to date
         #--------------------------------
-        dateInd = np.where(nmcDate == snglDay)[0][0]
-        mnthInd = (snglDay.month - 1)   # -1 because January is in 0th column      
+        dateInd = np.where(nmcDate == snglDay)[0]
+        mnthInd = (snglDay.month - 1)   # -1 because January is in 0th column
         
         #-------------------------------------
         # If date is entirely missing from nmc
         # use WACCM
-        #-------------------------------------
-        if not(dateInd):
+        #-------------------------------------        
+        if ( dateInd.size == 0 ):
             misngCnt[snglDay.year] += 1
             PressOut = waccmP[:,mnthInd]
             TempOut  = waccmT[:,mnthInd]     
-            waccmFlg = True
-        
+            waccmFlg = True            
+            
+        #-----------------------------
+        # Date exists in NMC data base
+        #-----------------------------
         else:            
+            dateInd = dateInd[0]
             # NCEP nmc
             tmpNMCPres   = nmcPress
             heightNMCprf = nmcHgtData[dateInd,:]
