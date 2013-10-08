@@ -465,7 +465,7 @@ return, datastructure = REPLICATE({h224, $                ; What is h224 ??????
         aprtc                      :0.D0,$                ;
         prmgas_tc                  :0.D0,$                ; Primary retrieved gas total column amount (Old name = rettc)
         h2o_vmr                    :fltarr(nlayers),$     ; Retrieved H2O vmr profile (old name = aprh2ovmr) 
-        h20_tc                     :0.D0,$                ; H2O retrieved total column amount (Old name = aprh2otc)
+        h2o_tc                     :0.D0,$                ; H2O retrieved total column amount (Old name = aprh2otc)
         year                       :0,$                   ; Year [YYYY]
         month                      :0,$                   ; Month [MM]
         day                        :0,$                   ; Day [DD]
