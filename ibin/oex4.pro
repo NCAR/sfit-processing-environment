@@ -1,4 +1,4 @@
-PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big, dir=dir
+pro oex4, site=site, ps=ps, nsm=nsm, ftype=ftype, thicklines=thicklines, big=big, dir=dir
 
 ; idl script to plot sfit4 output
 ; originally scripted in matlab now converted to idl
@@ -9,7 +9,8 @@ PRO oex4, site=site, PS=PS, NSM=NSM, FTYPE=FTYPE, ThickLines=ThickLines, big=big
 ; reads in sfit 4 output
 ; still to do error matrix, bnr file
 
-   close,/all
+   ;close,/all
+
 	FORWARD_FUNCTION plotak, plotaegv, plotk, covarplot, plotbnr, readgasf, plotprfs
 	FORWARD_FUNCTION plotgases
 
@@ -860,12 +861,12 @@ FUNCTION plotk, kmf, stat, smf, toPS, ppos, psiz, stickthick, plottop
 	;help, z
 	; kmat is npts x npar in sfit 4 & from readkmat4
    print, 'k matrix :'
-   help, kmf.mat
+   ;help, kmf.mat
    mat = kmf.mat[ ismx:ismx+nlev-1, 0:npts-1 ]
    ;help, mat
    mat = transpose( mat )
    print, 'k matrix target to plot:'
-   help, mat
+   ;help, mat
 
 	;mat  = REVERSE( mat[ 0:npts-1, ismx:ismx+nlev-1 ], 2); *1000.0
 
@@ -1145,19 +1146,19 @@ FUNCTION plotak, ak, stat, toPS, ppos, psiz, tek, lthick, plottop, site, auc, nr
    OPLOT, 1.-auc, z, color=cc, thick=lthick, linestyle=1
 
 	; Printout summed kernels
-	IF( toPS )THEN BEGIN
-		OPENW, lun, 'partkrnl.dat', /GET_LUN
-		PRINTF, lun, 'Alt[km]', bname, FORMAT='(10A13)'
-		FOR i=0, nlev-1 DO PRINTF, lun, z[i], smaks[i, 0:4], 1.-auc[i],smaks[i, 5:7], FORMAT='(F8.2, 10F14.6)'
-		FREE_LUN, lun
-		pre_k = smak[0]
-		FOR i=1, cnt-1 DO BEGIN
-			IF( pre_k GE 0.5 AND i EQ 1 ) THEN PRINT, 'Min alt TCAK GT 0.5 : ', z[ids[0]]
-			IF( pre_k LT 0.5 AND smak[ids[i]] GE 0.5 ) THEN PRINT, 'Min alt TCAK GT 0.5 : ', z[ids[i-1]]
-			IF( pre_k GE 0.5 AND smak[ids[i]] LT 0.5 ) THEN PRINT, 'Max alt TCAK GT 0.5 : ', z[ids[i-1]]
-			pre_k = smak[ids[i]]
-		ENDFOR
-	ENDIF
+;	IF( toPS )THEN BEGIN
+;		OPENW, lun, 'partkrnl.dat', /GET_LUN
+;		PRINTF, lun, 'Alt[km]', bname, FORMAT='(10A13)'
+;		FOR i=0, nlev-1 DO PRINTF, lun, z[i], smaks[i, 0:4], 1.-auc[i],smaks[i, 5:7], FORMAT='(F8.2, 10F14.6)'
+;		FREE_LUN, lun
+;		pre_k = smak[0]
+;		FOR i=1, cnt-1 DO BEGIN
+;			IF( pre_k GE 0.5 AND i EQ 1 ) THEN PRINT, 'Min alt TCAK GT 0.5 : ', z[ids[0]]
+;			IF( pre_k LT 0.5 AND smak[ids[i]] GE 0.5 ) THEN PRINT, 'Min alt TCAK GT 0.5 : ', z[ids[i-1]]
+;			IF( pre_k GE 0.5 AND smak[ids[i]] LT 0.5 ) THEN PRINT, 'Max alt TCAK GT 0.5 : ', z[ids[i-1]]
+;			pre_k = smak[ids[i]]
+;		ENDFOR
+;	ENDIF
 
 	RETURN, 0
 END

@@ -11,6 +11,7 @@ A = {gas, mol       : '',           $
 	      altpltrng  : DBLARR(2),	   $
 	      altrng     : DBLARR(2),  	$
 	      colscl     : 0.0,		      $
+	      trng       : DBLARR(2),	   $
 	      colrng     : DBLARR(2),	   $
 	      avgcolrng  : DBLARR(2),	   $	; average column range
 	      vmrng      : DBLARR(2),  	$
@@ -598,19 +599,20 @@ CASE sitemol OF
 
    'MLOCO2' : BEGIN
       PRINT, '  UseMol : Found : ', mol
-      A.smol = 'CO!D2!N'
-      A.vmrscl = 1.0e6
-      A.vmrunits = '[ppm]'
-      A.vmrng = [1,8]
-      A.logrng = [0.1,10.]			; for A.mls log scale
-      A.ctfmt = '(f4.0)'
-      A.altrng = [ 1., 45. ]		; plot bounds
-      ;A.altrng = [ 1., 40. ]		; plot bounds for A.mls
+      A.smol      = 'CO!D2!N'
+      A.vmrscl    = 1.0e6
+      A.vmrunits  = '[ppm]'
+      A.vmrng     = [1,8]
+      A.logrng    = [0.1,10.]			; for A.mls log scale
+      A.ctfmt     = '(f4.0)'
+      A.altrng    = [ 1., 45. ]		; plot bounds
+      ;A.altrng   = [ 1., 40. ]		; plot bounds for A.mls
       A.altpltrng = [1., 44.]		; min max for file read
-      A.colscl = 1.0e-21
-      A.colrng = [ 4., 12. ]
-      A.slimid = 0
-      A.molid = 2
+      A.colscl    = 1.0e-21
+      A.colrng    = [ 4., 12. ]
+      A.trng      = [385,405]
+      A.slimid    = 0
+      A.molid     = 2
       END
 
    'CHF2CL' : BEGIN
@@ -719,6 +721,7 @@ CASE sitemol OF
       A.pcrng[0,*] = [ 0., 1. ]
       A.pcrng[1,*] = [ 0., 2. ]
       A.pcrng[2,*] = [ 2., 6. ]
+      A.trng      = [0.01,0.1]
                               ; !!! check indexes below
 
       A.files[0] =	'MLS-Aura_L2GP-O3_v01-51-c01_2005d063.he5'
@@ -837,12 +840,12 @@ CASE sitemol OF
       A.altrng = [ 5., 40. ]		; plot bounds
       ;A.altrng = [ 10., 40. ]		; plot bounds   for A.mls
       A.altpltrng = [9., 40.]		; min max for file read
-      A.colscl = 1.0e-16
-      A.colrng = [ 0., 1.5]
+      A.colscl = 1.0e-15
+      A.colrng = [ 1., 10. ]
       A.slimid = 8
       A.pcrng[0,*] = [ 0., 1. ]
-      A.pcrng[1,*] = [ 0., 1. ]
-      A.pcrng[2,*] = [ 0., 1. ]
+      A.pcrng[1,*] = [ 0., 4. ]
+      A.pcrng[2,*] = [ 0., 2. ]
 
                   ; !!! check indexes below
 
@@ -1040,7 +1043,8 @@ CASE sitemol OF
       A.altrng = [ 5., 40. ]		; plot bounds
       A.altpltrng = [7., 40.]		; min max for file read
       A.colscl = 1.0e-19
-      A.colrng = [ 3., 4. ]
+      A.colrng    = [ 3., 4. ]
+      A.trng      = [ 1., 2. ]
       A.mnthrng = [0.0, 2.5]
       A.avgcolrng     = [ 3.4, 3.8 ]
       A.avrng      = [ 1.7, 2.0 ]
