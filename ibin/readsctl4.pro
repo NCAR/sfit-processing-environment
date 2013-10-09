@@ -2,7 +2,7 @@
 
 function readsctl4, ctl, file
 
-   print, 'readsctl4 input file : ', file
+   print, 'Readsctl4 input file : ', file
 
 	openr, lun, file, /get_lun, error=ioerr
 	if( ioerr ne 0 ) then begin
@@ -60,8 +60,9 @@ function readsctl4, ctl, file
 
    endfor
 
-   print, 'Readsctl4 : ', file, ' file done'
-	 free_lun, lun
+   print, 'Read sfit control file done.'
+
+	free_lun, lun
    return, 0
 
 stop

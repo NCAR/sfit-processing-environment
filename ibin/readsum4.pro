@@ -1,6 +1,6 @@
 function readsum4, sumf, file
 
-   print, 'readsum4 input file : ', file
+   print, 'Readsum4 input file : ', file
 
 	openr, lun, file, /get_lun, error=ioerr
 	if( ioerr ne 0 ) then begin
@@ -99,34 +99,35 @@ function readsum4, sumf, file
       tag  : tag,          $
       ttl  : ttl,          $
       nfit : nfit,         $
-     shead : spechead,		 $
+     shead : spechead,		$
       nret : nret,         $
-     hret : hret, $
-		sret : sret,			   $
+     hret  : hret,         $
+		sret : sret,		   $
       nbnd : nband,        $
-      hbnd : hbnd, $
-		sbnd : sband,		     $
-		hprm : hprm, $
-		sprm : parms, $
+      hbnd : hbnd,         $
+		sbnd : sband,		   $
+		hprm : hprm,         $
+		sprm : parms,        $
       nscn : nscnb,        $
       npts : npts,         $
       wstr : wstrt,        $
       wstp : wstop,        $
      nspac : nspac,        $
-		 sjscn : sjscn,			   $
-		fitrms : fitrms,	     $
-	 chi_2_y : chi_2_y,      $
-	 dofstrg : dofstrg,      $
-		   itr : itr,          $
-		convTF : convTF,       $
-	 divwarn : divwarn,      $
+	  sjscn : sjscn,	      $
+	 fitrms : fitrms,	      $
+	chi_2_y : chi_2_y,      $
+   dofstrg : dofstrg,      $
+ 	    itr : itr,          $
+	 convTF : convTF,       $
+	divwarn : divwarn,      $
  prmgas_tc : prmgas_tc,    $
     h2o_tc : h2o_tc        $
 		}
 
-help, sumf
+;help, sumf
 
    free_lun, lun
+   print, 'Read summary file done.'
    return, 0
 
 stop
