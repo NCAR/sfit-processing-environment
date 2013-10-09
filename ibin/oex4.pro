@@ -14,7 +14,7 @@ pro oex4, site=site, ps=ps, nsm=nsm, ftype=ftype, thicklines=thicklines, big=big
 	FORWARD_FUNCTION plotak, plotaegv, plotk, covarplot, plotbnr, readgasf, plotprfs
 	FORWARD_FUNCTION plotgases
 
-   funcs = [ 'readstat4', 'usemol', 'readnxn4', 'readlayr','readpbp4', 'exponent', 'readsctl4' ]
+   funcs = [ 'readt154', 'readstat4', 'usemol', 'readnxn4', 'readlayr','readpbp4', 'exponent', 'readsctl4' ]
    resolve_routine, funcs, /either
 
 	PRINT, ' Usage : oex, site="mlo | tab | acf", /ps, /nsm, /thick, ftype= "B" | "L"'
@@ -133,6 +133,20 @@ pro oex4, site=site, ps=ps, nsm=nsm, ftype=ftype, thicklines=thicklines, big=big
 		stop
 	endif
 
+; Read in t15asc file
+	rc = 0
+   t15file = ctl.spectrum
+	if( keyword_set( dir ) )then t15file = dir + ctl.spectrum
+	rc = readt154( t15, t15file )
+	if( rc ne 0 ) then begin
+		printf, -2,'could not read ak file: ', t15file
+		stop
+	endif
+
+	bnrfile = strtrim(string(t15.tstmp[0]),2) + '.bnr'
+	if( keyword_set( dir ) )then bnrfile = dir + bnrfile
+
+
 ; Read in Smoothing Error file
 ;	rc = 0
 ;	rc = readnxn( sserr, ssfile )
@@ -193,9 +207,6 @@ pro oex4, site=site, ps=ps, nsm=nsm, ftype=ftype, thicklines=thicklines, big=big
 
 		ENDELSE
 
-		; plot spectra
-      rc = plotgases( pbp, toPS, ppos, psiz, tek, lthick, summary, stat, A.mol, dir )
-
       ; plot vmr profiles from statevector
       for ii=0 , stat.ngas-1 do begin
 		  rc = plotprfs( ii, stat, stgrd, tops, ppos, psiz, tek, lthick, plottop )
@@ -217,29 +228,15 @@ pro oex4, site=site, ps=ps, nsm=nsm, ftype=ftype, thicklines=thicklines, big=big
 		; plot averaging kernels
 		;rc = plotak( ak, stat, toPS, ppos, psiz, tek, lthick, plottop, usite, auc, /nrm )
 
-		; plot eigenvectors
-		;IF( aevcrc EQ 0 ) THEN BEGIN
-		;	rc = plotaegv( aegv, stat, toPS, ppos, psiz, tek, lthick, plottop )
-      ;ENDIF
-
-		; 2d block plot plot Sa
-		;nlev = kmf.nlev
-		;ismx = kmf.ismx
-		;mat  = REVERSE( REVERSE( kmf.sa[ ismx:ismx+nlev-1, ismx:ismx+nlev-1 ], 1), 2)
-		;rc = blockplot( mat, prfs, toPS, ppos, psiz, stickthick, 'Sa Covariance' )
-		;rc = covarplot( mat, prfs, toPS, ppos, psiz, stickthick, 'Sa Covariance', plottop )
-
-		; 2d block plot plot Sm
-		;rc = blockplot( smerr.mat, prfs, toPS, ppos, psiz, stickthick, 'Measurement Error' )
-		;rc = covarplot( smerr.mat, prfs, toPS, ppos, psiz, stickthick, 'Measurement Error', plottop )
-
-		; 2d block plot plot Ss
-		;rc = blockplot( sserr.mat, prfs, toPS, ppos, psiz, stickthick, 'Smoothing Error' )
-		;IF( NOT KEYWORD_SET( NSM )) THEN $
-		;    rc = covarplot( sserr.mat, prfs, toPS, ppos, psiz, stickthick, 'Smoothing Error', plottop )
-
 		; plot bnr file
-		;rc = plotbnr( pbp, toPS, ppos, psiz, stickthick, plottop, ftype )
+		rc = plotbnr( pbp, bnrfile, toPS, ppos, psiz, stickthick, plottop, ftype )
+
+		; plot spectra
+      rc = plotgases( pbp, toPS, ppos, psiz, tek, lthick, summary, stat, A.mol, dir )
+
+      ; print summary file
+      rc = prntsum( smf, toPS, ppos, psiz )
+
 
 		IF( toPS ) THEN DEVICE, /CLOSE_FILE
 
@@ -248,6 +245,65 @@ pro oex4, site=site, ps=ps, nsm=nsm, ftype=ftype, thicklines=thicklines, big=big
 	PRINT, ' OEX .DONE.', FORMAT='(/,a,/)'
 
 END
+
+
+; Print out retrieval details to a plot window
+function prntsum,  smf, toPS, ppos, psiz
+
+	; set up windows
+	tek_color
+	if tops then begin
+		erase
+		!p.charsize = 1.3
+		chrsz = 1.
+	endif else begin
+		ppos = ppos +  [ 20,  -20, 1 ]
+		window, ppos[2], retain=2, xsize=psiz[0], ysize=psiz[1], 	$
+			title= string( 'plot ', ppos[2], format='(a,i02)') + ' : Retrieval Summary',  $
+			xpos = ppos[0], ypos = ppos[1]
+		!p.charsize = 1.2
+		chrsz = 1.
+	endelse
+
+    y = 0.9
+    x = 0.03
+    xyouts, x, y, smf.ver, /normal
+
+    xyouts, x+0.4, y, smf.tag, /normal
+
+    y = y - 0.05
+    for j=0, smf.nfit-1 do xyouts, x, y-j*0.03, 'Fit :' + string(j+1,format='(i3,1x)') + smf.shead[j], /normal
+
+    y = y - 0.05
+    xyouts, x, y, smf.hret, /normal
+    y = y - 0.03
+    for j=0, smf.nret-1 do xyouts, x, y-j*0.03, smf.sret[j], /normal
+
+    y = y - (smf.nret-1)*0.03 - 0.05
+    pos = strpos( smf.hbnd, 'NSCAN' )
+    xyouts, x, y, strmid(smf.hbnd,0,pos+5), /normal
+    for j=0, smf.nbnd-1 do begin
+      y = y - 0.03
+      xyouts, x, y, smf.sbnd[j], /normal
+      if( j eq 0 )then begin
+         y = y - 0.03
+         xyouts, x, y, '        ' + strmid(smf.hbnd,pos+5, strlen( smf.hbnd )), /normal
+      endif
+      for k = 0, smf.nscn[j]-1 do begin
+          y = y - 0.03
+         xyouts, x, y, '              ' + strtrim(smf.sjscn[k], 2 ), /normal
+       endfor
+    endfor
+
+    y = y - 0.05
+    xyouts, x, y, strtrim(smf.hprm,2), /normal
+    y = y - 0.03
+    xyouts, x, y, strtrim(smf.sprm,2), /normal
+
+
+return, 0
+end
+
 
 
 
@@ -616,12 +672,9 @@ end
 
 ; Plot bnr --------------------------------------------------------------------------
 
-FUNCTION plotbnr, pbp, toPS, ppos, psiz, stickthick, plottop, ftype
+FUNCTION plotbnr, pbp, file, toPS, ppos, psiz, stickthick, plottop, ftype
 
-	;ftype = 'B'
-	file = 'temp.bnr.00'
-
-	PRINT, 'bnr file type : ', ftype
+	PRINT, 'bnr file &  type : ', file, '  ', ftype
 
 	IF( ftype EQ 'L' ) THEN 			$
 		OPENR, sftlun, file, /GET_LUN ,/F77_UNFORMATTED, /SWAP_ENDIAN, ERROR=ioerr	$

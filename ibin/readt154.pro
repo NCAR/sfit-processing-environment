@@ -1,6 +1,6 @@
 function readt154, t15, file
 
-   print, 'readt154 input file : ', file
+   print, 'Readt154 input file : ', file
 
 	openr, lun, file, /get_lun, error=ioerr
 	if( ioerr ne 0 ) then begin
@@ -13,29 +13,29 @@ function readt154, t15, file
    n = 0
    mxpts = 0L
    buf1 = ''
-   readf, lun, buf1
+
    while( ~ eof( lun ) )do begin
 
-      n++
       readf, lun, buf1
       readf, lun, buf1
       readf, lun, buf1
-      sb = strsplit( buf1, /extract, cnt )
-      npts = sb(cnt-1) +0L
+      readf, lun, buf1
+      sb = strsplit( buf1, /extract, count=count )
+      npts = sb(count-1) +0L
       amps = dblarr( npts )
-      mxnpts = max( [mxnpts, npts] )
+      mxpts = max( [mxpts, npts] )
       readf, lun, amps
-      readf, lun, buf1
+      n++
 
    endwhile
 
-   print, ' Found : ', n ' blocks in file : ' file
+   print, ' Found : ', n, ' blocks in file : ', file
 
-   t15 = {
-      sbuf  : strarr(n, 4),   $
-      tstmp : long(n),     $
-      npts  : long(n),     $
-      amps  : dblarr(n, mxnpts) $
+   t15 = { $
+      sbuf  : strarr(n, 4),     $
+      tstmp : long(n),          $
+      npts  : long(n),          $
+      amps  : dblarr(n, mxpts)  $
       }
 
    point_lun, lun, 0
@@ -47,14 +47,14 @@ function readt154, t15, file
          t15.sbuf[i,j] = buf
       endfor
 
-      sb = strsplit( t15.sbuf[i,2], /extract, cnt )
-      t15.npts[j] = sb[3]*10000L + sb[4]*100L + sb[5]
+      sb = strsplit( t15.sbuf[i,1], /extract, count=count )
+      t15.tstmp[i] = long(sb[3])*10000L + long(sb[4])*100L + long(sb[5]) + 0L
 
-      sb = strsplit( t15.sbuf[i,3], /extract, cnt )
-      t15.npts[j] = sb(cnt-1) +0L
-      amps = dblarr( t15.npts[j] )
+      sb = strsplit( t15.sbuf[i,3], /extract, count=count )
+      t15.npts[i] = sb(count-1) +0L
+      amps = dblarr( t15.npts[i] )
       readf, lun, amps
-      t15.amps[i,0:t15.npts[j]-1] = amps
+      t15.amps[i,0:t15.npts[i]-1] = amps
 
    endfor
 
