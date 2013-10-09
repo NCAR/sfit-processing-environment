@@ -114,7 +114,7 @@ function readsum4, sumf, file
 		convTF : convTF,       $
 	 divwarn : divwarn,      $
  prmgas_tc : prmgas_tc,    $
-    h20_tc : h20_tc        $
+    h2o_tc : h2o_tc        $
 		}
 
 help, sumf
