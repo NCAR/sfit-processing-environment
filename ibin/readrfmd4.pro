@@ -28,7 +28,7 @@ function readrfmd4, refm, file, zpt=zpt
 
    arr = fltarr(nlay)
 
-   if( keyword_set (zpt) ) then begin
+  if  keyword_set (zpt) then begin
 
          refm.id[0] = 0
          refm.name[0] = 'Altitude'
@@ -51,14 +51,15 @@ function readrfmd4, refm, file, zpt=zpt
          readf, lun, arr
          refm.prfs[2,*] = arr
 
-    endif else begin
+  endif
+  if  (~keyword_set (zpt) ) then begin
       for i = 0, 2 do begin
          refm.id[i] = 0
          refm.name[i] = ''
          refm.titl[i] = ''
          refm.prfs[i,*] = 0
        endfor
-   endelse
+  endif
 
 
    for i = 3, nmol+2 do begin

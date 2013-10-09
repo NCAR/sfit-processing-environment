@@ -28,12 +28,13 @@ if( keyword_set(rev) )then begin
    mygrd.thik = reverse(dat[2,*],2)
    mygrd.grth = reverse(dat[3,*],2)
    mygrd.midp = reverse(dat[4,*],2)
-endif else begin
+endif 
+if  ~keyword_set(rev) then begin
    mygrd.alts = dat[1,*]
    mygrd.thik = dat[2,*]
    mygrd.grth = dat[3,*]
    mygrd.midp = dat[4,*]
-endelse
+endif
 
 ;print, mygrd.midp
 
