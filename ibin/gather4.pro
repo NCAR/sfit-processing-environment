@@ -336,8 +336,8 @@ for i = 0, nsize-1 do begin
   ;--------------------------------------------------------------
   ; Read surface pressure and temperature from reference.prf file
   ;--------------------------------------------------------------
-  zpt=1
-  dum = readrfmd4( refm, ds[i].directory + 'reference.prf', zpt )
+  
+  dum = readrfmd4( refm, ds[i].directory + 'reference.prf',/zpt )
   
   ; Determine if alt decreasing: updn=1 or alt increasing: updn=0
   if ( refm.updn eq 1 ) then begin
