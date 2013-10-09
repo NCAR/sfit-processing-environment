@@ -52,8 +52,11 @@ fday  = 26                 # Day
 BaseDirInput     = '/Users/ebaumer/Data/TestBed/'                  # Input base directory
 BaseDirOutput    = '/Users/ebaumer/Data/TestBed/Output/'           # Output base directory
 binDir           = '/Users/ebaumer/Data/TestBed/src/'              # binary directory
-ilsDir           = ''
-#ilsDir           = '/Users/ebaumer/Data/TestBed/ilsFiles/'         # Directory for ILS files. Use empty string ('') to indicate no ILS file!!
+ilsDir           = ''                                              # ILS file(s). Options:
+                                                                   #   1) Use empty string ('') to indicate no ILS file!!
+                                                                   #   2) If string points to directory finds ils file closest in date (ils file name must be in format: *ilsYYYYMMDD.*)
+                                                                   #   3) If string points to specific file, this ils file is used for all data processing
+                                                                   
 RatioDir         = '/Users/ebaumer/Data/TestBed/fltrFiles/'        # Directory for ratio files ** Currently NOT used **
 logDirOutput     = '/Users/ebaumer/Data/TestBed/'                  # Directory to write log files and list files
 

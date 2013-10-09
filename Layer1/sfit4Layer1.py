@@ -458,31 +458,42 @@ def main(argv):
                     # Determine whether to use ILS file. Empty string
                     # '' => no ILS file.
                     #-------------------------------------------------
-                    if mainInF.inputs['ilsDir']:                   
-                        # Determine which ILS file to use 
-                        ilsFileList = glob.glob(mainInF.inputs['ilsDir'] + 'ils*')
-            
-                        # Create a date list of ils files present
-                        ilsYYYYMMDD = []
-                        for ilsFile in ilsFileList:
-                            ilsFileNpath = os.path.basename(ilsFile)
-                            match = re.match(r'\s*ils(\d\d\d\d)(\d\d)(\d\d).*',ilsFileNpath)
-                            ilsYYYYMMDD.append([int(match.group(1)),int(match.group(2)),int(match.group(3))])
-                                            
-                        ilsDateList = [ dt.date(ilsyear,ilsmonth,ilsday) for ilsyear, ilsmonth, ilsday in ilsYYYYMMDD ]
+                    if mainInF.inputs['ilsDir']:
+
+                        #-------------------------------------------
+                        # Determine if ilsDir is a file or directory
+                        #-------------------------------------------
+                        # If directory.....
+                        if os.path.isdir(mainInF.inputs['ilsDir']):
                         
-                        # Find the ils date nearest to the current day
-                        nearstDay     = sc.nearestDate(ilsDateList,obsDay.year,obsDay.month,obsDay.day)
-                        nearstDayMnth = "{0:02d}".format(nearstDay.month)
-                        nearstDayYr   = "{0:02d}".format(nearstDay.year)
-                        nearstDayDay  = "{0:02d}".format(nearstDay.day)
-                        nearstDaystr  = nearstDayYr + nearstDayMnth + nearstDayDay
-                        
-                        # Get File path and name for nearest ils file
-                        for ilsFile in ilsFileList:
-                            if nearstDaystr in os.path.basename(ilsFile):
-                                ilsFname = ilsFile
-                                
+                            # Determine which ILS file to use 
+                            ilsFileList = glob.glob(mainInF.inputs['ilsDir'] + 'ils*')
+                
+                            # Create a date list of ils files present
+                            ilsYYYYMMDD = []
+                            for ilsFile in ilsFileList:
+                                ilsFileNpath = os.path.basename(ilsFile)
+                                match = re.match(r'\s*ils(\d\d\d\d)(\d\d)(\d\d).*',ilsFileNpath)
+                                ilsYYYYMMDD.append([int(match.group(1)),int(match.group(2)),int(match.group(3))])
+                                                
+                            ilsDateList = [ dt.date(ilsyear,ilsmonth,ilsday) for ilsyear, ilsmonth, ilsday in ilsYYYYMMDD ]
+                            
+                            # Find the ils date nearest to the current day
+                            nearstDay     = sc.nearestDate(ilsDateList,obsDay.year,obsDay.month,obsDay.day)
+                            nearstDayMnth = "{0:02d}".format(nearstDay.month)
+                            nearstDayYr   = "{0:02d}".format(nearstDay.year)
+                            nearstDayDay  = "{0:02d}".format(nearstDay.day)
+                            nearstDaystr  = nearstDayYr + nearstDayMnth + nearstDayDay
+                            
+                            # Get File path and name for nearest ils file
+                            for ilsFile in ilsFileList:
+                                if nearstDaystr in os.path.basename(ilsFile):
+                                    ilsFname = ilsFile
+
+                        # If file.....
+                        elif os.path.isfile(mainInF.inputs['ilsDir']):
+                            ilsFname = mainInF.inputs['ilsDir']
+                                                          
                         if logFile: logFile.info('Using ils file: ' + ilsFname)
                         
                         # Replace ils file name in local ctl file (within working directory)
