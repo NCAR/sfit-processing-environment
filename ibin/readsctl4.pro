@@ -61,7 +61,7 @@ function readsctl4, ctl, file
    endfor
 
    print, 'Readsctl4 : ', file, ' file done'
-	free_lun, lun
+	 free_lun, lun
    return, 0
 
 stop

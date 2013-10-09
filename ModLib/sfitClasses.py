@@ -32,6 +32,7 @@ import csv
 import itertools
 import sys
 import subprocess
+import numpy as np
 
                                             #------------------#
                                             # Define functions #
@@ -59,6 +60,8 @@ def nearestDate(daysList, year, month, day=1):
                                                 #----------------#
                                                 # Define classes #
                                                 #----------------#
+                                                
+#-----------------------------------------------------------------------------------------------                                                
 class DateRange:
     '''
     This is an extension of the datetime module.
@@ -105,7 +108,7 @@ class DateRange:
             return False
         
 
-
+#-------------------------------------------InputFile-------------------------------------------------------
 class InputFile:
     ''' Class for input files with generic method to check the existance of file'''
     def __init__(self,fname,logging=False):
@@ -117,7 +120,7 @@ class InputFile:
             if logging: logging.error(errmsg)
             sys.exit()         
 
-
+#----------------------------------------Layer1InputFile-------------------------------------------------------
 class Layer1InputFile(InputFile):
     '''
     This class deals with batch processing Layer 1
@@ -148,11 +151,7 @@ class Layer1InputFile(InputFile):
         if '__builtins__' in self.inputs:
             del self.inputs['__builtins__']          
             
-#----------------------------------------------
-#
-#
-#
-#----------------------------------------------
+#----------------------------------------CtlInputFile-------------------------------------------------------
 class CtlInputFile(InputFile):
     '''
     This class deals with reading in ctl files to dictionary and replacing
@@ -285,12 +284,7 @@ class CtlInputFile(InputFile):
         with open(self.fname, 'w') as fopen:
             fopen.writelines(lines)
             
-#----------------------------------------------
-#
-#
-#
-#----------------------------------------------
-        
+#--------------------------------------DbInputFile---------------------------------------------------------
 class DbInputFile(InputFile):
     '''
     This class deals with reading and filtering 
@@ -312,6 +306,12 @@ class DbInputFile(InputFile):
             # Currently only reads white space delimited file. Need to make general****
             reader = csv.DictReader(fname,delimiter=' ',skipinitialspace=True)                   # Read csv file
             for row in reader:
+                #------------------------------------------------------
+                # DictReader will add a None key and value if there are
+                # extra spaces at the end of database line.
+                #------------------------------------------------------
+                if None in row: del row[None]                    
+                
                 for col,val in row.iteritems():
                     try:
                         val = float(val)                                                         # Convert string to float
@@ -367,3 +367,77 @@ class DbInputFile(InputFile):
         dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
         
         return dbFltInputs
+    
+#---------------------------------------GasPrfs--------------------------------------------------------
+class GasPrfs(InputFile):
+    ''' This class gets the Zbar, P, Airmass and VMR of specified gas for 
+        both retrieved and a prior states'''
+    
+    def __init__(self,rprfsFile,aprfsFile,gas, npFlg=False, logging=False):
+        
+        InputFile.__init__(self,rprfsFile,logging)
+        self.rprfsFile = self.fname
+        
+        InputFile.__init__(self,aprfsFile,logging)
+        self.aprfsFile = self.fname
+        
+        del self.fname
+        
+        #---------------------------
+        # Get retrieved profile data
+        #---------------------------
+        with open(rprfsFile,'r') as fopen:
+            rprfsLines = fopen.readlines()
+        
+        rprfsParm = rprfsLines[3].strip().split()
+        
+        #--------------------------
+        # Get a priori profile data
+        #--------------------------
+        with open(aprfsFile,'r') as fopen:
+            aprfsLines = fopen.readlines()
+    
+        aprfsParm = aprfsLines[3].strip().split()
+        
+        #------
+        # Get Z
+        #------
+        self.Z = [ float(row.strip().split()[rprfsParm.index('Z')]) for row in rprfsLines[4:] ]        
+        if npFlg: self.Z = np.asarray(self.Z)
+        
+        #---------
+        # Get ZBAR
+        #---------
+        self.Zbar = [ float(row.strip().split()[rprfsParm.index('ZBAR')]) for row in rprfsLines[4:] ]
+        if npFlg: self.Zbar = np.asarray(self.Zbar)
+        
+        #----------------
+        # Get Temperature
+        #----------------
+        self.T = [ float(row.strip().split()[rprfsParm.index('TEMPERATURE')]) for row in rprfsLines[4:] ]   
+        if npFlg: self.T = np.asarray(self.T)
+        
+        #-------------
+        # Get Pressure
+        #-------------        
+        self.P = [ float(row.strip().split()[rprfsParm.index('PRESSURE')]) for row in rprfsLines[4:] ]
+        if npFlg: self.P = np.asarray(self.P)
+        
+        #------------
+        # Get Airmass
+        #------------        
+        self.Airmass = [ float(row.strip().split()[rprfsParm.index('AIRMASS')]) for row in rprfsLines[4:] ]        
+        if npFlg: self.Airmass = np.asarray(self.Airmass)
+        
+        #--------------------------
+        # Get gas retrieved profile
+        #--------------------------
+        self.Rprf = [ float(row.strip().split()[rprfsParm.index(gas.upper())]) for row in rprfsLines[4:] ]
+        if npFlg: self.Rprf = np.asarray(self.Rprf)
+        
+        #-------------------------
+        # Get gas a priori profile
+        #-------------------------
+        self.Aprf = [ float(row.strip().split()[aprfsParm.index(gas.upper())]) for row in aprfsLines[4:] ]        
+        if npFlg: self.Aprf = np.asarray(self.Aprf)
+        

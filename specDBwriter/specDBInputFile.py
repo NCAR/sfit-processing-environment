@@ -33,12 +33,12 @@ loc = 'mlo'
 # and ending dates!!
 #----------------------------------
 # Starting 
-iyear = 1999               # Year
+iyear = 2013               # Year
 imnth = 1                  # Month
 iday  = 1                  # Day
 
 # Ending
-fyear = 1999               # Year
+fyear = 2013               # Year
 fmnth = 12                 # Month
 fday  = 31                 # Day
 
@@ -46,14 +46,14 @@ fday  = 31                 # Day
 #------------
 # directories
 #------------
-dataBaseDir   = '/Users/ebaumer/Data/TestBed2/mlo/'                           # Base directory for OPUS data
-DaysProcDir   = '/Users/ebaumer/Data/TestBed2/'                           # Path to write file that contains list of all folders processed
+dataBaseDir   = '/Users/ebaumer/Data/TestBed/mlo/'                           # Base directory for OPUS data
+DaysProcDir   = '/Users/ebaumer/Data/TestBed/'                           # Path to write file that contains list of all folders processed
 
 #------
 # Files
 #------
-outputDBfile  = '/Users/ebaumer/Data/TestBed2/spDB_'+loc+'_'+str(iyear)+'.dat'         # Path and filename of spectral database file
-Fckopus       = '/Users/ebaumer/Code/sfit-ckopus/ckopus'                  # ckopus executable file
+outputDBfile  = '/Users/ebaumer/Data/TestBed/spDB_'+loc+'_'+str(iyear)+'.dat'         # Path and filename of spectral database file
+Fckopus       = '/Users/ebaumer/Code/SFIT_Compiled/ckopus'                  # ckopus executable file
 
 #----------------------
 # General Logical Flags
@@ -68,8 +68,9 @@ bnrType    = 'F'                # bnr type ckopus writes (F => Fortran, R => C)
 SBlockType = 'NONE'             # Spectral block type [TRAN | SGN2 | IFG2 | EMIS | IFGM | PHAS | SNGC]
                                 # If this value is None or an empty string, the program will take the 
                                 # default spectral block type given by ckopus
-                                
-ckopusFlgs = ['-U','-t-150']    # Additional ckopus flags. Must include '-'. Each flag should be seperated by a comma
+     
+ckopusFlgs = ['-b3']                           
+#ckopusFlgs = ['-U','-t-150']    # Additional ckopus flags. Must include '-'. Each flag should be seperated by a comma
                                 # and contained within the brackets
 
 

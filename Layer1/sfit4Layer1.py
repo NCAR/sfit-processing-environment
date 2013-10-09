@@ -1,5 +1,5 @@
 #! /usr/local/python-2.7/bin/python
-
+# Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
 # Name:
 #        sfit4Layer1.py
@@ -59,7 +59,7 @@ import glob
 import re
 import sfitClasses as sc
 import shutil
-from Layer1Mods import refMkrNCAR, t15ascPrep
+from Layer1Mods import refMkrNCAR, t15ascPrep#, errAnalysis
 
 
 
@@ -200,13 +200,14 @@ def main(argv):
         
         logFile = logging.getLogger('1')
         logFile.setLevel(logging.INFO)
-        hdlr1   = logging.FileHandler(log_fpath + mainInF.inputs['loc']+'_'+dt.datetime.now().strftime('%Y-%m-%d')+'.log',mode='a')
+        hdlr1   = logging.FileHandler(log_fpath + dt.datetime.now().strftime('%Y_%m_%d') + '.log',mode='w')
         fmt1    = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s','%a, %d %b %Y %H:%M:%S')
         hdlr1.setFormatter(fmt1)
         logFile.addHandler(hdlr1)  
         logFile.info('**************** Starting Logging ***********************')
         logFile.info('Input data file:        ' + mainInF.fname )
         logFile.info('Log file path:          ' + log_fpath     )
+        logFile.info('Station location:       ' + mainInF.inputs['loc'])
         
 
     #---------------------
@@ -221,10 +222,9 @@ def main(argv):
 
         # check if path is valide
         ckDir(lst_fpath)       
-        
         lstFile = logging.getLogger('2')
         lstFile.setLevel(logging.INFO)
-        hdlr2   = logging.FileHandler(lst_fpath + mainInF.inputs['loc']+'_'+dt.datetime.now().strftime('%Y-%m-%d')+'.lst',mode='a')
+        hdlr2   = logging.FileHandler(lst_fpath + dt.datetime.now().strftime('%Y_%m_%d') + '.lst',mode='w')
         fmt2    = logging.Formatter('')
         hdlr2.setFormatter(fmt2)
         lstFile.addHandler(hdlr2)   
@@ -303,29 +303,33 @@ def main(argv):
         #--------------------------------------
         for ctl_ind,ctlFileList in enumerate(mainInF.inputs['ctlList']):
             
-            
-            #-----------------------------
-            # Write Meta-data to list file
-            #-----------------------------
-            if lstFlg:
-                lstFile.info('# Begin List File Meta-Data')
-                lstFile.info('Database_File = ' + mainInF.inputs['spcdbFile'])
-                lstFile.info('WACCM_File    = ' + mainInF.inputs['WACCMfile'])
-                lstFile.info('ctl_File      = ' + mainInF.inputs['ctlList'][ctl_ind][0])
-                lstFile.info('FilterID      = ' + mainInF.inputs['ctlList'][ctl_ind][5])
-                lstFile.info('VersionName   = ' + mainInF.inputs['ctlList'][ctl_ind][6])
-                lstFile.info('# End List File Meta-Data')
-                lstFile.info('')
-                lstFile.info('Date         TimeStamp    Directory ')            
-                
             #-----------------------------
             # Initialize ctl file instance
             # and get inputs
             #-----------------------------  
             ctlFile   = ctlFileList[0]
             ctlFileGlb = sc.CtlInputFile(ctlFile,logFile)
-            ctlFileGlb.getInputs()
-                                
+            ctlFileGlb.getInputs() 
+            
+            #-----------------------------
+            # Write Meta-data to list file
+            #-----------------------------
+            if lstFlg:
+                lstFile.info('# Begin List File Meta-Data')
+                lstFile.info('Database_File  = ' + mainInF.inputs['spcdbFile'])
+                lstFile.info('WACCM_File     = ' + mainInF.inputs['WACCMfile'])
+                lstFile.info('ctl_File       = ' + mainInF.inputs['ctlList'][ctl_ind][0])
+                lstFile.info('FilterID       = ' + mainInF.inputs['ctlList'][ctl_ind][5])
+                lstFile.info('VersionName    = ' + mainInF.inputs['ctlList'][ctl_ind][6])
+                lstFile.info('Site           = ' + mainInF.inputs['loc'][0])
+                lstFile.info('statnLyrs_file = ' + ctlFileGlb.inputs['file.in.stalayers'][0])
+                lstFile.info('primGas        = ' + ctlFileGlb.primGas)
+                lstFile.info('specDBfile     = ' + mainInF.inputs['spcdbFile'])
+                lstFile.info('# End List File Meta-Data')
+                lstFile.info('')
+                lstFile.info('Date         TimeStamp    Directory ')            
+                
+
             #-------------------------
             # Filter spectral db based
             # on filter ID
@@ -398,22 +402,18 @@ def main(argv):
                     wrkInputDir2 = wrkInputDir1 + yrstr + mnthstr + daystr + '/'               
                     ckDir( wrkInputDir2, logFlg=logFile, exitFlg=True )                       
                     
-                    # Check for the existance of <GAS> Output folder and create if DNE
-                    wrkOutputDir2 = wrkOutputDir1 + ctlFileGlb.primGas  + '/'  
-                    ckDirMk( wrkOutputDir2, logFile )    
-                    
                     # Check for the existance of Output folder <Version> and create if DNE
                     if mainInF.inputs['ctlList'][ctl_ind][6]:
-                        wrkOutputDir3 = wrkOutputDir2 + mainInF.inputs['ctlList'][ctl_ind][6] + '/' 
-                        ckDirMk( wrkOutputDir3, logFile )             
+                        wrkOutputDir2 = wrkOutputDir1 + mainInF.inputs['ctlList'][ctl_ind][6] + '/' 
+                        ckDirMk( wrkOutputDir2, logFile )             
                     else:
-                        wrkOutputDir3 = wrkOutputDir2
+                        wrkOutputDir2 = wrkOutputDir1
             
                     # Check for the existance of Output folder <Date>.<TimeStamp> and create if DNE
-                    wrkOutputDir4 = wrkOutputDir3 + datestr + '.' + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '/' 
-                    if not ckDirMk( wrkOutputDir4, logFile ):
+                    wrkOutputDir3 = wrkOutputDir2 + datestr + '.' + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '/' 
+                    if not ckDirMk( wrkOutputDir3, logFile ):
                         # Remove all files in Output directory if previously exists!!
-                        for f in glob.glob(wrkOutputDir4+'*'): os.remove(f)   
+                        for f in glob.glob(wrkOutputDir3+'*'): os.remove(f)   
                     
                     #-------------------------------
                     # Copy relavent files from input
@@ -426,10 +426,10 @@ def main(argv):
                     #-----------------------------------
                     ctlPath,ctlFname = os.path.split(mainInF.inputs['ctlList'][ctl_ind][0])
                     try:
-                        shutil.copyfile(mainInF.inputs['ctlList'][ctl_ind][0], wrkOutputDir4 + 'sfit4.ctl')
+                        shutil.copyfile(mainInF.inputs['ctlList'][ctl_ind][0], wrkOutputDir3 + 'sfit4.ctl')
                     except IOError:
-                        print 'Unable to copy template ctl file to working directory: %s' % wrkOutputDir4
-                        if logFile: logFile.critical('Unable to copy template ctl file to working directory: %s' % wrkOutputDir4)
+                        print 'Unable to copy template ctl file to working directory: %s' % wrkOutputDir3
+                        if logFile: logFile.critical('Unable to copy template ctl file to working directory: %s' % wrkOutputDir3)
                         sys.exit()
                     
                     #----------------------------------
@@ -439,51 +439,56 @@ def main(argv):
                     # location as the global ctl file
                     #----------------------------------
                     try:
-                        shutil.copyfile(ctlPath + '/hbin.dtl', wrkOutputDir4 + '/hbin.dtl')            # Copy hbin.dtl file
+                        shutil.copyfile(ctlPath + '/hbin.dtl', wrkOutputDir3 + '/hbin.dtl')            # Copy hbin.dtl file
                     except IOError:
                         print 'Unable to copy file: %s' % (ctlPath + '/hbin.dtl')
                         if logFile: logFile.error(IOError)
                         
                     try:
-                        shutil.copyfile(ctlPath + '/hbin.input', wrkOutputDir4 + '/hbin.input')          # Copy hbin.input file
+                        shutil.copyfile(ctlPath + '/hbin.input', wrkOutputDir3 + '/hbin.input')          # Copy hbin.input file
                     except IOError:
                         print 'Unable to copy file: %s' % (ctlPath + '/hbin.input')
                         if logFile: logFile.error(IOError)
                                        
                           
                     # Create instance of local control file (ctl file in working directory)
-                    ctlFileLcl = sc.CtlInputFile(wrkOutputDir4 + 'sfit4.ctl',logFile)
+                    ctlFileLcl = sc.CtlInputFile(wrkOutputDir3 + 'sfit4.ctl',logFile)
                              
-                    # Determine which ILS file to use 
-                    ilsFileList = glob.glob(mainInF.inputs['ilsDir'] + 'ils*')
-                    
-                    # Create a date list of ils files present
-                    ilsYYYYMMDD = []
-                    for ilsFile in ilsFileList:
-                        ilsFileNpath = os.path.basename(ilsFile)
-                        match = re.match(r'\s*ils(\d\d\d\d)(\d\d)(\d\d).*',ilsFileNpath)
-                        ilsYYYYMMDD.append([int(match.group(1)),int(match.group(2)),int(match.group(3))])
-                                        
-                    ilsDateList = [ dt.date(ilsyear,ilsmonth,ilsday) for ilsyear, ilsmonth, ilsday in ilsYYYYMMDD ]
-                    
-                    # Find the ils date nearest to the current day
-                    nearstDay     = sc.nearestDate(ilsDateList,obsDay.year,obsDay.month,obsDay.day)
-                    nearstDayMnth = "{0:02d}".format(nearstDay.month)
-                    nearstDayYr   = "{0:02d}".format(nearstDay.year)
-                    nearstDayDay  = "{0:02d}".format(nearstDay.day)
-                    nearstDaystr  = nearstDayYr + nearstDayMnth + nearstDayDay
-                    
-                    # Get File path and name for nearest ils file
-                    for ilsFile in ilsFileList:
-                        if nearstDaystr in os.path.basename(ilsFile):
-                            ilsFname = ilsFile
-                            
-                    if logFile: logFile.info('Using ils file: ' + ilsFname)
-                    
-                    # Replace ils file name in local ctl file (within working directory)
-                    teststr = ['file.in.modulation_fcn', 'file.in.phase_fcn']
-                    repVal  = [ilsFname        , ilsFname   ]
-                    ctlFileLcl.replVar(teststr,repVal)
+                    #-------------------------------------------------
+                    # Determine whether to use ILS file. Empty string
+                    # '' => no ILS file.
+                    #-------------------------------------------------
+                    if mainInF.inputs['ilsDir']:                   
+                        # Determine which ILS file to use 
+                        ilsFileList = glob.glob(mainInF.inputs['ilsDir'] + 'ils*')
+            
+                        # Create a date list of ils files present
+                        ilsYYYYMMDD = []
+                        for ilsFile in ilsFileList:
+                            ilsFileNpath = os.path.basename(ilsFile)
+                            match = re.match(r'\s*ils(\d\d\d\d)(\d\d)(\d\d).*',ilsFileNpath)
+                            ilsYYYYMMDD.append([int(match.group(1)),int(match.group(2)),int(match.group(3))])
+                                            
+                        ilsDateList = [ dt.date(ilsyear,ilsmonth,ilsday) for ilsyear, ilsmonth, ilsday in ilsYYYYMMDD ]
+                        
+                        # Find the ils date nearest to the current day
+                        nearstDay     = sc.nearestDate(ilsDateList,obsDay.year,obsDay.month,obsDay.day)
+                        nearstDayMnth = "{0:02d}".format(nearstDay.month)
+                        nearstDayYr   = "{0:02d}".format(nearstDay.year)
+                        nearstDayDay  = "{0:02d}".format(nearstDay.day)
+                        nearstDaystr  = nearstDayYr + nearstDayMnth + nearstDayDay
+                        
+                        # Get File path and name for nearest ils file
+                        for ilsFile in ilsFileList:
+                            if nearstDaystr in os.path.basename(ilsFile):
+                                ilsFname = ilsFile
+                                
+                        if logFile: logFile.info('Using ils file: ' + ilsFname)
+                        
+                        # Replace ils file name in local ctl file (within working directory)
+                        teststr = ['file.in.modulation_fcn', 'file.in.phase_fcn']
+                        repVal  = [ilsFname        , ilsFname   ]
+                        ctlFileLcl.replVar(teststr,repVal)
                     
                     #---------------------------
                     # Message strings for output
@@ -502,7 +507,7 @@ def main(argv):
                         print 'Processing spectral observation date: %s' % msgstr2
                         print '*****************************************************'
                         
-                        rtn = t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir4, mainInF, spcDBind, ctl_ind, logFile)
+                        rtn = t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir3, mainInF, spcDBind, ctl_ind, logFile)
                         
                         if logFile: 
                             logFile.info('Ran PSPEC for ctl file: %s' % msgstr1)
@@ -523,7 +528,7 @@ def main(argv):
                         print 'Processing spectral observation date: %s' % msgstr2
                         print '*****************************************************'
                         
-                        rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMfile'], wrkOutputDir4, \
+                        rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMfile'], wrkOutputDir3, \
                                          mainInF.inputs['refMkrLvl'], mainInF.inputs['wVer'], dbFltData_2, spcDBind, logFile)
                         if logFile: 
                             logFile.info('Ran REFMKRNCAR for ctl file: %s' % msgstr1)
@@ -543,7 +548,7 @@ def main(argv):
                         print '*****************************************************'
                         print 'Running SFIT4 for ctl file: %s' % msgstr1
                         print 'Processing spectral observation date: %s' % msgstr2
-                        print 'Ouput Directory: %s' % wrkOutputDir4
+                        print 'Ouput Directory: %s' % wrkOutputDir3
                         print '*****************************************************'
                         
                         if logFile: 
@@ -555,7 +560,7 @@ def main(argv):
                         # output directory to run pspec
                         #------------------------------
                         try:
-                            os.chdir(wrkOutputDir4)
+                            os.chdir(wrkOutputDir3)
                         except OSError as errmsg:
                             if logFile: logFile.error(errmsg)
                             sys.exit()
@@ -579,14 +584,14 @@ def main(argv):
                         # Change permissions of all files in 
                         # working directory
                         #-----------------------------------
-                        for f in glob.glob(wrkOutputDir4 + '*'):
+                        for f in glob.glob(wrkOutputDir3 + '*'):
                             os.chmod(f,0777)
     
                         #----------------------------------------------
                         # If succesfull run, write details to list file
                         #----------------------------------------------
                         if lstFlg:
-                            fname    = wrkOutputDir4 +'sfit4.dtl'
+                            fname    = wrkOutputDir3 +'sfit4.dtl'
                             cmpltFlg = False
                             with open(fname,'r') as fopen:
                                 for ind,line in enumerate(reversed(fopen.readlines())):
@@ -595,7 +600,21 @@ def main(argv):
                                     else: break
                             
                             if cmpltFlg:
-                                lstFile.info("{0:<13}".format(int(dbFltData_2['Date'][spcDBind])) + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '       ' + wrkOutputDir4)
+                                lstFile.info("{0:<13}".format(int(dbFltData_2['Date'][spcDBind])) + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '       ' + wrkOutputDir3)
+                                
+                                
+   
+                                #----------------------------#
+                                #                            #
+                                #   --- Error Analysis ---   #
+                                #                            #
+                                #----------------------------#
+                        if mainInF.inputs['errFlg']:
+                            if logFile: 
+                                logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)                            
+                                
+                            rtn = errAnalysis( ctlFileGlb, wrkOutputDir3, logFile )
+                                
                                 
                         #---------------------------
                         # Continuation for Pause flg

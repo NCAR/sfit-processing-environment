@@ -11,8 +11,12 @@
 #       1) The input file is read in as a python file, therefore you should follow python
 #          syntax when editing.
 #       2) The extension of this file should be .py !!!!
-#
-#
+#       3) The following inputs need to be specified through the ctl file and are not currently
+#          part of the input file:
+#              -- file.in.sa_matrix
+#              -- file.in.isotope
+#              -- file.in.solarlines
+#              -- file.in.linelist
 #
 # Version History:
 #       Created, May, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
@@ -48,8 +52,9 @@ fday  = 26                 # Day
 BaseDirInput     = '/Users/ebaumer/Data/TestBed/'                  # Input base directory
 BaseDirOutput    = '/Users/ebaumer/Data/TestBed/Output/'           # Output base directory
 binDir           = '/Users/ebaumer/Data/TestBed/src/'              # binary directory
-ilsDir           = '/Users/ebaumer/Data/TestBed/ilsFiles/'         # Directory for ILS files
-RatioDir         = '/Users/ebaumer/Data/TestBed/fltrFiles/'        # Directory for ratio files ** Currently NOT used
+ilsDir           = ''
+#ilsDir           = '/Users/ebaumer/Data/TestBed/ilsFiles/'         # Directory for ILS files. Use empty string ('') to indicate no ILS file!!
+RatioDir         = '/Users/ebaumer/Data/TestBed/fltrFiles/'        # Directory for ratio files ** Currently NOT used **
 logDirOutput     = '/Users/ebaumer/Data/TestBed/'                  # Directory to write log files and list files
 
 #------
@@ -97,8 +102,9 @@ pspecFlg    = 1                                                # 1 = run pspec, 
 refmkrFlg   = 1                                                # 1 = run refmaker, 0 = do not run refmaker
 sfitFlg     = 1                                                # 1 = run sfit,     0 = do not run sfit
 lstFlg      = 1                                                # Flag to create list file. Output file which has meta data and a list of all directories processed
+errFlg      = 0                                                # 1 = run error analysis, 0 = do not run error analysis
 
-refMkrLvl   = 1                                                # Version of reference maker to use. 
+refMkrLvl   = 0                                                # Version of reference maker to use. 
                                                                #    0 = Use pre-existing zpt file. Concatonate with water and WACCM profiles
                                                                #    1 = Use pre-existing zpt file. Concatonate with water and WACCM profiles. Replace
                                                                #        surface pressure and temperature with values in database file. If those values
@@ -107,6 +113,7 @@ refMkrLvl   = 1                                                # Version of refe
 wVer        = 2                                                # Version of water profile to use.
                                                                #    <0 => Get the latest water version file
                                                                #   >=0 => Get user specified water version file. Latest file is taken if unable to find user specified
+
 
 #---------------------------------------------
 # filter bands and regions for calculating SNR

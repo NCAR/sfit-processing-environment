@@ -8,8 +8,6 @@ function readsum4, sumf, file
 		return, 1
 	endif
 
-   openr, lun, file, /get_lun
-
    buf = ''
    dum = 0
 	readf, lun, buf
@@ -34,11 +32,16 @@ function readsum4, sumf, file
    readf, lun, buf
    readf, lun, nret
    readf, lun, buf
-   sret = strarr(nret)
+   sret      = strarr(nret)
+   prmgas_tc = fltarr(1)
+   h20_tc    = fltarr(1)
    for i=0, nret-1 do begin
       buf = ''
       readf, lun, buf
       sret[i] = buf
+      subs = strsplit( buf, /extract, count=count)
+      if (i eq 0)                               then prmgas_tc = subs[4] + 0.0D0
+      if strcmp(subs[1], 'H2O', 3, /fold_case ) then h20_tc    = subs[4] + 0.0D0
    endfor
 
 ; read data by band
@@ -50,7 +53,7 @@ function readsum4, sumf, file
    sband = strarr(nband)
    sjscn = strarr(nband, 10)
    nscnb = intarr(nband)
-   npts = intarr(nband)
+   npts  = intarr(nband)
    wstrt = fltarr(nband)
    wstop = fltarr(nband)
    nspac = fltarr(nband)
@@ -78,6 +81,14 @@ function readsum4, sumf, file
    readf, lun, buf
    parms = ''
    readf, lun, parms
+   subs = strsplit( parms, /extract, count=count )
+   fitrms  = subs[0] + 0.0D0
+   chi_2_y = subs[1] + 0.0D0
+   dofstrg = subs[3] + 0.0D0
+   itr     = subs[5] + 0
+   convTF  = subs[7] 
+   divwarn = subs[8]
+
 
 ; store data
    sumf = {                $
@@ -88,15 +99,22 @@ function readsum4, sumf, file
       nret : nret,         $
       nbnd : nband,        $
       nscn : nscnb,        $
-      npts : npts,        $
+      npts : npts,         $
       wstr : wstrt,        $
       wstp : wstop,        $
-      nspac : nspac, $
-      shead : spechead,		$
-		sret : sret,			$
-		sbnd : sband,			$
-		sjscn : sjscn,			$
-		parms : parms	      $
+     nspac : nspac,        $
+     shead : spechead,		 $
+		  sret : sret,			   $
+		  sbnd : sband,		     $
+		 sjscn : sjscn,			   $
+		fitrms : fitrms,	     $
+	 chi_2_y : chi_2_y,      $
+	 dofstrg : dofstrg,      $
+		   itr : itr,          $
+		convTF : convTF,       $
+	 divwarn : divwarn,      $
+ prmgas_tc : prmgas_tc,    $
+    h20_tc : h20_tc        $
 		}
 
 help, sumf
