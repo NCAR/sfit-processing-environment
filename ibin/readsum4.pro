@@ -41,7 +41,7 @@ function readsum4, sumf, file
       sret[i] = buf
       subs = strsplit( buf, /extract, count=count)
       if (i eq 0)                               then prmgas_tc = subs[4] + 0.0D0
-      if strcmp(subs[1], 'H2O', 3, /fold_case ) then h20_tc    = subs[4] + 0.0D0
+      if strcmp(subs[1], 'H2O', 3, /fold_case ) then h2o_tc    = subs[4] + 0.0D0
    endfor
 
 ; read data by band
