@@ -28,7 +28,7 @@ pro plt4, file=file, last=last, site=site, big=big
    endif
 
    buf = 'zz'
-   while( not eof(lun) and not strcmp(buf, 'TimeStamp', 9 ) ) do begin
+   while( not eof(lun) and not strcmp(buf, 'Date', 4 ) ) do begin
       readf, lun, buf
       ;print, buf
    endwhile
@@ -46,16 +46,16 @@ pro plt4, file=file, last=last, site=site, big=big
          ;print, buf
       endwhile
       subs = strsplit( buf, /extract, count=count )
-      print, subs(count-1)
-      oex4, site=site, big=big, /ps, dir=subs(1)
+      print, subs(2)
+      oex4, site=site, big=big, /ps, dir=subs(2)
    endif else begin
 
       while( not eof(lun) )do begin
          readf, lun, buf
          ;print, buf
          subs = strsplit( buf, /extract, count=count )
-         print, 'Plotting from directory : ', subs(1)
-         oex4, site=site, big=big, /ps, dir=subs(1)
+         print, 'Plotting from directory : ', subs(2)
+         oex4, site=site, big=big, /ps, dir=subs(2)
          des = 'z'
          read, des, prompt='enter c to continue, q to quit : '
          if( des eq 'q' )then stop
