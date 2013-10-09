@@ -304,7 +304,7 @@ for i = 0, nsize-1 do begin
    ds[i].rms        = sumf.fitrms
    ds[i].dofs       = sumf.dofstrg
    ds[i].prmgas_tc  = sumf.prmgas_tc
-   ds[i].h20_tc     = sumf.h20_tc    
+   ds[i].h2o_tc     = sumf.h2o_tc    
   
   ;----------------------------------------
   ; Read statvec file from output directory
