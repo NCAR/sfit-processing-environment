@@ -100,6 +100,8 @@ statFile   = '/Users/ebaumer/Data/TestBed/mlo/stations.layers'              # St
 numDataBlks = 1                                                # number of Spectral data blocks in the output ascii file
                                                                #    = [# binary formatted spectra] X [# fit regions] (often but not necessarily)
                                                                # fit regions are read from sfit4.ctl file  
+ilsFlg      = 1                                                # ILS file flag: 1 = Use ils file/directory specified in ilsDir string
+                                                               #                0 = No ils is specified in input file. What is specified in ctl file is used
 
 pspecFlg    = 1                                                # 1 = run pspec,    0 = do not run pspec
 refmkrFlg   = 1                                                # 1 = run refmaker, 0 = do not run refmaker
