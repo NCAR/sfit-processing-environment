@@ -458,7 +458,7 @@ def main(argv):
                     # Determine whether to use ILS file. Empty string
                     # '' => no ILS file.
                     #-------------------------------------------------
-                    if mainInF.inputs['ilsDir'] or mainInF.inputs['ilsFlg']:
+                    if mainInF.inputs['ilsDir'] and mainInF.inputs['ilsFlg']:
 
                         #-------------------------------------------
                         # Determine if ilsDir is a file or directory
