@@ -170,12 +170,12 @@ pro oex4, site=site, ps=ps, nsm=nsm, ftype=ftype, thicklines=thicklines, big=big
 
 		thick = 1.0
 		IF toPS THEN BEGIN ;1
-			SET_PLOT, 'PS'
+			set_plot, 'ps'
+			!p.font = 0
 			psfile = 'oex.ps'
 			if( keyword_set( dir ) )then psfile = dir + psfile
-			PRINT, 'Saving ps file to : ', psfile
-			DEVICE, /COLOR, /LANDSCAPE, $
-			FILENAME = psfile, ENCAPSULATED = encap, BITS=8
+			print, 'saving ps file to : ', psfile
+			device, /color, /landscape, /helvetica, filename = psfile, encapsulated = encap, bits=8
 			; full page PS
 
 	      IF ThickLines THEN thick=3.5
@@ -191,6 +191,7 @@ pro oex4, site=site, ps=ps, nsm=nsm, ftype=ftype, thicklines=thicklines, big=big
 
 		ENDIF ELSE BEGIN
 			SET_PLOT,'X'
+			!p.font = -1
 			DEVICE, DECOMPOSE = 0 ; allow for terminals with > 256 color
 
 			IF ThickLines THEN thick=2.0
@@ -254,7 +255,7 @@ function prntsum, smf, toPS, ppos, psiz
 	tek_color
 	if tops then begin
 		erase
-		!p.charsize = 1.3
+		!p.charsize = 1.
 		chrsz = 1.
 	endif else begin
 		ppos = ppos +  [ 20,  -20, 1 ]
@@ -361,8 +362,8 @@ FUNCTION plotprfs, ii, stat, stgrd, tops, ppos, psiz, tek, lthick, plottop
 	tek_color
 	IF toPS THEN BEGIN
 		ERASE
-		!P.CHARSIZE = 1.6
-		chrsz = 1.5
+		!P.CHARSIZE = 1.
+		chrsz = 1.2
 	ENDIF ELSE BEGIN
 		ppos = ppos +  [ 20,  -20, 1 ]
 		WINDOW, ppos[2], RETAIN=2, XSIZE=psiz[0], YSIZE=psiz[1], 	$
@@ -475,24 +476,29 @@ function plotgases, pbp, tops, ppos, psiz, tek, lthick, summary, stat, mol, dir
 		; set up windows
 		if tops then begin
 
+         erase
+         !p.charsize = 1.
+         chsize = 1.2
+         lcsz = 1.0
          right = 0.90
          dsbrk = 0.77
          difmd = 0.86
 			dfpos = [0.12, dsbrk+0.01, right, 0.97]	; ps
 			sppos = [0.12, 0.20, right, dsbrk ]
-         lcsz = 1.0
 			ftpos = [0.00, .02, .04, .06, 0.08]
 			hdpos = .90
 			if( kk ne 0 ) then erase
 
 		endif else begin
 
+         !p.charsize = 1.0
+         chsize = 1.4
+         lcsz = 1.4
          right = 0.90
          difmd = 0.86
          dsbrk = 0.77
 			dfpos[*] = [0.08, dsbrk+0.01, right, 0.95 ]	; x
 			sppos[*] = [0.08, 0.08, right, dsbrk ]
-         lcsz = 1.4
 			ftpos[*] = [ .00, .02, 0.04, 0.06, 0.08]
 			hdpos    = 0.95
 			ppos     = ppos + [ 20, -20, 1 ]
@@ -520,7 +526,7 @@ function plotgases, pbp, tops, ppos, psiz, tek, lthick, summary, stat, mol, dir
 
 		; plot difference on top from pbpfile
 		plot, pbp[kk].wnu[0:npt1], difs, position = dfpos, yticks = 4, title = titl,   $
-			/nodata, ytitle='% difference', charsize = 1.4, xtickname = replicate(' ',30), xticklen = 0.08, $
+			/nodata, ytitle='% difference', charsize = chsize, xtickname = replicate(' ',30), xticklen = 0.08, $
 			xstyle=1 ;	$
 			;xtitle = 'wavenumber [cm!e-1!n]'
 
@@ -566,7 +572,7 @@ function plotgases, pbp, tops, ppos, psiz, tek, lthick, summary, stat, mol, dir
       tickv = fltarr(5)
       tickv = [ 0.0, 0.25, 0.5, 0.75, 1.0]
 		plot, pbp[kk].wnu[0:npt1], pbp[kk].obsspc[0:npt1], position = sppos,						$
-			/nodata, ytitle='arbitrary', charsize = 1.4, xticklen = 0.06, $
+			/nodata, ytitle='arbitrary', charsize = chsize, xticklen = 0.06, $
 			ystyle = 1, yminor = ymn,		$
 			xtitle = 'wavenumber [cm!e-1!n]', xstyle=1 ;, yticks = 4, ytickv=tickv
 
@@ -729,8 +735,8 @@ FUNCTION plotbnr, pbp, file, toPS, ppos, psiz, stickthick, plottop, ftype
 		;!P.CHARSIZE = 1.2
 		DEVICE, DECOMPOSE = 0  ; allow for terminals with > 256 color
 		ctpos = [0.10, 0.15, 0.92, 0.80]
-		xcharsz = 1.
-		ycharsz = 1.
+		xcharsz = 1.4
+		ycharsz = 1.4
 		!P.CHARSIZE = 1
 
 	ENDELSE
@@ -889,8 +895,10 @@ FUNCTION plotk, kmf, stat, smf, toPS, ppos, psiz, stickthick, plottop
 		cbpos = [0.20, 0.92, 0.80, 0.97]	; PS
 		ctpos = [0.12, 0.10, 0.93, 0.83]
 		ftpos = [ .00, .04, 0.08 ]
-		xcharsz = 1.3
-		ycharsz = 1.8
+      !p.charsize = 1.0
+      chsize = 1.2
+		xcharsz = 1.2
+		ycharsz = 1.2
 
 	ENDIF ELSE BEGIN
 
@@ -898,13 +906,14 @@ FUNCTION plotk, kmf, stat, smf, toPS, ppos, psiz, stickthick, plottop
 		WINDOW, ppos[2], RETAIN=2, XSIZE=psiz[0], YSIZE=psiz[1],	$
 			title= STRING( 'Plot ', ppos[2], FORMAT='(a,i02)') + ' : K Matrix',	$
 			XPOS = ppos[0], YPOS = ppos[1]
-		;!P.CHARSIZE = 1.2
 		DEVICE, DECOMPOSE = 0  ; allow for terminals with > 256 color
 		cbpos = [0.20, 0.87, 0.90, 0.92]	; X
 		ctpos = [0.10, 0.10, 0.95, 0.80]
 		ftpos = [0.02, 0.05, 0.08 ]
-		xcharsz = 1.3
-		ycharsz = 1.3
+		!p.charsize = 1.1
+      chsize = 1.3
+		xcharsz = 1.4
+		ycharsz = 1.4
 
 	ENDELSE
 
@@ -970,7 +979,7 @@ FUNCTION plotk, kmf, stat, smf, toPS, ppos, psiz, stickthick, plottop
 
 	LOADCT, 5, NCOLORS = nclr, /SILENT ;, BOTTOM=20
 	cbtitle = title + ' [x10!E' + STRING( div, FORMAT='(i+2)' ) + '!N]'
-	COLORBAR, NCOLORS = nclr-40, POSITION = cbpos, CHARSIZE=1.5,	$
+	COLORBAR, NCOLORS = nclr-40, POSITION = cbpos, CHARSIZE=chsize,	$
 		DIVISIONS = ndiv, TICKNAMES = cbtics, TITLE = cbtitle
 
 	offset = 0
@@ -1103,7 +1112,7 @@ FUNCTION plotak, ak, stat, toPS, ppos, psiz, tek, lthick, plottop, site, auc, nr
 	; set up windows
 	IF toPS THEN BEGIN
 		ERASE
-		!P.CHARSIZE = 1.6
+		!P.CHARSIZE = 1.2
 	ENDIF ELSE BEGIN
 		ppos = ppos + [ 20, -20, 1 ]
 		WINDOW, ppos[2], RETAIN=2, XSIZE=psiz[0], YSIZE=psiz[1], 	$
@@ -1184,7 +1193,7 @@ FUNCTION plotak, ak, stat, toPS, ppos, psiz, tek, lthick, plottop, site, auc, nr
 		IF( i GT 4 )THEN CONTINUE
 
 		OPLOT, smaks[ *, i ], z, COLOR = i+2, THICK = lthick
-		XYOUTS, bpos[0,i], bpos[1,i], bname[i], /NORMAL, COLOR = i+2, CHARSIZE=1.4
+		XYOUTS, bpos[0,i], bpos[1,i], bname[i], /NORMAL, COLOR = i+2, CHARSIZE=1.
 
 	ENDFOR
 
@@ -1196,7 +1205,7 @@ FUNCTION plotak, ak, stat, toPS, ppos, psiz, tek, lthick, plottop, site, auc, nr
    FOR i=0, nlev-1 DO auc[i] = total( mat[*,i], /DOUBLE )
 
 	cc = 12	; Purple
-	XYOUTS, bpos[0,5], bpos[1,5], bname[5], /NORMAL, COLOR = cc, CHARSIZE=1.4
+	XYOUTS, bpos[0,5], bpos[1,5], bname[5], /NORMAL, COLOR = cc, CHARSIZE=1.
 
    OPLOT, 1.-auc, z, color=cc, thick=lthick, linestyle=1
 
@@ -1256,7 +1265,7 @@ FUNCTION ploterrs, sserr, smerr, stat, kmf, toPS, ppos, psiz, vmrscl, vmrunits, 
 	IF toPS THEN BEGIN
 
 		ERASE
-		!P.CHARSIZE = 1.6
+		!P.CHARSIZE = 1.
 	ENDIF ELSE BEGIN
 
 		ppos = ppos +  [ 20,  -20, 1 ]
