@@ -2,7 +2,7 @@ function readstat4, sts, file, rev=rev, quiet=quiet
 
 ; read in statevec file --------------------------------------------------------------------
 
-   print, 'readstat4 input file : ', file
+   print, 'Readstat4 input file : ', file
 
 	openr, lun, file, /get_lun, error=ioerr
 	if( ioerr ne 0 ) then begin
@@ -33,7 +33,7 @@ function readstat4, sts, file, rev=rev, quiet=quiet
 	if( subs[4] eq 'T' )then converge=1 else converge=0
 	if( subs[5] eq 'T' )then divwarn=1 else divwarn=0
 
-   print , iftemp, converge, divwarn
+   ;print , iftemp, converge, divwarn
 
 	z = fltarr(nlev) & p = z & t = z & vmr = z & tr = z
 

@@ -64,6 +64,7 @@ pro plt4, file=file, last=last, site=site, big=big, dir=dir
       for i=0, n-1 do begin
          readf, lun, buf
          retrievalist(i) = buf
+         print, i+1, '  ', buf
       endfor
       free_lun, lun
 

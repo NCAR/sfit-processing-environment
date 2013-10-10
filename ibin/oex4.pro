@@ -231,11 +231,11 @@ pro oex4, site=site, ps=ps, nsm=nsm, ftype=ftype, thicklines=thicklines, big=big
 		; plot bnr file
 		rc = plotbnr( pbp, bnrfile, toPS, ppos, psiz, stickthick, plottop, ftype )
 
-		; plot spectra
-      rc = plotgases( pbp, toPS, ppos, psiz, tek, lthick, summary, stat, A.mol, dir )
-
       ; print summary file
       rc = prntsum( smf, toPS, ppos, psiz )
+
+		; plot spectra
+      rc = plotgases( pbp, toPS, ppos, psiz, tek, lthick, summary, stat, A.mol, dir )
 
 
 		IF( toPS ) THEN DEVICE, /CLOSE_FILE
@@ -248,7 +248,7 @@ END
 
 
 ; Print out retrieval details to a plot window
-function prntsum,  smf, toPS, ppos, psiz
+function prntsum, smf, toPS, ppos, psiz
 
 	; set up windows
 	tek_color
@@ -674,7 +674,7 @@ end
 
 FUNCTION plotbnr, pbp, file, toPS, ppos, psiz, stickthick, plottop, ftype
 
-	PRINT, 'bnr file &  type : ', file, '  ', ftype
+	if( toPS )then PRINT, '  BNR file &  type : ', file, '  ', ftype
 
 	IF( ftype EQ 'L' ) THEN 			$
 		OPENR, sftlun, file, /GET_LUN ,/F77_UNFORMATTED, /SWAP_ENDIAN, ERROR=ioerr	$
@@ -691,9 +691,11 @@ FUNCTION plotbnr, pbp, file, toPS, ppos, psiz, stickthick, plottop, ftype
 	header = string(replicate(32b,80))
 	READU, sftlun, header
 	header = STRTRIM( header, 2 )
-	PRINT, ' BNR File header:'
-	PRINT, header
-	PRINT, ''
+	if( toPS )then begin
+      PRINT, '  BNR File header:'
+      PRINT, '   ', '"', header, '"'
+      PRINT, ''
+   endif
 
 	wlo=0D & whi=0D & spa=0D & npp=0L
 
@@ -829,9 +831,9 @@ FUNCTION covarplot, mat, prfs, toPS, ppos, psiz, stickthick, title, plottop
 	span = MAX(mat)/scal - MIN(mat) + 0.0*(MAX(mat) - MIN(mat))
 	clvs = MIN(mat) - 0.0*span + INDGEN( nclr+1 ) * span/(nclr -1)
 
-	IF( NOT toPS ) THEN PRINT, ' Min, Max of contour levels              : ', MIN( clvs ), MAX( clvs )
-	IF( not toPS ) THEN PRINT, ' Number of contour divisions in colorbar : ', ndiv
-	IF( not toPS ) THEN PRINT, ' Number of color levels in contour plot  : ', nclr
+	;IF( NOT toPS ) THEN PRINT, ' Min, Max of contour levels              : ', MIN( clvs ), MAX( clvs )
+	;IF( not toPS ) THEN PRINT, ' Number of contour divisions in colorbar : ', ndiv
+	;IF( not toPS ) THEN PRINT, ' Number of color levels in contour plot  : ', nclr
 
 	; define contours names for color table ticks
 	cbtics = STRARR( ndiv + 1 )
@@ -913,12 +915,12 @@ FUNCTION plotk, kmf, stat, smf, toPS, ppos, psiz, stickthick, plottop
 
 	;help, z
 	; kmat is npts x npar in sfit 4 & from readkmat4
-   print, 'k matrix :'
+   ;print, 'k matrix :'
    ;help, kmf.mat
    mat = kmf.mat[ ismx:ismx+nlev-1, 0:npts-1 ]
    ;help, mat
    mat = transpose( mat )
-   print, 'k matrix target to plot:'
+   ;print, 'k matrix target to plot:'
    ;help, mat
 
 	;mat  = REVERSE( mat[ 0:npts-1, ismx:ismx+nlev-1 ], 2); *1000.0
@@ -944,9 +946,9 @@ FUNCTION plotk, kmf, stat, smf, toPS, ppos, psiz, stickthick, plottop
 	span = MAX(mat)/scal - MIN(mat) + 0.0*(MAX(mat) - MIN(mat))
 	clvs = MIN(mat) - 0.0*span + INDGEN( nclr +1 ) * span/(nclr -1)
 
-	IF( NOT toPS ) THEN PRINT, ' Min, Max of contour levels             : ', MIN( clvs ), MAX( clvs )
-	IF( NOT toPS ) THEN PRINT, ' Number of contour divisions in colorbar : ', ndiv
-	IF( NOT toPS ) THEN PRINT, ' Number of color levels in contour plot  : ', nclr
+	;IF( NOT toPS ) THEN PRINT, ' Min, Max of contour levels             : ', MIN( clvs ), MAX( clvs )
+	;IF( NOT toPS ) THEN PRINT, ' Number of contour divisions in colorbar : ', ndiv
+	;IF( NOT toPS ) THEN PRINT, ' Number of color levels in contour plot  : ', nclr
 
 	; define contours names for color table ticks
 	cbtics = STRARR( ndiv + 1 )
@@ -989,7 +991,7 @@ FUNCTION plotk, kmf, stat, smf, toPS, ppos, psiz, stickthick, plottop
 
          print , ' plotting band : ', kk, ' scan : ', j
          thispos = ctpos
-         print, kk, smf.npts[kk], smf.wstr[kk], smf.wstp[kk], smf.nspac[kk]
+         ;print, kk, smf.npts[kk], smf.wstr[kk], smf.wstp[kk], smf.nspac[kk]
          pratio = FLOAT( smf.npts[kk] ) / FLOAT( npts	)
          ;pratio = FLOAT( pbp[kk].npt ) / FLOAT( npts	)
 
@@ -1019,14 +1021,14 @@ FUNCTION plotk, kmf, stat, smf, toPS, ppos, psiz, stickthick, plottop
          ;nuhi = pbp[kk].nuhi
          nulo = smf.wstr[kk]
          nuhi = smf.wstp[kk]
-         IF( NOT toPS ) THEN PRINT, ' wv # range : ', kk, nulo, nuhi, pw
+         ;IF( NOT toPS ) THEN PRINT, ' wv # range : ', kk, nulo, nuhi, pw
 
          leftmost_tick = floor(nulo / tick_interval)*tick_interval + tick_interval
          rightmost_tick = floor(nuhi / tick_interval)*tick_interval
 
          num_ticks = (rightmost_tick - leftmost_tick) / tick_interval + 1
          if (not toPS) then begin
-            print, 'number of major ticks: ',num_ticks
+            ;print, 'number of major ticks: ',num_ticks
             if (num_ticks eq 1) then begin
                print, 'Warning: only 1 major tick for interval, no minor tick marks will show'
             endif

@@ -2,7 +2,7 @@
 
 FUNCTION readkmat4, kmf, file
 
-   print, 'readkmat4 input file : ', file
+   print, 'Readkmat4 input file : ', file
 
 ; in sfit4 we transposed the k matrix in the k file
 ; nparam columns x npoints rows
@@ -29,7 +29,7 @@ FUNCTION readkmat4, kmf, file
    ;print, tag
    ;print, ttl
 	READF, lun, npts, npar, ismx, nlev
-	PRINT, npts, npar, ismx, nlev
+	;PRINT, npts, npar, ismx, nlev
 
 	kmf = {		 						   $
 		npts    : npts,					$

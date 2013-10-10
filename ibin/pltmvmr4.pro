@@ -1,4 +1,4 @@
-pro pltmvmr4, file=file, mol=mol, site=site
+pro pltmvmr4, file=file, mol=mol, site=site, mxrms=mxrms
 
 ; edited to handle next version of gather4 (no reverse stuff there - its here now)
 ; Last edit 7 October 2013 : Current/CO2 at mlo
@@ -18,6 +18,11 @@ if( not keyword_set( site )) then begin
    stop
 endif
 
+if( not keyword_set( mxrms )) then begin
+   mxrms = 1.0
+   print, '  main : setting mxrms limit to : ', mxrms
+endif
+
 ; get molecule - dependent info for plots
 ucmol = STRUPCASE( mol )
 usite = STRUPCASE( site )
@@ -29,9 +34,14 @@ ppos = INTARR(3)
 ppos = [ 200, 400, 0 ]        ; laptop
 
 print, ' Restoring save file : ', file
-restore,file
-data = ds
-help, data,/structure
+restore, file
+;help, ds, /structure
+
+
+print, 'Number of retrievals in save file : ',  n_elements(ds)
+idx = where( ds.rms LT mxrms, nobs )
+data = ds[idx]
+print, 'Number of retrievals in max rms criteria : ',  nobs
 
 years = fltarr(2)
 years[0] = min( data[*].year )
@@ -55,7 +65,7 @@ bot = 0
 ; calc mean weighted mix ratio near surface
 
 idx = where( alt LE top AND alt GE bot, cnt )
-print, idx
+print, ' Altitude ranges included in mean mixing ratio sum '
 print, cnt, nobs, alt[idx]
 xd = dblarr(nobs)
 xh = dblarr(nobs)
@@ -77,7 +87,7 @@ for i=0, nobs-1 do begin
 
    xd[i] = total( data[i].retvmr[idx] * data[i].ms[idx]  ) / xm[i,1] * Ag.vmrscl
 
-   print, ds[i]. tyr, xh[i], xd[i]
+   print, i+1, ds[i].tyr, '  ', ds[i].yyyymmdd, '  ', ds[i].hhmmss, xh[i], xd[i]
 
 endfor
 
@@ -90,7 +100,7 @@ print,''
 ; calc daily mean of humid and dry
 dm = dblarr(366,5)
 for i=0, 366 do begin
-   idx = where( fix(ds[*].doy) EQ i AND ds[*].rms LT 3.0, dcnt )
+   idx = where( fix(data[*].doy) EQ i AND data[*].rms LT 3.0, dcnt )
    if( dcnt GT 1 )then begin
        a = moment( xh[idx] )
        dm[i,0] = a[0]
@@ -98,7 +108,7 @@ for i=0, 366 do begin
        a = moment( xd[idx] )
        dm[i,2] = a[0]
        dm[i,3] = sqrt( a[1] )
-       dm[i,4] = fix(ds[idx[0]].doy)
+       dm[i,4] = fix(data[idx[0]].doy)
     endif
 endfor
 
@@ -121,7 +131,7 @@ for tops = 0, 1 do begin
      if tops then begin ; 1 is true
          set_plot, 'ps'
          locdir = file_basename(file_expand_path('.'))
-         psfile = 'co2.pltsav.ps'
+         psfile = 'pltmvmr4.ps'
          print,''
          print, '   main : saving ps file to : ', psfile
          device, /color, /landscape, filename = psfile, encapsulated = 0, bits=8
@@ -156,13 +166,13 @@ for tops = 0, 1 do begin
    plotsym2, 0, 1, /fill
 
    title='plt8 COL vz DOY'
-   rc = plt8( ds, years, title, ppos, psiz, tops )
+   rc = plt8( data, years, title, ppos, psiz, tops )
 
    title='plt9 mass ratio vs doy'
-   rc = plt9( xd, ds, xm, years, Ag.trng, title, ppos, psiz, tops )
+   rc = plt9( xd, data, xm, years, Ag.trng, title, ppos, psiz, tops )
 
    title='plt7 mass ratio vs sza'
-   rc = plt7( xd, ds, xm, Ag.trng, title, ppos, psiz, tops )
+   rc = plt7( xd, data, xm, Ag.trng, title, ppos, psiz, tops )
 
    title='plt6 mass correlation'
    rc = plt6( xd, xm, Ag.trng, title, ppos, psiz, tops )
@@ -177,9 +187,9 @@ for tops = 0, 1 do begin
    rc = plt4( dt, xh, xd, years, Ag.trng, title, ppos, psiz, tops )
 
    title='plt5 SZA vz DOY'
-   rc = plt5( ds, xd, years, Ag.trng, title, ppos, psiz, tops )
+   rc = plt5( data, xd, years, Ag.trng, title, ppos, psiz, tops )
 
-   rc = plothist( tops, ppos, psiz, ds )
+   rc = plothist( tops, ppos, psiz, data )
 
 
    goto, skipdays
@@ -187,9 +197,9 @@ for tops = 0, 1 do begin
    title='plt3 dry and humid daily mean vs DOY'
    ppos = ppos +  [ 20,  -20, 1 ]
    for i=0, 366 do begin
-      idx = where( fix(ds[*].doy) EQ i, dcnt )
+      idx = where( fix(data[*].doy) EQ i, dcnt )
       if( dcnt GT 1 )then begin
-         rc = plt3(  ds, xd, xh, idx, title, ppos, psiz, tops )
+         rc = plt3(  data, xd, xh, idx, title, ppos, psiz, tops )
          if( des NE 2 )then begin
             read, des, prompt=' 0=quit, 1=next, 2=finish : '
             if( des EQ 0 )then return
@@ -217,7 +227,7 @@ function plt9, xd, ds, xm, years, trng, title, ppos, psiz, tops
    endelse
 
    idx = where( xd[*] GT trng[0] AND xd[*] LT trng[1], mmcnt )
-   print, trng
+
    plot,  ds[idx].tyr, xm[idx,0]/xm[idx,1], xrange=years, yrange=[0,0], /ynozero, /nodata, title=title, xtitle=xtl, ytitle=ytl
    oplot, ds[idx].tyr, xm[idx,0]/xm[idx,1], psym=8, color=4
    ;print, xm[idx,0]/xm[idx,1]
@@ -238,9 +248,8 @@ function plt8, ds, years, title, ppos, psiz, tops
       window, ppos[2], retain=2, xsize=psiz[0], ysize=psiz[1], title=title, xpos = ppos[0], ypos = ppos[1]
    endelse
 
-   idx = where( ds[*].rms < 0.7, mmcnt )
-   print, n_elements( ds ), mmcnt
-   plot,  ds[idx].tyr, ds[idx].prmgas_tc, psym=8, xrange=years, /ynozero, /nodata, title=title, xtitle=xtl, ytitle=ytl
+   idx = where( ds[*].rms < 10.7, mmcnt )
+   plot,  ds[idx].tyr, ds[idx].prmgas_tc, psym=8, xrange=years,  /nodata, /ynozero,title=title, xtitle=xtl, ytitle=ytl
    oplot, ds[idx].tyr, ds[idx].prmgas_tc, psym=8, color = 4
 
 return, 0
@@ -261,7 +270,7 @@ function plt7, xd, ds, xm, trng, title, ppos, psiz, tops
    idx = where( xd[*] GT trng[0] AND xd[*] LT trng[1], mmcnt )
    plot,  ds[idx].sza, xm[idx,0]/xm[idx,1], xrange=[0,0], yrange=[0,0], /ynozero, /nodata,  title=title, xtitle=xtl, ytitle=ytl
    oplot, ds[idx].sza, xm[idx,0]/xm[idx,1], psym=8, color=4
-   print, xm[idx,0]/xm[idx,1]
+   ;print, xm[idx,0]/xm[idx,1]
    ;read,des, prompt='qq'
 
 return, 0
