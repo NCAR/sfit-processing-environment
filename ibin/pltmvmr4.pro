@@ -131,7 +131,8 @@ for tops = 0, 1 do begin
      if tops then begin ; 1 is true
          set_plot, 'ps'
          locdir = file_basename(file_expand_path('.'))
-         psfile = 'pltmvmr4.ps'
+         pos = strpos( file, '.' )
+         psfile =  strmid( file, 0, pos ) + '.ps'
          print,''
          print, '   main : saving ps file to : ', psfile
          device, /color, /landscape, filename = psfile, encapsulated = 0, bits=8

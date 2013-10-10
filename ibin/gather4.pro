@@ -21,7 +21,7 @@ close,/all
 ;     1) Directory of output
 ;     2) Date
 ;     3) Time
-;     
+;
 ;  From spectral database file we get the following parameters:
 ;     1) Date
 ;     2) Time
@@ -33,9 +33,9 @@ close,/all
 ;     8) Solar azmith angle
 ;     9) Solar zenith angle
 ;     10) Scan duration
-;     
+;
 ;  From the statvec fiel we get the following parameters
-;     
+;
 ;
 ;
 ;
@@ -62,8 +62,10 @@ endif
 ; set default
 ;---------------------------------
 if ~keyword_set(outfile) then begin
+  pos = strpos( lstFile, '.' )
+  outfile =  '/' + strmid( lstFile, 0, pos ) + '.sav'
   cd, current=wrkDir
-  outfile = wrkDir + '/GthrdData.sav'
+  outfile = wrkDir + outfile
 endif
 
 ;-------------------------
@@ -71,7 +73,7 @@ endif
 ;-------------------------
 ; Determine number of lines in file
 nlines = file_lines(lstFile)
-  
+
 ; Open file
 openr, fid_lstFile, lstFile, /get_lun, error=ioerr
 if( ioerr ne 0 ) then begin
@@ -79,8 +81,8 @@ if( ioerr ne 0 ) then begin
   free_lun, fid_lstFile
   stop
 endif
-  
-;---------------------------------------------  
+
+;---------------------------------------------
 ; Read header and count lines. From the header
 ; get the following information:
 ; 1) Primary Gas
@@ -111,19 +113,19 @@ while ~strcmp(buf, 'Date', 4, /fold_case )  do begin
   i++
 endwhile
 
- 
+
 ; Determine remaining lines
 nsize = nlines-i
 lDates   =  strarr(nsize)                  ; Create array for reading in Dates
 lTstamps =  strarr(nsize)                  ; Create array for reading in timestamps
 lDirs    =  strarr(nsize)                  ; Create array for reading in directories
-  
+
 ; Read relavent data
 for j = 0, nsize-1 do begin
   readf, fid_lstFile, buf
   subs = strsplit( buf,' ',/extract, count=nitms)
-  lDates[j]   = subs[0] 
-  lTstamps[j] = subs[1] 
+  lDates[j]   = subs[0]
+  lTstamps[j] = subs[1]
   lDirs[j]    = subs[2]
 endfor
 
@@ -143,7 +145,7 @@ usesite, ucsite, As, Ag       ; Returns As
 
 ;------------------------------------------
 ; Search for duplicate entries in list file
-; and remove 
+; and remove
 ;------------------------------------------
 newDate    = (lDates + 0D)*1000000 + (lTstamps + 0D)
 unq_ind    = uniq(newDate,sort(newDate))
@@ -151,7 +153,7 @@ unq_ind    = uniq(newDate,sort(newDate))
 if ( nsize ne size(unq_ind,/n_elements) ) then begin    ; Found duplicate entries
   lDates   = lDates[unq_ind]
   lTstamps = lTstamps[unq_ind]
-  lDirs    = lDirs[unq_ind]  
+  lDirs    = lDirs[unq_ind]
   nsize    = size(lDates,/n_elements)
 endif
 
@@ -163,7 +165,7 @@ nlayers = klay-1
 
 ;--------------------------------------------------
 ; Now that we have the number of spectra and number
-; of layers for the spectra we can initialize the 
+; of layers for the spectra we can initialize the
 ; datastructure to read data to
 ;--------------------------------------------------
 ds = bldstrct( nsize, nlayers )
@@ -183,7 +185,7 @@ openr, fid_specDBfile, specDBfile, /get_lun, error=ioerr
 if( ioerr ne 0 ) then begin
   printf, -2, !err_string
   stop
-  
+
 endif
 
 ; First line of spectral DB is the header
@@ -194,7 +196,7 @@ header = strsplit(buf,' ', /extract, count=nheaders)
 ; Find the indices for each header to extract
 for i = 0, (size(getHdrs,/n_elements)-1) do begin
   nhdrs[i] = where(header eq getHdrs[i])
-  
+
 endfor
 
 ; Read data in spectral database
@@ -203,24 +205,24 @@ j = 0
 for i = 0, (nlines-2) do begin
   readf, fid_specDBfile, buf
   subs = strsplit( buf, ' ', /extract, count=nitms )
-  
+
   tempDate   = subs[nhdrs[2]]
   tempTstamp = subs[nhdrs[1]]
-  
+
   ; If date and timestamp from DB match an entry in list file grab data
   testMatch = strmatch(lDates, tempDate) + strmatch(lTstamps, tempTstamp)
   indMatch  = where(testMatch eq 2)
-  
+
   if ( size(indMatch,/n_elements) gt 1 ) then begin
     print, 'Duplicate Entries in list file found'
     exit
-    
+
   endif
-  
-  if indMatch ge 0 then begin   
+
+  if indMatch ge 0 then begin
     ds[j].spectraname    = subs[nhdrs[0]]
-    ds[j].hhmmss         = subs[nhdrs[1]] 
-    ds[j].yyyymmdd       = subs[nhdrs[2]] 
+    ds[j].hhmmss         = subs[nhdrs[1]]
+    ds[j].yyyymmdd       = subs[nhdrs[2]]
     ds[j].snr            = subs[nhdrs[3]]  + 0.0D0
     ds[j].latitude       = subs[nhdrs[4]]  + 0.0D0
     ds[j].longitude      = subs[nhdrs[5]]  + 0.0D0
@@ -232,23 +234,23 @@ for i = 0, (nlines-2) do begin
     ds[j].guider_quad_sensor_sum      = subs[nhdrs[13]] + 0.0D0
     ds[j].detector_intern_temp_switch = subs[nhdrs[14]] + 0.0D0
     ds[j].directory      = lDirs[indMatch]
-    
+
     ; Inputs related to station.layers file
     ds[j].alt_index = indgen(nlayers, /long) + 1
-    ds[j].altitude  = grd.midp[0:nlayers-1]    
-    
+    ds[j].altitude  = grd.midp[0:nlayers-1]
+
     ;----------------------------------------
-    ; Determine Outside RH. First choice is 
+    ; Determine Outside RH. First choice is
     ; external station RH. If this is missing
     ; default to house log RH
     ;----------------------------------------
     HouseRH  = subs[nhdrs[10]] + 0.0D0
     ExtStaRH = subs[nhdrs[11]] + 0.0D0
-    
+
     if ( ExtStaRH ge 0 ) then begin
       ds[j].outside_relative_humidity = ExtStaRH
-    endif else begin         
-      ds[j].outside_relative_humidity = HouseRH  
+    endif else begin
+      ds[j].outside_relative_humidity = HouseRH
     endelse
     j++
   endif
@@ -273,7 +275,7 @@ for i = 0, nsize-1 do begin
   HH          = strmid(ds[i].hhmmss,0,2)   + 0
   MM          = strmid(ds[i].hhmmss,2,2)   + 0
   SS          = strmid(ds[i].hhmmss,4,2)   + 0
-  
+
   ; Date conversions
   ds[i].doy      = JULDAY( ds[i].month, ds[i].day, ds[i].year, HH, MM, SS )  - JULDAY( 1, 1, ds[i].year, 0, 0, 0 ) +1
   ds[i].hrs      = double(HH) + (double(MM) + double(SS) /60.0d) /60.0d
@@ -294,51 +296,51 @@ ds.zcorrect = make_array(nsize,/float, value=-999)
                 ; Loop through observations to collect output data ;
                 ;--------------------------------------------------;
 for i = 0, nsize-1 do begin
-  
+
    ;----------------------------------------
    ; Read summary file from output directory
    ;----------------------------------------
-   dum = readsum4( sumf, ds[i].directory + 'summary' ) 
-   
+   dum = readsum4( sumf, ds[i].directory + 'summary' )
+
    ds[i].iterations = sumf.itr
    ds[i].rms        = sumf.fitrms
    ds[i].dofs       = sumf.dofstrg
    ds[i].prmgas_tc  = sumf.prmgas_tc
-   ds[i].h2o_tc     = sumf.h2o_tc    
-  
+   ds[i].h2o_tc     = sumf.h2o_tc
+
   ;----------------------------------------
   ; Read statvec file from output directory
-  ;----------------------------------------  
+  ;----------------------------------------
   statvecFname = ds[i].directory + 'statevec'
   dum = readstat4( statvecData, statvecFname )
-  
+
   ds[i].p      = statvecData.p[0:nlayers-1]
   ds[i].t      = statvecData.t[0:nlayers-1]
   ds[i].aprtc  = statvecData.col[0,0]
   ds[i].aprvmr = statvecData.vmr[0,0,0:nlayers-1]
-  ds[i].retvmr = statvecData.vmr[1,0,0:nlayers-1] 
-   
+  ds[i].retvmr = statvecData.vmr[1,0,0:nlayers-1]
+
   dum = where((statvecData.pnam[0:statvecData.nprm-1] eq 'BckGrdSlp'), count)
   if ( count ge 1 ) then ds[i].bslope = mean(statvecData.prm[1,dum])
-  
+
   dum = where(((statvecData.pnam[0:statvecData.nprm-1] eq 'SWNumShft' ) or ( statvecData.pnam[0:statvecData.nprm-1] eq 'IWNumShft')), count)
   if ( count ge 1 ) then ds[i].wshift = mean(statvecData.prm[1,dum])
-  
+
   dum = where((statvecData.pnam[0:statvecData.nprm-1] eq 'ZeroLev'), count)
   if ( count ge 1 ) then ds[i].zerolev = mean(statvecData.prm[1,dum])
-  
+
   dum = where((statvecData.pnam[0:statvecData.nprm-1] eq 'SPhsErr'), count)
   if ( count ge 1 ) then ds[i].phase = mean(statvecData.prm[1,dum])
-  
+
   ds[i].alt_boundaries[0,*] = grd.alts[1:nlayers]
   ds[i].alt_boundaries[1,*] = grd.alts[0:nlayers-1]
-  
+
   ;--------------------------------------------------------------
   ; Read surface pressure and temperature from reference.prf file
   ;--------------------------------------------------------------
-  
+
   dum = readrfmd4( refm, ds[i].directory + 'reference.prf',/zpt )
-  
+
   ; Determine if alt decreasing: updn=1 or alt increasing: updn=0
   if ( refm.updn eq 1 ) then begin
     ds[i].surface_pressure    = refm.prfs[1,-1]
@@ -347,35 +349,35 @@ for i = 0, nsize-1 do begin
     ds[i].surface_pressure    = refm.prfs[1,0]
     ds[i].surface_temperature = refm.prfs[2,0]
   endif
-  
+
   ;-------------------------------------
   ; Read Averaging Kernal data AK.target
   ;-------------------------------------
   dum = readnxn4( akData, ds[i].directory + 'ak.target' )
   if (akData.n ne nlayers ) then stop, 'akData.n and nlayers NOT equal'
-  
+
   ; Normalize Averaging Kernal relative to a priori
   for ii = 0, nlayers-1  do begin
     for jj = 0, nlayers-1 do begin
       ds[i].ak[ii,jj] = akData.mat[ii,jj] * ( ds[i].aprvmr[ii] / ds[i].aprvmr[jj] )
     endfor
-  endfor  
-  
+  endfor
+
   ;-----------------------------------------------
   ; Calculate the total column averaging kernel.
-  ; Need to get retrieved airmass for total column 
+  ; Need to get retrieved airmass for total column
   ; averaging kernel from rprs.table
   ;-----------------------------------------------
   dum = readprfs4( rprfs, ds[i].directory + 'rprfs.table' )
   tmpsum   = fltarr(nlayers)
   ds[i].ms = rprfs.a                                    ; Air-mass profile (same in a prior prf table or retreived prf table)
-  
+
   ;--------------------------
   ; Get retrieved H2O profile
   ;--------------------------
   H2Oind        = where(rprfs.name eq 'H2O', /null)
   ds[i].h2o_vmr = rprfs.vmr[*,H2Oind]
-  
+
   for jj = 0, nlayers-1 do begin
     for ii = 0, nlayers-1 do begin
       tmpsum[ii] = rprfs.a[ii] * ds[i].ak[ii,jj]
@@ -383,7 +385,7 @@ for i = 0, nsize-1 do begin
     ds[i].aktc[jj] = ( total(tmpsum) ) / rprfs.a[jj]
     ds[i].sens[jj] = total( ds[i].ak[*,jj] )            ; This is suming all layers without airmass weighting => sensitivity.
   endfor
-  
+
   ;----------------------
   ; Intermediate plotting
   ;----------------------
@@ -394,24 +396,24 @@ for i = 0, nsize-1 do begin
     window, 2
     !p.multi=[0,2,2]
     plot,  ds[i].ak[0,*], ds[i].altitude, xrange=[-2,2]
-    for ii = 0, nlayers-1 do oplot, ds[i].ak[ii,*], ds[i].altitude, color=ii+2    
+    for ii = 0, nlayers-1 do oplot, ds[i].ak[ii,*], ds[i].altitude, color=ii+2
     oplot, ds[i].sens,    ds[i].altitude
     plot,  ds[i].aprvmr,  ds[i].altitude
     oplot, ds[i].retvmr,  ds[i].altitude, color=2
     plot,  ds[i].aktc,    ds[i].altitude
     ;device,/close
-  endif 
-  
+  endif
+
   ;----------------------
   ; Get a priori profiles
   ;----------------------
   dum = readprfs4( aprfs, ds[i].directory + 'aprfs.table' )
-  
+
   ; A priori
   ;ds[i].aprh2ovmr = aprfs.vmr[*,0]                       ; H2O profile
   ;ds[i].aprh2otc  = total( aprfs.vmr[*,0] * rprfs.a )    ; Total column H2O
   ds[i].aprlaycol = ds[i].aprvmr * rprfs.a               ;
-  
+
   ; Retrieved
   ds[i].retlaycol = ds[i].retvmr * rprfs.a               ;
 
@@ -434,10 +436,10 @@ end
 ;___________________________________________________________________________
 ;                            SUBROUTINES
 ;___________________________________________________________________________
-                            
+
 function bldstrct, npnts, nlayers
 ;--------------------------------------------
-; Subroutine to initialize data structure for 
+; Subroutine to initialize data structure for
 ; save file
 ;--------------------------------------------
 return, datastructure = REPLICATE({h224, $                ; What is h224 ??????
@@ -465,7 +467,7 @@ return, datastructure = REPLICATE({h224, $                ; What is h224 ??????
         retlaycol                  :fltarr(nlayers),$     ;
         aprtc                      :0.D0,$                ;
         prmgas_tc                  :0.D0,$                ; Primary retrieved gas total column amount (Old name = rettc)
-        h2o_vmr                    :fltarr(nlayers),$     ; Retrieved H2O vmr profile (old name = aprh2ovmr) 
+        h2o_vmr                    :fltarr(nlayers),$     ; Retrieved H2O vmr profile (old name = aprh2ovmr)
         h2o_tc                     :0.D0,$                ; H2O retrieved total column amount (Old name = aprh2otc)
         year                       :0,$                   ; Year [YYYY]
         month                      :0,$                   ; Month [MM]

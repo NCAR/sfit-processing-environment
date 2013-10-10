@@ -171,10 +171,11 @@ pro oex4, site=site, ps=ps, nsm=nsm, ftype=ftype, thicklines=thicklines, big=big
 		thick = 1.0
 		IF toPS THEN BEGIN ;1
 			set_plot, 'ps'
-			!p.font = 0
+			;!p.font = 0
 			psfile = 'oex.ps'
 			if( keyword_set( dir ) )then psfile = dir + psfile
 			print, 'saving ps file to : ', psfile
+			;device, /color, /landscape, /helvetica, filename = psfile, encapsulated = encap, bits=8
 			device, /color, /landscape, /helvetica, filename = psfile, encapsulated = encap, bits=8
 			; full page PS
 
