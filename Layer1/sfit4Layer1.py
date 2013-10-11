@@ -540,7 +540,8 @@ def main(argv):
                         print '*****************************************************'
                         
                         rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMfile'], wrkOutputDir3, \
-                                         mainInF.inputs['refMkrLvl'], mainInF.inputs['wVer'], dbFltData_2, spcDBind, logFile)
+                                         mainInF.inputs['refMkrLvl'], mainInF.inputs['wVer'], mainInF.inputs['zptFlg'],\
+                                         dbFltData_2, spcDBind, logFile)
                         if logFile: 
                             logFile.info('Ran REFMKRNCAR for ctl file: %s' % msgstr1)
                             logFile.info('Processed spectral observation date: %s' % msgstr2)                    

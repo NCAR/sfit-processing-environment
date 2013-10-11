@@ -108,6 +108,8 @@ refmkrFlg   = 1                                                # 1 = run refmake
 sfitFlg     = 1                                                # 1 = run sfit,     0 = do not run sfit
 lstFlg      = 1                                                # Flag to create list file. Output file which has meta data and a list of all directories processed
 errFlg      = 0                                                # 1 = run error analysis, 0 = do not run error analysis
+zptFlg      = 1                                                # 1 = Use new ZPT.nmc files, 0 = use old zpt-120 files
+
 
 refMkrLvl   = 0                                                # Version of reference maker to use. 
                                                                #    0 = Use pre-existing zpt file. Concatonate with water and WACCM profiles

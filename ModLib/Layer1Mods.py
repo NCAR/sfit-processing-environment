@@ -67,7 +67,7 @@ def tryopen(fname,lines,rtnFlg,logFile=False):
                                 #-------------------------#
 
 
-def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, specDB, spcDBind, logFile=False):
+def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind, logFile=False):
     ''' Reference maker for NCAR. Insert your own version here. '''
     #----------------------------------------------
     # refMkrNCAR level options for creating 
@@ -99,7 +99,8 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, specDB, spcDBind, logFil
     #--------------
     # Find ZPT file
     #--------------
-    zptFiles = glob.glob(zptwPath + 'ZPT.nmc*')
+    if zptFlg: zptFiles = glob.glob(zptwPath + 'ZPT.nmc*')
+    else     : zptFiles = glob.glob(zptwPath + 'zpt-120')
     
     # If more than one zpt file found trigger warning and use first one 
     if len(zptFiles) > 1:                 
