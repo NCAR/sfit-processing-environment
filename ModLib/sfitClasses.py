@@ -111,13 +111,13 @@ class DateRange:
 #-------------------------------------------InputFile-------------------------------------------------------
 class InputFile:
     ''' Class for input files with generic method to check the existance of file'''
-    def __init__(self,fname,logging=False):
+    def __init__(self,fname,logFile=False):
         self.fname = fname
         try:
             with open(fname): pass
         except IOError as errmsg:
             print 'Unable to find',fname
-            if logging: logging.error(errmsg)
+            if logFile: logFile.error(errmsg)
             sys.exit()         
 
 #----------------------------------------Layer1InputFile-------------------------------------------------------
@@ -128,24 +128,24 @@ class Layer1InputFile(InputFile):
     is treated as an actual python script and 
     inputs are read in using execfile
     '''   
-    def __init__(self,fname,logging=False):
-        InputFile.__init__(self,fname,logging)
+    def __init__(self,fname,logFile=False):
+        InputFile.__init__(self,fname,logFile)
         self.inputs  = {}
         #try:
             #with open(self.fname): pass
         #except IOError as errmsg:
             #print 'Unable to find',self.fname
-            #if self.logging: self.logging.error(errmsg)
+            #if self.logFile: self.logFile.error(errmsg)
             #sys.exit()
             
-    def getInputs(self,logging=False):
+    def getInputs(self,logFile=False):
         ''' Layer 1 input file is treated as a python
             script '''
         try:
             execfile(self.fname, self.inputs)
         except IOError as errmsg:
             print errmsg
-            if logging: logging.error(errmsg)
+            if logFile: logFile.error(errmsg)
             sys.exit()
             
         if '__builtins__' in self.inputs:
@@ -158,8 +158,8 @@ class CtlInputFile(InputFile):
     values in ctl file
     '''
 
-    def __init__(self,fname,logging=False):
-        InputFile.__init__(self,fname,logging)
+    def __init__(self,fname,logFile=False):
+        InputFile.__init__(self,fname,logFile)
         self.inputs = {}
                    
                    
@@ -290,9 +290,9 @@ class DbInputFile(InputFile):
     This class deals with reading and filtering 
     the spectral database file.
     '''    
-    def __init__(self,fname,logging=False):
+    def __init__(self,fname,logFile=False):
         ''' Initializations '''
-        InputFile.__init__(self,fname,logging)
+        InputFile.__init__(self,fname,logFile)
         self.dbInputs    = {}
         self.dbFltInputs = {}
             
@@ -373,12 +373,12 @@ class GasPrfs(InputFile):
     ''' This class gets the Zbar, P, Airmass and VMR of specified gas for 
         both retrieved and a prior states'''
     
-    def __init__(self,rprfsFile,aprfsFile,gas, npFlg=False, logging=False):
+    def __init__(self,rprfsFile,aprfsFile,gas, npFlg=False, logFile=False):
         
-        InputFile.__init__(self,rprfsFile,logging)
+        InputFile.__init__(self,rprfsFile,logFile)
         self.rprfsFile = self.fname
         
-        InputFile.__init__(self,aprfsFile,logging)
+        InputFile.__init__(self,aprfsFile,logFile)
         self.aprfsFile = self.fname
         
         del self.fname
