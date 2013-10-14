@@ -605,38 +605,43 @@ def errAnalysis(ctlFileVars, wrkingDir, logFile=False):
     #---------------------------------
     # Calculate Smoothing error
     #                               T
-    #      Serr = (A-I) * Sa * (A-I)
+    #      Ss = (A-I) * Sa * (A-I)
     #---------------------------------
-    #S_sys, S_ran are lists of 4tuples: cov in sfit units, cov in pc units, tot col std, error name
-    S_tmp     = np.dot( np.dot( ( AKvmr - np.identity(AKvmr.shape[0]) ), sa[x_start:x_stop,x_start:x_stop] ),(AKvmr - np.identity(AKvmr.shape[0]) ).T )
-    S_err_tmp = np.sqrt( np.dot( np.dot( aprdensprf, S_tmp ),aprdensprf.T ) )
-    S_tmp2    = np.dot( np.dot( np.diag(aprdensprf), S_tmp ), np.diag(aprdensprf) )
-    S_ran['smoothing'] = (S_tmp, S_err_tmp, S_tmp2)
-	
-	
-    # Otherwise calculate from Rogers: Ss=(A-I)*Sa*(A-I)T
-    S_tmp = np.dot(np.dot((AKvmr - np.identity(AKvmr.shape[0])),a.sa[a.x_start:a.x_stop,a.x_start:a.x_stop]),(AKvmr - np.identity(AKvmr.shape[0])).T)
-    S_err_tmp = np.sqrt(np.dot(np.dot(aprdensprf,S_tmp),aprdensprf.T))
-    S_tmp = np.dot(np.dot(np.diag(r.aprf),S_tmp),np.diag(r.aprf))
-    S_tmp2 = np.dot(np.dot(np.diag(r.airmass),S_tmp),np.diag(r.airmass))
+    Ss   = np.dot( np.dot( ( AKvmr - np.identity( AKvmr.shape[0] ) ), sa[x_start:x_stop,x_start:x_stop]), ( AKvmr - np.identity(AKvmr.shape[0])).T ) 
+    Ss_1 = np.sqrt( np.dot( np.dot( aprdensprf, Ss ), aprdensprf.T ) )                    # Whole column uncertainty [%]
+    Ss_2 = np.dot( np.dot( np.diag( pGasPrf.Aprf), Ss ), np.diag(pGasPrf.Aprf) )          # Uncertainty covariance matrix [VMR]
+    Ss_3 = np.dot( np.dot( np.diag( pGasPrf.Airmass), Ss_2 ), np.diag(pGasPrf.Airmass) )  # Uncertainty covariance matrix [molecules cm^-2]
     
-    S_sys.append((S_tmp,S_tmp2,S_err_tmp,'smoothing'))
+    S_sys['Smoothing'] = (Ss_2, Ss_3, Ss_1)
     
-    # Calculate Measurement error using SNR calculated from the spectrum
+    #----------------------------------
+    # Calculate Measurement error using 
+    # SNR calculated from the spectrum
+    #                    T
+    #  Sm = Dx * Se * Dx
+    #----------------------------------
+    Sm   = np.dot( np.dot( Dx, se ),Dx.T )
+    Sm_1 = np.sqrt( np.dot( np.dot( aprdensprf, Sm ), aprdensprf.T ) )                   # Whole column uncertainty [%]
+    Sm_2 = np.dot( np.dot( np.diag(pGasPrf.Aprf), Sm ), np.diag(pGasPrf.Aprf) )          # Uncertainty covariance matrix [VMR]
+    Sm_3 = np.dot( np.dot( np.diag(pGasPrf.Airmass), Sm_2 ), np.diag(pGasPrf.Airmass) )  # Uncertainty covariance matrix [molecules cm^-2]
     
-    # Calculate from Rogers: Sm = Dx * Sm * Dx.T
-    S_tmp = np.dot(np.dot(Dx,a.se),Dx.T)
-    S_err_tmp = np.sqrt(np.dot(np.dot(aprdensprf,S_tmp),aprdensprf.T))
-    S_tmp = np.dot(np.dot(np.diag(r.aprf),S_tmp),np.diag(r.aprf))
-    S_tmp2 = np.dot(np.dot(np.diag(r.airmass),S_tmp),np.diag(r.airmass))
-    
-    S_ran.append((S_tmp,S_tmp2,S_err_tmp,'measurement'))
+    S_ran['Measurement'] = (Sm_2, Sm_3, Sm_1)
+
+    #--------------------------
+    # Error summary information
+    #--------------------------
     logger.info('%s     %.4E\n'%('Column amount = ', retdenscol))
     logger.info('%s     %f\n'%('DOFS (total column) = ', col_dofs))
-    logger.info('%s     %f\n'%('Sm (%) = ', (S_ran[0][2]/retdenscol)*100))
-    logger.info('%s     %f\n'%('Ss (%) = ', (S_sys[0][2]/retdenscol)*100))
+    logger.info('%s     %f\n'%('Sm (%) = ', (S_ran['Measurement'][0][2]/retdenscol)*100))
+    logger.info('%s     %f\n'%('Ss (%) = ', (S_sys['Smoothing'][0][2]/retdenscol)*100))
     
-    # Interference error 1 - retrieval parameters
+    
+    #---------------------
+    # Interference Errors:
+    #---------------------
+    #------------------------
+    # 1) Retrieval parameters
+    #------------------------
     AK_int1 = AK[a.x_start:a.x_stop,0:a.x_start]  # Per Bavo
     Se_int1 =  a.sa[0:a.x_start,0:a.x_start]
       
