@@ -391,7 +391,7 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
                             #  -- Error Analysis --   #
                             #                         #
                             #-------------------------#    
-def errAnalysis(ctlFileVars, wrkingDir, logFile=False):
+def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     """
     Calculates systematic and random uncertainty covariance matrix 
     using output from sfit4 and sb values from ctl file
@@ -406,28 +406,35 @@ def errAnalysis(ctlFileVars, wrkingDir, logFile=False):
       all systematic uncertainty covariance matrices
       all random uncertainty covariance matrices
     
-    Updates 09/07/2013
-    
-    1) Made changes to reconcile changes to version 2 of file read
-      a) n_profile and n_column are now calculated in file_read
-    2) Added vmr covariance matrix outpur
-    3) Changed error summary to error log
-    4) Added error summary of uncertainties in mol cm^-2
-    5) Fixed size of AK_int2 and Se_int2 for case of interfering species retrieved as profile
-    6) Improved outputs, allows choice of untis of covariance matrix between vmr and molec /cm 2
-    
     Created Stephanie Conway (sconway@atmosp.physics.utoronto.ca)
     
     """
-
-    #import file_read_v4 as rout
-    #import read_prfs as prfs
-    #import sfit4_ctl_simple as sfit4   
-    #ctl = sfit4.sfit4_ctl()
-    #ctl.read_ctl_file('sfit4.ctl')
-    #b = sfit4.sfit4_ctl()
-    #b.read_ctl_file('sb.ctl')
     
+    def calcCoVar(coVar,A,aprDensPrf,retPrfVMR,airMass):
+	''' Calculate covariance matricies in various units'''
+	
+	Sm   = np.dot(  np.dot( A, coVar ),A.T )
+	Sm_1 = np.sqrt( np.dot( np.dot( aprDensPrf, Sm ), aprDensPrf.T )     )   # Whole column uncertainty [%]
+	Sm_2 = np.dot(  np.dot( np.diag(retPrfVMR), Sm ), np.diag(retPrfVMR) )   # Uncertainty covariance matrix [VMR]
+	Sm_3 = np.dot(  np.dot( np.diag(airMass), Sm_2 ), np.diag(airMass)   )   # Uncertainty covariance matrix [molecules cm^-2]
+	
+	return (Sm_2, Sm_3, Sm_1)
+	
+    def writeCoVar(fname,header,var,ind):
+	''' Write covariance matricies to files'''
+	with open(fname, 'w') as fout:
+	    fout.write('# ' + header + '\n'                    )
+	    fout.write('# nmatr  = {}\n'.format(len(var)      ))
+	    fout.write('# nrows  = {}\n'.format(var.shape[0]  ))
+	    fout.write('# ncols  = {}\n\n'.format(var.shape[1])) 
+	    for k in var:
+		fout.write('{}\n'.format(k))
+		
+		for row in var[ind]:
+		    strformat = ' '.join('{:>12.4E}' for i in row) + ' \n'
+		    fout.write( strformat.format(*row) )
+		
+		fout.write('\n\n')    
     
     #------------------------------------------------------
     # Determine number of microwindows and retrieved gasses
@@ -607,12 +614,9 @@ def errAnalysis(ctlFileVars, wrkingDir, logFile=False):
     #                               T
     #      Ss = (A-I) * Sa * (A-I)
     #---------------------------------
-    Ss   = np.dot( np.dot( ( AKvmr - np.identity( AKvmr.shape[0] ) ), sa[x_start:x_stop,x_start:x_stop]), ( AKvmr - np.identity(AKvmr.shape[0])).T ) 
-    Ss_1 = np.sqrt( np.dot( np.dot( aprdensprf, Ss ), aprdensprf.T ) )                    # Whole column uncertainty [%]
-    Ss_2 = np.dot( np.dot( np.diag( pGasPrf.Aprf), Ss ), np.diag(pGasPrf.Aprf) )          # Uncertainty covariance matrix [VMR]
-    Ss_3 = np.dot( np.dot( np.diag( pGasPrf.Airmass), Ss_2 ), np.diag(pGasPrf.Airmass) )  # Uncertainty covariance matrix [molecules cm^-2]
-    
-    S_sys['Smoothing'] = (Ss_2, Ss_3, Ss_1)
+    mat1               = sa[x_start:x_stop,x_start:x_stop]
+    mat2               = AKvmr - np.identity( AKvmr.shape[0] )
+    S_sys['Smoothing'] = calcCoVar(mat1,mat2,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
     
     #----------------------------------
     # Calculate Measurement error using 
@@ -620,308 +624,212 @@ def errAnalysis(ctlFileVars, wrkingDir, logFile=False):
     #                    T
     #  Sm = Dx * Se * Dx
     #----------------------------------
-    Sm   = np.dot( np.dot( Dx, se ),Dx.T )
-    Sm_1 = np.sqrt( np.dot( np.dot( aprdensprf, Sm ), aprdensprf.T ) )                   # Whole column uncertainty [%]
-    Sm_2 = np.dot( np.dot( np.diag(pGasPrf.Aprf), Sm ), np.diag(pGasPrf.Aprf) )          # Uncertainty covariance matrix [VMR]
-    Sm_3 = np.dot( np.dot( np.diag(pGasPrf.Airmass), Sm_2 ), np.diag(pGasPrf.Airmass) )  # Uncertainty covariance matrix [molecules cm^-2]
-    
-    S_ran['Measurement'] = (Sm_2, Sm_3, Sm_1)
-
-    #--------------------------
-    # Error summary information
-    #--------------------------
-    logger.info('%s     %.4E\n'%('Column amount = ', retdenscol))
-    logger.info('%s     %f\n'%('DOFS (total column) = ', col_dofs))
-    logger.info('%s     %f\n'%('Sm (%) = ', (S_ran['Measurement'][0][2]/retdenscol)*100))
-    logger.info('%s     %f\n'%('Ss (%) = ', (S_sys['Smoothing'][0][2]/retdenscol)*100))
-    
-    
+    S_ran['Measurement'] = calcCoVar(se,Dx,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+ 
     #---------------------
     # Interference Errors:
     #---------------------
     #------------------------
     # 1) Retrieval parameters
     #------------------------
-    AK_int1 = AK[a.x_start:a.x_stop,0:a.x_start]  # Per Bavo
-    Se_int1 =  a.sa[0:a.x_start,0:a.x_start]
+    AK_int1                   = AK[x_start:x_stop,0:x_start]  
+    Se_int1                   = sa[0:x_start,0:x_start]
+    S_ran['Retrieval_Params'] = calcCoVar(Se_int1,AK_int1,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+    
+    #-----------------------
+    # 2) Interfering species
+    #-----------------------
+    n_int2                     = n_profile + n_column - 1
+    n_int2_column              = ( n_profile - 1 ) * n_layer + n_column
+    AK_int2                    = AK[x_start:x_stop, x_stop:x_stop + n_int2_column] 
+    Se_int2                    = sa[x_stop:x_stop + n_int2_column, x_stop:x_stop + n_int2_column]
+    S_ran['Interfering_Specs'] = calcCoVar(Se_int2,AK_int2,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
       
-    S_tmp = np.dot(np.dot(AK_int1,Se_int1),AK_int1.T)
-    S_err_tmp = np.sqrt(np.dot(np.dot(aprdensprf,S_tmp),aprdensprf.T)) 
-    S_tmp = np.dot(np.dot(np.diag(r.aprf),S_tmp),np.diag(r.aprf))
-    S_tmp2 = np.dot(np.dot(np.diag(r.airmass),S_tmp),np.diag(r.airmass))
+    #----------------------------------------------
+    # Errors from parameters not retrieved by sfit4
+    #----------------------------------------------
+    zerolev_band_b = []
     
-    logger.info('%s     %f\n'%('Sint1_random (retrieval params) (%) = ', S_err_tmp/retdenscol*100))
+    #---------------------------------------------
+    # Determine which microwindows retrieve zshift
+    #---------------------------------------------
+    for k in ctlFileVars.inputs['band']:
+	if (ctlFileVars.inputs['band.'+str(k)+'.zshift'] == 'F'): zerolev_band_b.append(k)        # only include bands where zshift is NOT retrieved
+  
+    nbnds = len(zerolev_band_b)
+	
+    #--------------------------------
+    # Loop through parameter list and
+    # determine errors
+    #--------------------------------
+    for Kbl in Kb_labels:
+	if Kbl in Kb:
+	    DK = np.dot(Dx,Kb[Kbl])
+	    for ErrType in ['random','systematic']:
+		if Kbl == 'zshift':
+		    Sb = np.zeros( (nbnds, nbnds) )
+		    for i in range(0,nbnbs): Sb[i,i] = float( SbctlFileVars.inputs['sb.band.'+str(zerolev_band_b[i])+'.zshift.'+ErrType] )**2 
+	    
+		elif Kbl == 'temperature':
+		    T_Sb = SbctlFileVars.inputs['sb.temperature.'+ErrType]
+		    Sb   = np.zeros((n_layer,n_layer))
+		    # Convert degrees to relative units ?????
+		    for i in range(0,len(T_Sb)): Sb[i,i] = (float(T_Sb[i]) / pGasPrf.T[i])**2
+	    
+		elif DK.shape[1] == 1:
+		    Sb      = np.zeros((1,1))
+		    Sb[0,0] = float(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType])**2
+		    
+		elif DK.shape[1] == n_window: 
+		    Sb = np.zeros((n_window,n_window))
+		    np.fill_diagonal(Sb,float(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType])**2)
+	    
+		else: Sb = np.zeros((1,1))
+		
+	    #------------------------------------
+	    # Check if Error covariance matrix is
+	    # specified in the Sb.ctl file
+	    #------------------------------------
+	    if np.sum(Sb) == 0:
+		if Kbl == 'zshift': print 'sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated'
+		else:               print 'sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated'
+	    
+	    #----------------------------
+	    # Calculate
+	    #----------------------------
+	    else:
+		if ErrType == 'random': S_ran[Kbl] = calcCoVar(Sb,DK,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+		else:                   S_sys[Kbl] = calcCoVar(Sb,DK,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+	    
+    #---------------------------------------------
+    # Calculate total systematic and random errors
+    #---------------------------------------------
+    # Initialize total random
+    S_tot_rndm_err            = 0
+    S_ran['total_vmr']        = np.zeros((n_layer,n_layer))
+    S_ran['total_mole_cm^-2'] = np.zeros((n_layer,n_layer))
     
-    S_ran.append((S_tmp,S_tmp2,S_err_tmp,'retrieval parameters'))    
+    # Initialize total systematic
+    S_systematic_err          = 0
+    S_sys['total_vmr']        = np.zeros((n_layer,n_layer))
+    S_sys['total_mole_cm^-2'] = np.zeros((n_layer,n_layer))    
     
-    # Interference error 2 - interfering species
+    # Random
+    for k in S_ran:
+	S_tot_rndm_err            += S_ran[k][2]**2
+	S_ran['total_vmr']        += S_ran[k][0]
+	S_ran['total_mole_cm^-2'] += S_ran[k][1]
+	
+    S_tot_rndm_err  = np.sqrt(S_tot_rndm_err)
+
+    # Systematic
+    for k in S_sys:
+	S_systematic_err          += S_sys[k][2]**2
+	S_sys['total_vmr']        += S_sys[k][0]
+	S_sys['total_mole_cm^-2'] += S_sys[k][1]
+	
+    S_systematic_err  = np.sqrt(S_systematic_err)
     
-    n_int2 = a.n_profile + a.n_column - 1
-    n_int2_column = (a.n_profile-1)*a.n_layer + a.n_column
-    
-    AK_int2 = AK[a.x_start:a.x_stop,a.x_stop:a.x_stop+n_int2_column] # Per Bavo
-    
-    Se_int2 = a.sa[a.x_stop:a.x_stop+n_int2_column,a.x_stop:a.x_stop+n_int2_column]
-    
-    S_tmp = np.dot(np.dot(AK_int2,Se_int2),AK_int2.T)
-    S_err_tmp = np.sqrt(np.dot(np.dot(aprdensprf,S_tmp),aprdensprf.T))
-    S_tmp = np.dot(np.dot(np.diag(r.aprf),S_tmp),np.diag(r.aprf))
-    S_tmp2 = np.dot(np.dot(np.diag(r.airmass),S_tmp),np.diag(r.airmass))
-    
-    S_ran.append((S_tmp,S_tmp2,S_err_tmp,'interfering species'))
-    
-    logger.info('%s     %f\n'%('Sint2_random (intf. spec.) (%) = ', (S_err_tmp/retdenscol)*100))
-    
-    # Errors from parameters not retrieved by Sfit4
-    
-    zerolev_band_b = [];
-    for k in ctl.value['band'].strip().split():
-      if (ctl.value['band.'+k+'.zshift'].strip() == 'F'):  # only include bands where zshift is retrieved
-	zerolev_band_b.append(k)
-    
-    for s in Kb_labels:
-      Kb_exists = True
-      try:
-	DK = np.dot(Dx,a.Kb[s])
-      except KeyError, e:
-	Kb_exists = False
       
-      if (Kb_exists):
-	for k in ['random', 'systematic']:
-    #      print s
-	  try:
-	    if (s == 'zshift'):    
-	      Sb = np.zeros((len(zerolev_band_b),len(zerolev_band_b)))
-	      for i in range(0,len(zerolev_band_b)):
-		Sb[i,i] = float( b.value['sb.band.'+zerolev_band_b[i]+'.zshift.'+k])**2
-	    elif (DK.shape[1] == 1):
-	      Sb = np.zeros((1,1))
-	      Sb[0,0] = float(b.value['sb.'+s+'.'+k])**2
-	    elif (DK.shape[1] == a.n_window):
-	      Sb = np.dot(float(b.value['sb.'+s+'.'+k])**2,np.identity(a.n_window))
-	    elif (DK.shape[1] == a.n_layer):  # Only the temperature error fits this requirement
-	      temp_sb = b.value['sb.temperature.'+k].strip().split()
-	      Sb = np.zeros((a.n_layer,a.n_layer))
-	      for j in range(0, len(temp_sb)):
-		Sb[j,j] = (float(temp_sb[j])/r.T[j])**2  # convert degrees to relative units
-	      del temp_sb
-	    else:
-	       Sb = 0
-	  except KeyError, e:
-	    Sb = 0
-	  if np.sum(Sb) == 0:
-	    if (s == 'zshift'):
-	      logger.info('%s\n'%('sb.band.x.'+s+'.'+k+' for all bands where zshift is not retrieved is 0 or is not specified, error covariance matrix not calculated'))
-	    else:
-	      logger.info('%s\n'%('sb.'+s+'.'+k+' for '+s+' is 0 or is not specified, error covariance matrix not calculated'))
-	  else:
-	    S_tmp = np.dot(np.dot(DK,Sb),DK.T)
-	    S_err_tmp = np.sqrt(np.dot(np.dot(aprdensprf,S_tmp),aprdensprf.T))
-	    S_tmp = np.dot(np.dot(np.diag(r.aprf),S_tmp),np.diag(r.aprf))
-	    S_tmp2 = np.dot(np.dot(np.diag(r.airmass),S_tmp),np.diag(r.airmass))
-	    logger.info('%s     %f\n'%('S.'+s+'.'+k+' (%) =', (S_err_tmp/retdenscol)*100))
+					#---------------#
+					# Write outputs #
+					#---------------#
+
+    #--------------------------
+    # Error summary information
+    #--------------------------      
+    with open(wrkingDir+SbctlFileVars.inputs['file.out.error.summary'], 'w') as fout:
+	fout.write('sfit4 ERROR SUMMARY\n\n')
+	fout.write('Primary gas                             = ' + primgas.upper()+'\n'                                            )
+	fout.write('Total column amount                     = {:15.5E} [molecules cm^-2]\n'.format(retdenscol)                    )
+	fout.write('DOFs (total column)                     = {:15.3f}\n'.format(col_dofs)                                        )
+	fout.write('Smoothing error (Sm)                    = {:15.3f} [%]\n'.format(S_sys['Smoothing'][0][2]     /retdenscol*100))
+	fout.write('Measurement error (Sm)                  = {:15.3f} [%]\n'.format(S_ran['Measurement'][0][2]   /retdenscol*100))
+	fout.write('Interference error (retrieved params)   = {:15.3f} [%]\n'.format(S_ran['Retrieval_Params'][2] /retdenscol*100))
+	fout.write('Interference error (interfering spcs)   = {:15.3f} [%]\n'.format(S_ran['Interfering_Specs'][2]/retdenscol*100))
+	fout.write('Total random error                      = {:15.3f} [%]\n'.format(S_tot_rndm_err               /retdenscol*100))
+	fout.write('Total systematic error                  = {:15.3f} [%]\n'.format(S_systematic_err             /retdenscol*100))
+	fout.write('Total random uncertainty                = {:15.3E} [molecules cm^-2]\n'.format(S_tot_rndm_err)                )
+	fout.write('Total systematic uncertainty            = {:15.3E} [molecules cm^-2]\n'.format(S_systematic_err)              )
+	for k in S_ran:
+	    fout.write('Total random uncertainty ({:12s}) = {:15.3E} [molecules cm^-2]\n)'.format(k,S_ran[k][2]))
+	for k in S_sys:
+	    fout.write('Total systematic uncertainty ({:10s}) = {:15.3E} [molecules cm^-2]\n)'.format(k,S_ran[k][2])) 
+        
+    #---------------------------------------
+    # Covariance matrices in molecules cm^-2
+    #---------------------------------------
+    if SbctlFileVars.inputs['out.ssystematic'].upper() == 'T':   
+	with open(wrkingDir+SbctlFileVars.inputs['file.out.ssystematic'], 'w') as fout:
+	    fout.write('SYSTEMATIC ERROR COVARIANCE MATRIX IN MOL CM^-2\n')
+	    fout.write('          ' + str(S_systematic.shape[0]) + '          ' + str(S_systematic.shape[1]) +'\n')
+	    for row in  S_systematic: fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
     
-	    if (k == 'random'):
-	      S_ran.append((S_tmp,S_tmp2,S_err_tmp,s))
+
+    if SbctlFileVars.inputs['out.srandom'].upper() == 'T':   
+	with open(wrkingDir+SbctlFileVars.inputs['file.out.srandom'], 'w') as fout: 
+	    fout.write('RANDOM ERROR COVARIANCE MATRIX IN MOL CM^-2\n')
+	    fout.write('          ' + str(S_random.shape[0]) + '          ' + str(S_random.shape[1])+'\n')
+	    for row in S_random: fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
     
-	    if (k == 'systematic'):
-	      S_sys.append((S_tmp,S_tmp2,S_err_tmp,s))
+    if SbctlFileVars.input['out.srandom.all'].upper() == 'T':
+	with open(wrkingDir+SbctlFileVars.inputs['file.out.srandom.all'], 'w') as fout: 
+	    fout.write('RANDOM ERROR COVARIANCE MATRICES IN MOL CM^-2\n')
+	    fout.write('          ' + str(S_ran[0][1].shape[0]) + '          ' + str(S_ran[0][1].shape[1])+'\n')
+	    fout.write('\n')
+	    for k in range(0, len(S_ran)):
+		fout.write('  '+S_ran[k][3].upper()+' ERROR COVARIANCE MATRIX IN MOL CM^-2\n')
+		for row in  S_ran[k][1]:
+		    fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
+		fout.write('\n\n')
+		
+    if SbctlFileVars.input['out.ssystematic.all'].upper() == 'T':
+	with open(wrkingDir+SbctlFileVars.inputs['file.out.ssytematic.all'], 'w') as fout: 
+	    fout.write('SYSTEMATIC ERROR COVARIANCE MATRICES IN MOL CM^-2\n')
+	    fout.write('          ' + str(S_sys[0][1].shape[0]) + '          ' + str(S_sys[0][1].shape[1])+'\n')
+	    fout.write('\n')
+	    for k in range(0, len(S_sys)):
+		fout.write('  '+S_sys[k][3].upper()+' ERROR COVARIANCE MATRIX IN MOL CM^-2\n')
+		for row in  S_sys[k][1]:
+		    fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
+		fout.write('\n\n')
+
     
-    S_random_err = 0
-    S_random = np.zeros((a.n_layer,a.n_layer))
-    S_random_vmr = np.zeros((a.n_layer,a.n_layer))
+    #---------------------------
+    # Covariance matrices in vmr
+    #---------------------------
+    if SbctlFileVars.input['out.ssystematic.vmr'].upper() == 'T':
+	with open(wrkingDir+SbctlFileVars.inputs['file.out.ssystematic.vmr'], 'w') as fout: 
+	    fout.write('SYSTEMATIC ERROR COVARIANCE MATRIX IN VMR UNITS\n')
+	    fout.write('          ' + str(S_systematic_vmr.shape[0]) + '          ' + str(S_systematic_vmr.shape[1]) +'\n')
+	    for row in  S_systematic_vmr:
+		fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
     
-    for k in range(0,len(S_ran)):
-      S_random_err += S_ran[k][2]**2
-      S_random_vmr += S_ran[k][0]
-      S_random += S_ran[k][1]
-    S_random_err = np.sqrt(S_random_err)
-    
-    logger.info('%s     %f\n'%('Total random error (%) = ', (S_random_err/retdenscol)*100))
-    
-    S_systematic_err = 0
-    S_systematic =  np.zeros((a.n_layer,a.n_layer))
-    S_systematic_vmr =  np.zeros((a.n_layer,a.n_layer))
-    
-    for k in range(1,len(S_sys)):
-      S_systematic_err += S_sys[k][2]**2
-      S_systematic_vmr += S_sys[k][0]
-      S_systematic += S_sys[k][1]
-    S_systematic_err = np.sqrt(S_systematic_err)
-    logger.info('%s     %f\n'%('Total systematic error (%) = ', (S_systematic_err/retdenscol)*100))
-    
-    logger.info('%s     %f\n'%('Total error exclusive of smoothing error (%) = ',np.sqrt(S_systematic_err**2 + S_random_err**2)/retdenscol*100))
-    
-    try:
-      filename = b.value['file.out.error.summary']
-    except KeyError, e:
-      filename = 'error_analysis.summary'
-    
-    with open(filename, 'w') as fout:
-      fout.write(a.header + 'ERROR SUMMARY\n\n')
-      fout.write('  %s  %.4e\n'%('Total random uncertainty in mol cm^-2 :', S_random_err))
-      fout.write('  %s  %.4e\n'%('Total systematic uncertainty in mol cm^-2 :', S_systematic_err))
-      for k in range(0, len(S_ran)):
-	fout.write('  %s%s %s  %.4e\n'%(S_ran[k][3][0].upper(),S_ran[k][3][1:],'random uncertainty in mol cm^-2 :', S_ran[k][2]))
-      for k in range(0, len(S_sys)):
-	fout.write('  %s%s %s  %.4e\n'%(S_sys[k][3][0].upper(),S_sys[k][3][1:],'systematic uncertainty in mol cm^-2 :', S_sys[k][2]))
-    
-    # Output Covariance matrices in mol/cm^2
-    
-    try:
-      output = b.value['out.ssystematic'].strip()
-    except KeyError, e:
-      output = False
-    
-    if (output == 'T'):
-      try:
-	filename = b.value['file.out.ssystematic']
-      except KeyError, e:
-	filename = 'ssystematic.output'
-    
-      with open(filename, 'w') as fout:
-	fout.write(a.header + 'SYSTEMATIC ERROR COVARIANCE MATRIX IN MOL CM^-2\n')
-	fout.write('          ' + str(S_systematic.shape[0]) + '          ' + str(S_systematic.shape[1]) +'\n')
-	for row in  S_systematic:
-	  fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
-    
-    try:
-      output = b.value['out.srandom'].strip()
-    except KeyError, e:
-      output = False
-    if (output == 'T'):
-    
-      try:
-	filename = b.value['file.out.srandom']
-      except KeyError, e:
-	filename = 'srandom.output'
-    
-      with open(filename, 'w') as fout: 
-	fout.write(a.header + 'RANDOM ERROR COVARIANCE MATRIX IN MOL CM^-2\n')
-	fout.write('          ' + str(S_random.shape[0]) + '          ' + str(S_random.shape[1])+'\n')
-	for row in S_random:
-	  fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
-    
-    try:
-      output = b.value['out.srandom.all'].strip()
-    except KeyError, e:
-      output = False
-    
-    if (output == 'T'):
-    
-      try:
-	filename = b.value['file.out.srandom.all']
-      except KeyError, e:
-	filename = 'srandom.all.output'
-    
-      with open(filename, 'w') as fout:
-	fout.write(a.header + 'RANDOM ERROR COVARIANCE MATRICES IN MOL CM^-2\n')
-	fout.write('          ' + str(S_ran[0][1].shape[0]) + '          ' + str(S_ran[0][1].shape[1])+'\n')
-	fout.write('\n')
-	for k in range(0, len(S_ran)):
-	  fout.write('  '+S_ran[k][3].upper()+' ERROR COVARIANCE MATRIX IN MOL CM^-2\n')
-	  for row in  S_ran[k][1]:
-	    fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
-	  fout.write('\n')
-	  fout.write('\n')
-    
-    try:
-      output = b.value['out.ssystematic.all'].strip()
-    except KeyError, e:
-      output = False
-    
-    if (output == 'T'): 
-      try:
-	filename = b.value['file.out.ssytematic.all'].strip()
-      except KeyError, e:
-	filename = 'ssystematic.all.output'
-    
-      with open(filename, 'w') as fout:
-	fout.write(a.header + 'SYSTEMATIC ERROR COVARIANCE MATRICES IN MOL CM^-2\n')
-	fout.write('          ' + str(S_sys[0][1].shape[0]) + '          ' + str(S_sys[0][1].shape[1])+'\n')
-	fout.write('\n')
-	for k in range(0, len(S_sys)):
-	  fout.write('  '+S_sys[k][3].upper()+' ERROR COVARIANCE MATRIX IN MOL CM^-2\n')
-	  for row in  S_sys[k][1]:
-	    fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
-	  fout.write('\n')
-	  fout.write('\n')
-    
-    # Output Covariance matrices in vmr
-    
-    try:
-      output = b.value['out.ssystematic.vmr'].strip()
-    except KeyError, e:
-      output = False
-    
-    if (output == 'T'):
-      try:
-	filename = b.value['file.out.ssystematic.vmr']
-      except KeyError, e:
-	filename = 'ssystematic.vmr.output'
-    
-      with open(filename, 'w') as fout:
-	fout.write(a.header + 'SYSTEMATIC ERROR COVARIANCE MATRIX IN VMR UNITS\n')
-	fout.write('          ' + str(S_systematic_vmr.shape[0]) + '          ' + str(S_systematic_vmr.shape[1]) +'\n')
-	for row in  S_systematic_vmr:
-	  fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
-    
-    try:
-      output = b.value['out.srandom.vmr'].strip()
-    except KeyError, e:
-      output = False
-    if (output == 'T'):
-    
-      try:
-	filename = b.value['file.out.srandom.vmr']
-      except KeyError, e:
-	filename = 'srandom.vmr.output'
-    
-      with open(filename, 'w') as fout: 
-	fout.write(a.header + 'RANDOM ERROR COVARIANCE MATRIX IN VMR UNITS \n')
-	fout.write('          ' + str(S_random_vmr.shape[0]) + '          ' + str(S_random_vmr.shape[1])+'\n')
-	for row in S_random_vmr:
-	  fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
-    
-    try:
-      output = b.value['out.srandom.vmr.all'].strip()
-    except KeyError, e:
-      output = False
-    if (output == 'T'):
-    
-      try:
-	filename = b.value['file.out.srandom.vmr.all']
-      except KeyError, e:
-	filename = 'srandom.vmr.all.output'
-      with open(filename, 'w') as fout:
-	fout.write(a.header + 'RANDOM ERROR COVARIANCE MATRICES IN VMR UNITS \n')
-	fout.write('          ' + str(S_ran[0][0].shape[0]) + '          ' + str(S_ran[0][0].shape[1])+'\n')
-	fout.write('\n')
-	for k in range(0, len(S_ran)):
-	  fout.write('  '+S_ran[k][3].upper()+' ERROR COVARIANCE MATRIX IN VMR UNITS \n')
-	  for row in S_ran[k][0]:
-	    fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
-	  fout.write('\n')
-	  fout.write('\n')
-    
-    try:
-      output = b.value['out.ssystematic.vmr.all'].strip()
-    except KeyError, e:
-      output = False
-    
-    if (output == 'T'): 
-      try:
-	filename = b.value['file.out.ssytematic.vmr.all'].strip()
-      except KeyError, e:
-	filename = 'ssystematic.vmr.all.output'
-    
-      with open(filename, 'w') as fout:
-	fout.write(a.header + 'SYSTEMATIC ERROR COVARIANCE MATRICES IN VMR UNITS \n')
-	fout.write('          ' + str(S_sys[0][0].shape[0]) + '          ' + str(S_sys[0][0].shape[1])+'\n')
-	fout.write('\n')
-	for k in range(0, len(S_sys_vmr)):
-	  fout.write('  '+S_sys[k][3].upper()+' ERROR COVARIANCE MATRIX IN VMR UNITS \n')
-	  for row in  S_sys[k][0]:
-	    fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
-	  fout.write('\n')
-	  fout.write('\n')
+    if SbctlFileVars.input['out.srandom.vmr'].upper() == 'T':
+	with open(wrkingDir+SbctlFileVars.inputs['file.out.srandom.vmr'], 'w') as fout:     
+	    fout.write('RANDOM ERROR COVARIANCE MATRIX IN VMR UNITS \n')
+	    fout.write('          ' + str(S_random_vmr.shape[0]) + '          ' + str(S_random_vmr.shape[1])+'\n')
+	    for row in S_random_vmr:
+		fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
+		
+    if SbctlFileVars.input['out.srandom.vmr.all'].upper() == 'T':
+	with open(wrkingDir+SbctlFileVars.inputs['file.out.srandom.vmr.all'], 'w') as fout: 
+	    fout.write('RANDOM ERROR COVARIANCE MATRICES IN VMR UNITS \n')
+	    fout.write('          ' + str(S_ran[0][0].shape[0]) + '          ' + str(S_ran[0][0].shape[1])+'\n')
+	    fout.write('\n')
+	    for k in range(0, len(S_ran)):
+		fout.write('  '+S_ran[k][3].upper()+' ERROR COVARIANCE MATRIX IN VMR UNITS \n')
+		for row in S_ran[k][0]:
+		    fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
+	    fout.write('\n\n')
+	    
+    if SbctlFileVars.input['out.ssystematic.vmr.all'].upper() == 'T':
+	with open(wrkingDir+SbctlFileVars.inputs['file.out.ssytematic.vmr.all'], 'w') as fout: 
+	    fout.write('SYSTEMATIC ERROR COVARIANCE MATRICES IN VMR UNITS \n')
+	    fout.write('          ' + str(S_sys[0][0].shape[0]) + '          ' + str(S_sys[0][0].shape[1])+'\n')
+	    fout.write('\n')
+	    for k in range(0, len(S_sys_vmr)):
+		fout.write('  '+S_sys[k][3].upper()+' ERROR COVARIANCE MATRIX IN VMR UNITS \n')
+		for row in  S_sys[k][0]:
+		    fout.write(' %s \n' % '  '.join('% .18E' % i for i in row))
+	    fout.write('\n\n')

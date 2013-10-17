@@ -624,7 +624,7 @@ def main(argv):
                             if logFile: 
                                 logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)                            
                                 
-                            rtn = errAnalysis( ctlFileGlb, wrkOutputDir3, logFile )
+                            rtn = errAnalysis( ctlFileGlb, wrkOutputDir3, logFile )  # **** SbctlFile *****
                                 
                                 
                         #---------------------------
