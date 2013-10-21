@@ -89,7 +89,7 @@ ctlList   = [['/Users/ebaumer/Data/TestBed/ctlFiles/sfit4.ctl',1,0,0,'','','VerA
 
 spcdbFile = '/Users/ebaumer/Data/TestBed/mlo/HRspDB_mlo_2012.dat'           # Spectral DB File
 WACCMfile = '/Users/ebaumer/Data/TestBed/mlo/waccm/WACCMref_V6.MLO'         # WACCM profile to use
-
+sbCtlFile = '/Users/ebaumer/Data/TestBed/mlo/sb.ctl'                        # Control file for error analysis
 
 # Optional files
 statFile   = '/Users/ebaumer/Data/TestBed/mlo/stations.layers'              # Station layer file

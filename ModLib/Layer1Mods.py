@@ -814,6 +814,5 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 	header = 'SYSTEMATIC ERROR COVARIANCE MATRICES IN VMR UNITS'
 	writeCoVar(fname,header,S_sys,0)	
 	
-
-
+    return True
 

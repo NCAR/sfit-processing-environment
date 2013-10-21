@@ -297,7 +297,15 @@ def main(argv):
         #-----------------------------
         dbFltData_1 = dbData.dbFilterDate(inDateRange)
         
-
+        #---------------------------------
+        # Initialize error control file
+        # instance and get inputs (sb.ctl)
+        #---------------------------------
+        if mainInF.inputs['errFlg']:
+            ckFile(mainInF.inputs['sbCtlFile'],logFlg=logFile,exit=True)
+            SbctlFileVars = sc.CtlInputFile(mainInF.inputs['sbCtlFile'])
+            SbctlFileVars.getInputs()            
+            
         #--------------------------------------
         # Level 2 -- Loop through control files
         #--------------------------------------
@@ -432,6 +440,17 @@ def main(argv):
                         if logFile: logFile.critical('Unable to copy template ctl file to working directory: %s' % wrkOutputDir3)
                         sys.exit()
                     
+                    #-------------------------------------
+                    # Copy sb.ctl file to output directory
+                    # if error analysis is chosen
+                    #-------------------------------------
+                    try:
+                        shutil.copyfile(mainInF.inputs['sbCtlFile'], wrkOutputDir3 + 'sb.ctl')
+                    except IOError:
+                        print 'Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3
+                        if logFile: logFile.critical('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
+                        sys.exit()                    
+                                       
                     #----------------------------------
                     # Copy hbin details to output folder
                     # ** Assuming that the hbin.dtl and
@@ -613,8 +632,7 @@ def main(argv):
                             if cmpltFlg:
                                 lstFile.info("{0:<13}".format(int(dbFltData_2['Date'][spcDBind])) + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '       ' + wrkOutputDir3)
                                 
-                                
-   
+                                  
                                 #----------------------------#
                                 #                            #
                                 #   --- Error Analysis ---   #
@@ -624,8 +642,7 @@ def main(argv):
                             if logFile: 
                                 logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)                            
                                 
-                            rtn = errAnalysis( ctlFileGlb, wrkOutputDir3, logFile )  # **** SbctlFile *****
-                                
+                            rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, logFile )  
                                 
                         #---------------------------
                         # Continuation for Pause flg
