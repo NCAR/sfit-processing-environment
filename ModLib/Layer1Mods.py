@@ -67,7 +67,7 @@ def tryopen(fname,lines,logFile=False):
                                 #-------------------------#
 
 
-def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, specDB, spcDBind, logFile=False):
+def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind, logFile=False):
     ''' Reference maker for NCAR. Insert your own version here. '''
     #----------------------------------------------
     # refMkrNCAR level options for creating 
@@ -99,7 +99,8 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, specDB, spcDBind, logFil
     #--------------
     # Find ZPT file
     #--------------
-    zptFiles = glob.glob(zptwPath + 'ZPT.nmc*')
+    if zptFlg: zptFiles = glob.glob(zptwPath + 'ZPT.nmc*')
+    else     : zptFiles = glob.glob(zptwPath + 'zpt-120')
     
     # If more than one zpt file found trigger warning and use first one 
     if len(zptFiles) > 1:                 
@@ -327,9 +328,9 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
         fname.write( str(dbFltData_2['Alt'][spcDBind]) + '\n')
         fname.write('# filter bands and regions for calculating SNR\n')
         fname.write( mainInF.inputs['fltrBndInputs'] )
-        fname.write('# number of data blocks in the output ascii file\n')
-        fname.write( str(mainInF.inputs['numDataBlks']) + '\n')
-        fname.write('# Specify data block (Each block contains at least 2 lines):\n')
+        fname.write('# number of BNR files\n')
+        fname.write( str(mainInF.inputs['nBNRfiles']) + '\n')
+        #fname.write('# Specify data block (Each block contains at least 2 lines):\n')
         fname.write('# bnr file name\n')
         fname.write('# Radius of Earth (ROE), zero fill factor (nterp), ratioflg (rflag), file open flag (fflag)\n')
         fname.write('# roe - radius of earth [km]\n')

@@ -97,9 +97,7 @@ statFile   = '/Users/ebaumer/Data/TestBed/mlo/stations.layers'              # St
 #--------------------
 # Flags and Constants
 #--------------------
-numDataBlks = 1                                                # number of Spectral data blocks in the output ascii file
-                                                               #    = [# binary formatted spectra] X [# fit regions] (often but not necessarily)
-                                                               # fit regions are read from sfit4.ctl file  
+nBNRfiles   = 1                                                # Number of BNR files to include in pspec input                                                               
 ilsFlg      = 1                                                # ILS file flag: 1 = Use ils file/directory specified in ilsDir string
                                                                #                0 = No ils is specified in input file. What is specified in ctl file is used
 
@@ -108,6 +106,8 @@ refmkrFlg   = 1                                                # 1 = run refmake
 sfitFlg     = 1                                                # 1 = run sfit,     0 = do not run sfit
 lstFlg      = 1                                                # Flag to create list file. Output file which has meta data and a list of all directories processed
 errFlg      = 0                                                # 1 = run error analysis, 0 = do not run error analysis
+zptFlg      = 1                                                # 1 = Use new ZPT.nmc files, 0 = use old zpt-120 files
+
 
 refMkrLvl   = 0                                                # Version of reference maker to use. 
                                                                #    0 = Use pre-existing zpt file. Concatonate with water and WACCM profiles
