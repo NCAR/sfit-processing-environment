@@ -712,8 +712,12 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 		# specified in the Sb.ctl file
 		#------------------------------------
 		if np.sum(Sb) == 0:
-		    if Kbl == 'zshift': print 'sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated'
-		    else:               print 'sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated'
+		    if Kbl == 'zshift': 
+			print 'sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated'
+			if logFile: logFile.info('sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated')
+		    else:               
+			print 'sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated'
+			if logFile: logFile.info('sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')
 		
 		#----------------------------
 		# Calculate
