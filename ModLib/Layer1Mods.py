@@ -593,17 +593,17 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Calculate the scaled Averaging Kernel:
     # 
     #------------------------------------------------------------
-    AKvmr = np.dot( np.dot( np.diag( 1.0 / pGasPrf.Aprf), AKx ), np.diag(pGasPrf.Aprf) )
+    AKvmr = np.dot( np.dot( np.diag( pGasPrf.Aprf), AKx ), np.diag(pGasPrf.Aprf**-1) )
     
     #----------------------------------
     # Calculate retrieved total column:
-    #
+    # molec/cm**2
     #----------------------------------
     retdenscol = np.dot( pGasPrf.Rprf, pGasPrf.Airmass )  
     
     #------------------------------------
     # Calculate A priori density profile:
-    #
+    # molec/cm**2
     #------------------------------------
     aprdensprf = pGasPrf.Aprf * pGasPrf.Airmass
     
@@ -631,7 +631,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #      Ss = (A-I) * Sa * (A-I)
     #---------------------------------
     mat1               = sa[x_start:x_stop,x_start:x_stop]
-    mat2               = AKvmr - np.identity( AKvmr.shape[0] )
+    mat2               = AKx - np.identity( AKx.shape[0] )
     S_sys['Smoothing'] = calcCoVar(mat1,mat2,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
     
     #----------------------------------
