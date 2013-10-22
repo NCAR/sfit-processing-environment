@@ -86,6 +86,7 @@ def readNMCFile(fname,dataDict,statstr,dateTime):
     if   statstr.lower() == 'mlo': srchstr = 'Mauna L'
     elif statstr.lower() == 'tab': srchstr = 'Thule'
     elif statstr.lower() == 'fl0': srchstr = 'Bolder'
+    elif statstr.lower() == 'eur': srchstr = 'Eureka'
     
     #if 'PressureLevels' in dataDict: pFlg = False
     #else: pFlg = True
