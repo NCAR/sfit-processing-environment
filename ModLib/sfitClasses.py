@@ -361,7 +361,7 @@ class DbInputFile(InputFile):
         if not fltDict: fltDict = self.dbInputs
         
         for ind,val in enumerate(fltDict['Flt']):
-            if str(val) == str(fltrID):
+            if str(int(val)) == str(fltrID):
                 inds.append(ind)
         
         dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
