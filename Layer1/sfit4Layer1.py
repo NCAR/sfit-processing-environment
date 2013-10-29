@@ -444,13 +444,14 @@ def main(argv):
                     # Copy sb.ctl file to output directory
                     # if error analysis is chosen
                     #-------------------------------------
-                    try:
-                        shutil.copyfile(mainInF.inputs['sbCtlFile'], wrkOutputDir3 + 'sb.ctl')
-                    except IOError:
-                        print 'Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3
-                        if logFile: logFile.critical('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
-                        sys.exit()                    
-                                       
+                    if mainInF.inputs['errFlg']:
+                        try:
+                            shutil.copyfile(mainInF.inputs['sbCtlFile'], wrkOutputDir3 + 'sb.ctl')
+                        except IOError:
+                            print 'Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3
+                            if logFile: logFile.critical('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
+                            sys.exit()                    
+                                           
                     #----------------------------------
                     # Copy hbin details to output folder
                     # ** Assuming that the hbin.dtl and
