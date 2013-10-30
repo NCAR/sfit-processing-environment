@@ -485,16 +485,26 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     
     sa = np.array( [ [ float(x) for x in row.split()] for row in lines[3:] ] )
     
-    #-----------------------
-    # Read in SNR values
-    #-----------------------    
+    #---------------------------------------------------------------
+    # Create Se matrix (Two ways to do this depending on input flg):
+    # 1) Read INIT_SNR from summary file for each band and each scan.
+    #    This value is the SNR from the T15asc file. With this option 
+    #    if the user manipulates the snr values it will not be carried
+    #    through to the error calculation.
+    # 2) Read seinv.output matrix. With this option, if the user 
+    #    manipulates snr values for the fit, these changed values 
+    #    will be carried through (via seinv.output) to the error
+    #    calculations.
+    #---------------------------------------------------------------
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.summary'][0], logFile) 
     if not lines: sys.exit()    # Critical file, if missing terminate program
 
     lstart   = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
     indNPTSB = lines[lstart].strip().split().index('NPTSB')
-    indSNR   = lines[lstart].strip().split().index('CALC_SNR')
+    indSNR   = lines[lstart].strip().split().index('INIT_SNR')
     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
+    
+    
     
     calc_SNR   = []
     nptsb      = []
@@ -523,7 +533,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #--------------------
     # Read in Gain matrix
     #--------------------
-    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.gain_matrix'][0], logFile)
+    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.g_matrix'][0], logFile)
     if not lines: sys.exit()      # Critical file, if missing terminate program
     
     D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
@@ -588,12 +598,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # retrieved profile of the gas in questions only
     #-----------------------------------------------
     AKx = AK[x_start:x_stop,x_start:x_stop]
-    
-    #------------------------------------------------------------
-    # Calculate the scaled Averaging Kernel:
-    # 
-    #------------------------------------------------------------
-    AKvmr = np.dot( np.dot( np.diag( pGasPrf.Aprf), AKx ), np.diag(pGasPrf.Aprf**-1) )
     
     #----------------------------------
     # Calculate retrieved total column:
@@ -689,10 +693,11 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 		elif Kbl == 'temperature':
 		    Sb   = np.zeros((n_layer,n_layer))
 		    try:
-			T_Sb = SbctlFileVars.inputs['sb.temperature.'+ErrType]
+			T_Sb = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
 			
-			# Convert degrees to relative units ?????
+			# Convert degrees to fractional values (relative to )
 			for i in range(0,len(T_Sb)): Sb[i,i] = (float(T_Sb[i]) / pGasPrf.T[i])**2
+			
 		    except: pass
 	    
 		elif DK.shape[1] == 1:
