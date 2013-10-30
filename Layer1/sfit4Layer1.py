@@ -20,11 +20,13 @@
 #       1) Command line arguments tell the program where the Layer 1
 #          input file resides and where to write the log file
 #       2) Options include:
-#            -i <file> : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file'
-#            -l        : Flag to create log files of processing. Path to write log files is specified in input file '
-#            -L        : Flag to create output list file. Path to write list files is specified in input file'
-#            -P <int>  : Pause run starting at run number <int>. <int> is an integer to start processing at'
-#            -?        : Show all flags'
+#            -i <file> : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file
+#            -l        : Flag to create log files of processing. Path to write log files is specified in input file 
+#            -L <0/1>  : Flag to create output list file. Path to write list files is specified in input file. 
+#                             0 = Use consistent file name 'testing.lst'
+#                             1 = Uses date and time stamp for list file name 'YYYYMMDD_HHMMSS.lst'
+#            -P <int>  : Pause run starting at run number <int>. <int> is an integer to start processing at
+#            -?        : Show all flags
 #
 #
 # Usage:
@@ -68,10 +70,10 @@ from Layer1Mods import refMkrNCAR, t15ascPrep#, errAnalysis
                         #-------------------------#
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'sfit4Layer1.py -i <file> -l <path> -P <int> -?'
+    print 'sfit4Layer1.py -i <file> -l -L0 -P <int> -?'
     print '  -i <file> : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file'
     print '  -l        : Flag to create log files of processing. Path to write log files is specified in input file '
-    print '  -L        : Flag to create output list file. Path to write list files is specified in input file'
+    print '  -L <0/1>  : Flag to create output list file. Path to write list files is specified in input file'
     print '  -P <int>  : Pause run starting at run number <int>. <int> is an integer to start processing at'
     print '  -?        : Show all flags'
 
@@ -134,7 +136,7 @@ def main(argv):
     # Retrieve command line arguments
     #--------------------------------
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:P:lL?')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:P:L:l?')
 
     except getopt.GetoptError as err:
         print str(err)
@@ -172,7 +174,8 @@ def main(argv):
             
         # Option for List file
         elif opt == '-L':
-            lstFlg = True
+            lstFlg      = True
+            lstFnameFlg = int(arg)
                                            
         else:
             print 'Unhandled option: ' + opt
@@ -224,7 +227,8 @@ def main(argv):
         ckDir(lst_fpath)       
         lstFile = logging.getLogger('2')
         lstFile.setLevel(logging.INFO)
-        hdlr2   = logging.FileHandler(lst_fpath + dt.datetime.now().strftime('%Y%m%d_%H%M%S') + '.lst',mode='w')
+        if lstFnameFlg: hdlr2   = logging.FileHandler(lst_fpath + dt.datetime.now().strftime('%Y%m%d_%H%M%S') + '.lst',mode='w')
+        else:           hdlr2   = logging.FileHandler(lst_fpath + 'testing.lst',mode='w')
         fmt2    = logging.Formatter('')
         hdlr2.setFormatter(fmt2)
         lstFile.addHandler(hdlr2)   
