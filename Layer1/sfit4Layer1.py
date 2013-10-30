@@ -369,13 +369,13 @@ def main(argv):
             # spectral region of a bnr file.
             #------------------------------------------------------------------------------------------------
             if mainInF.inputs['ctlList'][ctl_ind][5]:
-                dbFltData_3 = dbData.dbFilterFltrID(mainInF.inputs['ctlList'][ctl_ind][5], dbFltData_2)                
-                if not(dbFltData_3): continue                # Test for empty dicitonary (i.e. no data)
+                dbFltData_2 = dbData.dbFilterFltrID(mainInF.inputs['ctlList'][ctl_ind][5], dbFltData_2)                
+                if not(dbFltData_2): continue                # Test for empty dicitonary (i.e. no data)
                          
             #------------------------------------------
             # Level 3 -- Loop through spectral db lines
             #------------------------------------------
-            nobs = len(dbFltData_3['Date'])
+            nobs = len(dbFltData_2['Date'])
             for spcDBind in range(0, nobs):  
                 
                 brkFlg = True    # Flag to break out of while statement
@@ -387,7 +387,7 @@ def main(argv):
                     # 2) Skip to specified starting point
                     # 3) Pause after first run
                     #-------------------------------------------------------------
-                    if pauseFlg and (nskips > len(dbFltData_3['Date'])):
+                    if pauseFlg and (nskips > len(dbFltData_2['Date'])):
                         print 'Specified starting point in -P option (%d) is greater than number of observations in filtered database (%d)' %(nskips,nobs)
                         if logFile: logFile.critical('Specified starting point in -P option (%d) is greater than number of observations in filtered database (%d)' %(nskips,nobs))
                         sys.exit()
@@ -395,7 +395,7 @@ def main(argv):
                     if pauseFlg and (spcDBind < nskips): continue
                                      
                     # Get date of observations
-                    daystr = str(int(dbFltData_3['Date'][spcDBind]))
+                    daystr = str(int(dbFltData_2['Date'][spcDBind]))
                     obsDay = dt.datetime(int(daystr[0:4]),int(daystr[4:6]),int(daystr[6:]))
                                 
                     #----------------------------------------
@@ -422,7 +422,7 @@ def main(argv):
                         wrkOutputDir2 = wrkOutputDir1
             
                     # Check for the existance of Output folder <Date>.<TimeStamp> and create if DNE
-                    wrkOutputDir3 = wrkOutputDir2 + datestr + '.' + "{0:06}".format(int(dbFltData_3['TStamp'][spcDBind])) + '/' 
+                    wrkOutputDir3 = wrkOutputDir2 + datestr + '.' + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '/' 
                     if not ckDirMk( wrkOutputDir3, logFile ):
                         # Remove all files in Output directory if previously exists!!
                         for f in glob.glob(wrkOutputDir3+'*'): os.remove(f)   
@@ -529,7 +529,7 @@ def main(argv):
                     # Message strings for output
                     #---------------------------    
                     msgstr1 = mainInF.inputs['ctlList'][ctl_ind][0]
-                    msgstr2 = datestr+'.'+"{0:06}".format(int(dbFltData_3['TStamp'][spcDBind]))                
+                    msgstr2 = datestr+'.'+"{0:06}".format(int(dbFltData_2['TStamp'][spcDBind]))                
                         
                                         #----------------------------#
                                         #                            #
@@ -542,7 +542,7 @@ def main(argv):
                         print 'Processing spectral observation date: %s' % msgstr2
                         print '*****************************************************'
                         
-                        rtn = t15ascPrep(dbFltData_3, wrkInputDir2, wrkOutputDir3, mainInF, spcDBind, ctl_ind, logFile)
+                        rtn = t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir3, mainInF, spcDBind, ctl_ind, logFile)
                         
                         if logFile: 
                             logFile.info('Ran PSPEC for ctl file: %s' % msgstr1)
@@ -565,7 +565,7 @@ def main(argv):
                         
                         rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMfile'], wrkOutputDir3, \
                                          mainInF.inputs['refMkrLvl'], mainInF.inputs['wVer'], mainInF.inputs['zptFlg'],\
-                                         dbFltData_3, spcDBind, logFile)
+                                         dbFltData_2, spcDBind, logFile)
                         if logFile: 
                             logFile.info('Ran REFMKRNCAR for ctl file: %s' % msgstr1)
                             logFile.info('Processed spectral observation date: %s' % msgstr2)                    
@@ -636,7 +636,7 @@ def main(argv):
                                     else: break
                             
                             if cmpltFlg:
-                                lstFile.info("{0:<13}".format(int(dbFltData_3['Date'][spcDBind])) + "{0:06}".format(int(dbFltData_3['TStamp'][spcDBind])) + '       ' + wrkOutputDir3)
+                                lstFile.info("{0:<13}".format(int(dbFltData_2['Date'][spcDBind])) + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '       ' + wrkOutputDir3)
                                 
                                   
                                 #----------------------------#
