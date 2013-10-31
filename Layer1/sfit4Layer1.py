@@ -203,7 +203,8 @@ def main(argv):
         
         logFile = logging.getLogger('1')
         logFile.setLevel(logging.INFO)
-        hdlr1   = logging.FileHandler(log_fpath + dt.datetime.now().strftime('%Y%m%d_%H%M%S') + '.log',mode='w')
+        if lstFnameFlg:    hdlr1   = logging.FileHandler(log_fpath + dt.datetime.now().strftime('%Y%m%d_%H%M%S') + '.log',mode='w')
+        else:              hdlr1   = logging.FileHandler(log_fpath + 'testing.log',mode='w')
         fmt1    = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s','%a, %d %b %Y %H:%M:%S')
         hdlr1.setFormatter(fmt1)
         logFile.addHandler(hdlr1)  
@@ -240,7 +241,7 @@ def main(argv):
     ckFile(mainInF.inputs['spcdbFile'],logFlg=logFile,exit=True)
     
     # WACCM profile file
-    ckFile(mainInF.inputs['WACCMfile'],logFlg=logFile,exit=True)
+    #ckFile(mainInF.inputs['WACCMfile'],logFlg=logFile,exit=True)
     
     # ctl files
     for ctlFile in mainInF.inputs['ctlList']:
@@ -392,7 +393,7 @@ def main(argv):
                         if logFile: logFile.critical('Specified starting point in -P option (%d) is greater than number of observations in filtered database (%d)' %(nskips,nobs))
                         sys.exit()
                     
-                    if pauseFlg and (spcDBind < nskips): continue
+                    if pauseFlg and (spcDBind < nskips): break
                                      
                     # Get date of observations
                     daystr = str(int(dbFltData_2['Date'][spcDBind]))
@@ -668,7 +669,9 @@ def main(argv):
                             elif user_input == 2:                       # Stop pause and exit while loop
                                 pauseFlg = False
                                 brkFlg   = True
-                            elif user_input == -1: brkFlg = False       # Repeat loop
+                            elif user_input == -1:                      # Repeat loop
+                                brkFlg = False 
+                                # Need to implement functionality to recopy ctl file, bnr file, etc
                                 
                         #-----------------------
                         # Exit out of while loop
