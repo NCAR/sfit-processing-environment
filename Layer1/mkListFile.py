@@ -53,7 +53,7 @@ def usage():
     print '  -d <dir>  : Base directory'
     print '  -?        : Show all flags'                                
 
-def ckDir(dirName,exitFlg=False):
+def ckDir(dirName,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
         print 'Input Directory %s does not exist' % (dirName)

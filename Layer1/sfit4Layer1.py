@@ -95,7 +95,7 @@ def ckDirMk(dirName,logFlg=False):
     else:
         return True
         
-def ckDir(dirName,logFlg=False,exitFlg=False):
+def ckDir(dirName,logFlg=False,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
         print 'Input Directory %s does not exist' % (dirName)
