@@ -276,7 +276,7 @@ def main(argv):
         else:
             wrkInputDir1 = mainInF.inputs['BaseDirInput'] + loc + '/'
                  
-        ckDir( wrkInputDir1, logFlg=logFile, exitFlg=True )
+        ckDir( wrkInputDir1, logFlg=logFile, exit=True )
         
         #-----------------------------------------------------------   
         # Check for the existance of Output folder and create if DNE
@@ -413,7 +413,7 @@ def main(argv):
                     # If this folder does not exist => there is no 
                     # Data for this day
                     wrkInputDir2 = wrkInputDir1 + yrstr + mnthstr + daystr + '/'               
-                    ckDir( wrkInputDir2, logFlg=logFile, exitFlg=True )                       
+                    ckDir( wrkInputDir2, logFlg=logFile, exit=True )                       
                     
                     # Check for the existance of Output folder <Version> and create if DNE
                     if mainInF.inputs['ctlList'][ctl_ind][6]:
