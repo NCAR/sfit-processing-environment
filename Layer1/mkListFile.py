@@ -184,8 +184,7 @@ def main(argv):
     for drs in os.walk(baseDir).next()[1]:
         YYYYMMDD = drs[0:4]  + drs[4:6]   + drs[6:8]
         hhmmss   = drs[9:11] + drs[11:13] + drs[13:]     
-        try:
-            os.path.isfile(baseDir + drs + '/summary')
+        if os.path.isfile(baseDir + drs + '/summary'):
             lstFile.info("{0:<13}".format(YYYYMMDD) + "{0:06}".format(hhmmss) + '       ' + baseDir + drs)
                 
 if __name__ == "__main__":
