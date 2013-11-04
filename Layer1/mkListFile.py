@@ -185,7 +185,7 @@ def main(argv):
         YYYYMMDD = drs[0:4]  + drs[4:6]   + drs[6:8]
         hhmmss   = drs[9:11] + drs[11:13] + drs[13:]     
         if os.path.isfile(baseDir + drs + '/summary'):
-            lstFile.info("{0:<13}".format(YYYYMMDD) + "{0:06}".format(hhmmss) + '       ' + baseDir + drs)
+            lstFile.info("{0:<13}".format(YYYYMMDD) + "{0:6}".format(hhmmss) + '       ' + baseDir + drs)
                 
 if __name__ == "__main__":
     main(sys.argv[1:])
