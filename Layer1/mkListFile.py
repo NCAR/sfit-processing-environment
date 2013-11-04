@@ -149,12 +149,12 @@ def main(argv):
     #--------------------------------
     # Check the existance of ctl file
     #--------------------------------
-    ckFile(inVars.inputs['ctlList'][0],exit=True)
+    ckFile(inVars.inputs['ctlList'][0][0],exit=True)
 
     #------------------
     # Get ctl file data
     #------------------
-    ctlData = sc.CtlInputFile(inVars.inputs['ctlList'][0])
+    ctlData = sc.CtlInputFile(inVars.inputs['ctlList'][0][0])
     ctlData.getInputs()
     
     #------------------------
