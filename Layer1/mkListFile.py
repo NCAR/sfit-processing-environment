@@ -199,9 +199,9 @@ def main(argv):
             lstDict.setdefault('hhmmss',[]).append(hhmmss)
             lstDict.setdefault('directory',[]).append(baseDir + drs)
         
-    lstDic = sortDict(lstDic,'date')
-    for ind,val in enumerate(lstDic['date']):
-        lstFile.info("{0:<13}".format(lstDic['YYYYMMDD'][ind]) + "{0:6}".format(lstDic['hhmmss'][ind]) + '       ' + lstDic['directory'][ind])
+    lstDict = sortDict(lstDict,'date')
+    for ind,val in enumerate(lstDict['date']):
+        lstFile.info("{0:<13}".format(lstDict['YYYYMMDD'][ind]) + "{0:6}".format(lstDict['hhmmss'][ind]) + '       ' + lstDict['directory'][ind])
                 
 if __name__ == "__main__":
     main(sys.argv[1:])
