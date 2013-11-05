@@ -201,7 +201,7 @@ def main(argv):
         
     lstDict = sortDict(lstDict,'date')
     for ind,val in enumerate(lstDict['date']):
-        lstFile.info("{0:<13}".format(lstDict['YYYYMMDD'][ind]) + "{0:6}".format(lstDict['hhmmss'][ind]) + '       ' + lstDict['directory'][ind])
+        lstFile.info("{0:<13}".format(lstDict['YYYYMMDD'][ind]) + "{0:6}".format(lstDict['hhmmss'][ind]) + '       ' + lstDict['directory'][ind]+'/')
                 
 if __name__ == "__main__":
     main(sys.argv[1:])
