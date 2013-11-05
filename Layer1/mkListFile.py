@@ -174,7 +174,7 @@ def main(argv):
     lstFile.info('ctl_File       = ' + inVars.inputs['ctlList'][0][0])
     lstFile.info('FilterID       = ' + inVars.inputs['ctlList'][0][5])
     lstFile.info('VersionName    = ' + inVars.inputs['ctlList'][0][6])
-    lstFile.info('Site           = ' + inVars.inputs['loc'][0])
+    lstFile.info('Site           = ' + inVars.inputs['loc'])
     lstFile.info('statnLyrs_file = ' + ctlData.inputs['file.in.stalayers'][0])
     lstFile.info('primGas        = ' + ctlData.primGas)
     lstFile.info('specDBfile     = ' + inVars.inputs['spcdbFile'])
