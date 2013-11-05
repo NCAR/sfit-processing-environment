@@ -42,6 +42,7 @@ import getopt
 import glob
 import shutil
 import sfitClasses as sc
+import datetime as dt
                                 #-------------------------#
                                 # Define helper functions #
                                 #-------------------------#
@@ -70,6 +71,13 @@ def ckFile(fName,exit=False):
         return False
     else:
         return True    
+    
+def sortDict(DataDict,keyval):
+    ''' Sort all values of dictionary based on values of one key'''
+    base = DataDict[keyval]
+    for k in DataDict:
+        DataDict[k] = [y for (x,y) in sorted(zip(base,DataDict[k]))]
+    return DataDict
 
 
                                 #----------------------------#
@@ -181,11 +189,19 @@ def main(argv):
     #----------------------------------------
     # Walk through first level of directories
     #----------------------------------------
+    lstDict = {}
     for drs in os.walk(baseDir).next()[1]:
         YYYYMMDD = drs[0:4]  + drs[4:6]   + drs[6:8]
         hhmmss   = drs[9:11] + drs[11:13] + drs[13:]     
         if os.path.isfile(baseDir + drs + '/summary'):
-            lstFile.info("{0:<13}".format(YYYYMMDD) + "{0:6}".format(hhmmss) + '       ' + baseDir + drs)
+            lstDict.setdefault('date',[]).append(dt.datetime(int(drs[0:4]), int(drs[4:6]), int(drs[6:8]), int(drs[9:11]), int(drs[11:13]), int(drs[13:]) ))
+            lstDict.setdefault('YYYYMMDD',[]).append(YYYYMMDD)
+            lstDict.setdefault('hhmmss',[]).append(hhmmss)
+            lstDict.setdefault('directory',[]).append(baseDir + drs)
+        
+    lstDic = sortDict(lstDic,'date')
+    for ind,val in enumerate(lstDic['date']):
+        lstFile.info("{0:<13}".format(lstDic['YYYYMMDD'][ind]) + "{0:6}".format(lstDic['hhmmss'][ind]) + '       ' + lstDic['directory'][ind])
                 
 if __name__ == "__main__":
     main(sys.argv[1:])
