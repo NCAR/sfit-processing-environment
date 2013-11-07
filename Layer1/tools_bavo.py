@@ -49,9 +49,10 @@ def create_sfit4_retrievalplot(ctl,retdata={},fontsize=8,title='Spectrum name',p
   obsspeccolor='k';synspeccolor='r';apcolor='k';retcolor='r'
   #init
   logger=logging.getLogger(logger.name+'.create_sfit4_retrievalplot')
+  if all([type(v)==tuple for v in ctl.values()]): ctl=trim_dict(ctl) #remove line numbers
   figidx=[];pdfmarks=[]
   if isinstance(retdata,h5py.Group): retdata=hdf5todict(retdata,logger=logger)
-  requiredkeys=['shat','k','seinv','s/grid','sa','pbp/dims','summary/FITRMS','APRprofs','attr']+['s/%s'%mol for mol in ctl['gas.profile.list']+ctl['gas.column.list']]
+  requiredkeys=['shat','k','seinv','s/grid','pbp/dims','summary/FITRMS','APRprofs','attr']+['s/%s'%mol for mol in ctl['gas.profile.list']+ctl['gas.column.list']]
   if any([k not in retdata for k in requiredkeys]): logger.error('Not all required keys available in retrieval data');return; 
   grid=retdata['s/grid']*1e-3
   if 'g' not in retdata: retdata['g']=retdata['shat'].dot(retdata['k'].T).dot(diag(retdata['seinv']))
@@ -125,8 +126,12 @@ def create_sfit4_retrievalplot(ctl,retdata={},fontsize=8,title='Spectrum name',p
       ax.xaxis.set_major_formatter(FormatStrFormatter('%G'))
     ax=plt.axes([l,.96,.8,.05])
     ax.axis('off')
+    tce={} #tc error if it is availabe, otherwise 0
+    for k in ['TCerror/%s/systematic'%mol,'TCerror/%s/random'%mol]:
+      if k in retdata: tce[k.split('/')[-1]]=retdata[k]
+      else: tce[k.split('/')[-1]]=0
     ax.text(0,0,title+' %s $\quad$ rTC: %6.4emolec/$cm^2$($\pm$%4.1f%%$\pm$%4.1f%%) $\quad$ RMS:%6.5f $\quad$ Conv: \
-%s $\quad$\n %s %s'%(mol,retdata['summary/%s/ret_column'%mol],retdata['TCerror/%s/systematic'%mol],retdata['TCerror/%s/random'%mol],\
+%s $\quad$\n %s %s'%(mol,retdata['summary/%s/ret_column'%mol],tce['systematic'],tce['random'],\
 	retdata['summary/FITRMS'],retdata['summary/CONVERGED'],spec,retdata['summary/header']),fontsize=fontsize-1,horizontalalignment='left')
     molcols=where(retdata['attr']['k']['columns']==mol)
     avk=retdata['g'].dot(retdata['k'])[molcols[0],:][:,molcols[0]]
@@ -139,13 +144,13 @@ def create_sfit4_retrievalplot(ctl,retdata={},fontsize=8,title='Spectrum name',p
       if iM<len(grid)-1: iM+=1
       plotz=grid[im:iM+1]
       plotavk=avk[im:iM+1,im:iM+1]
-      plot_avk(ax,plotz,plotavk,ylabelstring='Height [km]',
+      plot_avk(ax,plotz[::-1],plotavk[::-1,::-1],ylabelstring='Height [km]', #reversing the order to get colors right
 	  titlestring=[title + ' %s AVK [VMR/VMR rel. to apriori] \n DOF=%4.3f'%(mol,trace(avk)),fontsize])
       sc=10.; #scale factor...
       sensitivity=sum(avk,1)/sc
       ax.plot(sensitivity[im:iM+1],plotz,'--',label='Sensitivity (sum of AVK rows, scaled with 1/%3.1f)'%(sc))
       ax.legend(prop={'size':8},loc='best');
-    if 'sa' in plots:
+    if ('sa' in plots) and ('sa' in retdata):
       fig,ax=plt.subplots();figidx.append(plt.gcf().number);pdfmarks.append('[/Title (Sa matrix %s) /Page %d /OUT pdfmark'%(mol,len(figidx)))
       molcols=where(retdata['attr']['sa']['columns']==mol)[0]
       samatrix=retdata['sa'][molcols,:][:,molcols][im:iM+1,im:iM+1]
@@ -227,20 +232,20 @@ def create_sfit4_retrievalplot(ctl,retdata={},fontsize=8,title='Spectrum name',p
 	fig,axtuple=plt.subplots(1,2,sharex=True,sharey=True);figidx.append(plt.gcf().number);pdfmarks.append('[/Title (%s error) /Page %d /OUT pdfmark'%('STD overview',len(figidx)))
 	for i,ErrType in enumerate(['random','systematic']):
 	  ax=axtuple[i]; listofaxes.append(ax)
+	  ax.set_xlabel('STD in [$\%$]');ax.set_xscale('log')
+	  ax.set_title('%s: Overview of %s contributions'%(mol,ErrType),fontsize=fontsize)
 	  for ErrLabel in [k for k in retdata['STDerror'] if k.find(ErrType)>-1 and k.find(mol)>-1]:
 	    if ErrLabel.split('/')[1]!=ErrLabel.split('/')[1].lower(): ls='--'
 	    else: ls='-'
 	    ax.plot(retdata['STDerror'][ErrLabel]*100,retdata['s/grid']*1e-3,ls=ls,label='/'.join(ErrLabel.split('/')[1:]))
 	    if i==0: ax.set_ylabel('Height [km]')
-	    ax.set_xlabel('STD in [$\%$]');ax.set_xscale('log')
-	    ax.set_title('%s: Overview of %s contributions'%(mol,ErrType),fontsize=fontsize)
-	    ax.legend(loc='best',fontsize=fontsize-2,handlelength=4)
+	  ax.legend(loc='best',fontsize=fontsize-2,handlelength=4)
   for i,ax in enumerate(listofaxes):
     plt.setp(ax.xaxis.label,fontsize=fontsize);plt.setp(ax.yaxis.label,fontsize=fontsize)
     ax.xaxis.labelpad = 1; ax.yaxis.labelpad = 1
   logger.info('Saving/showing plots')
   pdfmarks[0]=pdfmarks[0].replace('[','[/Count -%s '%(len(pdfmarks)-1)) #add the chapter/subsection marks...
-  norsplotsetup(usetex=False)
+  plotsetup(usetex=False)
   with open(os.path.join(os.path.dirname(pdf),'pdfmarks'),'w') as bm: bm.write('\n'.join(pdfmarks))
   if pdf!='': finalizefig(figidx=figidx,pdf=pdf)
   else: finalizefig(figidx=figidx)
@@ -271,7 +276,8 @@ def create_sfit4_retrievalsummary(ctl='sfit4.ctl',logger=rootlogger):
   logger=logging.getLogger(logger.name+'.create_sfit4_retrievalsummary')
   cwd=os.getcwd()
   retdata={'attr':{}}
-  if type(ctl)==str: os.chdir(os.path.dirname(ctl));ctl=read_dictfile(ctl,sfit4=True)
+  if type(ctl)==str: os.chdir(os.path.dirname(ctl));ctl=read_dictfile(ctl,sfit4=True) #chdir because of relative filename in ctl file...
+  pickle.dump(ctl,open('ctl.p','w')) #for debugging purposes
   octl,rctl=extract_dict(ctl,'option')
   retdata['sfit4.ctl']=array(print_dictfile(rctl).split('\n'))
   ctl=trim_dict(rctl);octl=trim_dict(octl) #remove the line numbers from the ctl dict...
@@ -319,8 +325,10 @@ def create_sfit4_retrievalsummary(ctl='sfit4.ctl',logger=rootlogger):
  apriori, source is normalized to ymeasmax'})
   if any([m=={} for m in [k,sh,seinv]]): logger.error('Could not compute the G matrix for this retrieval %s %s %s'%(sh,seinv,k)) 
   retdata['g']=retdata['shat'].dot(retdata['k'].T).dot(diag(retdata['seinv']))
-  sa=read_output(ctl['file.out.sa_matrix'])
-  retdata['sa']=sa['data'];retdata['attr']['sa']=sa['attr']
+  #read in the sa matrix, but only if there is no ifoff=5 flag
+  if not any([ctl['gas.profile.%s.correlation.type'%mol]==5 for mol in ctl['gas.profile.list']]):
+    sa=read_output(ctl['file.out.sa_matrix'])
+    retdata['sa']=sa['data'];retdata['attr']['sa']=sa['attr']
   if ctl['kb']:
     kb=read_output(ctl['file.out.kb_matrix'])
     gkb=retdata['g'].dot(kb['data'])
@@ -380,6 +388,17 @@ def hdf5todict(grobj,rootkey='',logger=rootlogger):
   fn=grobj.file.filename+grobj.name;fn=fn.rstrip('/');logger.debug('Group name: %s'%fn)
   out={};attr={}
   datlist=[]
+  def datlabels(x,y): [datlist.append(x) for x in [x] if isinstance(y, h5py.Dataset)]
+  grobj.visititems(datlabels)
+  logger.debug('Data labels: %s'%datlist)
+  for m in datlist: 
+    if rootkey: key=[rootkey,m]
+    else: key=[m]
+    out.update({'/'.join(key):grobj[m][...]})
+    attr.update({'/'.join(key):dict(grobj[m].attrs)})
+    if 'origin' not in attr['/'.join(key)]: attr['/'.join(key)]['origin']=fn
+  out.update({'attr':attr});
+  return out;
 
 def trim_dict(ctl,root=''):
   """Removes the line number information from a configuartion dict
@@ -433,6 +452,8 @@ def create_sfit4_sb(ctl,sbctl,logger=rootlogger):
   """Create an sb matrix out of the data found in the ctl"""
   sbdict={'attr':{}} #contains the different sb matrices for the sb keys
   logger=logging.getLogger(logger.name+'.create_sfit4_sb')
+  if all([type(v)==tuple for v in ctl.values()]): ctl=trim_dict(ctl) #remove line numbers
+  if all([type(v)==tuple for v in sbctl.values()]): sbctl=trim_dict(sbctl) #remove line numbers
   # Determine which microwindows retrieve zshift
   zerolev_band_b = []
   [zerolev_band_b.append(int(k)) for k in ctl['band'] if not ctl['band.'+str(int(k))+'.zshift']]# only include bands where zshift is NOT retrieved
@@ -463,7 +484,7 @@ def create_sfit4_sb(ctl,sbctl,logger=rootlogger):
       logger.debug('%s/%s covariance=%s'%(sbkey,ErrType,Sb))
   for k,v in sbctl.items():
     if processedkeys.count(k)>0: continue
-    sbkey='/'.join(k.split('.')[1:]) # go to hdf5 groups
+    sbkey='/'.join(k.split('.')[1:]).replace('temperature','uncertainties/T') # go to hdf5 groups and if T is given in sb.ctl, change it to species type
     if type(v)==str:
       if os.path.isfile(v): 
 	sbdict[sbkey]=read_matrixfile(v) # TODO not tested yet 
@@ -626,7 +647,7 @@ def print_dictfile(ctl,keysep='=',quiet=True):
     if type(v[0])==float: out+='%8.4f'%v[0]
     elif type(v[0])==ndarray: 
       out+='\n'
-      out+=print_mix(v[0],fmt='8.4f')
+      out+=print_array(v[0],fmt='8.4f')
     elif type(v[0])==int: out+='%d'%v[0]
     elif type(v[0])==list: out+=' '.join([str(i) for i in v[0]])
     elif type(v[0])==bool: out+=str(v[0])[0]
@@ -737,7 +758,7 @@ def read_stationlayers(f='station.layers',quiet=True):
 def read_dictfile(f,comments=['#',';','%'],keysep='=',preserve=['option.pspec.input','option.hbin.input','option.isotope.input'],sfit4=False,quiet=True,logger=rootlogger):
   """Reads a ctl or ini file
 
-  Input argument: filestring
+  Input argument: filestring or the contents of a file, or a list/array of strings
   
   Optional key arguments::
     comments= string or list of charachters, defaults= #,;,%
@@ -786,10 +807,11 @@ def read_dictfile(f,comments=['#',';','%'],keysep='=',preserve=['option.pspec.in
     if out[k][0]=='T': out[k]=(True,n)
     if out[k][0]=='F': out[k]=(False,n)
   if sfit4:
-    if type(out['band'][0])==int: update_dict(out,'band',[out['band'][0]])
-    for i in out['band'][0]:
-      dum='band.%d.gasb'%i
-      if type(out[dum][0])==str: update_dict(out,dum,[out[dum][0]])
+    if 'band' in out:
+      if type(out['band'][0])==int: update_dict(out,'band',[out['band'][0]])
+      for i in out['band'][0]:
+	dum='band.%d.gasb'%i
+	if type(out[dum][0])==str: update_dict(out,dum,[out[dum][0]])
     for field in ['gas.profile.list','gas.column.list','kb.line.gas','kb.profile.gas']:
       if not out.has_key(field) or out[field][0]=='': update_dict(out,field,[]);continue
       if type(out[field][0])==str: update_dict(out,field,[out[field][0]])
@@ -821,16 +843,25 @@ def directsum(A,B,logger=rootlogger,column=True,row=True):
 def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
   """Computes the error budget for a given ctlsb instance and a dict with retrieval data (e.g. as it is stored in the HDF file"""
   logger=logging.getLogger(logger.name+'.create_sfit4_errorbudget')
-  sbprokey='sb' #retdata key that contains all sb matrices ... 
-  pickle.dump(ctl,open('ctl.p','w'))
   if isinstance(retdata,h5py.Group): retdata=hdf5todict(retdata,logger=logger)
-  for var in ['k','sa','summary/FITRMS','APRprofs']:
-    if not var in retdata: logger.error('The %s variable is required in retdata');return {}
+  #check variables
+  for var in ['k','summary/FITRMS','APRprofs']:
+    if not var in retdata: logger.error('The %s variable is required in retdata'%var);return {}
   if not 'g' in retdata:
     if not 'seinv' in retdata: logger.error('The seinv matrix must be provided');return {}
     if not 'shat' in retdata: logger.error('The shat matrix must be provided'); return {}
     retdata['g']=retdata['shat'].dot(retdata['k'].T).dot(diag(retdata['seinv'])) 
     logger.info('Calculated the contribution matrix G')
+  sbprokey='sb' #retdata key that contains all sb matrices ...
+  #check sb for definiteness....
+  sbok=True #assume that all sb are symmetric and pos.def...
+  tolerance=1e-8 #for symmetricity test
+  if all([type(v)==tuple for v in ctl.values()]): ctl=trim_dict(ctl) #remove line numbers
+  for k in [key for key in retdata if key.find(sbprokey)>-1]:
+    sb=retdata[k];
+    if any(abs(sb-sb.T)>tolerance*abs(sb)): logger.error('The covariance for %s is not symmetric'%k);sbok=False
+    #if not check_definiteness(sb,semi=True): logger.error('The covariance for %s is not positive definite'%k);sbok=False
+  if not sbok: return
   #------------------------------------------------------
   # Determine number of microwindows and retrieved gasses
   #------------------------------------------------------
@@ -854,6 +885,7 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
   else:               primgas = ctl['gas.column.list'][0]
   logger.debug('Target gas is %s'%primgas)
   pro_idx_start=where(K_rows==primgas)[0][0]
+  pro_idx_end=where(K_rows==ctl['gas.profile.list'][-1])[0][-1]+1
   logger.debug('Found gas data in state vector starting at index %s'%(pro_idx_start))
   AK = D.dot(K)
   #----------------------------------------------
@@ -885,7 +917,9 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
   #---------------------------------------------
   #try to construct an error covariance from the data in sb for the different molecules
   #---------------------------------------------
-  Sstate= {'random': longdouble(retdata['sa'][:pro_idx_start,:pro_idx_start].copy()), 'systematic': longdouble(zeros((pro_idx_start,)*2))}
+  if 'sa' in retdata: sa=longdouble(retdata['sa'].copy())
+  else: sa=longdouble(zeros((len(K_rows),)*2)); 
+  Sstate= {'random':sa[:pro_idx_start,:pro_idx_start] , 'systematic': longdouble(zeros((pro_idx_start,)*2))}
   Sstateorigin={'random':{},'systematic':{}} #will contain per species the source of the sa update
   #update the sa components for the profile retrieved specs
   for mol in ctl['gas.profile.list']:
@@ -897,11 +931,15 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
 	Sstate[ErrType]=directsum(Sstate[ErrType],diag(APpro**-1).dot(longdouble(retdata[speckey])).dot(diag(APpro**-1)))
 	Sstateorigin[ErrType][mol]=retdata['attr'][speckey]['origin']
 	logger.debug('Updated %s state vector uncertainty with values from %s (shape=%s)'%(ErrType,speckey,Sstate[ErrType].shape))	
-      else: Sstate[ErrType]=directsum(Sstate[ErrType],longdouble(retdata['sa'][gasidx,:][:,gasidx]));Sstateorigin[ErrType][mol]='from sa'
+      else: 
+	if ErrType=='random': 
+	  Sstate[ErrType]=directsum(Sstate[ErrType],sa[gasidx,:][:,gasidx]);Sstateorigin[ErrType][mol]='from sa'
+	else: Sstate[ErrType]=directsum(Sstate[ErrType],longdouble(diag(zeros(len(gasidx)))));Sstateorigin[ErrType][mol]='no systematic uncertainty available'
   #update the sa components for the column retrieved specs
   for mol in ctl['gas.column.list']:
     colidx=where(retdata['attr']['APRprofs']['columns']==mol)[0][0]
     PCap=retdata['APRprofs'][:,colidx].squeeze()*retdata['s/airmass']
+    colidx=where(retdata['attr']['k']['columns']==mol)[0][0]
     for ErrType in ['random','systematic']:
       speckey='%s/uncertainties/%s/%s'%(sbprokey,mol,ErrType)
       if speckey in retdata:
@@ -909,7 +947,13 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
 	Sstate[ErrType]=directsum(Sstate[ErrType],longdouble(covcolumn/(PCap.sum()**2).reshape(1,1)))
 	Sstateorigin[ErrType][mol]=('%s'%(retdata['attr'][speckey]['origin']))
 	logger.debug('Updated %s state vector %s uncertainty with values from %s: Sstate[%d,%d]=%s [rel. to TCap]'%(mol,ErrType,sbprokey,colidx,colidx,Sstate[ErrType][colidx,colidx]))	
-      else: Sstate[ErrType]=directsum(Sstate[ErrType],longdouble(retdata['sa'][colidx,colidx].reshape(1,1)));Sstateorigin[ErrType][mol]=('from sa')
+      else: 
+	if ErrType=='random': Sstate[ErrType]=directsum(Sstate[ErrType],sa[colidx,colidx].reshape(1,1));Sstateorigin[ErrType][mol]=('from sa')
+	else: Sstate[ErrType]=directsum(Sstate[ErrType],longdouble(array([[0]])));Sstateorigin[ErrType][mol]='no systematic uncertainty available'
+  for ErrType in Sstate: #symmetry check
+    if any(abs(Sstate[ErrType]-Sstate[ErrType].T)>tolerance*abs(Sstate[ErrType])): logger.error('The covariance for %s on the state vector is not symmetric'%ErrType);sbok=False
+    #if not check_definiteness(Sstate[ErrType],semi=True): logger.error('The covariance for %s on the state vector is not semi-positive definite'%ErrType);sbok=False
+  if not sbok: return
   #---------------------------------------------
   #Loop over the profile retrieved specs to propagate the uncertainties
   #---------------------------------------------
@@ -1018,7 +1062,8 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
       retdata['attr'][ek]={'unit': 'ppv**2',\
 'contributions': ';'.join([ErrLabel for ErrLabel,Se in S[ErrType].items() if ErrLabel!='Smoothing' and any(Se!=0.)]),\
 'origin': ';'.join(['%s:%s'%(ErrLabel,origin[ErrType][ErrLabel]) for ErrLabel,Se in S[ErrType].items() if ErrLabel!='Smoothing' and any(Se!=0.)])}
-      for ErrLabel in S[ErrType]: retdata['STDerror']['%s/%s/%s'%(mol,ErrLabel,ErrType)]=sqrt(diag(S[ErrType][ErrLabel]))
+      for ErrLabel in S[ErrType]: 
+	 if any(S[ErrType][ErrLabel]!=0): retdata['STDerror']['%s/%s/%s'%(mol,ErrLabel,ErrType)]=sqrt(diag(S[ErrType][ErrLabel]))
   return;
 
 def read_matrixfile(filestr,size=0):
@@ -1143,7 +1188,7 @@ def merge_hdf(listoffiles,target='./full.hdf',logger=rootlogger,**kargs):
   Optional arguments::
     target=./full.hdf 
     logger=rootlogger (if None, no logging (for multiprocessing))
-    kargs= dict with attributes for the target"""
+    kargs= dict with attributes for the target;;"""
   if logger: logger=logging.getLogger(logger.name+'.merge_hdf')
   if os.path.isfile(target): mode='r+'
   else: mode='w'
@@ -1168,7 +1213,7 @@ def merge_hdf(listoffiles,target='./full.hdf',logger=rootlogger,**kargs):
   for f in processedfiles: os.remove(f)
   return
 
-def norsplotsetup(**kargs):
+def plotsetup(**kargs):
   """Settings valid for all plots"""
   texflag=True;fsize=10
   for key in kargs:
@@ -1198,7 +1243,6 @@ def finalizefig(**kargs):
     png,jpg,eps=string to png,jpg,eps file (all figures go in seperate files: name+number)
     figidx=list of figure windows to save/show (default is all figs)
     pdftitle=title of pdf document
-    compress=False (compress the output pdf file using ghostscript)
     returnfigflag=does not close the figure windows
     transparentflag=False: saves png files with a transparent background;;"""
   returnfigflag=False;plotstohandle=[1];pdftitle='';logger=rootlogger;compress=False
@@ -1215,7 +1259,7 @@ def finalizefig(**kargs):
     elif key=='pdftitle': pdftitle=kargs[key]
     elif key=='transparentflag': transparentflag=kargs[key]
     elif key=='quiet': quiet=kargs[key]
-    elif key=='compress': compress=kargs[key]
+    #elif key=='compress': compress=kargs[key]
     elif key=='logger': logger=kargs[keys]
     else: print 'Unknown key in finalizefig',key
   logger=logging.getLogger(logger.name+'.finalizefig')
@@ -1248,12 +1292,6 @@ def finalizefig(**kargs):
     d['Keywords'] = ''
     d['ModDate'] = datetime.datetime.today()
     allpicturesfile.close()
-    #compress the result with gs
-    if compress: 
-      o,e=subProcRun(('gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dNOPAUSE -dQUIET -dPDFSETTINGS=/ebook -dBATCH\
- -sOutputFile=%s %s'%('.dummy.pdf',plottypes['pdf']['f'])).split(' '),quiet=False)
-      if e: logger.error('using gs compress: %s'%e)
-      else: shutil.move('.dummy.pdf',plottypes['pdf']['f'])
   for pt in plottypes:
      if pt=='pdf' or plottypes[pt]['flag']==False: continue
      for i in plotstohandle: pylab.figure(i);pylab.savefig('%s_%d.%s'%(os.path.splitext(plottypes[pt]['f'])[0],i,pt),format=pt,transparent=transparentflag)
@@ -1298,7 +1336,7 @@ def plot_avk(ax,z,avk,**kargs):
     elif key=='colormap': colormap=kargs[key]
     else: print "Key %s is unknown and ignored"%key     
   minh*=zscale;maxh*=zscale #units 
-  norsplotsetup();
+  plotsetup();
   if type(titlestring)==list:
     try: t=ax.set_title(titlestring[0],fontsize=titlestring[1])
     except: pass
