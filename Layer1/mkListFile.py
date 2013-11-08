@@ -13,12 +13,12 @@
 # Notes:
 #       1) Options include:
 #            -i <file>      : Path and file name of Layer1 input file
-#            -N <file Name> : Path and file name for output list file.
+#            -N <file Name> : Path and file name for output list file
 #            -d <dir>       : Base directory
 #
 #
 # Usage:
-#      ./mkListFile.py -i /data/ebaumer/MLO_input.py -N /data/ebaumer/2008.lst
+#      ./mkListFile.py -i /data/ebaumer/MLO_input.py -N /data/ebaumer/2008.lst -d /data/ebaumer/2008/
 #
 #
 #
@@ -49,9 +49,9 @@ import datetime as dt
 def usage():
     ''' Prints to screen standard program usage'''
     print 'mkListFile.py -i <file> -N <file> -?'
-    print '  -i <file> : '
-    print '  -N <file> :  '
-    print '  -d <dir>  : Base directory'
+    print '  -i <file> : Path and file name of Layer1 input file'
+    print '  -N <file> : Path and file name for output list file'
+    print '  -d <dir>  : Base directory of data'
     print '  -?        : Show all flags'                                
 
 def ckDir(dirName,exit=False):
@@ -130,7 +130,7 @@ def main(argv):
     #---------------------------------
     lstFile = logging.getLogger('1')
     lstFile.setLevel(logging.INFO)
-    hdlr1   = logging.FileHandler(outputFile + '.lst',mode='w')
+    hdlr1   = logging.FileHandler(outputFile, mode='w')
     fmt1    = logging.Formatter('')
     hdlr1.setFormatter(fmt1)
     lstFile.addHandler(hdlr1)   
