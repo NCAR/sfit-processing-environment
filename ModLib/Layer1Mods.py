@@ -523,7 +523,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #--------------------
     # Read in Gain matrix
     #--------------------
-    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.gain_matrix'][0], logFile)
+    # file.out.gain_matrix is not known to sfit4 
+    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.g_matrix'][0], logFile)
     if not lines: sys.exit()      # Critical file, if missing terminate program
     
     D = np.array([[float(x) for x in row.split()] for row in lines[3:]])

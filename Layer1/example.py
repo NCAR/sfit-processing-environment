@@ -4,7 +4,7 @@
 
 import tools_bavo
 import os,h5py
-os.chdir('/dev/shm/bavol/testbavon2o/12223002.Shh/NO2/')
+os.chdir('.')
 ctl=tools_bavo.read_dictfile('sfit4.ctl',sfit4=True)
 sbctl=tools_bavo.trim_dict(tools_bavo.read_dictfile('sb.ctl')) #trim is to get rid of the line numbers...
 tools_bavo.update_dict(ctl,'option.sb',sbctl) #glue sb in ctl with a separate key 
