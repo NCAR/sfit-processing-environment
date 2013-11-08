@@ -303,7 +303,10 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
 # Copy bnr file to output folder
 def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_ind, logFile):
     
-    bnrFname = "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '.bnr'
+    if mainInF.inputs['coaddFlg']: bnrExt = '.bnrc'
+    else:                          bnrExt = '.bnr'
+    
+    bnrFname = "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + bnrExt
     
     if not os.path.isfile(wrkOutputDir5+bnrFname):
         try:
