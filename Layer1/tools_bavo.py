@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from numpy import *
-import os,pickle,h5py,matplotlib
+import os,pickle,h5py,matplotlib,subprocess,sys
 try: #check if display is set...
  os.environ['DISPLAY']
 except:
@@ -130,9 +130,10 @@ def create_sfit4_retrievalplot(ctl,retdata={},fontsize=8,title='Spectrum name',p
     for k in ['TCerror/%s/systematic'%mol,'TCerror/%s/random'%mol]:
       if k in retdata: tce[k.split('/')[-1]]=retdata[k]
       else: tce[k.split('/')[-1]]=0
-    ax.text(0,0,title+' %s $\quad$ rTC: %6.4emolec/$cm^2$($\pm$%4.1f%%$\pm$%4.1f%%) $\quad$ RMS:%6.5f $\quad$ Conv: \
+    try: ax.text(0,0,title+' %s $\quad$ rTC: %6.4emolec/$cm^2$($\pm$%4.1f%%$\pm$%4.1f%%) $\quad$ RMS:%6.5f $\quad$ Conv: \
 %s $\quad$\n %s %s'%(mol,retdata['summary/%s/ret_column'%mol],tce['systematic'],tce['random'],\
 	retdata['summary/FITRMS'],retdata['summary/CONVERGED'],spec,retdata['summary/header']),fontsize=fontsize-1,horizontalalignment='left')
+    except: logger.error('Could not format title for this plot')
     molcols=where(retdata['attr']['k']['columns']==mol)
     avk=retdata['g'].dot(retdata['k'])[molcols[0],:][:,molcols[0]]
     #AVK plot
@@ -268,6 +269,216 @@ def expand_dict(d,meta='attr'):
 	del dd[k];del attr[k] 
   return dd,attr;
 
+def create_GEOMS(f,table='/bira-iasb/projects/FTIR/tools/programs/hdf/tableattrvalue_04R007_idl.dat',template='/bira-iasb/projects/FTIR/tools/programs/hdf/GEOMS-TE-FTIR-VA-002.csv',rd='RD',version=1,idlcheck=False,qfilter=[('summary/CONVERGED','==1')],logger=rootlogger):
+  """Creates a geoms file out of an intermediate HDF file
+
+  Input arguments::
+    f=name of sfit4 HDF5 retrieval data (contains all retrievals: TODO also allow list of files?)
+    table=table attribute file (for use with the IDL geoms_qa routine and for the FILE_META_VERSION attribute
+    template=FTIR template file (must contain number at the end 00x) (downloaded from GEOMS site)
+    rd='RD' puts RD in DATA_QUALITY
+    version=target file version
+    idlcheck=execute the IDL routine geoms_qa for quality check
+    qfilter=[('summary/CONVERGED','==1')] (list of quality filters to apply, key + condition)"""
+  #Y=1e24, Z=1e21, E=1e18,P=1e15
+  import fnmatch
+  logger=logging.getLogger(logger.name+'.create_GEOMS')
+  ftirte={} #contains the template data (e.g. save with dtype=REAL or DOUBLE
+  with open(template) as fid: te=fid.readlines()
+  #get valid variable names from the template file: these may to change in time, so try to work with wildcards to have a match even if the template changes 
+  for line in te: 
+    line=line.strip('\n').split(',')
+    nameparts=[l.rstrip(']').lstrip('[').split('|') for l in line[1].replace('_','.').split('.')] 
+    line[1]=array(list(line[1]));dotseq=append('.',line[1][(line[1]=='.')+(line[1]=='_')])
+    names=['']
+    for i,p in enumerate(nameparts): 
+      dum=list(names);names=[];[names.append(dotseq[i].join([n,o]).strip('.')) for n in dum for o in p] #expand the different possibilities..
+    ftirte['|'.join(names)]={'dep':line[2],'unit':line[3],'dtype':line[4],'desc':line[5]}
+  logger.info('Template information:\n\t%s'%('\n\t'.join(['%s: %s'%(k,','.join(v.values())) for k,v in ftirte.items()])))
+  with h5py.File(f,'r') as fid:
+    listofmeas=fid.keys();
+    logger.info('Found %d measurements: %s'%(len(listofmeas),','.join([m for m in listofmeas])))
+    #apply filter to measurements
+    for m in list(listofmeas):
+      for cond in qfilter: 
+	if not eval('fid[m]["%s"][...]%s'%(cond)): logger.info('Removed %s because not %s%s'%((m,)+cond));listofmeas.remove(m);continue
+    #get the measurement times 
+    mtimes=[]
+    for m in listofmeas:
+      v=fid[m]
+      mtimes.append(datetime.datetime(*list(v['mtime'][...])))
+      if not 'target' in locals(): target=v['summary']['gases'][0]
+      elif target!=v['summary']['gases'][0]: logger.error('This file is corrupt... Not all retrieval have the same target');return
+    stime=min(mtimes);etime=max(mtimes)
+    mtimes,listofmeas=zip(*sorted(zip(mtimes,listofmeas),key=lambda x: x[0])) #zip and unzip, but now sorted)
+    #create geoms output filename
+    geomsf='groundbased_ftir.%s_bira.iasb%03d_%s_%sz_%sz_%03d.h5'%(target.lower(),fid.attrs['number'],fid.attrs['geomsloc'].lower(),\
+	      stime.strftime('%Y%m%dt%H%M%S'),etime.strftime('%Y%m%dt%H%M%S'),version)
+    logger.info('GEOMS output file: %s'%geomsf)
+    def TEvar(var):  #function for matching a variable name to a variable name from the template
+      fullmatched=[]
+      [fullmatched.append((v,ki.replace('GAS',target))) for k,v in ftirte.items() for ki in k.split('|') if fnmatch.fnmatch(ki.replace('GAS',target),var)] 
+      if len(fullmatched)==0: logger.error('No match for %s'%var); raise ValueError
+      elif len(fullmatched)>1: logger.error('Not a unique match for %s in %s'%(var,zip(*fullmatched)[1]));raise ValueError;
+      v,ki=fullmatched[0]
+      v.update({'name':ki})
+      return v;
+    def GEOMS_store(tem,data,si,m=None,M=None,fill=-900000.,note=''): #function to store GEOMS data (this only calls hdf_store...)
+      logger.info('Writing %s %s'%(tem['name'],data.shape))
+      variableswritten.append(tem['name'])
+      if m==None: m=min(data)
+      if M==None: M=max(data)
+      if data.shape==(): data=array([data])
+      if tem['dtype']=='DOUBLE': data=data.astype(float64);dt='f8'
+      elif tem['dtype']=='REAL': data=data.astype(float32);dt='f'
+      else: logger.error('Unknown data type for %s: %s'%(tem['name'],tem['dtype']));return
+      hdf_store(gfid,tem['name'],ma.masked_array(data,isnan(data)+isinf(data)).filled(fill),dtype=dt,
+	VAR_NAME=tem['name'],VAR_DESCRIPTION=tem['desc'],
+	VAR_NOTES=note,VAR_SIZE=';'.join(map(str,list(data.shape))),VAR_DEPEND=tem['dep'],VAR_DATA_TYPE=tem['dtype'],
+	VAR_UNITS=tem['unit'],VAR_SI_CONVERSION=si)
+      gfid[tem['name']].attrs.create('VAR_VALID_MIN',m,dtype=dt) #According to GEOMS standard, these attrs must be stored
+      gfid[tem['name']].attrs.create('VAR_VALID_MAX',M,dtype=dt) #with the same datatype as the data itself...
+      gfid[tem['name']].attrs.create('VAR_FILL_VALUE',fill,dtype=dt)
+      return
+    with h5py.File(geomsf,'w') as gfid:
+      #TIME
+      variableswritten=[]
+      gtimes=DatetimetoGEOMS(mtimes)
+      tomorrow=datetime.date.today()+datetime.timedelta(days=1);
+      tomorrow=datetime.datetime.fromordinal(tomorrow.toordinal())
+      GEOMS_store(TEvar('DATETIME'),gtimes/86400.0,si='0.0;86400.0;s',m=0.,M=DatetimetoGEOMS([tomorrow]))
+      #INST LAT,LON,ALT
+      tem=TEvar('LATITUDE*');tem['desc']='latitude north (decimal degrees) of the location of the instrument'
+      GEOMS_store(tem,fid.attrs['SITE_LATITUDE'],si='0.0;1.74533E-2;rad',m=-90.,M=90.)
+      tem=TEvar('LONGITUDE*');tem['desc']='longitude east (decimal degrees) of the location of the instrument'
+      GEOMS_store(tem,fid.attrs['SITE_LONGITUDE'],si='0.0;1.74533E-2;rad',m=-180.,M=180.)
+      tem=TEvar('ALTITUDE.INSTRUMENT');tem['desc']='altitude of the location of the instrument'
+      GEOMS_store(tem,fid.attrs['SITE_ALTITUDE']*1e-3,si='0.0;1.0E3;m',m=-0.05,M=10.)
+      #SURF P
+      tem=TEvar('SURFACE.PRESSURE*');tem['desc']='surface pressure measured at the observation site'
+      data=array([fid[m]['barcos/pressure'][...] for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.0E2;kg m-1 s-2',m=0.,M=1100.)
+      #SURF T
+      tem=TEvar('SURFACE.TEMPERATURE*');tem['desc']='temperature at ground level, measured at the observation site'
+      data=array([fid[m]['barcos/temperature'][...] for m in listofmeas]) + 274.15
+      GEOMS_store(tem,data,si='0.0;1.0;K',m=0.,M=500.)
+      #ALTITUDE + BOUNDARIES
+      tem=TEvar('ALTITUDE');tem['desc']='grid of altitude levels upon which the retrieved target vmr profile as well as pressure and temperature profiles are reported'
+      tem['dep']='ALTITUDE'
+      GEOMS_store(tem,fid[m]['s/grid'][...]*1e-3,si='0.0;1.0E3;m',m=0.,M=120.,note='these altitudes are the centers of the retrieval altitude layers (geometric mean between the 2 layer boundaries); the reported vmr, P and T are effective layer values.')
+      tem=TEvar('ALTITUDE.BOUNDARIES');tem['desc']='2D matrix providing the layer boundaries used for vertical profile retrieval'
+      tem['dep']='INDEPENDENT;ALTITUDE'
+      GEOMS_store(tem,fid[m]['s/gridboundaries'][...]*1e-3,si='0.0;1.0E3;m',m=0.,M=150.,note='these altitudes are the centers of the retrieval altitude layers (geometric mean between the 2 layer boundaries); the reported vmr, P and T are effective layer values.')
+      #P profile
+      columns=fid[m]['APRprofs'].attrs['columns']
+      pidx=where(columns=='PRESSURE')[0][0]
+      tem=TEvar('PRESSURE_INDEPENDENT');tem['desc']='Total effective air pressures in layers for vertical profile retrieval'
+      data=array([fid[m]['APRprofs'][...][:,pidx] for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.0E2;kg m-1 s-2',m=0.,M=1100.,note='Pressure/temperature profiles are taken from NCEP; the pressure values represent the effective pressure in each layer and are reported at the center altitude of each layer')
+      #T profile
+      pidx=where(columns=='TEMPERATURE')[0][0]
+      tem=TEvar('TEMPERATURE_INDEPENDENT');tem['desc']='effective air temperatures in layers for vertical profile retrieval'
+      data=array([fid[m]['APRprofs'][...][:,pidx] for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.0;K',m=0.,M=500.,note='Pressure/temperature profiles are taken from NCEP; the temperature values represent the effective temperatures in each layer and are reported at the center altitude of each layer')
+      #Integration time, solar angles
+      tem=TEvar('INTEGRATION*');tem['desc']='duration of the measurement of the interferogram (and thus spectrum) from which the profile has been retrieved'
+      data=array([fid[m]['barcos/duration'][...] for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.0;s',m=0.,M=3600.,note='the duration increases with the spectral resolution of the measurement')
+      tem=TEvar('ANGLE.SOLAR_ZENITH*');tem['desc']='astronomical zenith angle of the sun'
+      data=array([fid[m]['barcos/sza'][...] for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.74533E-2;rad',m=0.,M=180.,note='in solar absorption mode, the sun defines the line of sight')
+      tem=TEvar('ANGLE.SOLAR_AZIMUTH*');tem['desc']='azimuth angle of the sun (O at South, pos. to East, neg. to West)' # TODO check this
+      data=array([fid[m]['barcos/azimuth'][...] for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.74533E-2;rad',m=-180.,M=180.,note='in solar absorption mode, the sun defines the line of sight')
+      #H2O profile (retrieved, so from state subgroup
+      tem=TEvar('H2O.MIXING*SOLAR');tem['desc']='vertical profile of the interfering species H2O in the retrieval'
+      tem['unit']='ppmv' 
+      data=array([fid[m]['s/H2O'][...]*1e6 for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.0E-6;1',m=-1,M=25220.,note='water vapour is retrieved together with %s'%target)
+      tem=TEvar('H2O.COLUMN*SOLAR');tem['desc']='total vertical column of the interfering species H2O in the retrieval'
+      tem['unit']='Zmolec cm-2'
+      data=array([fid[m]['s/H2O'][...].dot(fid[m]['s/airmass'][...])*1e-4*1e-21 for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.66054E1;mol m-2',m=0.,M=200.,
+	note='water vapour is retrieved together with %s'%target)
+      #Target profile (retrieved, so from state subgroup)
+      tem=TEvar('%s.MIXING*SOLAR'%target);tem['desc']='vertical %s profile from solar absorption measurements'%target
+      tem['unit']='ppmv'  
+      data=array([fid[m]['s/%s'%target][...]*1e6 for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.0E-6;1',m=-1,M=10.,note='') # TODO find a good note for this...
+      tem=TEvar('%s.COLUMN.PARTIAL*SOLAR'%target);tem['desc']='%s partial columns in the retrieval layers'%target
+      tem['unit']='Pmolec cm-2'  
+      data=array([fid[m]['s/%s'%target][...]*fid[m]['s/airmass'][...]*1e-4*1e-15 for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.66054E-5;mol m-2',m=0,M=100000.,note='partial column evaluations use a priori pressure and temperature values from NCEP')
+      tem=TEvar('%s.COLUMN_ABSORPTION*SOLAR'%target);tem['desc']='retrieved total vertical %s column between boundaries of altitude grid'%target
+      tem['unit']='Emolec cm-2'
+      data=array([fid[m]['s/%s'%target][...].dot(fid[m]['s/airmass'][...])*1e-4*1e-18 for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.66054E-2;mol m-2',m=0.,M=200.)
+      #APRIORI data
+      aidx=where(columns==target)[0][0]
+      tem=TEvar('%s.MIXING*SOLAR_APRIORI'%target);tem['desc']='vertical %s a priori profile'%target
+      tem['unit']='ppmv'  
+      data=array([fid[m]['APRprofs'][...][:,aidx]*1e6 for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.0E-6;1',m=-1,M=10.,note='') 
+      tem=TEvar('%s.COLUMN.PARTIAL*SOLAR_APRIORI'%target);tem['desc']='%s a priori partial columns in the retrieval layers'%target
+      tem['unit']='Pmolec cm-2'  
+      data=array([fid[m]['APRprofs'][...][:,aidx]*fid[m]['s/airmass'][...]*1e-4*1e-15 for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.66054E-5;mol m-2',m=-1,M=10000.,note='partial column evaluations use a priori pressure and temperature values from NCEP') 
+      tem=TEvar('%s.COLUMN_ABSORPTION*SOLAR_APRIORI'%target);tem['desc']='a priori total vertical %s column between boundaries of altitude grid'%target
+      tem['unit']='Emolec cm-2'
+      data=array([fid[m]['APRprofs'][...][:,aidx].dot(fid[m]['s/airmass'][...])*1e-4*1e-18 for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.66054E-2;mol m-2',m=0.,M=200.)
+      #AVK 's
+      tem=TEvar('%s.MIXING*SOLAR_AVK'%target);tem['desc']='averaging kernel matrix (AVK) of the retrieved vertical %s profile, in VMR/VMR units'%target
+      data=array([diag(fid[m]['APRprofs'][...][:,aidx]).dot(fid[m]['AVKtarget'][...]).dot(diag(fid[m]['APRprofs'][...][:,aidx]**-1)) for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.0;1',m=-2.,M=2.,note='') 
+      tem=TEvar('%s.COLUMN*SOLAR_AVK'%target);tem['desc']='total vertical column averaging kernel for %s derived from mixing ratio averaging kernel'%target
+      data=array([(fid[m]['s/airmass'][...]*fid[m]['APRprofs'][...][:,aidx]).dot(fid[m]['AVKtarget'][...]).dot(diag((fid[m]['s/airmass'][...]*fid[m]['APRprofs'][...][:,aidx])**-1)) for m in listofmeas])
+      GEOMS_store(tem,data,si='0.0;1.0;1',m=-2.,M=2.,note=' this averaging kernel multiplies the partial column vector in order to get smoothed total column') 
+      #Uncertainties...
+      for ErrType in  ['random','systematic']:
+	tem=TEvar('%s.MIXING*SOLAR_UNCERTAINTY*%s*'%(target,ErrType.upper()))
+	tem['desc']='total random error covariance matrix associated with the retrieved %s vertical profiles, in VMR units'%target
+	tem['unit']='ppmv2'
+	data=array([fid[m]['s/uncertainties/%s/%s'%(target,ErrType)][...]*1e12 for m in listofmeas]);
+	GEOMS_store(tem,data,si='0.0;1.0E-12;1',m=-2.,M=2.,note='contributions (no smoothing!): %s'%(fid[m]['TCerror/%s/%s'%(target,ErrType)].attrs['contributions'].replace('Smoothing;',''))) 
+	tem=TEvar('%s.COLUMN*SOLAR_UNCERTAINTY*%s*'%(target,ErrType.upper()))
+	tem['desc']='total random error covariance matrix associated with the retrieved %s vertical profiles, in VMR units'%target
+	tem['unit']='Emolec cm-2'
+	data=array([sqrt(fid[m]['s/airmass'][...].dot(fid[m]['s/uncertainties/%s/%s'%(target,ErrType)][...]).dot(fid[m]['s/airmass'][...]))*1e-4*1e-18 for m in listofmeas]);
+	GEOMS_store(tem,data,si='0.0;1.66054E-2;mol m-2',m=0.,M=200.,note='contributions (no smoothing!): %s'%(fid[m]['TCerror/%s/%s'%(target,ErrType)].attrs['contributions'].replace('Smoothing;',''))) 
+      #FILE attributes
+      for p in zip(['PI','DO','DS'],[('De Maziere;Martine','martine'),('Langerock;Bavo','bavol'),('De Maziere;Martine','martine')]):
+	gfid.attrs['%s_NAME'%p[0]]=p[1][0]
+	gfid.attrs['%s_AFFILIATION'%p[0]]='Belgian Institute for Space Aeronomy;BIRA.IASB'
+	gfid.attrs['%s_ADDRESS'%p[0]]='Ringlaan, 3;B-1180 Brussels;Belgium'
+	gfid.attrs['%s_EMAIL'%p[0]]='%s@bira-iasb.oma.be'%p[1][1]
+      gfid.attrs['DATA_DESCRIPTION']='FTIR %s vmr vertical profile data'%target
+      gfid.attrs['DATA_DISCIPLINE']='ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED'
+      gfid.attrs['DATA_GROUP']='EXPERIMENTAL;PROFILE.STATIONARY'
+      gfid.attrs['DATA_LOCATION']=geomsf.split('_')[3].upper()
+      gfid.attrs['DATA_SOURCE']='_'.join(geomsf.split('_')[1:3]).upper()
+      gfid.attrs['DATA_VARIABLES']=';'.join(variableswritten)
+      gfid.attrs['DATA_START_DATE']=geomsf.split('_')[4].upper()
+      gfid.attrs['DATA_STOP_DATE']=geomsf.split('_')[5].upper()
+      gfid.attrs['DATA_TEMPLATE']=os.path.basename(os.path.splitext(template)[0]).replace('-VA','')
+      gfid.attrs['DATA_FILE_VERSION']='%03d'%version
+      gfid.attrs['DATA_MODIFICATIONS']='None'
+      gfid.attrs['DATA_CAVEATS']='None'
+      gfid.attrs['DATA_RULES_OF_USE']='please contact M. De Maziere'
+      gfid.attrs['DATA_ACKNOWLEDGEMENT']='The data are provided by the Belgian Institute for Space Aeronomy, and have been acquired with national, ESA and EU funding (project NORS)'
+      gfid.attrs['DATA_QUALITY']=rd
+      gfid.attrs['FILE_GENERATION_DATE']=datetime.datetime.now().strftime('%Y%m%dT%H%M%SZ')
+      gfid.attrs['FILE_NAME']=geomsf
+      gfid.attrs['FILE_ACCESS']='NDACC'
+      gfid.attrs['FILE_PROJECT_ID']='AOID999'
+      gfid.attrs['FILE_DOI']=''
+      gfid.attrs['FILE_ASSOCIATION']='NDACC;NORS'
+      gfid.attrs['FILE_META_VERSION']='%s;CUSTOM'%os.path.basename(os.path.splitext(table)[0]).split('_')[1]
+  if idlcheck: 
+    o,e=subProcRun(('idl -rt=/bira-iasb/projects/FTIR/tools/programs/hdf/geoms_qa.sav -args %s %s %s'%(table,template,os.path.abspath(geomsf))).split(' '),quiet=False)
+    if e: logger.error(e)
+  return;
+
 def create_sfit4_retrievalsummary(ctl='sfit4.ctl',logger=rootlogger):
   """Creates plots/hdf for an individual retrieval. The function assumes all requiered files exist (retrieve4 guaranties this).
 
@@ -351,33 +562,6 @@ def create_sfit4_retrievalsummary(ctl='sfit4.ctl',logger=rootlogger):
   os.chdir(cwd)
   return retdata;
 
-def str2number(di):
-  """Converts a string, list of strings or the string values of a dict to int,float or boolean"""
-  if type(di)==dict:
-    for k in di:
-      try: di[k]=int(di[k])
-      except ValueError:
-	try: di[k]=float(di[k])
-	except ValueError: pass
-      if di[k]=='T' or di[k]=='True': di[k]=True
-      if di[k]=='F' or di[k]=='False': di[k]=False
-  elif type(di)==str:
-    try: di=int(di)
-    except ValueError:
-      try: di=float(di)
-      except ValueError: pass
-    if di=='T' or di=='True': di=True
-    if di=='F' or di=='False': di=False
-  elif type(di)==list:
-    for k,o in enumerate(di):
-      try: di[k]=int(di[k])
-      except ValueError:
-	try: di[k]=float(di[k])
-	except ValueError: pass
-      if di[k]=='T' or di[k]=='True': di[k]=True
-      if di[k]=='F' or di[k]=='False': di[k]=False
-  return di;
-
 def hdf5todict(grobj,rootkey='',logger=rootlogger):
   """Loads the contents of a h5py group object into a dict. Attributes are stored under key attr, and has the same keys as the data
 
@@ -452,6 +636,7 @@ def create_sfit4_sb(ctl,sbctl,logger=rootlogger):
   """Create an sb matrix out of the data found in the ctl"""
   sbdict={'attr':{}} #contains the different sb matrices for the sb keys
   logger=logging.getLogger(logger.name+'.create_sfit4_sb')
+  terror=False
   if all([type(v)==tuple for v in ctl.values()]): ctl=trim_dict(ctl) #remove line numbers
   if all([type(v)==tuple for v in sbctl.values()]): sbctl=trim_dict(sbctl) #remove line numbers
   # Determine which microwindows retrieve zshift
@@ -477,7 +662,7 @@ def create_sfit4_sb(ctl,sbctl,logger=rootlogger):
       ctlsbkey='sb.%s.%s'%(sbkey,ErrType)
       processedkeys.append(ctlsbkey)
       try: Sb=(sbctl[ctlsbkey]**2)*ones(len(ctl['band']))
-      except KeyError: logger.warning('Could not find the Sb value for %s.%s'%(sbkey,ErrType));continue
+      except KeyError: logger.info('No Sb value for %s.%s'%(sbkey,ErrType));continue
       sbkey='%s/%s'%(sbkey,ErrType)
       sbdict[sbkey]=diag(Sb)
       sbdict['attr'][sbkey]={'origin': 'from ctl','columns': 'all microwindows'}
@@ -510,12 +695,13 @@ def create_sfit4_sb(ctl,sbctl,logger=rootlogger):
 	  try: Sb[i]=sbdict[sbkey];del sbdict[sbkey]
 	  except KeyError: 
 	    try: Sb[i]=sbdict['line%s/%s'%(ty,ErrType)]
-	    except KeyError: logger.warning('Could not find an Sb value for %s'%sbkey)
+	    except KeyError: logger.warning('Could not find an Sb value for %s'%sbkey);
 	if all(Sb!=0): sbdict['line%s/%s'%(ty,ErrType)]=diag(Sb);sbdict['attr']['line%s/%s'%(ty,ErrType)]={'origin':'from ctl','columns': ', '.join(ctl['kb.line.gas'])}
   for key in sbdict.keys(): #clean up key of type line* for specific molecules... 
     if key[:4]=='line' and len(key.split('/'))>2: del sbdict[key] 
   if ctl['kb']:
     logger.info('Loaded the Sb matrices for\n'+'\n'.join(['%s: %s'%(k,v.shape) for k,v in sbdict.items() if k!='attr']))
+  if terror: raise Exception;
   return sbdict;
 
 def read_statevec(sfile,quiet=True):
@@ -583,16 +769,32 @@ def extract_dict(ctl,section='option'):
     else: rdict[k]=ctl[k]
   return odict,rdict
 
-def update_dict(ctl,key,value):
-  """Updates a dict and preserves the ordering"""
-  if ctl.has_key(key):
-    ctl[key]=(value,ctl[key][1])
-  else: 
-    section=key.split('.')[0]
-    try: n=max([ctl[k][1] for k in ctl.keys() if k.split('.')[0]==section])
-    except ValueError: n=max([v[1] for v in ctl.values()])+1
-    ctl[key]=(value,n)
-  return
+def str2number(di):
+  """Converts a string, list of strings or the string values of a dict to int,float or boolean"""
+  if type(di)==dict:
+    for k in di:
+      try: di[k]=int(di[k])
+      except ValueError:
+	try: di[k]=float(di[k])
+	except ValueError: pass
+      if di[k]=='T' or di[k]=='True': di[k]=True
+      if di[k]=='F' or di[k]=='False': di[k]=False
+  elif type(di)==str:
+    try: di=int(di)
+    except ValueError:
+      try: di=float(di)
+      except ValueError: pass
+    if di=='T' or di=='True': di=True
+    if di=='F' or di=='False': di=False
+  elif type(di)==list:
+    for k,o in enumerate(di):
+      try: di[k]=int(di[k])
+      except ValueError:
+	try: di[k]=float(di[k])
+	except ValueError: pass
+      if di[k]=='T' or di[k]=='True': di[k]=True
+      if di[k]=='F' or di[k]=='False': di[k]=False
+  return di;
 
 def read_output(kbfile,quiet=True):
   """Reads the kb.output, k.output, shat.complete, sa.complete,seinv, ak.target, r(a)prfs.table ...  file of sfit4
@@ -741,8 +943,19 @@ def read_summary(f,quiet=True,logger=rootlogger):
   for c in range(out['nmw']): out['mw%d'%(c+1)]=str2number(dict(zip(headers,dum[lidx+1].split())));lidx+=1
   lidx+=2
   headers=[h.strip() for h in dum[lidx].split()]
-  out.update(str2number(dict(zip(headers,dum[lidx+1].split()))))
+  out.update(str2number(dict(zip(headers,dum[lidx+1].replace('-',' ').replace('************',' ').split()))))
   return out;
+
+def update_dict(ctl,key,value):
+  """Updates a dict and preserves the ordering"""
+  if ctl.has_key(key):
+    ctl[key]=(value,ctl[key][1])
+  else: 
+    section=key.split('.')[0]
+    try: n=max([ctl[k][1] for k in ctl.keys() if k.split('.')[0]==section])
+    except ValueError: n=max([v[1] for v in ctl.values()])+1
+    ctl[key]=(value,n)
+  return
 
 def read_stationlayers(f='station.layers',quiet=True):
   """Reads a station.layers file of Jim starting from an array of boundaries"""
@@ -990,7 +1203,7 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
       #---------------------------------
       ErrLabel='Smoothing'
       S[ErrType][ErrLabel] = AI.dot(Sstate[ErrType][gasidx,:][:,gasidx]).dot(AI.T)
-      mollogger.info('Uncertainty for %s/%s: %s%% (relative to retrieved column)'%(ErrLabel,ErrType,sqrt(PCap.dot(S[ErrType][ErrLabel]).dot(PCap))/PCre.sum()*100))
+      mollogger.info('Uncertainty for %s/%s: %s%% (relative to retrieved column)'%(ErrLabel,ErrType,sqrt(abs(PCap.dot(S[ErrType][ErrLabel]).dot(PCap)))/PCre.sum()*100))
       origin[ErrType][ErrLabel]=Sstateorigin[ErrType][mol]
       #----------------------------------
       # Calculate Measurement error using 
@@ -1002,7 +1215,7 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
       if ErrType=='random': 
 	S[ErrType][ErrLabel] = Dx.dot(diag(longdouble(se))).dot(Dx.T)
 	origin[ErrType][ErrLabel]='measurement noise from se'
-	mollogger.info('Uncertainty for %s/%s: %s%% (relative to retrieved column)'%(ErrLabel,ErrType,sqrt(PCap.dot(S[ErrType][ErrLabel]).dot(PCap))/PCre.sum()*100))
+	mollogger.info('Uncertainty for %s/%s: %s%% (relative to retrieved column)'%(ErrLabel,ErrType,sqrt(abs(PCap.dot(S[ErrType][ErrLabel]).dot(PCap)))/PCre.sum()*100))
       #---------------------
       # Interference Errors:
       #---------------------
@@ -1011,12 +1224,12 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
 	Sa_int1=Sstate[ErrType][0:pro_idx_start,0:pro_idx_start]
 	S[ErrType][ErrLabel] = AK_int1.dot(longdouble(Sa_int1)).dot(AK_int1.T)
 	origin[ErrType][ErrLabel]='from sa'
-	mollogger.info('Uncertainty for %s/%s: %s%% (relative to retrieved column)'%(ErrLabel,ErrType,sqrt(PCap.dot(S[ErrType][ErrLabel]).dot(PCap))/PCre.sum()*100))
+	mollogger.info('Uncertainty for %s/%s: %s%% (relative to retrieved column)'%(ErrLabel,ErrType,sqrt(abs(PCap.dot(S[ErrType][ErrLabel]).dot(PCap)))/PCre.sum()*100))
       ErrLabel='Interfering_Specs'
       Sa_int2=Sstate[ErrType][interfidx,:][:,interfidx]
       S[ErrType][ErrLabel] = AK_int2.dot(longdouble(Sa_int2)).dot(AK_int2.T)
       origin[ErrType][ErrLabel]=';'.join(['%s: %s'%(sp,v) for sp,v in Sstateorigin[ErrType].items() if sp in interfspecs])
-      mollogger.info('Uncertainty for %s/%s: %s%% (relative to retrieved column)'%(ErrLabel,ErrType,sqrt(PCap.dot(S[ErrType][ErrLabel]).dot(PCap))/PCre.sum()*100))
+      mollogger.info('Uncertainty for %s/%s: %s%% (relative to retrieved column)'%(ErrLabel,ErrType,sqrt(abs(PCap.dot(S[ErrType][ErrLabel]).dot(PCap)))/PCre.sum()*100))
       #Stop if no error computation
       if 'GKb' in retdata: 
 	for ErrLabel in Kb_labels+pro_interfmols:
@@ -1045,8 +1258,8 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
 	      DK = Kb[ErrLabel][gasidx,:] #Here Kb is already GKb (store GKb for memory reasons)
 	    try: S[ErrType][ErrLabel] = DK.dot(longdouble(Sb)).dot(DK.T)
 	    except: mollogger.error('Unable to propagate error %s: Sb.shape=%s, Gkb.shape=%s'%(sbkey,Sb.shape,DK.shape));continue
-	    mollogger.info('Uncertainty for %s/%s: %s%% (relative to retrieved column)'%(ErrLabel,ErrType,sqrt(PCap.dot(S[ErrType][ErrLabel]).dot(PCap))/PCre.sum()*100))
-      terr=sqrt(PCap.dot(sum([Se for Se in S[ErrType].values()],0)).dot(PCap))/PCre.sum()*100
+	    mollogger.info('Uncertainty for %s/%s: %s%% (relative to retrieved column)'%(ErrLabel,ErrType,sqrt(abs(PCap.dot(S[ErrType][ErrLabel]).dot(PCap)))/PCre.sum()*100))
+      terr=sqrt(abs(PCap.dot(sum([Se for Se in S[ErrType].values()],0)).dot(PCap)))/PCre.sum()*100
       retdata['TCerror/%s/%s'%(mol,ErrType)]=terr
       retdata['attr']['TCerror/%s/%s'%(mol,ErrType)]={'unit':'in percentage, relative to retrieved total column',\
 	'contributions': ';'.join([ErrLabel for ErrLabel,Se in S[ErrType].items() if any(Se!=0.)]),\
@@ -1176,6 +1389,11 @@ def plot_matrix(ax,matrix=zeros((10,10)),grids=arange(10),gridt=arange(10),grid=
   if sticks!=[]: plt.xticks(ax.get_xticks(),sticks,rotation=-45,fontsize=8)
   return;
 
+def DatetimetoGEOMS(times):
+  """Transforms datetime.datetime instances to GEOMS DATETIME (output is seconds, since 1/1/2000 at 0UT)"""
+  gtimes=array([t.toordinal()+(t.hour+(t.minute+(t.second+t.microsecond/1e3)/(60.))/60.)/24.-datetime.date(2000,1,1).toordinal() for t in times])
+  return gtimes*86400;
+
 def merge_hdf(listoffiles,target='./full.hdf',logger=rootlogger,**kargs):
   """Merges the contents of HDF files (input is a list, target=target file)
 
@@ -1204,7 +1422,9 @@ def merge_hdf(listoffiles,target='./full.hdf',logger=rootlogger,**kargs):
 	if label in master: 
 	  if logger: logger.debug('The group %s already exists in the target file, updating it'%label); 
 	  del master[label]
-	master.copy(source,label);processedfiles.append(f)
+	master.copy(source,label);processedfiles.append(f) #this seems to make the target very big
+	#retdata=hdf5todict(source)
+	#hdf_store(master,label,retdata)
     #set the attributes for the target
     for k,v in kargs.items(): 
       if any([type(v)==t for t in [str,float,int,bool]]): pass
@@ -1234,6 +1454,15 @@ def plotsetup(**kargs):
   matplotlib.rcParams['savefig.dpi']=300
 
 #>Determine time unit setup from list of dates
+
+def upboundary(zb,logger=rootlogger):
+  """creates decreasing shape (2,...) boundary out an increasing list of boundaries"""
+  logger=logging.getLogger(logger.name+'.upboundary') 
+  if len(zb.shape)!=1: logger.error('This function accepts only 1D boundary arrays')
+  if any(zb[:]!=sort(zb[:])):  logger.error('The input boundaries must be sorted')
+  return array([zb[:-1][::-1],zb[1:][::-1]]);
+
+#>Construction of the MACC pressure grid (Algorithm~\ref{algo:prgrid})
 
 def finalizefig(**kargs):
   """Saves, plots figure windows if possible (also for SAGE)
@@ -1381,12 +1610,18 @@ def plot_avk(ax,z,avk,**kargs):
 
 #>Create pc avk plot of rows of AVK (Algorithm~\ref{alg:plotcolavk})
 
-def upboundary(zb,logger=rootlogger):
-  """creates decreasing shape (2,...) boundary out an increasing list of boundaries"""
-  logger=logging.getLogger(logger.name+'.upboundary') 
-  if len(zb.shape)!=1: logger.error('This function accepts only 1D boundary arrays')
-  if any(zb[:]!=sort(zb[:])):  logger.error('The input boundaries must be sorted')
-  return array([zb[:-1][::-1],zb[1:][::-1]]);
-
-#>Construction of the MACC pressure grid (Algorithm~\ref{algo:prgrid})
+def subProcRun(fname,quiet=True):
+  """Open a subprocess and return all stdout (NCAR)"""
+  rtn = subprocess.Popen( fname, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+  outstr = ''
+  while True:
+	  out = rtn.stdout.read(1)
+	  if ( out == '' and rtn.poll() != None ):
+		  break
+	  if out != '':
+		  outstr += out
+		  if not quiet: sys.stdout.write(out)
+		  sys.stdout.flush()
+  stdout, stderr = rtn.communicate()
+  return (outstr,stderr);
 
