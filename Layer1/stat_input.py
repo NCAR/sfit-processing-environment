@@ -97,6 +97,7 @@ statFile   = '/Users/ebaumer/Data/TestBed/mlo/stations.layers'              # St
 #--------------------
 # Flags and Constants
 #--------------------
+coaddFlg    = 0                                                # Flag to indicate processing coadded spectra  
 nBNRfiles   = 1                                                # Number of BNR files to include in pspec input                                                               
 ilsFlg      = 1                                                # ILS file flag: 1 = Use ils file/directory specified in ilsDir string
                                                                #                0 = No ils is specified in input file. What is specified in ctl file is used
