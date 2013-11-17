@@ -2,7 +2,9 @@
 
  sb.temperature.random                      =   
  9  9  9  9  9  9  9  7  7  7  7  6  6  5  5  2  2  2  2  2  2  2  2 2
- 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2 2
+ 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2 
+sb.uncertainties.H2O.random = 9  9  9  9  9  9  9  7  7  7  7  6  6  5  5  2  2  2  2  2  2  2  2 2
+ 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2 
 # natural units here but should be relative, converted in error_cal.py
 # sb.slope.random                     = 0.1
 # sb.curvature.random                 = 0.1
