@@ -203,7 +203,7 @@ def main(argv):
         
         logFile = logging.getLogger('1')
         logFile.setLevel(logging.INFO)
-        if lstFnameFlg:    hdlr1   = logging.FileHandler(log_fpath + dt.datetime.now().strftime('%Y%m%d_%H%M%S') + '.log',mode='w')
+        if lstFnameFlg:    hdlr1   = logging.FileHandler(log_fpath + mainInF.inputs['ctlList'][0][6] + '.log',mode='w')
         else:              hdlr1   = logging.FileHandler(log_fpath + 'testing.log',mode='w')
         fmt1    = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s','%a, %d %b %Y %H:%M:%S')
         hdlr1.setFormatter(fmt1)
@@ -228,7 +228,7 @@ def main(argv):
         ckDir(lst_fpath)       
         lstFile = logging.getLogger('2')
         lstFile.setLevel(logging.INFO)
-        if lstFnameFlg: hdlr2   = logging.FileHandler(lst_fpath + dt.datetime.now().strftime('%Y%m%d_%H%M%S') + '.lst',mode='w')
+        if lstFnameFlg: hdlr2   = logging.FileHandler(lst_fpath + mainInF.inputs['ctlList'][0][6] + '.lst',mode='w')
         else:           hdlr2   = logging.FileHandler(lst_fpath + 'testing.lst',mode='w')
         fmt2    = logging.Formatter('')
         hdlr2.setFormatter(fmt2)
