@@ -297,11 +297,12 @@ def create_GEOMS(f,table='/bira-iasb/projects/FTIR/tools/programs/hdf/tableattrv
   logger.info('Template information:\n\t%s'%('\n\t'.join(['%s: %s'%(k,','.join(v.values())) for k,v in ftirte.items()])))
   with h5py.File(f,'r') as fid:
     listofmeas=fid.keys();
-    logger.info('Found %d measurements: %s'%(len(listofmeas),','.join([m for m in listofmeas])))
+    logger.info('Found %d measurements'%(len(listofmeas)))
     #apply filter to measurements
     for m in list(listofmeas):
       for cond in qfilter: 
-	if not eval('fid[m]["%s"][...]%s'%(cond)): logger.info('Removed %s because not %s%s'%((m,)+cond));listofmeas.remove(m);continue
+	if not eval('fid[m]["%s"][...]%s'%(cond)): 
+	  logger.info('Removed %s because not %s%s'%((m,)+cond));listofmeas.remove(m);break
     #get the measurement times 
     mtimes=[]
     for m in listofmeas:
@@ -329,8 +330,8 @@ def create_GEOMS(f,table='/bira-iasb/projects/FTIR/tools/programs/hdf/tableattrv
       if m==None: m=min(data)
       if M==None: M=max(data)
       if data.shape==(): data=array([data])
-      if tem['dtype']=='DOUBLE': data=data.astype(float64);dt='f8'
-      elif tem['dtype']=='REAL': data=data.astype(float32);dt='f'
+      if tem['dtype']=='DOUBLE': dt='f8'
+      elif tem['dtype']=='REAL': dt='f'
       else: logger.error('Unknown data type for %s: %s'%(tem['name'],tem['dtype']));return
       hdf_store(gfid,tem['name'],ma.masked_array(data,isnan(data)+isinf(data)).filled(fill),dtype=dt,
 	VAR_NAME=tem['name'],VAR_DESCRIPTION=tem['desc'],
@@ -362,13 +363,13 @@ def create_GEOMS(f,table='/bira-iasb/projects/FTIR/tools/programs/hdf/tableattrv
       tem=TEvar('SURFACE.TEMPERATURE*');tem['desc']='temperature at ground level, measured at the observation site'
       data=array([fid[m]['barcos/temperature'][...] for m in listofmeas]) + 274.15
       GEOMS_store(tem,data,si='0.0;1.0;K',m=0.,M=500.)
-      #ALTITUDE + BOUNDARIES
+      #ALTITUDE + BOUNDARIES (warning devide with 1000 and not 1e-3 because of float precision issues...
       tem=TEvar('ALTITUDE');tem['desc']='grid of altitude levels upon which the retrieved target vmr profile as well as pressure and temperature profiles are reported'
       tem['dep']='ALTITUDE'
-      GEOMS_store(tem,fid[m]['s/grid'][...]*1e-3,si='0.0;1.0E3;m',m=0.,M=120.,note='these altitudes are the centers of the retrieval altitude layers (geometric mean between the 2 layer boundaries); the reported vmr, P and T are effective layer values.')
+      GEOMS_store(tem,fid[m]['s/grid'][...]/1000,si='0.0;1.0E3;m',m=0.,M=120.,note='these altitudes are the centers of the retrieval altitude layers (geometric mean between the 2 layer boundaries); the reported vmr, P and T are effective layer values.')
       tem=TEvar('ALTITUDE.BOUNDARIES');tem['desc']='2D matrix providing the layer boundaries used for vertical profile retrieval'
       tem['dep']='INDEPENDENT;ALTITUDE'
-      GEOMS_store(tem,fid[m]['s/gridboundaries'][...]*1e-3,si='0.0;1.0E3;m',m=0.,M=150.,note='these altitudes are the centers of the retrieval altitude layers (geometric mean between the 2 layer boundaries); the reported vmr, P and T are effective layer values.')
+      GEOMS_store(tem,fid[m]['s/gridboundaries'][...]/1000,si='0.0;1.0E3;m',m=0.,M=150.,note='these altitudes are the centers of the retrieval altitude layers (geometric mean between the 2 layer boundaries); the reported vmr, P and T are effective layer values.')
       #P profile
       columns=fid[m]['APRprofs'].attrs['columns']
       pidx=where(columns=='PRESSURE')[0][0]
@@ -474,6 +475,7 @@ def create_GEOMS(f,table='/bira-iasb/projects/FTIR/tools/programs/hdf/tableattrv
       gfid.attrs['FILE_DOI']=''
       gfid.attrs['FILE_ASSOCIATION']='NDACC;NORS'
       gfid.attrs['FILE_META_VERSION']='%s;CUSTOM'%os.path.basename(os.path.splitext(table)[0]).split('_')[1]
+  logger.info('File created: %s'%os.path.abspath(geomsf))
   if idlcheck: 
     o,e=subProcRun(('idl -rt=/bira-iasb/projects/FTIR/tools/programs/hdf/geoms_qa.sav -args %s %s %s'%(table,template,os.path.abspath(geomsf))).split(' '),quiet=False)
     if e: logger.error(e)
@@ -866,7 +868,7 @@ def hdf_store(hdfid,arrayname='',value=array([]),dtype='f',**kargs):
     arrayname='', where to store the data in the file
     value=data to save;;
   Optional key arguments::
-    dtype='f', or 's', 'ref' (a hdf reference) or 'vars' (variable length string),...
+    dtype='f'(='float32'), 'f8'(='float64'), or 's', 'ref' (a hdf reference) or 'vars' (variable length string),...
     kargs are stored in the attrs of the dataset (for a dict instance, all values will get these attr...);;"""
   if hdfid==None: return
   extraat={}
@@ -1276,7 +1278,7 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
 'contributions': ';'.join([ErrLabel for ErrLabel,Se in S[ErrType].items() if ErrLabel!='Smoothing' and any(Se!=0.)]),\
 'origin': ';'.join(['%s:%s'%(ErrLabel,origin[ErrType][ErrLabel]) for ErrLabel,Se in S[ErrType].items() if ErrLabel!='Smoothing' and any(Se!=0.)])}
       for ErrLabel in S[ErrType]: 
-	 if any(S[ErrType][ErrLabel]!=0): retdata['STDerror']['%s/%s/%s'%(mol,ErrLabel,ErrType)]=sqrt(diag(S[ErrType][ErrLabel]))
+	 if any(S[ErrType][ErrLabel]!=0): retdata['STDerror']['%s/%s/%s'%(mol,ErrLabel,ErrType)]=sqrt(abs(diag(S[ErrType][ErrLabel])))
   return;
 
 def read_matrixfile(filestr,size=0):
@@ -1482,7 +1484,7 @@ def finalizefig(**kargs):
   try: plotstohandle=plt.get_fignums()
   except: pass
   for key in kargs:
-    if plottypes.keys().count(key)>0: plottypes[key]['flag']=True;plottypes[key]['f']=kargs[key]
+    if plottypes.keys().count(key)>0: plottypes[key]['flag']=True;plottypes[key]['f']=os.path.expanduser(kargs[key])
     elif key=='returnfigflag': returnfigflag=kargs[key]
     elif key=='figidx': plotstohandle=map(int,kargs[key])
     elif key=='pdftitle': pdftitle=kargs[key]
