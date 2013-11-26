@@ -263,7 +263,7 @@ def main(argv):
     #--------------------
     # Level 1 -- LOC
     #--------------------
-    if not( isinstance(mainInF.inputs['loc'], list) ): mainInF.inputs['loc'] =[mainInF.inputs['loc']]
+    if not( isinstance(mainInF.inputs['loc'], list) ): mainInF.inputs['loc'] = [mainInF.inputs['loc']]
         
     for loc in mainInF.inputs['loc']:
         
@@ -329,20 +329,31 @@ def main(argv):
             #-----------------------------
             if lstFlg:
                 lstFile.info('# Begin List File Meta-Data')
-                lstFile.info('Database_File  = ' + mainInF.inputs['spcdbFile'])
-                lstFile.info('WACCM_File     = ' + mainInF.inputs['WACCMfile'])
-                lstFile.info('ctl_File       = ' + mainInF.inputs['ctlList'][ctl_ind][0])
-                lstFile.info('FilterID       = ' + mainInF.inputs['ctlList'][ctl_ind][5])
-                lstFile.info('VersionName    = ' + mainInF.inputs['ctlList'][ctl_ind][6])
-                lstFile.info('Site           = ' + mainInF.inputs['loc'][0])
+                lstFile.info('Start Date     = ' + str(inDateRange.dateList[0])             )
+                lstFile.info('End Date       = ' + str(inDateRange.dateList[-1])            )
+                lstFile.info('WACCM_File     = ' + mainInF.inputs['WACCMfile']              )
+                lstFile.info('ctl_File       = ' + mainInF.inputs['ctlList'][ctl_ind][0]    )
+                lstFile.info('FilterID       = ' + mainInF.inputs['ctlList'][ctl_ind][5]    )
+                lstFile.info('VersionName    = ' + mainInF.inputs['ctlList'][ctl_ind][6]    )
+                lstFile.info('Site           = ' + mainInF.inputs['loc'][0]                 )
                 lstFile.info('statnLyrs_file = ' + ctlFileGlb.inputs['file.in.stalayers'][0])
-                lstFile.info('primGas        = ' + ctlFileGlb.primGas)
-                lstFile.info('specDBfile     = ' + mainInF.inputs['spcdbFile'])
+                lstFile.info('primGas        = ' + ctlFileGlb.primGas                       )
+                lstFile.info('specDBfile     = ' + mainInF.inputs['spcdbFile']              )
+                lstFile.info('Coadd flag     = ' + mainInF.inputs['coaddFlg']               )
+                lstFile.info('nBNRfiles      = ' + mainInF.inputs['nBNRfiles']              )
+                lstFile.info('ilsFlg         = ' + mainInF.inputs['ilsFlg']                 )
+                lstFile.info('pspecFlg       = ' + mainInF.inputs['pspecFlg']               )
+                lstFile.info('refmkrFlg      = ' + mainInF.inputs['refmkrFlg']              )
+                lstFile.info('sfitFlg        = ' + mainInF.inputs['sfitFlg']                )
+                lstFile.info('lstFlg         = ' + mainInF.inputs['lstFlg']                 )
+                lstFile.info('errFlg         = ' + mainInF.inputs['errFlg']                 )
+                lstFile.info('zptFlg         = ' + mainInF.inputs['zptFlg']                 )
+                lstFile.info('refMkrLvl      = ' + mainInF.inputs['refMkrLvl']              )
+                lstFile.info('wVer           = ' + mainInF.inputs['wVer']                   )
                 lstFile.info('# End List File Meta-Data')
                 lstFile.info('')
                 lstFile.info('Date         TimeStamp    Directory ')            
-                
-                                
+                                               
             #-------------------------
             # Filter spectral db based
             # on wavenumber bounds in
@@ -421,9 +432,31 @@ def main(argv):
                         ckDirMk( wrkOutputDir2, logFile )             
                     else:
                         wrkOutputDir2 = wrkOutputDir1
-            
-                    # Check for the existance of Output folder <Date>.<TimeStamp> and create if DNE
+                        
+                    #-----------------------------------------------
+                    # Create a folder within the output directory to 
+                    # store various input files: ctl, hbin, isotope
+                    #-----------------------------------------------
+                    ctlPath,ctlFname = os.path.split(mainInF.inputs['ctlList'][ctl_ind][0])                    
+                    archDir          = wrkInputDir2 + 'inputFiles/'
+
+                    if not ckDirMk(archDir, logFile):
+                        for f in glob.glob(archDir + '*'): os.remove(f)
+                    
+                    shutil.copy(mainInF.inputs['ctlList'][ctl_ind][0], archDir)       # Copy ctl file
+
+                    for file in glob.glob(ctlPath + '/*hbin*'):                       # Copy hbin files
+                        shutil.copy(file, archDir)
+
+                    for file in glob.glob(ctlPath + '/isotope*'):                     # Copy isotope file
+                        shutil.copy(file,archDir)
+                    
+                    #-----------------------------------------
+                    # Check for the existance of Output folder 
+                    # <Date>.<TimeStamp> and create if DNE
+                    #-----------------------------------------
                     wrkOutputDir3 = wrkOutputDir2 + datestr + '.' + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '/' 
+                    
                     if not ckDirMk( wrkOutputDir3, logFile ):
                         # Remove all files in Output directory if previously exists!!
                         for f in glob.glob(wrkOutputDir3+'*'): os.remove(f)   
@@ -436,8 +469,7 @@ def main(argv):
                     # Copy control file to Output folder
                     # First check if location to copy ctl is 
                     # the same location as original ctl file
-                    #-----------------------------------
-                    ctlPath,ctlFname = os.path.split(mainInF.inputs['ctlList'][ctl_ind][0])
+                    #----------------------------------- 
                     try:
                         shutil.copyfile(mainInF.inputs['ctlList'][ctl_ind][0], wrkOutputDir3 + 'sfit4.ctl')
                     except IOError:
