@@ -155,6 +155,9 @@ def main(argv):
             
         # Pause after skip option
         elif opt == '-P':
+            if not arg or arg.startswith('-'):
+                usage()
+                sys.exit()            
             pauseFlg = True
             try:
                 nskips = int(arg) - 1
@@ -174,7 +177,7 @@ def main(argv):
             
         # Option for List file
         elif opt == '-L':
-            if not arg:
+            if not arg or arg.startswith('-'):
                 usage()
                 sys.exit()
             lstFlg      = True
@@ -401,7 +404,7 @@ def main(argv):
             # store various input files: ctl, hbin, isotope
             #-----------------------------------------------
             ctlPath,ctlFname = os.path.split(mainInF.inputs['ctlList'][ctl_ind][0])                    
-            archDir          = wrkInputDir2 + 'inputFiles' + '/'
+            archDir          = wrkOutputDir2 + 'inputFiles' + '/'
             
             if ckDirMk(archDir, logFile):
                 for f in glob.glob(archDir + '*'): os.remove(f)
@@ -462,7 +465,7 @@ def main(argv):
                     #-----------------------------------------
                     wrkOutputDir3 = wrkOutputDir2 + datestr + '.' + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '/' 
                     
-                    if kDirMk( wrkOutputDir3, logFile ):
+                    if ckDirMk( wrkOutputDir3, logFile ):
                         # Remove all files in Output directory if previously exists!!
                         for f in glob.glob(wrkOutputDir3 + '*'): os.remove(f)   
                     
