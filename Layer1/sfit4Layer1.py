@@ -387,6 +387,33 @@ def main(argv):
                 dbFltData_2 = dbData.dbFilterFltrID(mainInF.inputs['ctlList'][ctl_ind][5], dbFltData_2)                
                 if not(dbFltData_2): continue                # Test for empty dicitonary (i.e. no data)
                          
+            #---------------------------------------------------------------------             
+            # Check for the existance of Output folder <Version> and create if DNE
+            #---------------------------------------------------------------------
+            if mainInF.inputs['ctlList'][ctl_ind][6]:
+                wrkOutputDir2 = wrkOutputDir1 + mainInF.inputs['ctlList'][ctl_ind][6] + '/' 
+                ckDirMk( wrkOutputDir2, logFile )             
+            else:
+                wrkOutputDir2 = wrkOutputDir1   
+                      
+            #-----------------------------------------------
+            # Create a folder within the output directory to 
+            # store various input files: ctl, hbin, isotope
+            #-----------------------------------------------
+            ctlPath,ctlFname = os.path.split(mainInF.inputs['ctlList'][ctl_ind][0])                    
+            archDir          = wrkInputDir2 + 'inputFiles' + '/'
+            
+            if ckDirMk(archDir, logFile):
+                for f in glob.glob(archDir + '*'): os.remove(f)
+            
+            shutil.copy(mainInF.inputs['ctlList'][ctl_ind][0], archDir)       # Copy ctl file
+            
+            for file in glob.glob(ctlPath + '/*hbin*'):                       # Copy hbin files
+                shutil.copy(file, archDir)
+            
+            for file in glob.glob(ctlPath + '/isotope*'):                     # Copy isotope file
+                shutil.copy(file,archDir)            
+                         
             #------------------------------------------
             # Level 3 -- Loop through spectral db lines
             #------------------------------------------
@@ -429,40 +456,15 @@ def main(argv):
                     wrkInputDir2 = wrkInputDir1 + yrstr + mnthstr + daystr + '/'               
                     ckDir( wrkInputDir2, logFlg=logFile, exit=True )                       
                     
-                    # Check for the existance of Output folder <Version> and create if DNE
-                    if mainInF.inputs['ctlList'][ctl_ind][6]:
-                        wrkOutputDir2 = wrkOutputDir1 + mainInF.inputs['ctlList'][ctl_ind][6] + '/' 
-                        ckDirMk( wrkOutputDir2, logFile )             
-                    else:
-                        wrkOutputDir2 = wrkOutputDir1
-                        
-                    #-----------------------------------------------
-                    # Create a folder within the output directory to 
-                    # store various input files: ctl, hbin, isotope
-                    #-----------------------------------------------
-                    ctlPath,ctlFname = os.path.split(mainInF.inputs['ctlList'][ctl_ind][0])                    
-                    archDir          = wrkInputDir2 + 'inputFiles/'
-
-                    if not ckDirMk(archDir, logFile):
-                        for f in glob.glob(archDir + '*'): os.remove(f)
-                    
-                    shutil.copy(mainInF.inputs['ctlList'][ctl_ind][0], archDir)       # Copy ctl file
-
-                    for file in glob.glob(ctlPath + '/*hbin*'):                       # Copy hbin files
-                        shutil.copy(file, archDir)
-
-                    for file in glob.glob(ctlPath + '/isotope*'):                     # Copy isotope file
-                        shutil.copy(file,archDir)
-                    
                     #-----------------------------------------
                     # Check for the existance of Output folder 
                     # <Date>.<TimeStamp> and create if DNE
                     #-----------------------------------------
                     wrkOutputDir3 = wrkOutputDir2 + datestr + '.' + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '/' 
                     
-                    if not ckDirMk( wrkOutputDir3, logFile ):
+                    if kDirMk( wrkOutputDir3, logFile ):
                         # Remove all files in Output directory if previously exists!!
-                        for f in glob.glob(wrkOutputDir3+'*'): os.remove(f)   
+                        for f in glob.glob(wrkOutputDir3 + '*'): os.remove(f)   
                     
                     #-------------------------------
                     # Copy relavent files from input
