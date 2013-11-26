@@ -174,6 +174,9 @@ def main(argv):
             
         # Option for List file
         elif opt == '-L':
+            if not arg:
+                usage()
+                sys.exit()
             lstFlg      = True
             lstFnameFlg = int(arg)
                                            
@@ -339,17 +342,17 @@ def main(argv):
                 lstFile.info('statnLyrs_file = ' + ctlFileGlb.inputs['file.in.stalayers'][0])
                 lstFile.info('primGas        = ' + ctlFileGlb.primGas                       )
                 lstFile.info('specDBfile     = ' + mainInF.inputs['spcdbFile']              )
-                lstFile.info('Coadd flag     = ' + mainInF.inputs['coaddFlg']               )
-                lstFile.info('nBNRfiles      = ' + mainInF.inputs['nBNRfiles']              )
-                lstFile.info('ilsFlg         = ' + mainInF.inputs['ilsFlg']                 )
-                lstFile.info('pspecFlg       = ' + mainInF.inputs['pspecFlg']               )
-                lstFile.info('refmkrFlg      = ' + mainInF.inputs['refmkrFlg']              )
-                lstFile.info('sfitFlg        = ' + mainInF.inputs['sfitFlg']                )
-                lstFile.info('lstFlg         = ' + mainInF.inputs['lstFlg']                 )
-                lstFile.info('errFlg         = ' + mainInF.inputs['errFlg']                 )
-                lstFile.info('zptFlg         = ' + mainInF.inputs['zptFlg']                 )
-                lstFile.info('refMkrLvl      = ' + mainInF.inputs['refMkrLvl']              )
-                lstFile.info('wVer           = ' + mainInF.inputs['wVer']                   )
+                lstFile.info('Coadd flag     = ' + str(mainInF.inputs['coaddFlg'])          )
+                lstFile.info('nBNRfiles      = ' + str(mainInF.inputs['nBNRfiles'])         )
+                lstFile.info('ilsFlg         = ' + str(mainInF.inputs['ilsFlg'])            )
+                lstFile.info('pspecFlg       = ' + str(mainInF.inputs['pspecFlg'])          )
+                lstFile.info('refmkrFlg      = ' + str(mainInF.inputs['refmkrFlg'])         )
+                lstFile.info('sfitFlg        = ' + str(mainInF.inputs['sfitFlg'])           )
+                lstFile.info('lstFlg         = ' + str(mainInF.inputs['lstFlg'])            )
+                lstFile.info('errFlg         = ' + str(mainInF.inputs['errFlg'])            )
+                lstFile.info('zptFlg         = ' + str(mainInF.inputs['zptFlg'])            )
+                lstFile.info('refMkrLvl      = ' + str(mainInF.inputs['refMkrLvl'])         )
+                lstFile.info('wVer           = ' + str(mainInF.inputs['wVer'])              )
                 lstFile.info('# End List File Meta-Data')
                 lstFile.info('')
                 lstFile.info('Date         TimeStamp    Directory ')            
