@@ -410,6 +410,11 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
       all systematic uncertainty covariance matrices
       all random uncertainty covariance matrices
     
+    To Do List: (These are things we hope to implement in the future)
+    1) Calculate errors on interfering gasses (retrieved as profile or total column)
+    2) Investigate necessity of long double (128-bit) for calcCoVar
+    
+    
     Created Stephanie Conway (sconway@atmosp.physics.utoronto.ca)
     
     """
@@ -660,8 +665,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # 1) Retrieval parameters
     #------------------------
     AK_int1                   = AK[x_start:x_stop,0:x_start]  
-    Se_int1                   = sa[0:x_start,0:x_start]
-    S_ran['Retrieval_Params'] = calcCoVar(Se_int1,AK_int1,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+    Sa_int1                   = sa[0:x_start,0:x_start]
+    S_ran['Retrieval_Params'] = calcCoVar(Sa_int1,AK_int1,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
     
     #-----------------------
     # 2) Interfering species
@@ -669,8 +674,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     n_int2                     = n_profile + n_column - 1
     n_int2_column              = ( n_profile - 1 ) * n_layer + n_column
     AK_int2                    = AK[x_start:x_stop, x_stop:x_stop + n_int2_column] 
-    Se_int2                    = sa[x_stop:x_stop + n_int2_column, x_stop:x_stop + n_int2_column]
-    S_ran['Interfering_Specs'] = calcCoVar(Se_int2,AK_int2,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+    Sa_int2                    = sa[x_stop:x_stop + n_int2_column, x_stop:x_stop + n_int2_column]
+    S_ran['Interfering_Specs'] = calcCoVar(Sa_int2,AK_int2,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
       
     #----------------------------------------------
     # Errors from parameters not retrieved by sfit4
@@ -702,7 +707,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 	for ErrType in ['random','systematic']:
 	    if Kbl == 'zshift':
 		Sb = np.zeros( (nbnds, nbnds) )
-		for i in range(0,nbnbs): Sb[i,i] = float( SbctlFileVars.inputs['sb.band.'+str(zerolev_band_b[i])+'.zshift.'+ErrType][0] )**2 
+		for i in range(0,nbnds): Sb[i,i] = float( SbctlFileVars.inputs['sb.band.'+str(zerolev_band_b[i])+'.zshift.'+ErrType][0] )**2 
 	
 	    elif Kbl == 'temperature':
 		Sb   = np.zeros((n_layer,n_layer))
