@@ -55,7 +55,12 @@ def nearestDate(daysList, year, month, day=1):
     testDate = datetime.date(year, month, day)
     return min( daysList, key=lambda x:abs(x-testDate) )
 
-
+def sortDict(DataDict,keyval):
+    ''' Sort all values of dictionary based on values of one key'''
+    base = DataDict[keyval]
+    for k in DataDict:
+        DataDict[k] = [y for (x,y) in sorted(zip(base,DataDict[k]))]
+    return DataDict
 
                                                 #----------------#
                                                 # Define classes #
@@ -338,6 +343,33 @@ class DbInputFile(InputFile):
         #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
         return dbFltInputs
         
+        
+    def dbFindDate(self,singlDate,fltDict=False):
+        ''' Grab a specific date and time from dictionary '''
+        
+        if not fltDict:
+            fltDict = self.dbInputs
+        
+        for ind,(date,time) in enumerate(itertools.izip(fltDict['Date'],fltDict['Time'])):
+            date = str(int(date))
+            HH   = time.strip().split(':')[0]
+            MM   = time.strip().split(':')[1]
+            SS   = time.strip().split(':')[2]
+            #-----------------------------------------------------------------------------------
+            # Some directories have values of 60 for seconds. This throws an error in date time. 
+            # Seconds can only go from 0-59. If this is case reduce seconds by 1. This is a 
+            # temp solution until coadd can be fixed.
+            #-----------------------------------------------------------------------------------    
+            if SS == '60': SS = '59'
+            
+            DBtime = datetime.datetime(int(date[0:4]),int(date[4:6]),int(date[6:]),int(HH),int(MM),int(SS))
+            
+            if DBtime == singlDate:
+                dbFltInputs = dict((key, val[ind] ) for (key, val) in fltDict.iteritems())
+                return dbFltInputs
+            
+        return False
+    
         
     def dbFilterNu(self,nuUpper,nuLower,fltDict=False):#=self.dbInputs):
         ''' Filter spectral db dictionary based on wavenumber region derived from ctl files '''

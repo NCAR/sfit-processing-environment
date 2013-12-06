@@ -452,7 +452,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 	#--------------------------------------------------------
 	Kb_labels_orig = ['TEMPERAT','SolLnShft','SolLnStrn','SPhsErr','IWNumShft','DWNumShft','SZA','LineInt','LineTAir','LinePAir','BckGrdSlp','BckGrdCur','EmpApdFcn','EmpPhsFnc','FOV','OPD','ZeroLev']
 	
-	ind = Kb_labels_orig.index(paramName)
+	#------------------------------------------------------
+	# Find index of input paramName. If this is not matched
+	# then program returns origina paramName. This is for
+	# kb.profile.gases
+	#------------------------------------------------------
+	try:               ind = Kb_labels_orig.index(paramName)
+	except ValueError: return paramName
 	
 	return Kb_labels[ind]
 			
@@ -506,9 +512,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     indNPTSB = lines[lstart].strip().split().index('NPTSB')
     indSNR   = lines[lstart].strip().split().index('INIT_SNR')
     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
-    
-    
-    
+        
     calc_SNR   = []
     nptsb      = []
     
@@ -673,6 +677,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #----------------------------------------------
     zerolev_band_b = []
     
+    
     #---------------------------------------------
     # Determine which microwindows retrieve zshift
     #---------------------------------------------
@@ -681,58 +686,97 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
   
     nbnds = len(zerolev_band_b)
 	
+    #-------------------------------------------------------------------
+    # Get kb.profile.gas(es) list from sfit4.ctl file. These are used 
+    # to calculate errors on profile of gases not retrieved as profiles.
+    #-------------------------------------------------------------------
+    try:             kb_profile_gas = ctlFileVars.inputs['kb.profile.gas']
+    except KeyError: kb_profile_gas = []
+    
     #--------------------------------
     # Loop through parameter list and
     # determine errors
     #--------------------------------
-    for Kbl in Kb_labels:
-	if Kbl in Kb:
-	    DK = np.dot(Dx,Kb[Kbl])
-	    for ErrType in ['random','systematic']:
-		if Kbl == 'zshift':
-		    Sb = np.zeros( (nbnds, nbnds) )
-		    for i in range(0,nbnbs): Sb[i,i] = float( SbctlFileVars.inputs['sb.band.'+str(zerolev_band_b[i])+'.zshift.'+ErrType][0] )**2 
-	    
-		elif Kbl == 'temperature':
-		    Sb   = np.zeros((n_layer,n_layer))
-		    try:
-			T_Sb = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
-			
-			# Convert degrees to fractional values (relative to )
-			for i in range(0,len(T_Sb)): Sb[i,i] = (float(T_Sb[i]) / pGasPrf.T[i])**2
-			
-		    except: pass
-	    
-		elif DK.shape[1] == 1:
-		    Sb = np.zeros((1,1))
-		    try: Sb[0,0] = float(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType][0])**2
-		    except: pass
+    for Kbl in Kb:
+	DK = np.dot(Dx,Kb[Kbl])
+	for ErrType in ['random','systematic']:
+	    if Kbl == 'zshift':
+		Sb = np.zeros( (nbnds, nbnds) )
+		for i in range(0,nbnbs): Sb[i,i] = float( SbctlFileVars.inputs['sb.band.'+str(zerolev_band_b[i])+'.zshift.'+ErrType][0] )**2 
+	
+	    elif Kbl == 'temperature':
+		Sb   = np.zeros((n_layer,n_layer))
+		try:
+		    T_Sb = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
 		    
-		elif DK.shape[1] == n_window: 
-		    Sb = np.zeros((n_window,n_window))
-		    try: np.fill_diagonal(Sb,float(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType][0])**2)
-		    except: pass
+		    #------------------------------------------------------------------
+		    # Determine whether to scale temperature (absolute units vs scaled)
+		    #------------------------------------------------------------------
+		    if SbctlFileVars.inputs['sb.temperature.'+ErrType+'.scaled'] == 'F':
+			np.fill_diagonal(Sb,T_Sb)
+		    else:
+			#-------------------------------------
+			# Scale the temperature using a priori
+			#-------------------------------------
+			for i in range(0,len(T_Sb)): Sb[i,i] = (float(T_Sb[i]) / pGasPrf.T[i])**2
+		except: pass
+	
+	    elif Kbl in kb_profile_gas:
+		Sb = np.zeros((n_layer,n_layer))
+		try:
+		    Sb_gas = np.array(SbctlFileVars.inputs['sb.profile.'+Kbl+'.'+ErrType])
+		    np.fill_diagonal(Sb,Sb_gas)
+		except: pass
+	
+	    elif DK.shape[1] == 1:
+		Sb = np.zeros((1,1))
+		try: Sb[0,0] = float(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType][0])**2
+		except: pass
+		
+	    elif DK.shape[1] == n_window: 
+		Sb = np.zeros((n_window,n_window))
+		
+		#---------------------------------------
+		# Determine whether to scale values for:
+		#  -- SZA, FOV  ??? FLOAT ???
+		#---------------------------------------
+		if Kbl == 'sza':
+		    Sb_ctl = np.zeros(n_window)
+		    if SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'] == 'F':
+			for ind,Sb_sza_bnd in enumerate(SbctlFileVars.inputs['sb.sza.'+ErrType]):
+			    #Sb_ctl[ind] = float(Sb_sza_bnd) /
+			
+		    else:
+			for ind,Sb_sza_bnd in enumerate(SbctlFileVars.inputs['sb.sza.'+ErrType]):
+			    Sb_ctl[ind] = float(Sb_sza_bnd) 
+		
+		
+		
+		try: np.fill_diagonal(Sb,Sb_ctl**2)
+		except: pass
+	
+	    else: Sb = np.zeros((1,1))
 	    
-		else: Sb = np.zeros((1,1))
-		
-		#------------------------------------
-		# Check if Error covariance matrix is
-		# specified in the Sb.ctl file
-		#------------------------------------
-		if np.sum(Sb) == 0:
-		    if Kbl == 'zshift': 
-			print 'sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated'
-			if logFile: logFile.info('sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated')
-		    else:               
-			print 'sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated'
-			if logFile: logFile.info('sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')
-		
-		#----------------------------
-		# Calculate
-		#----------------------------
-		else:
-		    if ErrType == 'random': S_ran[Kbl] = calcCoVar(Sb,DK,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
-		    else:                   S_sys[Kbl] = calcCoVar(Sb,DK,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+	    #----------------------------------------------------------------------
+	    # Check if Error covariance matrix has not been filled from sb.ctl file
+	    #----------------------------------------------------------------------
+	    if np.sum(Sb) == 0:
+		if Kbl == 'zshift': 
+		    print 'sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated'
+		    if logFile: logFile.info('sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated')
+		elif Kbl in kb_profile_gas:
+		    print 'sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated'
+		    if logFile: logFile.info('sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')		    
+		else:               
+		    print 'sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated'
+		    if logFile: logFile.info('sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')
+	    
+	    #----------------------------
+	    # Calculate
+	    #----------------------------
+	    else:
+		if ErrType == 'random': S_ran[Kbl] = calcCoVar(Sb,DK,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+		else:                   S_sys[Kbl] = calcCoVar(Sb,DK,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
 	    
     #---------------------------------------------
     # Calculate total systematic and random errors
