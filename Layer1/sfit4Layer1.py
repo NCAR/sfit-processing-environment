@@ -689,7 +689,15 @@ def main(argv):
                             if logFile: 
                                 logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)                            
                                 
-                            rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, logFile )  
+                            #-----------------------------------------------------------
+                            # Grab spectral data base information for specific retrieval
+                            #-----------------------------------------------------------
+                            specDBone = dbFltData_2.dbFindDate(dbFltData_2['Date'][spcDBind])
+                            
+                            #-----------------------------------
+                            # Enter into Error Analysis function
+                            #-----------------------------------
+                            rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, specDBone, logFile )  
                                 
                         #---------------------------
                         # Continuation for Pause flg

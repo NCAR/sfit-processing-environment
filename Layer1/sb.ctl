@@ -12,15 +12,30 @@
 #
 #-----------------------------------------------------------------
 
+                        #-------#
+                        # Flags #
+                        #-------#
+#-------------
+# Output flags
+#-------------
+VMRoutFlg  = T                # T = output error covariance matrices in VMR
+MolsoutFlg = T                # T = output error covariance matrices in molecules cm^-2
 
 
 #----------------------------------------------
-# If specifying Sb for temperature you need to 
-# specify whether the units are scaled or not
+# Units flag indicate whether the Sb is given in
+# native units or scaled
+#     F = Native Units, T = Scaled by a priori
 #----------------------------------------------
-sb.temperature.random.scaled                = F    # F = Native Units, T = Scaled by a priori
-sb.temperature.systematic.scaled            = T    # F = Native Units, T = Scaled by a priori
- 
+sb.temperature.random.scaled                = F    
+sb.temperature.systematic.scaled            = T     
+sb.sza.random.scaled                        =
+sb.sza.systematic.scaled                    =
+
+
+                    #-------------------#
+                    #     Sb values     #
+                    #-------------------#
 #-----------------------------------------------
 # Sb for temperature:
 # -- Specify diagonals of Sb matrix, i.e.
@@ -41,11 +56,22 @@ sb.temperature.systematic   =
 #      *** The order of the entries in sb.sza must correspond to the order of
 #          bands specified in "band = " in the sfit4.ctl file ***
 #----------------------------------------------------------------------------
-sb.sza.random.scaled       =
-sb.sza.systematic.scaled   =
-
 sb.sza.random     = 0.001 0.002 0.001
 sb.sza.systematic = 0.001 0.002 0.001
+
+
+#----------------------------------------------------------------------------
+# Sb for Omega (FOV):
+#  --- Number of entries corresponds to the number of bands
+#      *** The order of the entries in sb.omega must correspond to the order of
+#          bands specified in "band = " in the sfit4.ctl file ***
+#----------------------------------------------------------------------------
+sb.omega.random.scaled       =
+sb.omega.systematic.scaled   =
+
+sb.omega.random     = 0.001 0.002 0.001
+sb.omega.systematic = 0.001 0.002 0.001
+
 
 
 # natural units here but should be relative, converted in error_cal.py

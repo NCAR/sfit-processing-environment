@@ -476,4 +476,4 @@ class GasPrfs(InputFile):
         #-------------------------
         self.Aprf = [ float(row.strip().split()[aprfsParm.index(gas.upper())]) for row in aprfsLines[4:] ]        
         if npFlg: self.Aprf = np.asarray(self.Aprf)
-        
+                 
