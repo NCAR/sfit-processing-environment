@@ -501,7 +501,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     
     #---------------------------------------------------------------
     # Create Se matrix (Two ways to do this depending on input flg):
-    # 1) Read INIT_SNR from summary file for each band and each scan.
+    # 1) Read SNR from summary file for each band and each scan.
     #    This value is the SNR from the T15asc file. With this option 
     #    if the user manipulates the snr values it will not be carried
     #    through to the error calculation.
@@ -518,15 +518,15 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     indSNR   = lines[lstart].strip().split().index('INIT_SNR')
     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
         
-    calc_SNR   = []
-    nptsb      = []
+    SNR   = []
+    nptsb = []
     
     for lnum in range(lstart+1,lend):
         nptsb.append(    float( lines[lnum].strip().split()[indNPTSB] ) )
-        calc_SNR.append( float( lines[lnum].strip().split()[indSNR]   ) )
+        SNR.append( float( lines[lnum].strip().split()[indSNR]   ) )
     
     se         = np.zeros((sum(nptsb),sum(nptsb)), float)
-    snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(calc_SNR,nptsb)]))
+    snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(SNR,nptsb)]))
     snrList[:] = [val**-2 for val in snrList]
     np.fill_diagonal(se,snrList)    
       
@@ -572,7 +572,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #--------------------------------------
     # Un-nest numpy arrays in Kb dictionary
     #--------------------------------------
-    for k in Kb: Kb[k] = Kb[k][0]
+    for k in Kb: Kb[k] = Kb[k][0]   # Check this
 
     #-----------------------------------------------------
     # Primary retrieved gas is assumed to be the first gas 
