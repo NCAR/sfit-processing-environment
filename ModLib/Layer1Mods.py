@@ -49,7 +49,7 @@ import itertools as it
                                 #  -- Helper functions --  #
                                 #                          #
                                 #--------------------------#
-def tryopen(fname,lines,logFile=False):
+def tryopen(fname,logFile=False):
     try:
         with open(fname, 'r' ) as fopen:
             return fopen.readlines()
@@ -318,6 +318,10 @@ def t15ascPrep(dbFltData_2, wrkInputDir3, wrkOutputDir5, mainInF, spcDBind, ctl_
 
     # # Use Filename for bnrFname as it is the bnrfilename and not the ckopus filename    
     bnrFname = str(dbFltData_2['Filename'][spcDBind])
+    if mainInF.inputs['coaddFlg']: bnrExt = '.bnrc'
+    else:                          bnrExt = '.bnr'
+    
+    bnrFname = "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + bnrExt
     
     if not os.path.isfile(wrkOutputDir5+bnrFname):
         try:
@@ -557,8 +561,15 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
         SNR.append( float( lines[lnum].strip().split()[indSNR]   ) )
     
     se         = np.zeros((sum(nptsb),sum(nptsb)), float)
-    snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(SNR,nptsb)]))
-    snrList[:] = [val**-2 for val in snrList]
+
+    if SbctlFileVars.inputs['SeInputFlg'] == 'F':
+	snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(SNR,nptsb)]))
+	snrList[:] = [val**-2 for val in snrList]
+    else:
+	lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
+	snrList    = float( lines[2].strip().split() ) 
+	snrList[:] = [1.0/val for val in snrList]
+    
     np.fill_diagonal(se,snrList)    
       
     #-----------------
@@ -771,6 +782,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 		
 	    elif DK.shape[1] == n_window: 
 		Sb = np.zeros((n_window,n_window))
+
 		
 		#---------------------------------------
 		# Determine whether to scale values for:
@@ -796,6 +808,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 			for ind,Sb_fov_bnd in enumerate(SbctlFileVars.inputs['sb.omega.'+ErrType]):
 			    Sb_ctl[ind] = float(Sb_fov_bnd) 
 		
+
 		#------------------------------------------
 		# All other cases not including SZA and FOV
 		#------------------------------------------

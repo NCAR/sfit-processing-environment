@@ -19,7 +19,8 @@
 # Notes:
 #       1) Command line arguments tell the program where the Layer 1
 #          input file resides and where to write the log file
-#       2) Options include:
+#       2) The hbin file must be created prior to running Layer1
+#       3) Options include:
 #            -i <file> : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file
 #            -l        : Flag to create log files of processing. Path to write log files is specified in input file 
 #            -L <0/1>  : Flag to create output list file. Path to write list files is specified in input file. 
@@ -30,7 +31,7 @@
 #
 #
 # Usage:
-#      ./sfit4Layer1 -i <filename> -l -L -P4
+#      ./sfit4Layer1 -i <filename> -l -L<0/1> -P<int>
 #
 # Examples:
 #      Runs sfit4Layer1 with input file Layer1input.py and writes log files 
@@ -211,8 +212,12 @@ def main(argv):
         
         logFile = logging.getLogger('1')
         logFile.setLevel(logging.INFO)
+<<<<<<< HEAD
         if lstFnameFlg:    hdlr1   = logging.FileHandler(log_fpath + mainInF.inputs['ctlList'][0][6] + '.log',mode='w')
         else:              hdlr1   = logging.FileHandler(log_fpath + 'testing.log',mode='w')
+=======
+        hdlr1   = logging.FileHandler(log_fpath + mainInF.inputs['ctlList'][0][6] + '.log',mode='w')
+>>>>>>> refs/remotes/origin/master
         fmt1    = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s','%a, %d %b %Y %H:%M:%S')
         hdlr1.setFormatter(fmt1)
         logFile.addHandler(hdlr1)  
@@ -459,9 +464,11 @@ def main(argv):
                     # Check for existance of YYYYMMDD Input folder
                     # If this folder does not exist => there is no 
                     # Data for this day
+
                     # # Commented out because our bnr files are not in subdiretories
                     # wrkInputDir2 = wrkInputDir1 + yrstr + mnthstr + daystr + '/'               
                     # ckDir( wrkInputDir2, logFlg=logFile, exit=True )                       
+
                     
                     #-----------------------------------------
                     # Check for the existance of Output folder 
@@ -586,7 +593,7 @@ def main(argv):
                         print 'Running PSPEC for ctl file: %s' % msgstr1
                         print 'Processing spectral observation date: %s' % msgstr2
                         print '*****************************************************'
-                        # # Changed input directory to wrkInputDir3 from wrkInputDir2, which is not created (commented out) because our bnr directories are not in filter subdirectories and not date subdirectories
+                        # # Changed input directory to wrkInputDir3 from wrkInputDir2, which is not created (commented out) because our bnr directories are in filter subdirectories and not date subdirectories
                         wrkInputDir3 = wrkInputDir1+'bnr/F'+str(int(dbFltData_2['Flt'][spcDBind]))+'/'
                         rtn = t15ascPrep(dbFltData_2, wrkInputDir3, wrkOutputDir3, mainInF, spcDBind, ctl_ind, logFile)
                         
@@ -609,7 +616,12 @@ def main(argv):
                         print 'Processing spectral observation date: %s' % msgstr2
                         print '*****************************************************'
                         # # Make wrkInputDir2 the zpt directory
-                        wrkInputDir2 = wrkInputDir1+'zpt/EUR_ZPTW_43L/'
+                        if loc == 'eur':
+                            wrkInputDir2 = wrkInputDir1+'zpt/EUR_ZPTW_43L/'
+                        elif loc == 'tor':
+                            wrkInputDir2 = wrkInputDir1+'zpt/TOR_ZPTW_43L/'
+                        else:
+                            pass
                         
                         rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMfile'], wrkOutputDir3, \
                                          mainInF.inputs['refMkrLvl'], mainInF.inputs['wVer'], mainInF.inputs['zptFlg'],\
@@ -683,7 +695,7 @@ def main(argv):
                                         if r'RDRV: DONE.' in line: cmpltFlg = True
                                     else: break
                             
-                            if cmpltFlg:
+                            if cmpltFlg and lstFile:
                                 lstFile.info("{0:<13}".format(int(dbFltData_2['Date'][spcDBind])) + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '       ' + wrkOutputDir3)
                                 
                                   
