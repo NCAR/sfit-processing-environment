@@ -11,12 +11,14 @@
 #       1) The input file is read in as a python file, therefore you should follow python
 #          syntax when editing.
 #       2) The extension of this file should be .py !!!!
-#       3) The following inputs need to be specified through the ctl file and are not currently
+#       3) The hbin file must be created prior to running Layer1
+#       4) The following inputs need to be specified through the ctl file and are not currently
 #          part of the input file:
-#              -- file.in.sa_matrix
-#              -- file.in.isotope
-#              -- file.in.solarlines
-#              -- file.in.linelist
+#              -- Station layer file
+#              -- Solarlines file
+#              -- Hbin (linelist) file
+#              -- Sa input matrix file (if used)
+#              -- Isotope file (if used)
 #
 # Version History:
 #       Created, May, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
@@ -92,7 +94,7 @@ WACCMfile = '/Users/ebaumer/Data/TestBed/mlo/waccm/WACCMref_V6.MLO'         # WA
 sbCtlFile = '/Users/ebaumer/Data/TestBed/mlo/sb.ctl'                        # Control file for error analysis
 
 # Optional files
-statFile   = '/Users/ebaumer/Data/TestBed/mlo/stations.layers'              # Station layer file
+
 
 #--------------------
 # Flags and Constants

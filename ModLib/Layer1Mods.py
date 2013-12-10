@@ -49,7 +49,7 @@ import itertools as it
                                 #  -- Helper functions --  #
                                 #                          #
                                 #--------------------------#
-def tryopen(fname,lines,logFile=False):
+def tryopen(fname,logFile=False):
     try:
         with open(fname, 'r' ) as fopen:
             return fopen.readlines()
@@ -530,8 +530,15 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
         SNR.append( float( lines[lnum].strip().split()[indSNR]   ) )
     
     se         = np.zeros((sum(nptsb),sum(nptsb)), float)
-    snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(SNR,nptsb)]))
-    snrList[:] = [val**-2 for val in snrList]
+
+    if SbctlFileVars.inputs['SeInputFlg'] == 'F':
+	snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(SNR,nptsb)]))
+	snrList[:] = [val**-2 for val in snrList]
+    else:
+	lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
+	snrList    = float( lines[2].strip().split() ) 
+	snrList[:] = [1.0/val for val in snrList]
+    
     np.fill_diagonal(se,snrList)    
       
     #-----------------
