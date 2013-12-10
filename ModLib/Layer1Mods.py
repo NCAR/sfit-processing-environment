@@ -99,10 +99,14 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
     #--------------
     # Find ZPT file
     #--------------
+    dte   = str(int(specDB['Date'][spcDBind]))
+    print zptwPath+'ZPT_'+dte+'.120'
     if zptFlg: zptFiles = glob.glob(zptwPath + 'ZPT.nmc*')
-    else     : zptFiles = glob.glob(zptwPath + 'zpt-120')
-    
+# # Change to format of our ZPT files ZPT_20030915.120
+# #   else     : zptFiles = glob.glob(zptwPath + 'zpt-120'...)
+    else     : 	zptFiles = glob.glob(zptwPath+'ZPT_'+dte+'*.120')
     # If more than one zpt file found trigger warning and use first one 
+    print zptFiles
     if len(zptFiles) > 1:                 
         print 'Found more than one ZPT file. Using file: ' + zptFiles[0]
         if logFile: logFile.info('Using ZPTW file: ' + zptFiles[0])
@@ -120,7 +124,9 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
     #------------------------
     # Find water profile file
     #------------------------
-    waterFiles = glob.glob(zptwPath + 'w-120*')
+    # # Change waterfile to format of our waterfile w_20070112.v1
+    waterFiles = glob.glob(zptwPath + 'w_'+dte+'.v1')
+    
 
     # If no water files found trigger error
     if len(waterFiles) == 0:
@@ -193,47 +199,50 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
             # If this is not available default to house log data. If 
             # this is not available default to NCEP data.
             #---------------------------------------------------------
+	    
+	    # # Comment out this setion for now as these values do not exist in log file... but may implement in future
+	    
             # Temperature
-            NCEPtempFlg = False
+            #NCEPtempFlg = False
             
-            if specDB['ExtStatTemp'][spcDBind] == -9999:
-                if specDB['HouseTemp'][spcDBind] == -9999:
-                    NCEPtempFlg = True
+            #if specDB['ExtStatTemp'][spcDBind] == -9999:
+                #if specDB['HouseTemp'][spcDBind] == -9999:
+                    #NCEPtempFlg = True
                     
-                else:
-                    newTemp = specDB['HouseTemp'][spcDBind]
-                    newTemp += 273.15                        # Convert [C] => [K]           
-                    newTemp = "{0:.4f}".format(newTemp)
+                #else:
+                    #newTemp = specDB['HouseTemp'][spcDBind]
+                    #newTemp += 273.15                        # Convert [C] => [K]           
+                    #newTemp = "{0:.4f}".format(newTemp)
                     
-            else:
-                newTemp = specDB['ExtStatTemp'][spcDBind]
-                newTemp += 273.15                            # Convert [C] => [K]
-                newTemp = "{0:.4f}".format(newTemp)
+            #else:
+                #newTemp = specDB['ExtStatTemp'][spcDBind]
+                #newTemp += 273.15                            # Convert [C] => [K]
+                #newTemp = "{0:.4f}".format(newTemp)
                 
-            # Pressure
-            NCEPpresFlg = False
+            ## Pressure
+            #NCEPpresFlg = False
             
-            if specDB['ExtStatPres'][spcDBind] == -9999:
-                if specDB['HousePres'][spcDBind] == -9999:
-                    NCEPpresFlg = True
+            #if specDB['ExtStatPres'][spcDBind] == -9999:
+                #if specDB['HousePres'][spcDBind] == -9999:
+                    #NCEPpresFlg = True
                     
-                else:
-                    newPres = specDB['HousePres'][spcDBind]
-                    newPres = "{0:.4e}".format(newPres)
-            else:
-                newPres = specDB['ExtStatPres'][spcDBind]
-                newPres = "{0:.4e}".format(newPres)
+                #else:
+                    #newPres = specDB['HousePres'][spcDBind]
+                    #newPres = "{0:.4e}".format(newPres)
+            #else:
+                #newPres = specDB['ExtStatPres'][spcDBind]
+                #newPres = "{0:.4e}".format(newPres)
                        
             #-----------------------------------------
             # Replace surface temperature and pressure
             # in reference.prf with external station 
             # or house log data if applicable
             #-----------------------------------------
-            for linenum,line in enumerate(lines):
-                if NCEPpresFlg == False:
-                    if 'pressure' in line.lower():
-                        nlnum        = linenum + nlines
-                        oldPres      = lines[nlnum].split()[-1].rstrip(',')
+            #for linenum,line in enumerate(lines):
+                #if NCEPpresFlg == False:
+                    #if 'pressure' in line.lower():
+                        #nlnum        = linenum + nlines
+                        #oldPres      = lines[nlnum].split()[-1].rstrip(',')
                         
                         #----------------------------------------------------
                         # Compare NCEP pressure with new updated pressure
@@ -242,26 +251,26 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
                         #  2) If the absolute value of the difference between
                         #     NCEP and external station surface pressure is
                         #     greater than 15 hPa warning is thrown
-                        #----------------------------------------------------
-                        if (float(lines[nlnum].split()[-2].rstrip(',')) > float(oldPres)):
-                            if logFile:
-                                logFile.error('Surface pressure error for reference profile: ' + refFile)
-                                logFile.error('External surface pressure < NCEP pressure one level above surface => Non-hydrostatic equilibrium!!')
-                            print 'Surface pressure error for reference profile: ' + refFile
-                            print 'External surface pressure < NCEP pressure one level above surface => Non-hydrostatic equilibrium!!'
-                        elif ( abs(float(oldPres) - float(newPres)) > 15):
-                            if logFile:
-                                logFile.warning('Surface pressure warning for reference profile: ' + refFile)
-                                logFile.warning('Difference between NCEP and external station surface pressure > 15 hPa')
-                            print 'Surface pressure warning for reference profile: ' + refFile
-                            print 'Difference between NCEP and external station surface pressure > 15 hPa'
+                        ##----------------------------------------------------
+                        #if (float(lines[nlnum].split()[-2].rstrip(',')) > float(oldPres)):
+                            #if logFile:
+                                #logFile.error('Surface pressure error for reference profile: ' + refFile)
+                                #logFile.error('External surface pressure < NCEP pressure one level above surface => Non-hydrostatic equilibrium!!')
+                            #print 'Surface pressure error for reference profile: ' + refFile
+                            #print 'External surface pressure < NCEP pressure one level above surface => Non-hydrostatic equilibrium!!'
+                        #elif ( abs(float(oldPres) - float(newPres)) > 15):
+                            #if logFile:
+                                #logFile.warning('Surface pressure warning for reference profile: ' + refFile)
+                                #logFile.warning('Difference between NCEP and external station surface pressure > 15 hPa')
+                            #print 'Surface pressure warning for reference profile: ' + refFile
+                            #print 'Difference between NCEP and external station surface pressure > 15 hPa'
                                                  
-                        lines[nlnum] = lines[nlnum].replace(oldPres,newPres)
+                        #lines[nlnum] = lines[nlnum].replace(oldPres,newPres)
             
-                if NCEPtempFlg == False:
-                    if 'temper' in line.lower():
-                        nlnum        = linenum + nlines
-                        oldTemp      = lines[nlnum].split()[-1].rstrip(',')
+                #if NCEPtempFlg == False:
+                    #if 'temper' in line.lower():
+                        #nlnum        = linenum + nlines
+                        #oldTemp      = lines[nlnum].split()[-1].rstrip(',')
                         
                         #------------------------------------------------------
                         # Compare NCEP temperature with new updated temperature
@@ -271,20 +280,20 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
                         #     NCEP and external station surface temperature is
                         #     greater than 10 DegC warning is thrown
                         #------------------------------------------------------
-                        if (float(lines[nlnum].split()[-2].rstrip(',')) > float(oldTemp)):
-                            if logFile:
-                                logFile.error('Surface Temperature error for reference profile: ' + refFile)
-                                logFile.error('External surface Temperature < NCEP Temperature one level above surface => Non-hydrostatic equilibrium!!')
-                            print 'Surface Temperature error for reference profile: ' + refFile
-                            print 'External surface temperature < NCEP temperature one level above surface => Non-hydrostatic equilibrium!!'
-                        elif ( abs(float(oldTemp) - float(newTemp)) > 10):
-                            if logFile:
-                                logFile.warning('Surface temperature warning for reference profile: ' + refFile)
-                                logFile.warning('Difference between NCEP and external station surface temperature > 10 DegC')
-                            print 'Surface temperature warning for reference profile: ' + refFile
-                            print 'Difference between NCEP and external station surface temperature > 10 DegC'                        
+                        #if (float(lines[nlnum].split()[-2].rstrip(',')) > float(oldTemp)):
+                            #if logFile:
+                                #logFile.error('Surface Temperature error for reference profile: ' + refFile)
+                                #logFile.error('External surface Temperature < NCEP Temperature one level above surface => Non-hydrostatic equilibrium!!')
+                            #print 'Surface Temperature error for reference profile: ' + refFile
+                            #print 'External surface temperature < NCEP temperature one level above surface => Non-hydrostatic equilibrium!!'
+                        #elif ( abs(float(oldTemp) - float(newTemp)) > 10):
+                            #if logFile:
+                                #logFile.warning('Surface temperature warning for reference profile: ' + refFile)
+                                #logFile.warning('Difference between NCEP and external station surface temperature > 10 DegC')
+                            #print 'Surface temperature warning for reference profile: ' + refFile
+                            #print 'Difference between NCEP and external station surface temperature > 10 DegC'                        
   
-                        lines[nlnum] = lines[nlnum].replace(oldTemp,newTemp)                    
+                        #lines[nlnum] = lines[nlnum].replace(oldTemp,newTemp)                    
                               
             
     with open( refFile, 'w' ) as fout:
@@ -301,13 +310,19 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
                         #-------------------------#    
     
 # Copy bnr file to output folder
-def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_ind, logFile):
+# # Changed input directory to wrkInputDir3 from wrkInputDir2, which is not created (commented out) because our bnr directories are not in filter subdirectories and not date subdirectories
+def t15ascPrep(dbFltData_2, wrkInputDir3, wrkOutputDir5, mainInF, spcDBind, ctl_ind, logFile):
     
-    bnrFname = "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '.bnr'
+#    if mainInF.inputs['coaddFlg']: bnrExt = '.bnrc'
+#    else:                          bnrExt = '.bnr'
+
+    # # Use Filename for bnrFname as it is the bnrfilename and not the ckopus filename    
+    bnrFname = str(dbFltData_2['Filename'][spcDBind])
     
     if not os.path.isfile(wrkOutputDir5+bnrFname):
         try:
-            shutil.copy( wrkInputDir2 + bnrFname, wrkOutputDir5 )
+	    # # Changed input directory to wrkInputDir1 from wrkInputDir1, which is not created (commented out) because our bnr directories are not in subdirectories
+            shutil.copy( wrkInputDir3 + bnrFname, wrkOutputDir5 )
         except IOError as errmsg:
             print errmsg
             if logFile: logFile.error(errmsg)
@@ -326,6 +341,15 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
         fname.write( str(dbFltData_2['W_Lon'][spcDBind]) + '\n')
         fname.write('# Altitude of Observation [masl]\n')
         fname.write( str(dbFltData_2['Alt'][spcDBind]) + '\n')
+#        fname.write('# oflag  - output\n') 
+#        fname.write('# = 1 output t15asc file\n')
+#        fname.write('# = 2 bnr file\n') 
+#        fname.write('# = 3 both\n')
+#        fname.write('# vflag  - verbosity\n')
+#        fname.write('# = 0 no output from baseline correct or s bnr or block output for plotting\n')
+#        fname.write('# = 1 verbose output from bc and zeroed bnr but no blockout\n')
+#        fname.write('# = 2 verbose, zeroed bnr and blockout for plotting\n')
+#        fname.write('1       2\n')
         fname.write('# filter bands and regions for calculating SNR\n')
         fname.write( mainInF.inputs['fltrBndInputs'] )
         fname.write('# number of BNR files\n')
@@ -346,11 +370,17 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
         fname.write('# ratio file name in bnr format\n')
         fname.write('#     if rflag eq 1 this file has to exist\n')
         fname.write('#     skip if rflag eq 0 \n')
+#        fname.write('# zflag  - zero offset\n')
+#        fname.write('#     = 0 no zero offset\n')
+#        fname.write('#     = 1 try w/ baselincorrect\n')
+#        fname.write('#     0 < z < 1 use this value\n')
+#        fname.write('#     = 2 use combo 2 + 4 for 10m region\n')
         fname.write( bnrFname + '\n') 
         fname.write( str(dbFltData_2['ROE'][spcDBind])          + '   '   +           # ROE
                      str(mainInF.inputs['ctlList'][ctl_ind][1]) + '     ' +           # Zero Fill factor
                      str(mainInF.inputs['ctlList'][ctl_ind][2]) + '     ' +           # Ratio flag
-                     str(mainInF.inputs['ctlList'][ctl_ind][3]) +'\n' )               # File open flag
+                     str(mainInF.inputs['ctlList'][ctl_ind][3]) +'\n' )#'     ' +           # File open flag
+ #                    str(0) + '\n')
         if mainInF.inputs['ctlList'][ctl_ind][2]:
             fname.write( mainInF.inputs['ctlList'][ctl_ind][4] + '\n' )
         else:
@@ -392,7 +422,7 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
                             #  -- Error Analysis --   #
                             #                         #
                             #-------------------------#    
-def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
+def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=False):
     """
     Calculates systematic and random uncertainty covariance matrix 
     using output from sfit4 and sb values from ctl file
@@ -407,17 +437,26 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
       all systematic uncertainty covariance matrices
       all random uncertainty covariance matrices
     
+    To Do List: (These are things we hope to implement in the future)
+    1) Calculate errors on interfering gasses (retrieved as profile or total column)
+    2) Investigate necessity of long double (128-bit) for calcCoVar
+    
+    
     Created Stephanie Conway (sconway@atmosp.physics.utoronto.ca)
     
     """
     
-    def calcCoVar(coVar,A,aprDensPrf,retPrfVMR,airMass):
+    def calcCoVar(coVar,A,aprDensPrf,retPrfVMR,VMRoutFlg, MolsoutFlg, airMass):
 	''' Calculate covariance matricies in various units'''
 	
-	Sm   = np.dot(  np.dot( A, coVar ),A.T )
-	Sm_1 = np.sqrt( np.dot( np.dot( aprDensPrf, Sm ), aprDensPrf.T )     )   # Whole column uncertainty [%]
-	Sm_2 = np.dot(  np.dot( np.diag(retPrfVMR), Sm ), np.diag(retPrfVMR) )   # Uncertainty covariance matrix [VMR]
-	Sm_3 = np.dot(  np.dot( np.diag(airMass), Sm_2 ), np.diag(airMass)   )   # Uncertainty covariance matrix [molecules cm^-2]
+	Sm   = np.dot(  np.dot( A, coVar ), A.T )                                                      # Uncertainty covariance matrix [Fractional]
+	Sm_1 = np.sqrt( np.dot( np.dot( aprDensPrf, Sm ), aprDensPrf.T )     )                         # Whole column uncertainty [molecules cm^-2]
+	
+	if VMRoutFlg== 'T': Sm_2 = np.dot(  np.dot( np.diag(retPrfVMR), Sm ), np.diag(retPrfVMR) )     # Uncertainty covariance matrix [VMR]
+	else:               Sm_2 = 0
+	
+	if MolsoutFlg == 'T': Sm_3 = np.dot(  np.dot( np.diag(airMass), Sm_2 ), np.diag(airMass)   )   # Uncertainty covariance matrix [molecules cm^-2]
+	else:                 Sm_3 = 0
 	
 	return (Sm_2, Sm_3, Sm_1)
 	
@@ -449,7 +488,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 	#--------------------------------------------------------
 	Kb_labels_orig = ['TEMPERAT','SolLnShft','SolLnStrn','SPhsErr','IWNumShft','DWNumShft','SZA','LineInt','LineTAir','LinePAir','BckGrdSlp','BckGrdCur','EmpApdFcn','EmpPhsFnc','FOV','OPD','ZeroLev']
 	
-	ind = Kb_labels_orig.index(paramName)
+	#------------------------------------------------------
+	# Find index of input paramName. If this is not matched
+	# then program returns origina paramName. This is for
+	# kb.profile.gases
+	#------------------------------------------------------
+	try:               ind = Kb_labels_orig.index(paramName)
+	except ValueError: return paramName
 	
 	return Kb_labels[ind]
 			
@@ -485,26 +530,34 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     
     sa = np.array( [ [ float(x) for x in row.split()] for row in lines[3:] ] )
     
-    #-----------------------
-    # Read in SNR values
-    #-----------------------    
+    #---------------------------------------------------------------
+    # Create Se matrix (Two ways to do this depending on input flg):
+    # 1) Read SNR from summary file for each band and each scan.
+    #    This value is the SNR from the T15asc file. With this option 
+    #    if the user manipulates the snr values it will not be carried
+    #    through to the error calculation.
+    # 2) Read seinv.output matrix. With this option, if the user 
+    #    manipulates snr values for the fit, these changed values 
+    #    will be carried through (via seinv.output) to the error
+    #    calculations.
+    #---------------------------------------------------------------
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.summary'][0], logFile) 
     if not lines: sys.exit()    # Critical file, if missing terminate program
 
     lstart   = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
     indNPTSB = lines[lstart].strip().split().index('NPTSB')
-    indSNR   = lines[lstart].strip().split().index('CALC_SNR')
+    indSNR   = lines[lstart].strip().split().index('INIT_SNR')
     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
-    
-    calc_SNR   = []
-    nptsb      = []
+        
+    SNR   = []
+    nptsb = []
     
     for lnum in range(lstart+1,lend):
         nptsb.append(    float( lines[lnum].strip().split()[indNPTSB] ) )
-        calc_SNR.append( float( lines[lnum].strip().split()[indSNR]   ) )
+        SNR.append( float( lines[lnum].strip().split()[indSNR]   ) )
     
     se         = np.zeros((sum(nptsb),sum(nptsb)), float)
-    snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(calc_SNR,nptsb)]))
+    snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(SNR,nptsb)]))
     snrList[:] = [val**-2 for val in snrList]
     np.fill_diagonal(se,snrList)    
       
@@ -523,7 +576,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #--------------------
     # Read in Gain matrix
     #--------------------
-    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.gain_matrix'][0], logFile)
+    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.g_matrix'][0], logFile)
     if not lines: sys.exit()      # Critical file, if missing terminate program
     
     D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
@@ -550,7 +603,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #--------------------------------------
     # Un-nest numpy arrays in Kb dictionary
     #--------------------------------------
-    for k in Kb: Kb[k] = Kb[k][0]
+    for k in Kb: Kb[k] = Kb[k][0]   # Check this
 
     #-----------------------------------------------------
     # Primary retrieved gas is assumed to be the first gas 
@@ -589,21 +642,15 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #-----------------------------------------------
     AKx = AK[x_start:x_stop,x_start:x_stop]
     
-    #------------------------------------------------------------
-    # Calculate the scaled Averaging Kernel:
-    # 
-    #------------------------------------------------------------
-    AKvmr = np.dot( np.dot( np.diag( 1.0 / pGasPrf.Aprf), AKx ), np.diag(pGasPrf.Aprf) )
-    
     #----------------------------------
     # Calculate retrieved total column:
-    #
+    # molec/cm**2
     #----------------------------------
     retdenscol = np.dot( pGasPrf.Rprf, pGasPrf.Airmass )  
     
     #------------------------------------
     # Calculate A priori density profile:
-    #
+    # molec/cm**2
     #------------------------------------
     aprdensprf = pGasPrf.Aprf * pGasPrf.Airmass
     
@@ -631,8 +678,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #      Ss = (A-I) * Sa * (A-I)
     #---------------------------------
     mat1               = sa[x_start:x_stop,x_start:x_stop]
-    mat2               = AKvmr - np.identity( AKvmr.shape[0] )
-    S_sys['Smoothing'] = calcCoVar(mat1,mat2,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+    mat2               = AKx - np.identity( AKx.shape[0] )
+    S_sys['Smoothing'] = calcCoVar(mat1,mat2,aprdensprf,pGasPrf.Aprf,SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],pGasPrf.Airmass)
     
     #----------------------------------
     # Calculate Measurement error using 
@@ -640,7 +687,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #                    T
     #  Sm = Dx * Se * Dx
     #----------------------------------
-    S_ran['Measurement'] = calcCoVar(se,Dx,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+    S_ran['Measurement'] = calcCoVar(se,Dx,aprdensprf,pGasPrf.Aprf,SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],pGasPrf.Airmass)
  
     #---------------------
     # Interference Errors:
@@ -649,8 +696,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # 1) Retrieval parameters
     #------------------------
     AK_int1                   = AK[x_start:x_stop,0:x_start]  
-    Se_int1                   = sa[0:x_start,0:x_start]
-    S_ran['Retrieval_Params'] = calcCoVar(Se_int1,AK_int1,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+    Sa_int1                   = sa[0:x_start,0:x_start]
+    S_ran['Retrieval_Params'] = calcCoVar(Sa_int1,AK_int1,aprdensprf,pGasPrf.Aprf,SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],asPrf.Airmass)
     
     #-----------------------
     # 2) Interfering species
@@ -658,13 +705,14 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     n_int2                     = n_profile + n_column - 1
     n_int2_column              = ( n_profile - 1 ) * n_layer + n_column
     AK_int2                    = AK[x_start:x_stop, x_stop:x_stop + n_int2_column] 
-    Se_int2                    = sa[x_stop:x_stop + n_int2_column, x_stop:x_stop + n_int2_column]
-    S_ran['Interfering_Specs'] = calcCoVar(Se_int2,AK_int2,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+    Sa_int2                    = sa[x_stop:x_stop + n_int2_column, x_stop:x_stop + n_int2_column]
+    S_ran['Interfering_Specs'] = calcCoVar(Sa_int2,AK_int2,aprdensprf,pGasPrf.Aprf,SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],pGasPrf.Airmass)
       
     #----------------------------------------------
     # Errors from parameters not retrieved by sfit4
     #----------------------------------------------
     zerolev_band_b = []
+    
     
     #---------------------------------------------
     # Determine which microwindows retrieve zshift
@@ -674,85 +722,148 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
   
     nbnds = len(zerolev_band_b)
 	
+    #-------------------------------------------------------------------
+    # Get kb.profile.gas(es) list from sfit4.ctl file. These are used 
+    # to calculate errors on profile of gases not retrieved as profiles.
+    #-------------------------------------------------------------------
+    try:             kb_profile_gas = ctlFileVars.inputs['kb.profile.gas']
+    except KeyError: kb_profile_gas = []
+    
     #--------------------------------
     # Loop through parameter list and
     # determine errors
     #--------------------------------
-    for Kbl in Kb_labels:
-	if Kbl in Kb:
-	    DK = np.dot(Dx,Kb[Kbl])
-	    for ErrType in ['random','systematic']:
-		if Kbl == 'zshift':
-		    Sb = np.zeros( (nbnds, nbnds) )
-		    for i in range(0,nbnbs): Sb[i,i] = float( SbctlFileVars.inputs['sb.band.'+str(zerolev_band_b[i])+'.zshift.'+ErrType][0] )**2 
-	    
-		elif Kbl == 'temperature':
-		    Sb   = np.zeros((n_layer,n_layer))
-		    try:
-			T_Sb = SbctlFileVars.inputs['sb.temperature.'+ErrType]
-			
-			# Convert degrees to relative units ?????
-			for i in range(0,len(T_Sb)): Sb[i,i] = (float(T_Sb[i]) / pGasPrf.T[i])**2
-		    except: pass
-	    
-		elif DK.shape[1] == 1:
-		    Sb = np.zeros((1,1))
-		    try: Sb[0,0] = float(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType][0])**2
-		    except: pass
+    for Kbl in Kb:
+	DK = np.dot(Dx,Kb[Kbl])
+	for ErrType in ['random','systematic']:
+	    if Kbl == 'zshift':
+		Sb = np.zeros( (nbnds, nbnds) )
+		for i in range(0,nbnds): Sb[i,i] = float( SbctlFileVars.inputs['sb.band.'+str(zerolev_band_b[i])+'.zshift.'+ErrType][0] )**2 
+	
+	    elif Kbl == 'temperature':
+		Sb   = np.zeros((n_layer,n_layer))
+		try:
+		    T_Sb = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
 		    
-		elif DK.shape[1] == n_window: 
-		    Sb = np.zeros((n_window,n_window))
-		    try: np.fill_diagonal(Sb,float(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType][0])**2)
-		    except: pass
-	    
-		else: Sb = np.zeros((1,1))
+		    #------------------------------------------------------------------
+		    # Determine whether to scale temperature (absolute units vs scaled)
+		    #------------------------------------------------------------------
+		    if SbctlFileVars.inputs['sb.temperature.'+ErrType+'.scaled'] == 'F':
+			np.fill_diagonal(Sb,T_Sb)
+		    else:
+			#-------------------------------------
+			# Scale the temperature using a priori
+			#-------------------------------------
+			for i in range(0,len(T_Sb)): Sb[i,i] = (float(T_Sb[i]) / pGasPrf.T[i])**2
+		except: pass
+	
+	    elif Kbl in kb_profile_gas:
+		Sb = np.zeros((n_layer,n_layer))
+		try:
+		    Sb_gas = np.array(SbctlFileVars.inputs['sb.profile.'+Kbl+'.'+ErrType])
+		    np.fill_diagonal(Sb,Sb_gas)
+		except: pass
+	
+	    elif DK.shape[1] == 1:
+		Sb = np.zeros((1,1))
+		try: Sb[0,0] = float(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType][0])**2
+		except: pass
 		
-		#------------------------------------
-		# Check if Error covariance matrix is
-		# specified in the Sb.ctl file
-		#------------------------------------
-		if np.sum(Sb) == 0:
-		    if Kbl == 'zshift': 
-			print 'sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated'
-			if logFile: logFile.info('sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated')
-		    else:               
-			print 'sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated'
-			if logFile: logFile.info('sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')
+	    elif DK.shape[1] == n_window: 
+		Sb = np.zeros((n_window,n_window))
 		
-		#----------------------------
-		# Calculate
-		#----------------------------
+		#---------------------------------------
+		# Determine whether to scale values for:
+		#  -- SZA, FOV  ??? FLOAT ???
+		#---------------------------------------
+		if Kbl == 'sza':
+		    Sb_ctl = np.zeros(n_window)
+		    if SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'] == 'F':
+			for ind,Sb_sza_bnd in enumerate(SbctlFileVars.inputs['sb.sza.'+ErrType]):
+			    Sb_ctl[ind] = float(Sb_sza_bnd) / spDBdataOne['SZen']
+			
+		    else:
+			for ind,Sb_sza_bnd in enumerate(SbctlFileVars.inputs['sb.sza.'+ErrType]):
+			    Sb_ctl[ind] = float(Sb_sza_bnd) 
+			    
+		elif Kbl == 'omega':
+		    Sb_ctl = np.zeros(n_window)
+		    if SbctlFileVars.inputs['sb.omega.'+ErrType+'.scaled'] == 'F':
+			for ind,Sb_fov_bnd in enumerate(SbctlFileVars.inputs['sb.omega.'+ErrType]):
+			    Sb_ctl[ind] = float(Sb_fov_bnd) / spDBdataOne['FOV']
+			
+		    else:
+			for ind,Sb_fov_bnd in enumerate(SbctlFileVars.inputs['sb.omega.'+ErrType]):
+			    Sb_ctl[ind] = float(Sb_fov_bnd) 
+		
+		#------------------------------------------
+		# All other cases not including SZA and FOV
+		#------------------------------------------
 		else:
-		    if ErrType == 'random': S_ran[Kbl] = calcCoVar(Sb,DK,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
-		    else:                   S_sys[Kbl] = calcCoVar(Sb,DK,aprdensprf,pGasPrf.Aprf,pGasPrf.Airmass)
+		    Sb_ctl = np.zeros(n_window)
+		    for ind, Sb_bnd in enumerate(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]):
+			Sb_ctl[ind] = float(Sb_bnd)
+		
+		
+		try: np.fill_diagonal(Sb,Sb_ctl**2)
+		except: pass
+	
+	    else: Sb = np.zeros((1,1))
+	    
+	    #----------------------------------------------------------------------
+	    # Check if Error covariance matrix has not been filled from sb.ctl file
+	    #----------------------------------------------------------------------
+	    if np.sum(Sb) == 0:
+		if Kbl == 'zshift': 
+		    print 'sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated'
+		    if logFile: logFile.info('sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated')
+		elif Kbl in kb_profile_gas:
+		    print 'sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated'
+		    if logFile: logFile.info('sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')		    
+		else:               
+		    print 'sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated'
+		    if logFile: logFile.info('sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')
+	    
+	    #----------------------------
+	    # Calculate
+	    #----------------------------
+	    else:
+		if ErrType == 'random': S_ran[Kbl] = calcCoVar(Sb,DK,aprdensprf,pGasPrf.Aprf,SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],pGasPrf.Airmass)
+		else:                   S_sys[Kbl] = calcCoVar(Sb,DK,aprdensprf,pGasPrf.Aprf,SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],pGasPrf.Airmass)
 	    
     #---------------------------------------------
     # Calculate total systematic and random errors
     #---------------------------------------------
-    # Initialize total random
-    S_tot           = {}
-    S_tot_rndm_err  = 0
-    S_tot_ran_vmr   = np.zeros((n_layer,n_layer))
-    S_tot_ran_molcs = np.zeros((n_layer,n_layer))
-    
-    # Initialize total systematic
+    # Initialize total random and systematic
+    S_tot                = {}
+    S_tot_rndm_err       = 0
     S_tot_systematic_err = 0
-    S_tot_sys_vmr        = np.zeros((n_layer,n_layer))
-    S_tot_sys_molcs      = np.zeros((n_layer,n_layer))    
+
+    if  SbctlFileVars.inputs['VMRoutFlg'] == 'T': 
+	S_tot_ran_vmr   = np.zeros((n_layer,n_layer))
+	S_tot_sys_vmr   = np.zeros((n_layer,n_layer))
+	
+    if  SbctlFileVars.inputs['MolsoutFlg'] =='T': 
+	S_tot_ran_molcs = np.zeros((n_layer,n_layer))
+	S_tot_sys_molcs = np.zeros((n_layer,n_layer))
     
     # Random
     for k in S_ran:
 	S_tot_rndm_err  += S_ran[k][2]**2
-	S_tot_ran_vmr   += S_ran[k][0]
-	S_tot_ran_molcs += S_ran[k][1]
+	if  SbctlFileVars.inputs['VMRoutFlg']  =='T': S_tot_ran_vmr   += S_ran[k][0]
+	else:						S_tot_ran_vmr    = 0
+	if  SbctlFileVars.inputs['MolsoutFlg'] =='T': S_tot_ran_molcs += S_ran[k][1]
+	else:                                         S_tot_ran_molcs  = 0
 	
     S_tot_rndm_err  = np.sqrt(S_tot_rndm_err)
     
     # Systematic
     for k in S_sys:
 	S_tot_systematic_err += S_sys[k][2]**2
-	S_tot_sys_vmr        += S_sys[k][0]
-	S_tot_sys_molcs      += S_sys[k][1]
+	if  SbctlFileVars.inputs['VMRoutFlg']  =='T': S_tot_sys_vmr   += S_sys[k][0]
+	else:						S_tot_sys_vmr    = 0
+	if  SbctlFileVars.inputs['MolsoutFlg'] =='T': S_tot_sys_molcs += S_sys[k][1]
+	else:						S_tot_sys_molcs  = 0 
 	
     S_tot_systematic_err = np.sqrt(S_tot_systematic_err)
     S_tot['Random']      = (S_tot_ran_vmr,S_tot_ran_molcs,S_tot_rndm_err)
@@ -787,37 +898,44 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Write to file covariance matricies
     #-----------------------------------
     if SbctlFileVars.inputs['out.total'][0].upper() == 'T':
-	# molecules cm^-2
-	fname  = wrkingDir+SbctlFileVars.inputs['file.out.total'][0]
-	header = 'TOTAL RANDOM ERROR COVARIANCE MATRIX IN MOL CM^-2'
-	writeCoVar(fname,header,S_tot,1) 
+	if SbctlFileVars.inputs['MolsoutFlg'] == 'T':
+	    # molecules cm^-2
+	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.total'][0]
+	    header = 'TOTAL RANDOM ERROR COVARIANCE MATRIX IN MOL CM^-2'
+	    writeCoVar(fname,header,S_tot,1) 
 	
-	# vmr
-	fname  = wrkingDir+SbctlFileVars.inputs['file.out.total.vmr'][0]
-	header = 'TOTAL RANDOM ERROR COVARIANCE MATRICES IN VMR UNITS'
-	writeCoVar(fname,header,S_tot,0) 	
+	if SbctlFileVars.inputs['VMRoutFlg'] == 'T':
+	    # vmr
+	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.total.vmr'][0]
+	    header = 'TOTAL RANDOM ERROR COVARIANCE MATRICES IN VMR UNITS'
+	    writeCoVar(fname,header,S_tot,0) 	
 
     if SbctlFileVars.inputs['out.srandom'][0].upper() == 'T':
-	# molecules cm^-2
-	fname  = wrkingDir+SbctlFileVars.inputs['file.out.srandom'][0]
-	header = 'RANDOM ERROR COVARIANCE MATRIX IN MOL CM^-2'
-	writeCoVar(fname,header,S_ran,1)
+	if SbctlFileVars.inputs['MolsoutFlg'] == 'T':
+	    # molecules cm^-2
+	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.srandom'][0]
+	    header = 'RANDOM ERROR COVARIANCE MATRIX IN MOL CM^-2'
+	    writeCoVar(fname,header,S_ran,1)
 	
-	# vmr
-	fname  = wrkingDir+SbctlFileVars.inputs['file.out.srandom.vmr'][0]
-	header = 'RANDOM ERROR COVARIANCE MATRICES IN VMR UNITS'
-	writeCoVar(fname,header,S_ran,0)	
+	if SbctlFileVars.inputs['VMRoutFlg'] == 'T':
+	    # vmr
+	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.srandom.vmr'][0]
+	    header = 'RANDOM ERROR COVARIANCE MATRICES IN VMR UNITS'
+	    writeCoVar(fname,header,S_ran,0)	
 		
     if SbctlFileVars.inputs['out.ssystematic'][0].upper() == 'T':
-	# molecules cm^-2
-	fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic'][0]
-	header = 'SYSTEMATIC ERROR COVARIANCE MATRIX IN MOL CM^-2'
-	writeCoVar(fname,header,S_sys,1)
 	
-	# vmr
-	fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic.vmr'][0]
-	header = 'SYSTEMATIC ERROR COVARIANCE MATRICES IN VMR UNITS'
-	writeCoVar(fname,header,S_sys,0)	
+	if SbctlFileVars.inputs['MolsoutFlg'] == 'T':
+	    # molecules cm^-2
+	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic'][0]
+	    header = 'SYSTEMATIC ERROR COVARIANCE MATRIX IN MOL CM^-2'
+	    writeCoVar(fname,header,S_sys,1)
+	
+	if SbctlFileVars.inputs['VMRoutFlg'] == 'T':
+	    # vmr
+	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic.vmr'][0]
+	    header = 'SYSTEMATIC ERROR COVARIANCE MATRICES IN VMR UNITS'
+	    writeCoVar(fname,header,S_sys,0)	
 	
     return True
 
