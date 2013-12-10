@@ -212,12 +212,7 @@ def main(argv):
         
         logFile = logging.getLogger('1')
         logFile.setLevel(logging.INFO)
-<<<<<<< HEAD
-        if lstFnameFlg:    hdlr1   = logging.FileHandler(log_fpath + mainInF.inputs['ctlList'][0][6] + '.log',mode='w')
-        else:              hdlr1   = logging.FileHandler(log_fpath + 'testing.log',mode='w')
-=======
         hdlr1   = logging.FileHandler(log_fpath + mainInF.inputs['ctlList'][0][6] + '.log',mode='w')
->>>>>>> refs/remotes/origin/master
         fmt1    = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s','%a, %d %b %Y %H:%M:%S')
         hdlr1.setFormatter(fmt1)
         logFile.addHandler(hdlr1)  
