@@ -210,7 +210,7 @@ def main(argv):
         
         logFile = logging.getLogger('1')
         logFile.setLevel(logging.INFO)
-        hdlr1   = logging.FileHandler(log_fpath + mainInF.inputs['ctlList'][0][6] + '.log',mode='w')
+        hdlr1   = logging.FileHandler(log_fpath + mainInF.inputs['ctlList'][0][2] + '.log',mode='w')
         fmt1    = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s','%a, %d %b %Y %H:%M:%S')
         hdlr1.setFormatter(fmt1)
         logFile.addHandler(hdlr1)  
@@ -234,7 +234,7 @@ def main(argv):
         ckDir(lst_fpath)       
         lstFile = logging.getLogger('2')
         lstFile.setLevel(logging.INFO)
-        if lstFnameFlg: hdlr2   = logging.FileHandler(lst_fpath + mainInF.inputs['ctlList'][0][6] + '.lst',mode='w')
+        if lstFnameFlg: hdlr2   = logging.FileHandler(lst_fpath + mainInF.inputs['ctlList'][0][2] + '.lst',mode='w')
         else:           hdlr2   = logging.FileHandler(lst_fpath + 'testing.lst',mode='w')
         fmt2    = logging.Formatter('')
         hdlr2.setFormatter(fmt2)
@@ -339,8 +339,8 @@ def main(argv):
                 lstFile.info('End Date       = ' + str(inDateRange.dateList[-1])            )
                 lstFile.info('WACCM_File     = ' + mainInF.inputs['WACCMfile']              )
                 lstFile.info('ctl_File       = ' + mainInF.inputs['ctlList'][ctl_ind][0]    )
-                lstFile.info('FilterID       = ' + mainInF.inputs['ctlList'][ctl_ind][5]    )
-                lstFile.info('VersionName    = ' + mainInF.inputs['ctlList'][ctl_ind][6]    )
+                lstFile.info('FilterID       = ' + mainInF.inputs['ctlList'][ctl_ind][1]    )
+                lstFile.info('VersionName    = ' + mainInF.inputs['ctlList'][ctl_ind][2]    )
                 lstFile.info('Site           = ' + mainInF.inputs['loc'][0]                 )
                 lstFile.info('statnLyrs_file = ' + ctlFileGlb.inputs['file.in.stalayers'][0])
                 lstFile.info('primGas        = ' + ctlFileGlb.primGas                       )
@@ -386,15 +386,15 @@ def main(argv):
             # on filter ID. Using this can help avoid the bug when pspec tries to apply a filter band outside
             # spectral region of a bnr file.
             #------------------------------------------------------------------------------------------------
-            if mainInF.inputs['ctlList'][ctl_ind][5]:
-                dbFltData_2 = dbData.dbFilterFltrID(mainInF.inputs['ctlList'][ctl_ind][5], dbFltData_2)                
+            if mainInF.inputs['ctlList'][ctl_ind][1]:
+                dbFltData_2 = dbData.dbFilterFltrID(mainInF.inputs['ctlList'][ctl_ind][1], dbFltData_2)                
                 if not(dbFltData_2): continue                # Test for empty dicitonary (i.e. no data)
                          
             #---------------------------------------------------------------------             
             # Check for the existance of Output folder <Version> and create if DNE
             #---------------------------------------------------------------------
-            if mainInF.inputs['ctlList'][ctl_ind][6]:
-                wrkOutputDir2 = wrkOutputDir1 + mainInF.inputs['ctlList'][ctl_ind][6] + '/' 
+            if mainInF.inputs['ctlList'][ctl_ind][2]:
+                wrkOutputDir2 = wrkOutputDir1 + mainInF.inputs['ctlList'][ctl_ind][2] + '/' 
                 ckDirMk( wrkOutputDir2, logFile )             
             else:
                 wrkOutputDir2 = wrkOutputDir1   
@@ -422,6 +422,15 @@ def main(argv):
             #------------------------------------------
             nobs = len(dbFltData_2['Date'])
             for spcDBind in range(0, nobs):  
+                
+                #-----------------------------------------------------------
+                # Grab spectral data base information for specific retrieval
+                #-----------------------------------------------------------
+                # Get current date and time of spectral database entry
+                currntDayStr = str(int(dbFltData_2['Date'][spcDBind]))
+                currntDay    = dt.datetime(int(currntDayStr[0:4]),int(currntDayStr[4:6]),int(currntDayStr[6:]),int(dbFltData_2['Time'][spcDBind][0:2]),int(dbFltData_2['Time'][spcDBind][3:5]),int(dbFltData_2['Time'][spcDBind][6:]) )
+                # Get dictionary with specific date
+                specDBone    = dbData.dbFindDate(currntDay,fltDict=dbFltData_2)                
                 
                 brkFlg = True    # Flag to break out of while statement
                 while True:      # While statement is for the repeat function 
@@ -562,9 +571,12 @@ def main(argv):
                         if logFile: logFile.info('Using ils file: ' + ilsFname)
                         
                         # Replace ils file name in local ctl file (within working directory)
-                        teststr = ['file.in.modulation_fcn', 'file.in.phase_fcn']
+                        teststr = [r'file.in.modulation_fcn', r'file.in.phase_fcn']
                         repVal  = [ilsFname        , ilsFname   ]
                         ctlFileLcl.replVar(teststr,repVal)
+                    
+                    # Write FOV from spectral database file to ctl file (within working directory)
+                    ctlFileLcl.replVar([r'band\.\d+\.omega'],[str(specDBone['FOV'])])
                     
                     #---------------------------
                     # Message strings for output
@@ -688,11 +700,6 @@ def main(argv):
                         if mainInF.inputs['errFlg']:
                             if logFile: 
                                 logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)                            
-                                
-                            #-----------------------------------------------------------
-                            # Grab spectral data base information for specific retrieval
-                            #-----------------------------------------------------------
-                            specDBone = dbFltData_2.dbFindDate(dbFltData_2['Date'][spcDBind])
                             
                             #-----------------------------------
                             # Enter into Error Analysis function

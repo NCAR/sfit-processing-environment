@@ -43,6 +43,7 @@ import re
 import sfitClasses as sc
 import numpy as np
 import itertools as it
+import printStatmnts as ps
 
                                 #--------------------------#
                                 #                          #
@@ -322,43 +323,28 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
     with open(wrkOutputDir5 + 'pspec.input', 'w') as fname:
         
         # Write header information
-        fname.write('# Input file for pspec.f90\n')
-        fname.write('# Latitude of Observation [+N, 90 - -90]\n')
+	pWrtStr = ps.pspecInputStr()
+	
+	fname.writelines(pWrtStr[0:7])
         fname.write( str(dbFltData_2['N_Lat'][spcDBind]) + '\n' )
-        fname.write('# Longitude of Observation[+E, 0 - 360]\n')
+        fname.writelines(pWrtStr[7:8])
         fname.write( str(dbFltData_2['W_Lon'][spcDBind]) + '\n')
-        fname.write('# Altitude of Observation [masl]\n')
-        fname.write( str(dbFltData_2['Alt'][spcDBind]) + '\n')
-        fname.write('# filter bands and regions for calculating SNR\n')
+        fname.writelines(pWrtStr[8:9])
+	fname.write( str(dbFltData_2['Alt'][spcDBind]) + '\n')
+	fname.writelines(pWrtStr[9:19])
+	fname.write('{:<5d}{:<5d}\n'.format(mainInF.inputs['outFlg'],mainInF.inputs['verbFlg']))
+	fname.writelines(pWrtStr[19:24])
         fname.write( mainInF.inputs['fltrBndInputs'] )
-        fname.write('# number of BNR files\n')
+	fname.writelines(pWrtStr[24:26])
         fname.write( str(mainInF.inputs['nBNRfiles']) + '\n')
-        #fname.write('# Specify data block (Each block contains at least 2 lines):\n')
-        fname.write('# bnr file name\n')
-        fname.write('# Radius of Earth (ROE), zero fill factor (nterp), ratioflg (rflag), file open flag (fflag)\n')
-        fname.write('# roe - radius of earth [km]\n')
-        fname.write('# nterp -  zero fill factor\n')
-        fname.write('#     nterp =  0 - skip resample & resolution degradation\n')
-        fname.write('#     nterp =  1 - minimally sample at opdmax\n')
-        fname.write('#     nterp >  1 - interpolate nterp-1 points upon minimal sampled spacing\n')
-        fname.write('#     note: OPDMAX is taken from sfit4.ctl file\n')
-        fname.write('# rflag - ratio flag, to ratio the spectra with another low resolution spectral file (eg spectral envelope)\n')
-        fname.write('# fflag -  file open flag\n')
-        fname.write('#     fflag = 0 for fortran unformatted file\n')
-        fname.write('#     fflag = 1 for open as steam or binary or c-type file (gfortran uses stream)\n')
-        fname.write('# ratio file name in bnr format\n')
-        fname.write('#     if rflag eq 1 this file has to exist\n')
-        fname.write('#     skip if rflag eq 0 \n')
+	fname.writelines(pWrtStr[26:])
         fname.write( bnrFname + '\n') 
-        fname.write( str(dbFltData_2['ROE'][spcDBind])          + '   '   +           # ROE
-                     str(mainInF.inputs['ctlList'][ctl_ind][1]) + '     ' +           # Zero Fill factor
-                     str(mainInF.inputs['ctlList'][ctl_ind][2]) + '     ' +           # Ratio flag
-                     str(mainInF.inputs['ctlList'][ctl_ind][3]) +'\n' )               # File open flag
-        if mainInF.inputs['ctlList'][ctl_ind][2]:
-            fname.write( mainInF.inputs['ctlList'][ctl_ind][4] + '\n' )
-        else:
-            fname.write('#\n')
-    
+        fname.write( '{0:<10.1f}{1:<5d}{2:<5d}{3:<5d}{4:<5d}'.format(dbFltData_2['ROE'][spcDBind] ,          # ROE
+	                                                             mainInF.inputs['nterpFlg']   ,          # nterp
+	                                                             mainInF.inputs['ratioFlg']   ,          # rflag
+	                                                             mainInF.inputs['fileFlg']    ,          # fflag
+	                                                             mainInF.inputs['zFlg'] )        )       # zflag
+	    
     #------------------------------
     # Change working directory to 
     # output directory to run pspec

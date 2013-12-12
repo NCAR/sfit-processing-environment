@@ -23,19 +23,25 @@
 #     solstrnth               Solar line strength                   Fractional       
 #     phase                   Phase                                 Native [Radians]
 #     wshift                  Wavelength shift                      Fractional 
-#     dwshift                 Differential Wavelength shift         ?????
-#     sza                     Solar zenith angle                    Native [radians] or fractional
+#     dwshift                 Differential Wavelength shift         ******Currently NOT implemented***** 
+#     sza                     Solar zenith angle                    Native [degrees] or fractional ??
 #     lineInt                 Line intensity                        Fractional
 #     lineTAir                Line temperature broadening           Fractional
 #     linePAir                Line pressure broadening              Fractional
-#     slope                   Background slope                      Native [cm^-1] ??
-#     curvature               Background curvature                  Native [cm^-2] ??
+#     slope                   Background slope                      Native [cm^-1]
+#     curvature               Background curvature                  Native [cm^-2]
 #     apod_fcn                Empirical apodization Function        Fractional
 #     phase_fcn               Empirical phase function              Fractional
-#     omega                   Field of view                         Native [radians] or fractional
+#     omega                   Field of view                         Native [milliradians] or fractional
 #     max_opd                 Optical path difference               Fractional
 #     zshift                  Zero level                            Native [0-1]
 #     profile.gas             VMR of retrieval gas                  Fractional
+#
+# Notes:
+#  1) phase and phase_fcn are different ways to describe the same parameter. 
+#     It is not recommended to calculate an error on both simultaneously. 
+#  2) dwshift is currently not implemented.
+#  3) Line parameter errors currently only work for 
 #
 #-----------------------------------------------------------------
 
@@ -145,7 +151,7 @@ sb.solshft.random       = 0.5
 sb.solstrnth.random     = 0.1
 sb.apod_fcn.random      = 0.2
 sb.apod_fcn.systematic  = 0.2
-sb.phase_fcn.random     = 0.2
+sb.phase_fcn.random     = 0.2   ## Micro window 
 sb.phase_fcn.systematic = 0.2
 
 #-----------------------------------------------------------
