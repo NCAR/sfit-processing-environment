@@ -35,170 +35,208 @@ titlepad=1.02 #distance between title and frame of plot
 
 
 
-def create_sfit4_retrievalplot(ctl,retdata={},fontsize=8,title='Spectrum name',plots=['sa','avk','gkb','std'],pdf='',logger=rootlogger):
+def create_sfit4_retrievalplot(retdata={},ctl={},fontsize=8,title='',plots=['pro','col','sa','avk','gkb','std','ils'],pdf='',jpg='',eps='',png='',logger=rootlogger):
   """Computes the error budget for a given ctlsb instance and a dict with retrieval data (e.g. as it is stored in the HDF file)
 
-  Input argument: ctl, retdata (a dict or a group in a retrieval hdf file)
+  Input argument: retdata (a dict or a group in a retrieval hdf file)
 
   Optional key arguments::
+    ctl={}; the ctl in retdata is used, but one can pass option.plot information if ctl is set..
     fontsize: 8
-    title: 'Spectrum name'
-    plots='sa','avk','gkb','std' (list of plots to make, default is all, plots of retrieval species are always made)
+    title: '' (if empty, try to fill in the spectrum name from isotop.input
+    plots='pro','col','sa','avk','colavk','gkb','std','ils' (list of plots to make, default is all, plots of retrieval species are always made)
     pdf: '' file in which the pdf plots should be saved, if empty show the plots;;"""
   #color definition
   obsspeccolor='k';synspeccolor='r';apcolor='k';retcolor='r'
+  if plots==[]: return;
   #init
-  logger=logging.getLogger(logger.name+'.create_sfit4_retrievalplot')
+  logger=getlogger(logger,'create_sfit4_retrievalplot')
   if all([type(v)==tuple for v in ctl.values()]): ctl=trim_dict(ctl) #remove line numbers
+  else: ctl=dict(ctl)
   figidx=[];pdfmarks=[]
   if isinstance(retdata,h5py.Group): retdata=hdf5todict(retdata,logger=logger)
+  ctl.update(trim_dict(read_dictfile(retdata['sfit4.ctl'],sfit4=True))) #just to make sure we are using the correct ctl... 
   requiredkeys=['shat','k','seinv','s/grid','pbp/dims','summary/FITRMS','APRprofs','attr']+['s/%s'%mol for mol in ctl['gas.profile.list']+ctl['gas.column.list']]
-  if any([k not in retdata for k in requiredkeys]): logger.error('Not all required keys available in retrieval data');return; 
-  grid=retdata['s/grid']*1e-3
+  if any([k not in retdata for k in requiredkeys]): logger.error('Not all required keys available in retrieval data: %s'%([(k not in retdata,k) for k in requiredkeys]));return; 
+  grid=retdata['s/grid']/1e3
   if 'g' not in retdata: retdata['g']=retdata['shat'].dot(retdata['k'].T).dot(diag(retdata['seinv']))
-  #Profile and MW plot
+  def get_vmrunit(x):
+    if any(x>1e-2): vmrunit=1e0
+    elif any(x>1e-8): vmrunit=1e6
+    else: vmrunit=1e12
+    return vmrunit;
+  #in the occasion that title='', try to get something from the pspec.input file
+  if title=='' and 'pspec.input' in retdata: 
+    dum=retdata['pspec.input']
+    step=int(dum[3]);dum[4+step]=1;title=os.path.basename(dum[5+step]);del dum
+  #Profile and MW plot, AVK plots, Sa plots
   for mol in ctl['gas.profile.list']:
-    logger.info('Creating plots for %s'%mol)
     try: zmax=ctl['option.plot.%s.upperlimit'%mol]
     except KeyError: 
       try: zmax=retdata[mol]['zmax'] #try defaultsettings
       except KeyError: zmax=max(grid)
     try: zmin=ctl['option.plot.%s.lowerlimit'%mol]
     except KeyError: zmin=min(grid)
-    fig=plt.figure();figidx.append(plt.gcf().number);pdfmarks.append('[/Title (%s) /Page %d /OUT pdfmark'%(title,len(figidx)))#we add the number of subpages at the end
     listofaxes=[]
-    ax=plt.axes([.73,.05,.25,.9]) #left,bottum,width,heigth
-    listofaxes.append(ax) #TODO implement cut flag for plots
-    #uncertainties + profile apriori
-    appro=retdata['APRprofs'][:,where(retdata['attr']['APRprofs']['columns']==mol)[0]].squeeze()*1e6
-    try:
-      std=sqrt(diag(retdata['sb/uncertainties/%s/random'%mol]))*1e6
-      ax.errorbar(appro,grid+zmax/3e2,fmt=None,xerr=std,ecolor=apcolor,label='_nolegend_')
-    except KeyError: pass
-    try:
-      std=sqrt(diag(retdata['sb/uncertainties/%s/systematic'%mol]))*1e6
-      ax.fill_betweenx(grid,appro-std,appro+std,alpha=.5,color=apcolor)
-    except KeyError: pass
-    #uncertainties + profile retrieved
-    try: 
-      std=sqrt(diag(retdata['s/uncertainties/%s/random'%mol]))*1e6
-      ax.errorbar(retdata['s/%s'%mol]*1e6,grid,fmt=None,xerr=std,ecolor=retcolor,label='_nolegend_')
-    except KeyError: pass
-    try:
-      std=sqrt(diag(retdata['s/uncertainties/%s/systematic'%mol]))*1e6
-      ax.fill_betweenx(grid,retdata['s/%s'%mol]*1e6-std,retdata['s/%s'%mol]*1e6+std,alpha=.2,color=retcolor)
-    except KeyError: pass
-    ax.plot(retdata['s/%s'%mol]*1e6,grid,label='retrieved %s'%mol,color=retcolor)
-    ax.plot(appro,grid,label='apriori %s'%mol,color=apcolor)
-    ax.set_ylim(zmin,zmax)
-    ax.set_xlabel('VMR [ppmv]');ax.set_ylabel('Height [km]')
-    ax.xaxis.set_major_locator(MaxNLocator(nbins = 6))
-    try: spec=[line for line in ctl['option.hbin.input'].split('\n') if line.find(mol)>-1][0]
-    except (KeyError,IndexError): spec=''
-    #spec=spec.replace('_','\_') #if text is formatted with latex
-    ax.legend(loc='best',prop={'size':fontsize})
-    w=.6/float(retdata['pbp/dims'][0]);l=.06
-    for i,j in enumerate(ctl['band']):
-      if i==0: 
-	ax=plt.axes([l+i*w,.05,w-.01,.72])
-	ax.set_ylabel('Transmission');ax.set_xlabel('Wavenumber [$cm^{-1}$]')
-      else: ax=plt.axes([l+i*w,.05,w-.01,.72],sharey=listofaxes[1])
-      if mol in ctl['band.%s.gasb'%j]: [q.set_linewidth(1.5) for q in ax.spines.itervalues()]
-      listofaxes.append(ax)
-      ax.locator_params(tight=True)
-      ax.plot(retdata['pbp/mw/%d/wavenumber'%i],retdata['pbp/mw/%d/observed'%i],label='obs',color=obsspeccolor,linewidth=.5)
-      ax.plot(retdata['pbp/mw/%d/wavenumber'%i],retdata['pbp/mw/%d/fitted'%i],label='calc',color=synspeccolor,linewidth=.5)
-      ax.set_title(' '.join(ctl['band.%s.gasb'%j]),fontsize=fontsize-2)
-      if len(ctl['band'])>1: ax.xaxis.set_major_locator(MaxNLocator(nbins = 3, prune = 'both') )#ax.xaxis.set_ticks(ax.get_xticks()[array([0,-1])]); #plt.setp(ax.get_xticklabels(),rotation=30,ha='right')
-      if i==0: 
-	ax.legend(loc='best',prop={'size':fontsize})
-	ax=plt.axes([l+i*w,.8,w-.01,.15],sharex=listofaxes[-1])
-      else: ax=plt.axes([l+i*w,.8,w-.01,.15],sharex=listofaxes[-1],sharey=listofaxes[2]);
-      listofaxes.append(ax)
-      ax.plot(retdata['pbp/mw/%d/wavenumber'%i],retdata['pbp/mw/%d/difference'%i],'k');
-      ax.xaxis.set_visible(False) #ax.xaxis.set_ticks_position('top')
-    for i,ax in enumerate(listofaxes):
-      if i>2: plt.setp(ax.get_yticklabels(), visible=False)
-      plt.setp(ax.get_xticklabels(),fontsize=fontsize-2)
-      plt.setp(ax.get_yticklabels(),fontsize=fontsize-2)
-      plt.setp(ax.xaxis.label,fontsize=fontsize);plt.setp(ax.yaxis.label,fontsize=fontsize)
-      ax.xaxis.labelpad = 1; ax.yaxis.labelpad = 1
-      ax.xaxis.set_major_formatter(FormatStrFormatter('%G'))
-    ax=plt.axes([l,.96,.8,.05])
-    ax.axis('off')
-    tce={} #tc error if it is availabe, otherwise 0
-    for k in ['TCerror/%s/systematic'%mol,'TCerror/%s/random'%mol]:
-      if k in retdata: tce[k.split('/')[-1]]=retdata[k]
-      else: tce[k.split('/')[-1]]=0
-    try: ax.text(0,0,title+' %s $\quad$ rTC: %6.4emolec/$cm^2$($\pm$%4.1f%%$\pm$%4.1f%%) $\quad$ RMS:%6.5f $\quad$ Conv: \
-%s $\quad$\n %s %s'%(mol,retdata['summary/%s/ret_column'%mol],tce['systematic'],tce['random'],\
-	retdata['summary/FITRMS'],retdata['summary/CONVERGED'],spec,retdata['summary/header']),fontsize=fontsize-1,horizontalalignment='left')
-    except: logger.error('Could not format title for this plot')
-    molcols=where(retdata['attr']['k']['columns']==mol)
-    avk=retdata['g'].dot(retdata['k'])[molcols[0],:][:,molcols[0]]
+    vmrunit=get_vmrunit(retdata['s/%s'%mol])
+    appro=retdata['APRprofs'][:,where(retdata['attr']['APRprofs']['columns']==mol)[0]].squeeze()*vmrunit
+    molcols=where(retdata['attr']['k']['columns']==mol)[0]
+    avk=retdata['g'].dot(retdata['k'])[molcols,:][:,molcols]
+    if 'pro' in plots:
+      logger.info('Creating plots for %s'%mol)
+      fig=plt.figure();figidx.append(plt.gcf().number);pdfmarks.append('[/Title (%s %s) /Page <pn> /OUT pdfmark'%(title,mol))#add the number of pagenumber at the end
+      ax=plt.axes([.73,.05,.25,.9]) #left,bottum,width,heigth
+      listofaxes.append(ax) #TODO implement cut flag for plots
+      #uncertainties + profile apriori
+      try:
+	std=sqrt(abs(diag(retdata['sb/uncertainties/%s/random'%mol])))*vmrunit
+	ax.errorbar(appro,grid+zmax/3e2,fmt=None,xerr=std,ecolor=apcolor,label='_nolegend_')
+      except KeyError: pass
+      try:
+	std=sqrt(abs(diag(retdata['sb/uncertainties/%s/systematic'%mol])))*vmrunit
+	ax.fill_betweenx(grid,appro-std,appro+std,alpha=.5,color=apcolor)
+      except KeyError: pass
+      #uncertainties + profile retrieved
+      try: 
+	std=sqrt(abs(diag(retdata['s/uncertainties/%s/random'%mol])))*vmrunit
+	ax.errorbar(retdata['s/%s'%mol]*vmrunit,grid,fmt=None,xerr=std,ecolor=retcolor,label='_nolegend_')
+      except KeyError: pass
+      try:
+	std=sqrt(abs(diag(retdata['s/uncertainties/%s/systematic'%mol])))*vmrunit
+	ax.fill_betweenx(grid,retdata['s/%s'%mol]*vmrunit-std,retdata['s/%s'%mol]*vmrunit+std,alpha=.2,color=retcolor)
+      except KeyError: pass
+      ax.plot(appro,grid,label='apriori %s'%mol,color=apcolor)
+      ax.plot(retdata['s/%s'%mol]*vmrunit,grid,label='retrieved %s'%mol,color=retcolor)
+      ax.set_ylim(zmin,zmax)
+      ax.set_xlabel('VMR [pp%sv]'%(''*(vmrunit==1.)+'m'*(vmrunit==1e6)+'b'*(vmrunit==1e12)));ax.set_ylabel('Height [km]')
+      ax.xaxis.set_major_locator(MaxNLocator(nbins = 6))
+      try: spec=[line for line in ctl['option.hbin.input'].split('\n') if line.find(mol)>-1][0]
+      except (KeyError,IndexError): spec=''
+      #spec=spec.replace('_','\_') #if text is formatted with latex
+      ax.legend(loc='best',prop={'size':fontsize})
+      w=.6/float(retdata['pbp/dims'][0]);l=.06
+      for i in range(retdata['pbp/dims'][0]):
+	j=ctl['band'][i/(retdata['pbp/dims'][0]/retdata['pbp/dims'][1])] #j is the band number
+	if i==0: 
+	  ax=plt.axes([l+i*w,.05,w-.01,.72])
+	  ax.set_ylabel('Transmission');ax.set_xlabel('Wavenumber [$cm^{-1}$]')
+	else: ax=plt.axes([l+i*w,.05,w-.01,.72],sharey=listofaxes[1]);plt.setp(ax.get_yticklabels(), visible=False)
+	if mol in ctl['band.%s.gasb'%j]: [q.set_linewidth(1.5) for q in ax.spines.itervalues()]
+	listofaxes.append(ax)
+	ax.locator_params(tight=True)
+	ax.plot(retdata['pbp/mw/%d/wavenumber'%(i+1)],retdata['pbp/mw/%d/observed'%(i+1)],label='obs',color=obsspeccolor,linewidth=.5)
+	ax.plot(retdata['pbp/mw/%d/wavenumber'%(i+1)],retdata['pbp/mw/%d/fitted'%(i+1)],label='calc',color=synspeccolor,linewidth=.5)
+	if j in ctl['sp.snr']: #indicate deweighted bands
+	  ax.fill_betweenx(ax.get_ylim(),[ctl['sp.snr.%d.nu_start'%j]]*2,[ctl['sp.snr.%d.nu_stop'%j]]*2,alpha=.5,facecolor='.5',zorder=100)
+	ax.set_title(' '.join(ctl['band.%s.gasb'%(j)]),fontsize=fontsize-3)
+	if retdata['pbp/dims'][0]>1: ax.xaxis.set_major_locator(MaxNLocator(nbins = 3, prune = 'both') )#ax.xaxis.set_ticks(ax.get_xticks()[array([0,-1])]); #plt.setp(ax.get_xticklabels(),rotation=30,ha='right')
+	if i==0: 
+	  ax.legend(loc='best',prop={'size':fontsize})
+	  ax=plt.axes([l+i*w,.8,w-.01,.15],sharex=listofaxes[-1])
+	else: ax=plt.axes([l+i*w,.8,w-.01,.15],sharex=listofaxes[-1],sharey=listofaxes[2]);plt.setp(ax.get_yticklabels(), visible=False)
+	listofaxes.append(ax)
+	ax.plot(retdata['pbp/mw/%d/wavenumber'%(i+1)],retdata['pbp/mw/%d/difference'%(i+1)],'k');
+	ax.xaxis.set_visible(False) #ax.xaxis.set_ticks_position('top')
+      ax=plt.axes([l,.96,.8,.05])
+      ax.axis('off')
+      tce={} #tc error if it is availabe, otherwise 0
+      for k in ['TCerror/%s/systematic'%mol,'TCerror/%s/random'%mol]:
+	if k in retdata: tce[k.split('/')[-1]]=retdata[k]
+	else: tce[k.split('/')[-1]]=0
+      try: ax.text(0,0,title+' %s $\quad$ rTC: %6.4emolec/$cm^2$($\pm$%4.1f%%$\pm$%4.1f%%) $\quad$ RMS:%6.5f $\quad$ Conv: \
+%s $\quad$ DOF: %4.3f\n %s %s'%(mol,retdata['summary/%s/ret_column'%mol],tce['systematic'],tce['random'],\
+	  retdata['summary/FITRMS'],retdata['summary/CONVERGED'],trace(avk),spec,retdata['summary/header']),fontsize=fontsize-1,horizontalalignment='left')
+      except: logger.error('Could not format title for this plot')	
     #AVK plot
+    plotz=array([i for i in grid if i<=zmax and i>=zmin])
+    iM=where(grid==min(plotz))[0][0]
+    im=where(grid==max(plotz))[0][0]
+    if iM<len(grid)-1: iM+=1
+    if im>0: im-=1
+    plotz=grid[im:iM+1]
     if 'avk' in plots:
-      fig,ax=plt.subplots();figidx.append(plt.gcf().number);pdfmarks.append('[/Title (AVK %s) /Page %d /OUT pdfmark'%(mol,len(figidx))) 
-      plotz=array([i for i in grid if i<=zmax and i>=zmin])
-      iM=where(grid==min(plotz))[0][0]
-      im=where(grid==max(plotz))[0][0]
-      if iM<len(grid)-1: iM+=1
-      plotz=grid[im:iM+1]
+      fig,ax=plt.subplots();listofaxes.append(ax);figidx.append(plt.gcf().number+50);pdfmarks.append('[/Title (AVK %s) /Page <pn> /OUT pdfmark'%(mol)) 
       plotavk=avk[im:iM+1,im:iM+1]
       plot_avk(ax,plotz[::-1],plotavk[::-1,::-1],ylabelstring='Height [km]', #reversing the order to get colors right
 	  titlestring=[title + ' %s AVK [VMR/VMR rel. to apriori] \n DOF=%4.3f'%(mol,trace(avk)),fontsize])
       sc=10.; #scale factor...
       sensitivity=sum(avk,1)/sc
       ax.plot(sensitivity[im:iM+1],plotz,'--',label='Sensitivity (sum of AVK rows, scaled with 1/%3.1f)'%(sc))
-      ax.legend(prop={'size':8},loc='best');
+      ax.legend(prop={'size':fontsize},loc='best');
+    #col AVK plot
+    if 'colavk' in plots:
+      fig,ax=plt.subplots();listofaxes.append(ax);figidx.append(plt.gcf().number+50);pdfmarks.append('[/Title (Column AVK %s) /Page <pn> /OUT pdfmark'%(mol)) 
+      dfblocal,dfboundlocal,Dlocal=D_for_bound1df(avk,retdata['s/gridboundaries']/1e3,zmin=zmin,zmax=zmax,quiet=True)
+      #dfblocal[0]+=1
+      am=retdata['s/airmass']
+      coarsepc=Dlocal.dot(appro*am)
+      if coarsepc.shape==(): coarsepc=coarsepc.reshape((1,));Dlocal=Dlocal.reshape((1,)+Dlocal.shape)
+      plotavk=diag(coarsepc**-1).dot(Dlocal).dot(diag(am*appro)).dot(avk)
+      logger.debug('%s 1DF boundary idx: %s, 1DF boundaries: %s, 1DF PC regridmatrix: %s, %s'%(mol,dfblocal,dfboundlocal,Dlocal.shape,Dlocal))
+      plotavk=plotavk[:,im:iM+1]
+      legends=[]
+      for q in range(plotavk.shape[0]):
+	dofl=trace(avk[dfblocal[q+1]:dfblocal[q],dfblocal[q+1]:dfblocal[q]])
+        legends.append('PC AVK between [%4.2f,%4.2f]km (DOF=%3.1f)'%(dfboundlocal[q],dfboundlocal[q+1],dofl))
+      plot_column_avk(ax,plotz,plotavk,
+      	titlestring=[title + ' %s AVK [column units, rel. to apriori]'%(mol),fontsize],
+	    ylabelstring='Height [km]',legendlabels=legends,total=True,zscale=1)
+      for q in range(plotavk.shape[0]): #axhline mixes up xlims if called before a plot command
+	ax.axhline(y=dfboundlocal[q],color='black')
     if ('sa' in plots) and ('sa' in retdata):
-      fig,ax=plt.subplots();figidx.append(plt.gcf().number);pdfmarks.append('[/Title (Sa matrix %s) /Page %d /OUT pdfmark'%(mol,len(figidx)))
-      molcols=where(retdata['attr']['sa']['columns']==mol)[0]
+      fig,ax=plt.subplots();listofaxes.append(ax);figidx.append(plt.gcf().number+50);pdfmarks.append('[/Title (Sa matrix %s) /Page <pn> /OUT pdfmark'%(mol))
       samatrix=retdata['sa'][molcols,:][:,molcols][im:iM+1,im:iM+1]
       plot_matrix(ax,matrix=samatrix,grid=plotz,slabelstring='Height [km]',tlabelstring='Height [km]',
 	cnorm='symmetric',colormap='seismic',titlestring=['%s %s Regularization matrix'%(title,mol),fontsize])
+    for i,ax in enumerate(listofaxes):
+      plt.setp(ax.get_xticklabels(),fontsize=fontsize-2)
+      plt.setp(ax.get_yticklabels(),fontsize=fontsize-2)
+      plt.setp(ax.xaxis.label,fontsize=fontsize);plt.setp(ax.yaxis.label,fontsize=fontsize)
+      ax.xaxis.labelpad = 1; ax.yaxis.labelpad = 1
+      ax.xaxis.set_major_formatter(FormatStrFormatter('%G'))
   #Column retrieval plots
-  fig=plt.figure();figidx.append(plt.gcf().number);pdfmarks.append('[/Title (Column retrievals) /Page %d /OUT pdfmark'%len(figidx))
-  listofaxes=[];l=0.06;
-  if (len(ctl['gas.column.list'])+1)/4>0: w=(1.-l)/4
-  else: w=0
-  j=0
-  for mol in ctl['gas.column.list']+['airmass']:
-    if j>0 and j%4==0: fig=plt.figure();figidx.append(plt.gcf().number);j=0 #no pdf mark in this case
-    logger.info('Creating plots for %s'%mol)
-    if mol!='airmass':
-      try: zmax=ctl['option.plot.%s.upperlimit'%mol]
-      except KeyError: 
-	try: zmax=retdata[mol]['zmax'] #try defaultsettings
-	except KeyError: zmax=max(grid)
-      try: zmin=ctl['option.plot.%s.lowerlimit'%mol]
-      except KeyError: zmin=min(grid)
-      ax=plt.axes([l+j*w,0.1,w-l,.78]) #left,bottum,width,heigth
-      listofaxes.append(ax) # TODO implement cut flag for plots
-      ax.plot(retdata['s/%s'%mol]*1e6,grid,label='retrieved %s'%mol,color=retcolor)
-      ax.plot(retdata['APRprofs'][:,where(retdata['attr']['APRprofs']['columns']==mol)[0]]*1e6,grid,label='apriori %s'%mol,color=apcolor)
-      ax.set_ylim(zmin,zmax)
-      ax.set_xlabel('VMR [ppmv]');ax.set_ylabel('Height [km]')
-      ax.xaxis.set_major_locator(MaxNLocator(nbins = 6))
-      try: spec=[line for line in ctl['option.hbin.input'].split('\n') if line.find(mol)>-1][0]
-      except (KeyError,IndexError): spec=''
-      spec=spec.replace('_','\_')#if text is formatted with latex
-      axt=plt.axes([j*w+w,.89,0,.5]);axt.axis('off');axt.text(0,0,'%s rTC: %6.4emolec/$cm^2$\n($\pm$%3.1f%%$\pm$%3.1f%%)\naTC: %6.4emolec/$cm^2$\n%s'%(mol,\
-	retdata['summary/%s/ret_column'%mol],retdata['TCerror/%s/systematic'%mol],retdata['TCerror/%s/random'%mol],retdata['summary/%s/apr_column'%mol],spec),
-	fontsize=fontsize-2,verticalalignment='bottom',horizontalalignment='right')
-      ax.legend(loc='best',prop={'size':fontsize-2})
-    else: 
-      ax=plt.axes([l+j*w,0.1,w-l,.78]) #left,bottum,width,heigth
-      listofaxes.append(ax);
-      ax.plot(retdata['s/airmass']*1e-24*1e-4,grid,color='k');ax.set_xlabel('Ymolec/$cm^2$ (Y=$10^{24}$)');ax.set_ylabel('Height [km]')
-      ax.xaxis.set_major_locator(MaxNLocator(nbins = 6));ax.set_ylim(0,20)
-      axt=plt.axes([j*w+w,.89,0,.5]);axt.axis('off');axt.text(0,0,'%s TC: %6emolec/$m^2$\n%s'%(mol,retdata['s/airmass'].sum(),spec),
-	fontsize=fontsize-2,verticalalignment='bottom',horizontalalignment='right')
-    if j==0:
-      ax=plt.axes([l,.97,.85,.05])
-      ax.axis('off')
-      ax.text(0,0,title+' column retrievals for %s'%(' '.join(ctl['gas.column.list'])),fontsize=fontsize-1,horizontalalignment='left')  
-    j+=1
+  if 'col' in plots:
+    fig=plt.figure();figidx.append(plt.gcf().number);pdfmarks.append('[/Title (Column retrievals) /Page <pn> /OUT pdfmark')
+    listofaxes=[];l=0.06;
+    w=(1.-l)/4
+    j=0;
+    for mol in ctl['gas.column.list']+['airmass']:
+      if j>0 and j%4==0: fig=plt.figure();figidx.append(plt.gcf().number);j=0;pdfmarks.append('') #no pdf mark in this case
+      logger.info('Creating plots for %s'%mol)
+      if mol!='airmass':
+	try: zmax=ctl['option.plot.%s.upperlimit'%mol]
+	except KeyError: 
+	  try: zmax=retdata[mol]['zmax'] #try defaultsettings
+	  except KeyError: zmax=max(grid)
+	try: zmin=ctl['option.plot.%s.lowerlimit'%mol]
+	except KeyError: zmin=min(grid)
+	ax=plt.axes([l+j*w,0.1,w-l,.78]) #left,bottum,width,heigth
+	listofaxes.append(ax) # TODO implement cut flag for plots
+	vmrunit=get_vmrunit(retdata['s/%s'%mol])
+	ax.plot(retdata['s/%s'%mol]*vmrunit,grid,label='retrieved %s'%mol,color=retcolor)
+	ax.plot(retdata['APRprofs'][:,where(retdata['attr']['APRprofs']['columns']==mol)[0]]*vmrunit,grid,label='apriori %s'%mol,color=apcolor)
+	ax.set_ylim(zmin,zmax)
+	ax.set_xlabel('VMR [pp%sv]'%(''*(vmrunit==1.)+'m'*(vmrunit==1e6)+'b'*(vmrunit==1e12)));ax.set_ylabel('Height [km]')
+	ax.xaxis.set_major_locator(MaxNLocator(nbins = 6))
+	try: spec=[line for line in ctl['option.hbin.input'].split('\n') if line.find(mol)>-1][0]
+	except (KeyError,IndexError): spec=''
+	#spec=spec.replace('_','\_')#if text is formatted with latex
+	axt=plt.axes([j*w+w,.89,0.5,.5]);axt.axis('off');axt.text(0,0,'%s rTC: %6.4emolec/$cm^2$\n($\pm$%3.1f%%$\pm$%3.1f%%)\naTC: %6.4emolec/$cm^2$\n%s'%(mol,\
+	  retdata['summary/%s/ret_column'%mol],retdata['TCerror/%s/systematic'%mol],retdata['TCerror/%s/random'%mol],retdata['summary/%s/apr_column'%mol],spec),
+	  fontsize=fontsize-2,verticalalignment='bottom',horizontalalignment='right')
+	ax.legend(loc='best',prop={'size':fontsize-2})
+      elif mol=='airmass': 
+	ax=plt.axes([l+j*w,0.1,w-l,.78]) #left,bottum,width,heigth
+	listofaxes.append(ax);
+	ax.plot(retdata['s/airmass']*1e-24*1e-4,grid,color='k');ax.set_xlabel('Ymolec/$cm^2$ (Y=$10^{24}$)');ax.set_ylabel('Height [km]')
+	ax.xaxis.set_major_locator(MaxNLocator(nbins = 6));ax.set_ylim(0,20)
+	axt=plt.axes([j*w+w,.89,0.5,.5]);axt.axis('off');axt.text(0,0,'%s TC: %6emolec/$m^2$\n'%(mol,retdata['s/airmass'].sum()),
+	  fontsize=fontsize-2,verticalalignment='bottom',horizontalalignment='right')
+      if j==0:
+	ax=plt.axes([l,.97,.85,.05])
+	ax.axis('off')
+	ax.text(0,0,title+' column retrievals for %s'%(' '.join(ctl['gas.column.list'])),fontsize=fontsize-1,horizontalalignment='left')  
+      j+=1
   for i,ax in enumerate(listofaxes):
     plt.setp(ax.get_xticklabels(),fontsize=fontsize-2)
     plt.setp(ax.get_yticklabels(),fontsize=fontsize-2)
@@ -206,6 +244,37 @@ def create_sfit4_retrievalplot(ctl,retdata={},fontsize=8,title='Spectrum name',p
     ax.xaxis.labelpad = 1; ax.yaxis.labelpad = 1
     ax.xaxis.set_major_formatter(FormatStrFormatter('%G'))
   listofaxes=[]
+  #ILS plot
+  if 'ils' in plots:
+    ilsfw=[key for key in ['apod','phase'] if ctl['fw.%s_fcn'%key]]
+    if len(ilsfw):
+      logger.info('Creating ILS plots')
+      fig,axs=plt.subplots(len(ilsfw),sharex=True );
+      if type(axs)==ndarray: axs=axs.tolist()
+      else: axs=[axs]
+      [listofaxes.append(ax) for ax in axs];figidx.append(plt.gcf().number+50);
+      pdfmarks.append('[/Title (ILS) /Page <pn> /OUT pdfmark') 
+    opd=retdata['barcos/OPD'];
+    for key in ['apod','phase']:
+      hdfparam='EmpApdFcn'*(key=='apod')+'EmpPhsFnc'*(key=='phase')
+      if ctl['fw.%s_fcn'%key] and ctl['rt.%s_fcn'%key] and ctl['fw.%s_fcn.type'%key]==2:
+	ax=axs.pop()
+	colidx=where(retdata['attr']['params']['columns']==hdfparam)[0]
+	x=arange(0,1+1/40.,1/40.)
+	def pol(c):
+	  out=ones(x.shape)*(key=='apod')
+	  for i,co in enumerate(c): out+=(co-1.)*(x**(i+1))
+	  return out
+	ax.plot(x*opd,pol(retdata['params'][0,colidx]),label='apriori',color=apcolor)
+ 	ax.plot(x*opd,pol(retdata['params'][1,colidx]),label='retrieved',color=retcolor)
+	if ilsfw[0]==key: ax.set_xlabel('OPD [cm] (maxopd=%s)'%opd) #only give label to opd for first plot
+	ax.set_ylabel(hdfparam);ax.legend(prop={'size':fontsize},loc='best')
+      elif ctl['fw.%s_fcn'%key]:
+	if not 'ils/%s'%key in retdata: logger.error('Could not create a plot with the empirical ILS: no data available');continue
+	ax=axs.pop();
+	ax.plot(retdata['ils/%s'%key][:,0],retdata['ils/%s'%key][:,1+1*(key=='phase')],label='empirical',color=apcolor)
+	if ilsfw[0]==key: ax.set_xlabel('OPD [cm] (maxopd=%s)'%opd)
+	ax.set_ylabel(hdfparam);ax.legend(prop={'size':fontsize},loc='best')
   #Error contribution plot
   if ctl['kb'] and 'GKb' in retdata and 'gkb' in plots:
     for mol in ctl['gas.profile.list']:
@@ -213,7 +282,7 @@ def create_sfit4_retrievalplot(ctl,retdata={},fontsize=8,title='Spectrum name',p
       proidx=where(retdata['attr']['k']['columns']==mol)[0] #get profile idx out of the full state vector
       gkb=retdata['GKb']
       tcols=where(prod([retdata['attr']['GKb']['columns']!=sp for sp in ['TEMPERAT']+ctl['kb.profile.gas']],0))[0]
-      fig,ax=plt.subplots();figidx.append(plt.gcf().number);pdfmarks.append('[/Title (Scalar errors) /Page %d /OUT pdfmark'%len(figidx))
+      fig,ax=plt.subplots();figidx.append(plt.gcf().number+50);pdfmarks.append('[/Title (Scalar errors) /Page <pn> /OUT pdfmark')
       listofaxes.append(ax)
       plot_matrix(ax,gkb[proidx,:][:,tcols],gridt=grid,colormap='seismic',
 	  shading='flat',cnorm='symmetric',sticks=retdata['attr']['GKb']['columns'][tcols],
@@ -221,7 +290,7 @@ def create_sfit4_retrievalplot(ctl,retdata={},fontsize=8,title='Spectrum name',p
       for sp in ['TEMPERAT']+ctl['kb.profile.gas']:
 	tcols=where(retdata['attr']['GKb']['columns']==sp)[0]
 	if len(tcols):
-	  fig,ax=plt.subplots();figidx.append(plt.gcf().number);pdfmarks.append('[/Title (%s error) /Page %d /OUT pdfmark'%(sp,len(figidx)))
+	  fig,ax=plt.subplots();figidx.append(plt.gcf().number+50);pdfmarks.append('[/Title (%s error) /Page <pn> /OUT pdfmark'%(sp))
 	  listofaxes.append(ax)
 	  plot_matrix(ax,gkb[proidx,:][:,tcols],grid=grid,colormap='seismic',
 	  shading='flat',cnorm='symmetric',titlestring=[title+' %s profile error contribution for %s'%(sp,mol),fontsize],
@@ -230,7 +299,7 @@ def create_sfit4_retrievalplot(ctl,retdata={},fontsize=8,title='Spectrum name',p
     for mol in ctl['gas.profile.list']:
       logger.info('Creating STD error contribution plots for %s'%mol)
       if 'STDerror' in retdata:
-	fig,axtuple=plt.subplots(1,2,sharex=True,sharey=True);figidx.append(plt.gcf().number);pdfmarks.append('[/Title (%s error) /Page %d /OUT pdfmark'%('STD overview',len(figidx)))
+	fig,axtuple=plt.subplots(1,2,sharex=True,sharey=True);figidx.append(plt.gcf().number+50);pdfmarks.append('[/Title (%s error) /Page <pn> /OUT pdfmark'%('STD overview'))
 	for i,ErrType in enumerate(['random','systematic']):
 	  ax=axtuple[i]; listofaxes.append(ax)
 	  ax.set_xlabel('STD in [$\%$]');ax.set_xscale('log')
@@ -244,12 +313,18 @@ def create_sfit4_retrievalplot(ctl,retdata={},fontsize=8,title='Spectrum name',p
   for i,ax in enumerate(listofaxes):
     plt.setp(ax.xaxis.label,fontsize=fontsize);plt.setp(ax.yaxis.label,fontsize=fontsize)
     ax.xaxis.labelpad = 1; ax.yaxis.labelpad = 1
-  logger.info('Saving/showing plots')
-  pdfmarks[0]=pdfmarks[0].replace('[','[/Count -%s '%(len(pdfmarks)-1)) #add the chapter/subsection marks...
-  plotsetup(usetex=False)
-  with open(os.path.join(os.path.dirname(pdf),'pdfmarks'),'w') as bm: bm.write('\n'.join(pdfmarks))
-  if pdf!='': finalizefig(figidx=figidx,pdf=pdf)
-  else: finalizefig(figidx=figidx)
+  if len(figidx):
+    logger.info('Saving/showing plots')
+    plotmetadata=zip(figidx,pdfmarks);plotmetadata.sort(key=lambda x: x[0])
+    pdfmarks=list(zip(*plotmetadata)[1]);figidx=zip(*plotmetadata)[0]
+    pdfmarks[0]=pdfmarks[0].replace('[','[/Count -%s '%(len([m for m in pdfmarks if m])-1)) #add the chapter/subsection marks...
+    plotsetup(usetex=False)
+    keyargs={}
+    [keyargs.update({format:eval(format)}) for format in ['jpg','eps','png','pdf'] if eval(format)]
+    if pdf!='': 
+      with open(os.path.expanduser(os.path.splitext(pdf)[0]+'.txt'),'w') as bm: bm.write('\n'.join([m.replace('<pn>','%s'%(i+1)) for i,m in enumerate(pdfmarks) if m]))
+    finalizefig(figidx=[i%50 for i in figidx],logger=logger,**keyargs)
+  else: logger.info('No plots created')
   return;
 
 def expand_dict(d,meta='attr'):
@@ -269,6 +344,19 @@ def expand_dict(d,meta='attr'):
 	del dd[k];del attr[k] 
   return dd,attr;
 
+def print_array(std,fmt='13.2e',columns=5,sep=','):
+  """Print the mix profile (5columns, exp notation) for a molecule
+
+  Input argument: an array
+  Optional key argument::
+    fmt='13.2e' 
+    columns=6 (number of columns);;"""
+  outstring=''
+  for i,item in enumerate(std):
+    outstring+=eval('"%%%s%s'%(fmt,sep)+'"%item')
+    if (i+1)%(columns)==0: outstring+='\n'
+  return outstring;
+
 def create_GEOMS(f,table='/bira-iasb/projects/FTIR/tools/programs/hdf/tableattrvalue_04R007_idl.dat',template='/bira-iasb/projects/FTIR/tools/programs/hdf/GEOMS-TE-FTIR-VA-002.csv',rd='RD',version=1,idlcheck=False,qfilter=[('summary/CONVERGED','==1')],logger=rootlogger):
   """Creates a geoms file out of an intermediate HDF file
 
@@ -281,8 +369,7 @@ def create_GEOMS(f,table='/bira-iasb/projects/FTIR/tools/programs/hdf/tableattrv
     idlcheck=execute the IDL routine geoms_qa for quality check
     qfilter=[('summary/CONVERGED','==1')] (list of quality filters to apply, key + condition)"""
   #Y=1e24, Z=1e21, E=1e18,P=1e15
-  import fnmatch
-  logger=logging.getLogger(logger.name+'.create_GEOMS')
+  logger=getlogger(logger,'create_GEOMS')
   ftirte={} #contains the template data (e.g. save with dtype=REAL or DOUBLE
   with open(template) as fid: te=fid.readlines()
   #get valid variable names from the template file: these may to change in time, so try to work with wildcards to have a match even if the template changes 
@@ -350,11 +437,11 @@ def create_GEOMS(f,table='/bira-iasb/projects/FTIR/tools/programs/hdf/tableattrv
       GEOMS_store(TEvar('DATETIME'),gtimes/86400.0,si='0.0;86400.0;s',m=0.,M=DatetimetoGEOMS([tomorrow]))
       #INST LAT,LON,ALT
       tem=TEvar('LATITUDE*');tem['desc']='latitude north (decimal degrees) of the location of the instrument'
-      GEOMS_store(tem,fid.attrs['SITE_LATITUDE'],si='0.0;1.74533E-2;rad',m=-90.,M=90.)
+      GEOMS_store(tem,fid.attrs['site_latitude'],si='0.0;1.74533E-2;rad',m=-90.,M=90.)
       tem=TEvar('LONGITUDE*');tem['desc']='longitude east (decimal degrees) of the location of the instrument'
-      GEOMS_store(tem,fid.attrs['SITE_LONGITUDE'],si='0.0;1.74533E-2;rad',m=-180.,M=180.)
+      GEOMS_store(tem,fid.attrs['site_longitude'],si='0.0;1.74533E-2;rad',m=-180.,M=180.)
       tem=TEvar('ALTITUDE.INSTRUMENT');tem['desc']='altitude of the location of the instrument'
-      GEOMS_store(tem,fid.attrs['SITE_ALTITUDE']*1e-3,si='0.0;1.0E3;m',m=-0.05,M=10.)
+      GEOMS_store(tem,fid.attrs['site_altitude']/1e3,si='0.0;1.0E3;m',m=-0.05,M=10.)
       #SURF P
       tem=TEvar('SURFACE.PRESSURE*');tem['desc']='surface pressure measured at the observation site'
       data=array([fid[m]['barcos/pressure'][...] for m in listofmeas])
@@ -366,10 +453,10 @@ def create_GEOMS(f,table='/bira-iasb/projects/FTIR/tools/programs/hdf/tableattrv
       #ALTITUDE + BOUNDARIES (warning devide with 1000 and not 1e-3 because of float precision issues...
       tem=TEvar('ALTITUDE');tem['desc']='grid of altitude levels upon which the retrieved target vmr profile as well as pressure and temperature profiles are reported'
       tem['dep']='ALTITUDE'
-      GEOMS_store(tem,fid[m]['s/grid'][...]/1000,si='0.0;1.0E3;m',m=0.,M=120.,note='these altitudes are the centers of the retrieval altitude layers (geometric mean between the 2 layer boundaries); the reported vmr, P and T are effective layer values.')
+      GEOMS_store(tem,fid[m]['s/grid'][...]/1e3,si='0.0;1.0E3;m',m=0.,M=120.,note='these altitudes are the centers of the retrieval altitude layers (geometric mean between the 2 layer boundaries); the reported vmr, P and T are effective layer values.')
       tem=TEvar('ALTITUDE.BOUNDARIES');tem['desc']='2D matrix providing the layer boundaries used for vertical profile retrieval'
       tem['dep']='INDEPENDENT;ALTITUDE'
-      GEOMS_store(tem,fid[m]['s/gridboundaries'][...]/1000,si='0.0;1.0E3;m',m=0.,M=150.,note='these altitudes are the centers of the retrieval altitude layers (geometric mean between the 2 layer boundaries); the reported vmr, P and T are effective layer values.')
+      GEOMS_store(tem,fid[m]['s/gridboundaries'][...]/1e3,si='0.0;1.0E3;m',m=0.,M=150.,note='these altitudes are the centers of the retrieval altitude layers (geometric mean between the 2 layer boundaries); the reported vmr, P and T are effective layer values.')
       #P profile
       columns=fid[m]['APRprofs'].attrs['columns']
       pidx=where(columns=='PRESSURE')[0][0]
@@ -398,7 +485,7 @@ def create_GEOMS(f,table='/bira-iasb/projects/FTIR/tools/programs/hdf/tableattrv
       GEOMS_store(tem,data,si='0.0;1.0E-6;1',m=-1,M=25220.,note='water vapour is retrieved together with %s'%target)
       tem=TEvar('H2O.COLUMN*SOLAR');tem['desc']='total vertical column of the interfering species H2O in the retrieval'
       tem['unit']='Zmolec cm-2'
-      data=array([fid[m]['s/H2O'][...].dot(fid[m]['s/airmass'][...])*1e-4*1e-21 for m in listofmeas])
+      data=array([fid[m]['s/H2O'][...].dot(fid[m]['s/airmass'][...])/1e4/1e21 for m in listofmeas])
       GEOMS_store(tem,data,si='0.0;1.66054E1;mol m-2',m=0.,M=200.,
 	note='water vapour is retrieved together with %s'%target)
       #Target profile (retrieved, so from state subgroup)
@@ -408,11 +495,11 @@ def create_GEOMS(f,table='/bira-iasb/projects/FTIR/tools/programs/hdf/tableattrv
       GEOMS_store(tem,data,si='0.0;1.0E-6;1',m=-1,M=10.,note='') # TODO find a good note for this...
       tem=TEvar('%s.COLUMN.PARTIAL*SOLAR'%target);tem['desc']='%s partial columns in the retrieval layers'%target
       tem['unit']='Pmolec cm-2'  
-      data=array([fid[m]['s/%s'%target][...]*fid[m]['s/airmass'][...]*1e-4*1e-15 for m in listofmeas])
+      data=array([fid[m]['s/%s'%target][...]*fid[m]['s/airmass'][...]/1e4/1e15 for m in listofmeas])
       GEOMS_store(tem,data,si='0.0;1.66054E-5;mol m-2',m=0,M=100000.,note='partial column evaluations use a priori pressure and temperature values from NCEP')
       tem=TEvar('%s.COLUMN_ABSORPTION*SOLAR'%target);tem['desc']='retrieved total vertical %s column between boundaries of altitude grid'%target
       tem['unit']='Emolec cm-2'
-      data=array([fid[m]['s/%s'%target][...].dot(fid[m]['s/airmass'][...])*1e-4*1e-18 for m in listofmeas])
+      data=array([fid[m]['s/%s'%target][...].dot(fid[m]['s/airmass'][...])/1e4/1e18 for m in listofmeas])
       GEOMS_store(tem,data,si='0.0;1.66054E-2;mol m-2',m=0.,M=200.)
       #APRIORI data
       aidx=where(columns==target)[0][0]
@@ -422,11 +509,11 @@ def create_GEOMS(f,table='/bira-iasb/projects/FTIR/tools/programs/hdf/tableattrv
       GEOMS_store(tem,data,si='0.0;1.0E-6;1',m=-1,M=10.,note='') 
       tem=TEvar('%s.COLUMN.PARTIAL*SOLAR_APRIORI'%target);tem['desc']='%s a priori partial columns in the retrieval layers'%target
       tem['unit']='Pmolec cm-2'  
-      data=array([fid[m]['APRprofs'][...][:,aidx]*fid[m]['s/airmass'][...]*1e-4*1e-15 for m in listofmeas])
+      data=array([fid[m]['APRprofs'][...][:,aidx]*fid[m]['s/airmass'][...]/1e4/1e15 for m in listofmeas])
       GEOMS_store(tem,data,si='0.0;1.66054E-5;mol m-2',m=-1,M=10000.,note='partial column evaluations use a priori pressure and temperature values from NCEP') 
       tem=TEvar('%s.COLUMN_ABSORPTION*SOLAR_APRIORI'%target);tem['desc']='a priori total vertical %s column between boundaries of altitude grid'%target
       tem['unit']='Emolec cm-2'
-      data=array([fid[m]['APRprofs'][...][:,aidx].dot(fid[m]['s/airmass'][...])*1e-4*1e-18 for m in listofmeas])
+      data=array([fid[m]['APRprofs'][...][:,aidx].dot(fid[m]['s/airmass'][...])/1e4/1e15 for m in listofmeas])
       GEOMS_store(tem,data,si='0.0;1.66054E-2;mol m-2',m=0.,M=200.)
       #AVK 's
       tem=TEvar('%s.MIXING*SOLAR_AVK'%target);tem['desc']='averaging kernel matrix (AVK) of the retrieved vertical %s profile, in VMR/VMR units'%target
@@ -486,10 +573,10 @@ def create_sfit4_retrievalsummary(ctl='sfit4.ctl',logger=rootlogger):
 
   Input argument: ctl"""
   if not logger: logger=rootlogger #for multiprocessing
-  logger=logging.getLogger(logger.name+'.create_sfit4_retrievalsummary')
+  logger=getlogger(logger,'create_sfit4_retrievalsummary')
   cwd=os.getcwd()
   retdata={'attr':{}}
-  if type(ctl)==str: os.chdir(os.path.dirname(ctl));ctl=read_dictfile(ctl,sfit4=True) #chdir because of relative filename in ctl file...
+  if type(ctl)==str: os.chdir(os.path.expanduser(os.path.realpath(os.path.dirname(ctl))));ctl=read_dictfile(ctl,sfit4=True) #chdir because of relative filename in ctl file...
   pickle.dump(ctl,open('ctl.p','w')) #for debugging purposes
   octl,rctl=extract_dict(ctl,'option')
   retdata['sfit4.ctl']=array(print_dictfile(rctl).split('\n'))
@@ -512,23 +599,33 @@ def create_sfit4_retrievalsummary(ctl='sfit4.ctl',logger=rootlogger):
   #change the z(boundaries) and zbar(midpoints) with the data in the station.layers file -> higher precision
   grid=read_stationlayers(ctl['file.in.stalayers'])
   cl=vmrtable['attr']['columns'];idx=where((cl!='AIRMASS')*(cl!='Z'))[0]
-  vmrtable['data'][:,where(cl=='ZBAR')[0]]=grid[:-1,-1:]
+  if grid!=None: gridboundaries=grid[::-1,1]
+  else: gridboundaries=vmrtable['data'][::-1,where(cl=='Z')[0][0]];gridboundaries=append(gridboundaries,gridboundaries[-1]+2*(vmrtable['data'][0,where(cl=='ZBAR')[0][0]] -gridboundaries[-1]))
+  if grid!=None: vmrtable['data'][:,where(cl=='ZBAR')[0][0]]=grid[:-1,-1];grid=grid[:-1,-1]
+  else: grid=vmrtable['data'][:,where(cl=='ZBAR')[0][0]]
   am=vmrtable['data'][:,where(cl=='AIRMASS')[0]].squeeze()
   retdata['APRprofs']=vmrtable['data'][:,idx];retdata['attr']['APRprofs']={'columns':vmrtable['attr']['columns'][idx],'unit':' Z[km], T[K], P[hPa],VMR[ppv]'}
   retdata['params']=s['params'];retdata['attr']['params']={'columns':s['paramnames']}
   for mol in ctl['gas.profile.list']+ctl['gas.column.list']:
     retdata['s/%s'%(mol)]=s[mol]['ret']['pro'];retdata['attr']['s/%s'%(mol)]={'unit':'ppv'}
   #copy the grid,boundaries and airmass in s variables ...
-  retdata['s/grid']=grid[:-1,-1]*1e3;retdata['attr']['s/grid']={'unit':'m','note':'Retrieval grid: layer midpoints'}
-  retdata['s/gridboundaries']=upboundary(grid[::-1,1])*1e3;retdata['attr']['s/gridboundaries']={'unit':'m','note':'Retrieval grid: layer boundaries'}
+  retdata['s/grid']=grid*1e3;retdata['attr']['s/grid']={'unit':'m','note':'Retrieval grid: layer midpoints'}
+  retdata['s/gridboundaries']=upboundary(gridboundaries)*1e3;retdata['attr']['s/gridboundaries']={'unit':'m','note':'Retrieval grid: layer boundaries'}
   retdata['s/airmass']=am*1e4;retdata['attr']['s/airmass']={'unit':'molec/m**2'}
-  if os.path.isfile('sfit4.dtl'):
-    with open('sfit4.dtl','r') as fid: dtl=fid.readlines()
-    retdata['sfit4.dtl']=array([l.strip('\n') for l in dtl]);
-  if 'option.isotope.intput' in octl: retdata['isotope.intput']=array(print_isodat(octl['option.isotope.input']).split('\n'))
+  for f in ['sfit4.dtl','isotope.input','pspec.input']:
+    if os.path.isfile(f):
+      with open(f,'r') as fid: dtl=fid.readlines()
+      retdata[f]=array([l.strip() for l in dtl]);
+    else: logger.warning('Could not load file %s'%f)
   if 'option.barcos' in octl: retdata['barcos']=octl['option.barcos']
   if 'option.mtime' in octl: retdata['mtime']=octl['option.mtime']
   if 'option.sb' in octl: retdata['sb']=dict(octl['option.sb']) #contains the Sb covariances...
+  #read in the ILS data
+  for key in ['apod','phase']:
+    if ctl['fw.%s_fcn'%key] and not ctl['rt.%s_fcn'%key]:
+      ilsdat=read_matrixfile(ctl['file.in.%s_fcn'%key.replace('apod','modulation')])
+      retdata['ils/%s'%key]=ilsdat.reshape(ilsdat.shape[0]/3,3)
+      retdata['attr']['ils/%s'%key]={'columns':['OPD','apod','phase']}
   sh=read_output(ctl['file.out.shat_matrix'])
   retdata['shat']=sh['data'];retdata['attr']['shat']=sh['attr'];retdata['attr']['shat'].update({'unit':'in VMR relative to the apriori'})
   seinv=read_output(ctl['file.out.seinv_vector'])
@@ -539,9 +636,12 @@ def create_sfit4_retrievalsummary(ctl='sfit4.ctl',logger=rootlogger):
   if any([m=={} for m in [k,sh,seinv]]): logger.error('Could not compute the G matrix for this retrieval %s %s %s'%(sh,seinv,k)) 
   retdata['g']=retdata['shat'].dot(retdata['k'].T).dot(diag(retdata['seinv']))
   #read in the sa matrix, but only if there is no ifoff=5 flag
-  if not any([ctl['gas.profile.%s.correlation.type'%mol]==5 for mol in ctl['gas.profile.list']]):
-    sa=read_output(ctl['file.out.sa_matrix'])
-    retdata['sa']=sa['data'];retdata['attr']['sa']=sa['attr']
+  sa=read_output(ctl['file.out.sa_matrix'])
+  retdata['sa']=sa['data'];retdata['attr']['sa']=sa['attr']
+  for mol in ctl['gas.profile.list']:
+    if [ctl['gas.profile.%s.correlation.type'%mol]==5 ]: 
+      cols=retdata['attr']['sa']['columns'];molcols=(cols==mol)
+      retdata['sa']=ma.masked_array(retdata['sa'],mask=tensordot(molcols,molcols,0)).filled(nan)
   if ctl['kb']:
     kb=read_output(ctl['file.out.kb_matrix'])
     gkb=retdata['g'].dot(kb['data'])
@@ -565,11 +665,10 @@ def create_sfit4_retrievalsummary(ctl='sfit4.ctl',logger=rootlogger):
   return retdata;
 
 def hdf5todict(grobj,rootkey='',logger=rootlogger):
-  """Loads the contents of a h5py group object into a dict. Attributes are stored under key attr, and has the same keys as the data
-
+  """Loads the contents of a h5py group object into a dict. Attributes are returned under key attr, and this is a dict with the same keys as the data
 
   Optional key argument: rootkey='', inserts a string before the keys: rootkey/key"""
-  logger=logging.getLogger(logger.name+'.hdf5todict')
+  logger=getlogger(logger,'hdf5todict')
   if not isinstance(grobj,h5py.Group):logger.error('Provide a h5py group instance');return {};
   fn=grobj.file.filename+grobj.name;fn=fn.rstrip('/');logger.debug('Group name: %s'%fn)
   out={};attr={}
@@ -608,22 +707,23 @@ def read_pbpfile(f,quiet=True):
       attr: mw specific information;;
     dims: list of nmw and ?
     header: the header of the sfit spectrum file;; """
-  out={}
+  out={};attr={'info': 'spectra are normalized to the maximum of the synthetic spectrum in each MW'}
   try: fid=open(f,'r')
   except IOError: print 'Could not open file %s in read_pbpfile'%os.path.basename(f);return out
   line=fid.readline();
   line=fid.readline();
   try: out['dims']=array(map(int,line.strip('\n').split()))
   except: print 'Could not interpret the second line of file %s in readoutput'%os.path.basename(kbfile);return out
+  else: attr['dims']={'columns':['NSPECS*NBANDS','NBANDS']}
   out['mw']={}
   spectra=['observed','fitted','difference']
   #line=fid.readline();out['header']=line.strip('\n')
   fline=lambda x: map(float,x.strip('\n').split())
   for i in range(out['dims'][0]):
-    line=fid.readline();out['mw'][i]={'header':line.strip('\n')}
-    line=fid.readline();out['mw'][i].update({'attr':line.strip('\n')})
-    j=int(ceil(int(out['mw'][i]['attr'].split()[2])/12.))
-    step=float(out['mw'][i]['attr'].split()[1])
+    line=fid.readline();out['mw'][i+1]={'header':line.strip('\n')}
+    line=fid.readline();out['mw'][i+1].update({'attr':line.strip('\n')})
+    j=int(ceil(int(out['mw'][i+1]['attr'].split()[2])/12.))
+    step=float(out['mw'][i+1]['attr'].split()[1])
     data=dict(zip(spectra,[[],[],[]])+[['wavenumber',[]]])
     for l in range(j):
       for q,label in enumerate(spectra):
@@ -631,13 +731,14 @@ def read_pbpfile(f,quiet=True):
 	if label=='observed': data['wavenumber'].append(line[0]);line=line[1:]
 	elif label=='fitted': data['wavenumber']+=[data['wavenumber'][-1]+p*step for p in range(1,len(line))]
 	data[label]+=line
-    out['mw'][i].update(data);del data
+    out['mw'][i+1].update(data);del data
+  out['attr']=attr;
   return out;
 
 def create_sfit4_sb(ctl,sbctl,logger=rootlogger):
   """Create an sb matrix out of the data found in the ctl"""
   sbdict={'attr':{}} #contains the different sb matrices for the sb keys
-  logger=logging.getLogger(logger.name+'.create_sfit4_sb')
+  logger=getlogger(logger,'create_sfit4_sb')
   terror=False
   if all([type(v)==tuple for v in ctl.values()]): ctl=trim_dict(ctl) #remove line numbers
   if all([type(v)==tuple for v in sbctl.values()]): sbctl=trim_dict(sbctl) #remove line numbers
@@ -649,11 +750,12 @@ def create_sfit4_sb(ctl,sbctl,logger=rootlogger):
   for ErrType in ['random','systematic']:
     #zshift
     Sb = zeros(len(zerolev_band_b))
-    for i in range(len(zerolev_band_b)):
-      ctlsbkey='sb.band.%d.zshift.%s'%(zerolev_band_b[i],ErrType)
+    for i,j in enumerate(zerolev_band_b):
+      ctlsbkey='sb.band.%d.zshift.%s'%(j,ErrType)
       processedkeys.append(ctlsbkey)
       try: Sb[i]=sbctl[ctlsbkey]**2 
-      except KeyError: logger.warning('Could not find the STD for zshift in microwindow %d'%i);
+      except KeyError: 
+	if ctl['kb'] and ctl['kb.zshift']: logger.warning('Could not find the STD for zshift in microwindow %d'%j);
     if len(zerolev_band_b) and all(Sb!=0):
       sbkey='%s/%s'%('zshift',ErrType)
       sbdict[sbkey]=diag(Sb)
@@ -771,31 +873,21 @@ def extract_dict(ctl,section='option'):
     else: rdict[k]=ctl[k]
   return odict,rdict
 
-def str2number(di):
-  """Converts a string, list of strings or the string values of a dict to int,float or boolean"""
-  if type(di)==dict:
-    for k in di:
-      try: di[k]=int(di[k])
+def str2number(di,strict=False):
+  """Converts a string, list of strings or the string values of a dict to int,float or boolean (optional argument: strict=False, return NAN if not convertable)"""
+  def cv(x):
+    if x=='T' or x=='True': x=True
+    elif x=='F' or x=='False': x=False
+    else:
+      try: x=int(x)
       except ValueError:
-	try: di[k]=float(di[k])
-	except ValueError: pass
-      if di[k]=='T' or di[k]=='True': di[k]=True
-      if di[k]=='F' or di[k]=='False': di[k]=False
-  elif type(di)==str:
-    try: di=int(di)
-    except ValueError:
-      try: di=float(di)
-      except ValueError: pass
-    if di=='T' or di=='True': di=True
-    if di=='F' or di=='False': di=False
-  elif type(di)==list:
-    for k,o in enumerate(di):
-      try: di[k]=int(di[k])
-      except ValueError:
-	try: di[k]=float(di[k])
-	except ValueError: pass
-      if di[k]=='T' or di[k]=='True': di[k]=True
-      if di[k]=='F' or di[k]=='False': di[k]=False
+	try: x=float(x)
+	except ValueError:
+	  if strict: x=nan
+    return x;
+  if type(di)==dict or type(di)==list:
+    for k in di: di[k]=cv(di[k])
+  elif type(di)==str: di=cv(di)
   return di;
 
 def read_output(kbfile,quiet=True):
@@ -851,7 +943,7 @@ def print_dictfile(ctl,keysep='=',quiet=True):
     if type(v[0])==float: out+='%8.4f'%v[0]
     elif type(v[0])==ndarray: 
       out+='\n'
-      out+=print_array(v[0],fmt='8.4f')
+      out+=print_array(v[0],fmt='8.4f',sep='')
     elif type(v[0])==int: out+='%d'%v[0]
     elif type(v[0])==list: out+=' '.join([str(i) for i in v[0]])
     elif type(v[0])==bool: out+=str(v[0])[0]
@@ -892,7 +984,8 @@ def hdf_store(hdfid,arrayname='',value=array([]),dtype='f',**kargs):
 	if dtype=='s':dtype=h5py.special_dtype(vlen=str) #try this...
 	elif dtype=='f' and v.dtype!=float64: v=v.astype(float64)
       elif type(v)==float128: v=(v.astype(float64))
-      elif v==None: continue
+      if v==None or v.nbytes==0: continue
+      if k=='params': print k,v,type(v),v.nbytes,v.shape
       d=hdfid.create_dataset(arrayname+'/'+k,v.shape,dtype=dtype)
       try: d[...]=v
       except TypeError: rootlogger.error('%s: dtype=%s, trying to save with dtype %s'%(k,type(v),dtype));raise
@@ -922,7 +1015,7 @@ def read_summary(f,quiet=True,logger=rootlogger):
     nmw: number of mw
     <mw(i)>: dict with keys IBAND, NUSTART, NUSTOP, SPACE, NPTSB, PMAX, FOVDIA, MEAN_SNR, NSCAN, JSCAN, INIT_SNR, CALC_SNR ;;"""
   out={}
-  logger=logging.getLogger(logger.name+'.read_summary');#logger.setLevel(logging.DEBUG)
+  logger=getlogger(logger,'read_summary');#logger.setLevel(logging.DEBUG)
   try: fid=open(f,'r')
   except IOError: logger.error('Could not open file %s in read_summary'%os.path.basename(f));return out
   dum=fid.readlines();fid.close()
@@ -942,10 +1035,10 @@ def read_summary(f,quiet=True,logger=rootlogger):
   headers=[h.strip() for h in dum[lidx+2].split()]
   logger.debug('Headers:%s'%headers)
   lidx+=2
-  for c in range(out['nmw']): out['mw%d'%(c+1)]=str2number(dict(zip(headers,dum[lidx+1].split())));lidx+=1
+  for c in range(out['nmw']): out['mw%d'%(c+1)]=str2number(dict(zip(headers,dum[lidx+1].split())),strict=True);lidx+=1
   lidx+=2
   headers=[h.strip() for h in dum[lidx].split()]
-  out.update(str2number(dict(zip(headers,dum[lidx+1].replace('-',' ').replace('************',' ').split()))))
+  out.update(str2number(dict(zip(headers,dum[lidx+1].replace('-',' ').replace('************',' ').split())),strict=True))
   return out;
 
 def update_dict(ctl,key,value):
@@ -959,15 +1052,15 @@ def update_dict(ctl,key,value):
     ctl[key]=(value,n)
   return
 
-def read_stationlayers(f='station.layers',quiet=True):
+def read_stationlayers(f='station.layers',quiet=True,logger=rootlogger):
   """Reads a station.layers file of Jim starting from an array of boundaries"""
-  g=None
-  try: 
-    with open(f,'r') as fid:
-      for i in range(3): fid.readline()
-      g=read_matrixfile(fid)
-      g=g.reshape((g.shape[0]/5,5))
-  except: pass
+  logger=getlogger(logger,'read_stationlayers')
+  if not os.path.isfile(f): logger.error('The file %s does not exist'%f);return None
+  with open(f,'r') as fid:
+    for i in range(3): fid.readline()
+    g=read_matrixfile(fid)
+    try: g=g.reshape((g.shape[0]/5,5))
+    except Exception as e: logger.error('Could not reshape the contents of %s (shape=%s) to 5 columns: %s'%(f,g.shape,str(e)));g=None
   return g;
 
 def read_dictfile(f,comments=['#',';','%'],keysep='=',preserve=['option.pspec.input','option.hbin.input','option.isotope.input'],sfit4=False,quiet=True,logger=rootlogger):
@@ -981,7 +1074,7 @@ def read_dictfile(f,comments=['#',';','%'],keysep='=',preserve=['option.pspec.in
     keysep='=' seperates key,values (if the file only contains values, they become keys);;
   Output is a dictionary whose values are 2 tuples: the key value + line number"""
   out={}
-  logger=logging.getLogger(logger.name+'.read_dictfile')
+  logger=getlogger(logger,'read_dictfile')
   if not quiet: logger.setLevel(logging.DEBUG)
   else: logger.setLevel(logging.INFO)
   if type(comments)==str: comments=[comments]
@@ -990,6 +1083,7 @@ def read_dictfile(f,comments=['#',';','%'],keysep='=',preserve=['option.pspec.in
     fid=contents
   elif type(f)==str: 
     fid=[l+'\n' for l in f.split('\n')]
+    if len(fid)==1: return out; #this is probably the case of a nonexsisting file...
   elif type(f)==list or type(f)==ndarray: fid=[l+'\n' for l in f]
   else:logger.error('Unknown input format %s'%type(f));return out;
   n=0
@@ -1013,28 +1107,25 @@ def read_dictfile(f,comments=['#',';','%'],keysep='=',preserve=['option.pspec.in
     if preserve.count(k): continue
     n=out[k][1]
     dum=out[k][0].split();
-    try: dum=map(int,[i for i in dum])
+    try: dum=map(int,[i.strip(',') for i in dum])
     except ValueError: 
-      try: dum=array(map(float,[i for i in dum]))
+      try: dum=array(map(float,[i.strip(',') for i in dum]))
       except ValueError: pass
     if len(dum)>1: out[k]=(dum,n)
     elif len(dum)==1: out[k]=(dum[0],n)
     if out[k][0]=='T': out[k]=(True,n)
     if out[k][0]=='F': out[k]=(False,n)
   if sfit4:
-    if 'band' in out:
+    if 'band' in out: #for compatibility with sfit2 strategies
       if type(out['band'][0])==int: update_dict(out,'band',[out['band'][0]])
-      for i in out['band'][0]:
-	dum='band.%d.gasb'%i
-	if type(out[dum][0])==str: update_dict(out,dum,[out[dum][0]])
-    for field in ['gas.profile.list','gas.column.list','kb.line.gas','kb.profile.gas']:
-      if not out.has_key(field) or out[field][0]=='': update_dict(out,field,[]);continue
-      if type(out[field][0])==str: update_dict(out,field,[out[field][0]])
+      for field in ['gas.profile.list','gas.column.list','kb.line.gas','kb.profile.gas','sp.snr']+['band.%d.gasb'%i for i in out['band'][0]]:
+	if not out.has_key(field) or out[field][0]=='': update_dict(out,field,[]);continue
+	if any([type(out[field][0])==t for t in [str,int]]): update_dict(out,field,[out[field][0]])
   return out;
 
 def directsum(A,B,logger=rootlogger,column=True,row=True):
   """Returns the direct sum of two matrices (if column is false, only the row dimension is augmented)"""
-  logger=logging.getLogger(logger.name+'.directsum')
+  logger=getlogger(logger,'directsum')
   if not (column or row): logger.error('Allow one dimension to be augmented (not both row and column are off)');return A;
   if len(A.shape)!=2: logger.error('The first argument is no 2D matrix: %s'%A.shape);return A
   if len(B.shape)!=2: logger.error('The first argument is no 2D matrix: %s'%B.shape);return A
@@ -1055,12 +1146,18 @@ def directsum(A,B,logger=rootlogger,column=True,row=True):
   logger.debug('Output matrix=%s dtype=%s'%(out.shape,out.dtype))
   return out;
 
-def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
-  """Computes the error budget for a given ctlsb instance and a dict with retrieval data (e.g. as it is stored in the HDF file"""
-  logger=logging.getLogger(logger.name+'.create_sfit4_errorbudget')
+def create_sfit4_errorbudget(retdata={},target=None,quiet=False,logger=rootlogger):
+  """Computes the error budget for a given ctlsb instance and a dict with retrieval data (e.g. as it is stored in the HDF file)
+
+  The input is a retrieved data instance (a h5py group instance or a dict) 
+
+  The optional key target can be a molecule or a list of molecules. Errors are then only computed for these targets"""
+  logger=getlogger(logger,'create_sfit4_errorbudget')
+  if quiet: logger.setLevel(logging.WARNING)
   if isinstance(retdata,h5py.Group): retdata=hdf5todict(retdata,logger=logger)
+  ctl=trim_dict(read_dictfile(retdata['sfit4.ctl'],sfit4=True))
   #check variables
-  for var in ['k','summary/FITRMS','APRprofs']:
+  for var in ['k','summary/FITRMS','APRprofs','sa']:
     if not var in retdata: logger.error('The %s variable is required in retdata'%var);return {}
   if not 'g' in retdata:
     if not 'seinv' in retdata: logger.error('The seinv matrix must be provided');return {}
@@ -1070,7 +1167,7 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
   sbprokey='sb' #retdata key that contains all sb matrices ...
   #check sb for definiteness....
   sbok=True #assume that all sb are symmetric and pos.def...
-  tolerance=1e-8 #for symmetricity test
+  tolerance=1e-6 #for symmetricity test
   if all([type(v)==tuple for v in ctl.values()]): ctl=trim_dict(ctl) #remove line numbers
   for k in [key for key in retdata if key.find(sbprokey)>-1]:
     sb=retdata[k];
@@ -1083,11 +1180,15 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
   n_window  = len( ctl['band'] )
   n_profile = len( ctl['gas.profile.list'] )
   n_column  = len( ctl['gas.column.list'] )
-  se=retdata['seinv']**-1    
+  se=(ma.masked_array(retdata['seinv'],retdata['seinv']==0.)**-1).filled(0)     #for deweighted regions, the seinv may contain 0 entries
   K=retdata['k']
   D=retdata['g']
   K_rows=retdata['attr']['shat']['columns']
   retrievedmols=ctl['gas.profile.list']+ctl['gas.column.list']
+  if type(target)==str: target=[target]
+  if type(target)==list: 
+    for t in target:
+      if t not in retrievedmols: logger.error('The target %s is not retrieved'%t);return 
   Tpro=retdata['APRprofs'][:,where(retdata['attr']['APRprofs']['columns']=='TEMPERATURE')].squeeze() #for Sb scaling
   logger.debug('Retrieved molecules=%s'%(' '.join(retrievedmols)))
   #-----------------------------------------------------
@@ -1132,8 +1233,7 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
   #---------------------------------------------
   #try to construct an error covariance from the data in sb for the different molecules
   #---------------------------------------------
-  if 'sa' in retdata: sa=longdouble(retdata['sa'].copy())
-  else: sa=longdouble(zeros((len(K_rows),)*2)); 
+  sa=longdouble(ma.masked_array(retdata['sa'],isnan(retdata['sa'])).filled(0.))
   Sstate= {'random':sa[:pro_idx_start,:pro_idx_start] , 'systematic': longdouble(zeros((pro_idx_start,)*2))}
   Sstateorigin={'random':{},'systematic':{}} #will contain per species the source of the sa update
   #update the sa components for the profile retrieved specs
@@ -1173,8 +1273,10 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
   #Loop over the profile retrieved specs to propagate the uncertainties
   #---------------------------------------------
   retdata['STDerror']={}
-  for mol in ctl['gas.profile.list']+ctl['gas.column.list']:
-    mollogger=logging.getLogger(logger.name+'.%s'%mol)
+  if target==None: gases=ctl['gas.profile.list']+ctl['gas.column.list'] #compute errors for all targets
+  else: gases=target #calculate a selected set of errors
+  for mol in gases:
+    mollogger=getlogger(logger,mol)
     S={'random':{},'systematic':{}} #will contain all covariances for the different uncertainties
     origin={'random':{'Interfering_Specs':[], 'Smoothing':[]},'systematic':{'Interfering_Specs':[], 'Smoothing':[]}} #for attributes of Sb
     APpro=retdata['APRprofs'][:,where(retdata['attr']['APRprofs']['columns']==mol)[0]].squeeze()
@@ -1215,7 +1317,7 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
       #----------------------------------
       ErrLabel='Measurement'
       if ErrType=='random': 
-	S[ErrType][ErrLabel] = Dx.dot(diag(longdouble(se))).dot(Dx.T)
+	S[ErrType][ErrLabel] = Dx.dot((longdouble(se)*Dx).T) # FASTER !Dx.dot(diag(longdouble(se))).dot(Dx.T)
 	origin[ErrType][ErrLabel]='measurement noise from se'
 	mollogger.info('Uncertainty for %s/%s: %s%% (relative to retrieved column)'%(ErrLabel,ErrType,sqrt(abs(PCap.dot(S[ErrType][ErrLabel]).dot(PCap)))/PCre.sum()*100))
       #---------------------
@@ -1396,75 +1498,63 @@ def DatetimetoGEOMS(times):
   gtimes=array([t.toordinal()+(t.hour+(t.minute+(t.second+t.microsecond/1e3)/(60.))/60.)/24.-datetime.date(2000,1,1).toordinal() for t in times])
   return gtimes*86400;
 
-def merge_hdf(listoffiles,target='./full.hdf',logger=rootlogger,**kargs):
+def merge_hdf(listoffiles,target='./full.hdf',listoflabels=None,logger=rootlogger,**kargs):
   """Merges the contents of HDF files (input is a list, target=target file)
 
   Will create or append data to the target. If the source is in the target, it will be updated.
-  The source files are mapped to groups whose name is found in the source under 'barcos/specid'
-  It it is not there, the target groups are the filenames
+  The source files are mapped to groups whose name is in listoflabels (if not set, it is found 
+  in the source under 'barcos/specid' or from the filenames)
   
   Input arguments: listoffiles=list of the source hdf files
   
   Optional arguments::
+    listoflabels: list of subgroup names for the different hdf files 
     target=./full.hdf 
-    logger=rootlogger (if None, no logging (for multiprocessing))
+    logger=rootlogger (if ftir.nologger(), no logging (for multiprocessing))
     kargs= dict with attributes for the target;;"""
-  if logger: logger=logging.getLogger(logger.name+'.merge_hdf')
+  logger=getlogger(logger,'merge_hdf')
   if os.path.isfile(target): mode='r+'
   else: mode='w'
-  if logger: logger.debug('File %s opened in %s mode'%(target,mode))
-  if logger: logger.debug('Merging files:%s'%listoffiles)
+  if listoflabels!=None: 
+    try: 
+      if len(listoflabels)!=len(listoffiles): logger.error('The list of labels should be the same size as the list of hdffiles');return 1
+    except: logger.error('Provide a list of labels');return 1
+  logger.debug('File %s opened in %s mode'%(target,mode))
+  logger.debug('Merging files:%s'%', '.join(listoffiles))
   with h5py.File(target,mode) as master:
     processedfiles=[]
     for i,f in enumerate(listoffiles):
-      if logger: logger.debug('Copying contents of file %s'%f)
+      logger.debug('Copying contents of file %s'%f)
       with h5py.File(f,'r') as source: 
-	if 'barcos' in source: label=str(source['barcos/specid'][...])
+	if listoflabels!=None: label = listoflabels[i]
+	elif 'barcos' in source: label=str(source['barcos/specid'][...])
 	else: label=f
 	if label in master: 
-	  if logger: logger.debug('The group %s already exists in the target file, updating it'%label); 
+	  logger.debug('The group %s already exists in the target file, updating it'%label); 
 	  del master[label]
-	master.copy(source,label);processedfiles.append(f) #this seems to make the target very big
-	#retdata=hdf5todict(source)
-	#hdf_store(master,label,retdata)
+	master.copy(source,label);processedfiles.append(f)
     #set the attributes for the target
     for k,v in kargs.items(): 
       if any([type(v)==t for t in [str,float,int,bool]]): pass
       else: v=str(v)
       master.attrs[k]=v
   for f in processedfiles: os.remove(f)
-  return
+  return 0;
 
-def plotsetup(**kargs):
-  """Settings valid for all plots"""
-  texflag=True;fsize=10
-  for key in kargs:
-    if key=='usetex': texflag=kargs[key]
-    elif key=='fontsize': fsize=kargs[key]
-    else: print "Key %s is unknown and ignored in norsplotsetup"%key
-  matplotlib.rcParams['text.usetex']=texflag
-  matplotlib.rcParams['font.family']='sans-serif'
-  matplotlib.rcParams['font.size']=fsize
-  if texflag: matplotlib.rcParams['font.serif']='times'
-  matplotlib.rcParams['axes.titlesize']='medium'
-  matplotlib.rcParams['xtick.labelsize']='small'
-  matplotlib.rcParams['ytick.labelsize']='small'
-  matplotlib.rcParams['axes.color_cycle']=colorcycle #colorcycle is defined in the beginning
-  matplotlib.rcParams['legend.numpoints']=4
-  matplotlib.rcParams['legend.handlelength']=2.5
-  matplotlib.rcParams['lines.markersize']=5
-  matplotlib.rcParams['savefig.dpi']=300
-
-#>Determine time unit setup from list of dates
-
-def upboundary(zb,logger=rootlogger):
-  """creates decreasing shape (2,...) boundary out an increasing list of boundaries"""
-  logger=logging.getLogger(logger.name+'.upboundary') 
-  if len(zb.shape)!=1: logger.error('This function accepts only 1D boundary arrays')
-  if any(zb[:]!=sort(zb[:])):  logger.error('The input boundaries must be sorted')
-  return array([zb[:-1][::-1],zb[1:][::-1]]);
-
-#>Construction of the MACC pressure grid (Algorithm~\ref{algo:prgrid})
+def subProcRun(fname,quiet=True):
+  """Open a subprocess and return all stdout (NCAR)"""
+  rtn = subprocess.Popen( fname, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+  outstr = ''
+  while True:
+	  out = rtn.stdout.read(1)
+	  if ( out == '' and rtn.poll() != None ):
+		  break
+	  if out != '':
+		  outstr += out
+		  if not quiet: sys.stdout.write(out)
+		  sys.stdout.flush()
+  stdout, stderr = rtn.communicate()
+  return (outstr,stderr);
 
 def finalizefig(**kargs):
   """Saves, plots figure windows if possible (also for SAGE)
@@ -1480,24 +1570,24 @@ def finalizefig(**kargs):
   plottypes={'pdf':{},'jpg':{},'png':{},'eps':{}};transparentflag=False
   for key in plottypes.keys(): plottypes[key]={'flag':False,'f':''}
   quiet=1
-  if not quiet: print plottypes
   try: plotstohandle=plt.get_fignums()
   except: pass
   for key in kargs:
-    if plottypes.keys().count(key)>0: plottypes[key]['flag']=True;plottypes[key]['f']=os.path.expanduser(kargs[key])
+    if plottypes.keys().count(key)>0: 
+      plottypes[key]['flag']=True;plottypes[key]['f']=os.path.expanduser(kargs[key])
     elif key=='returnfigflag': returnfigflag=kargs[key]
     elif key=='figidx': plotstohandle=map(int,kargs[key])
     elif key=='pdftitle': pdftitle=kargs[key]
     elif key=='transparentflag': transparentflag=kargs[key]
     elif key=='quiet': quiet=kargs[key]
     #elif key=='compress': compress=kargs[key]
-    elif key=='logger': logger=kargs[keys]
+    elif key=='logger': logger=kargs[key]
     else: print 'Unknown key in finalizefig',key
-  logger=logging.getLogger(logger.name+'.finalizefig')
+  logger=getlogger(logger,'finalizefig')
   if not quiet: logger.setLevel(logging.DEBUG)
   logger.debug('%s'%plottypes)
   for key in [k for k in plottypes if plottypes[k]['flag']]:
-    if not os.path.isdir(os.path.dirname(plottypes[key]['f'])): logger.error('The target directory for %s does not exist'%key);return
+    if not os.path.isdir(os.path.dirname(os.path.realpath(plottypes[key]['f']))): logger.error('The target directory for %s does not exist'%key);return
   if type(plotstohandle)!=list or (any([type(i)!=int for i in plotstohandle]) and not sageflag): logger.error('Indices wrongly formatted');return
   if matplotlib.get_backend()=='pdf' and (plottypes['png']['flag']==True or plottypes['jpg']['flag']==True):
     logger.warning('Skipping the eps, png and jpg plots, backend is set to pdf');
@@ -1543,29 +1633,36 @@ def plot_avk(ax,z,avk,**kargs):
     ylabelstring=string or list of strings (if list, first=ylabel,second is pressure label)
     titlestring=string or list of string,size
     zscale=1,unit scaling for height scale
+    logcolornorm=False
+    rowvar=z (allows to plot any matrix with a colorgradient on the rows)
     pressure=values for additional pressure grid
     pticks=autopressureticks, determines ticks on the pressurescale
     colormap=string for colormap see \url{http://www.loria.fr/~rougier/teaching/matplotlib/\#colormaps};;"""
   quiet=1
-  titlestring='';ylabelstring='';zscale=1;pticks=autopressureticks
-  minh=min(z);maxh=max(z); cbarflag=1;cgridflag=0;colormap='jet';pressure=[]
-  try: 
-    if (z.shape[0],z.shape[0])!=avk.shape: print "Shape mismacht height is %d, avk is"%z.shape,avk.shape; return
-  except: 
-    print "Wrong type of input for heigth coordinate and/or avk";return
+  titlestring='';ylabelstring='';zscale=1;pticks=autopressureticks;rowvar=None;rowvarstring=None
+  minh=min(z);maxh=max(z); cbarflag=1;cgridflag=0;colormap='jet';pressure=[];logcolornorm=False
   for key in kargs:
     if key=='cbar': cbarflag=kargs[key]
     elif key=='cgrid': cgridflag=kargs[key]
     elif key=='maxh': maxh=kargs[key] #optional argument to stretch heigth colorbar
     elif key=='minh':minh=kargs[key]
     elif key=='quiet':quiet=kargs[key]
+    elif key=='rowvar': rowvar=kargs[key]
+    elif key=='logcolornorm': logcolornorm=kargs[key]
+    elif key=='rowvarstring': rowvarstring=kargs[key]
     elif key=='ylabelstring': ylabelstring=kargs[key]
     elif key=='titlestring': titlestring=kargs[key]
     elif key=='zscale': zscale=kargs[key]
     elif key=='pressure': pressure=kargs[key]
     elif key=='pticks': pticks=kargs[key]
     elif key=='colormap': colormap=kargs[key]
-    else: print "Key %s is unknown and ignored"%key     
+    else: print "Key %s is unknown and ignored"%key 
+  if rowvar==None: rowvar=z
+  if rowvarstring==None: rowvarstring=ylabelstring
+  try: 
+    if rowvar.shape+z.shape!=avk.shape: print "Shape mismacht rowvar/height is (%s,%s), avk is %s"%(rowvar.shape,z.shape,avk.shape); return
+  except: 
+    print "Wrong type of input for heigth coordinate and/or avk";return  
   minh*=zscale;maxh*=zscale #units 
   plotsetup();
   if type(titlestring)==list:
@@ -1578,29 +1675,30 @@ def plot_avk(ax,z,avk,**kargs):
   import matplotlib.cm as cmx
   try: jet = cm = plt.get_cmap(colormap) 
   except: print 'Colormap %s unknown. Abort...'%colormap
-  cNorm  = colors.Normalize(vmin=minh, vmax=maxh)
+  if logcolornorm: cNorm  = colors.LogNorm(vmin=minh, vmax=maxh)
+  else: cNorm  = colors.Normalize(vmin=minh, vmax=maxh)
   scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
   colordata = array([])
-  zplot=z*zscale
-  if not quiet: print zplot
-  for j,h in enumerate(zplot):
-    colorVal = scalarMap.to_rgba(zplot[j])
-    if not quiet: print colorVal
+  zplot=z*zscale;
+  if not quiet: print zplot,rowvar
+  for j,h in enumerate(zscale*rowvar):
+    colorVal = scalarMap.to_rgba(h)
+    if not quiet: print h,colorVal
     ax.plot(avk[j,:],zplot,color=colorVal)
-    if cgridflag==1: ax.axhline(y=zplot[j],color=colorVal)
-    colordata=append(colordata,zplot[j])
+    if cgridflag==1: ax.axhline(y=h,color=colorVal)
+    colordata=append(colordata,h)
     #lines.append(retLine)
   scalarMap.set_array(colordata)
   if cbarflag==1: cbar = plt.colorbar(scalarMap,pad=.1,fraction=0.05)
   pressurestring=''
   if type(ylabelstring)==str:
-    if cbarflag==1: cbar.set_label(ylabelstring)
+    if cbarflag==1: cbar.set_label(rowvarstring)
     ax.set_ylabel(ylabelstring)
   elif type(ylabelstring)==list and len(ylabelstring)>1:
     if cbarflag==1: cbar.set_label(ylabelstring[0])
     ax.set_ylabel(ylabelstring[0])
     pressurestring=ylabelstring[1]
-  ax.set_ylim(minh,maxh)
+  if all(rowvar==z): ax.set_ylim(minh,maxh)
   if len(pressure)!=0:
     axp=ax.twinx() #2 y scales
     axp.set_yscale('log') #set logaritmic scale
@@ -1612,18 +1710,40 @@ def plot_avk(ax,z,avk,**kargs):
 
 #>Create pc avk plot of rows of AVK (Algorithm~\ref{alg:plotcolavk})
 
-def subProcRun(fname,quiet=True):
-  """Open a subprocess and return all stdout (NCAR)"""
-  rtn = subprocess.Popen( fname, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
-  outstr = ''
-  while True:
-	  out = rtn.stdout.read(1)
-	  if ( out == '' and rtn.poll() != None ):
-		  break
-	  if out != '':
-		  outstr += out
-		  if not quiet: sys.stdout.write(out)
-		  sys.stdout.flush()
-  stdout, stderr = rtn.communicate()
-  return (outstr,stderr);
+def upboundary(zb,logger=rootlogger):
+  """creates decreasing shape (2,...) boundary out an increasing list of boundaries"""
+  logger=getlogger(logger,'upboundary') 
+  if len(zb.shape)!=1: logger.error('This function accepts only 1D boundary arrays')
+  if any(zb[:]!=sort(zb[:])):  logger.error('The input boundaries must be sorted')
+  return array([zb[:-1][::-1],zb[1:][::-1]]);
+
+#>Construction of the MACC pressure grid (Algorithm~\ref{algo:prgrid})
+
+def getlogger(logger,name):
+  """Creates a new logger with name and as a child of logger"""
+  try: newlogger=logging.getLogger(logger.name+'.'+name)
+  except AttributeError: newlogger=logger
+  return newlogger;
+
+def plotsetup(**kargs):
+  """Settings valid for all plots"""
+  texflag=True;fsize=10
+  for key in kargs:
+    if key=='usetex': texflag=kargs[key]
+    elif key=='fontsize': fsize=kargs[key]
+    else: print "Key %s is unknown and ignored in norsplotsetup"%key
+  matplotlib.rcParams['text.usetex']=texflag
+  matplotlib.rcParams['font.family']='sans-serif'
+  matplotlib.rcParams['font.size']=fsize
+  if texflag: matplotlib.rcParams['font.serif']='times'
+  matplotlib.rcParams['axes.titlesize']='medium'
+  matplotlib.rcParams['xtick.labelsize']='small'
+  matplotlib.rcParams['ytick.labelsize']='small'
+  matplotlib.rcParams['axes.color_cycle']=colorcycle #colorcycle is defined in the beginning
+  matplotlib.rcParams['legend.numpoints']=4
+  matplotlib.rcParams['legend.handlelength']=2.5
+  matplotlib.rcParams['lines.markersize']=5
+  matplotlib.rcParams['savefig.dpi']=300
+
+#>Determine time unit setup from list of dates
 
