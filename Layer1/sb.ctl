@@ -41,8 +41,8 @@
 #  1) phase and phase_fcn are different ways to describe the same parameter. 
 #     It is not recommended to calculate an error on both simultaneously. 
 #  2) dwshift is currently not implemented.
-#  3) Line parameter errors currently only work for 
-#
+#  3) Line parameters (lineInt, linePAir, and lineTAir) currently only work for 
+#     
 #-----------------------------------------------------------------
 
                         #-------#
@@ -75,8 +75,8 @@ sb.temperature.random.scaled                = F         # If = T (fractional) --
 sb.temperature.systematic.scaled            = T         # If = T (fractional) -- scaled by a priori
 sb.sza.random.scaled                        = T
 sb.sza.systematic.scaled                    = T
-sb.fov.random.scaled                        = T
-sb.fov.systematic.scaled                    = T
+sb.omega.random.scaled                      = T
+sb.omega.systematic.scaled                  = T     # FOV Change!!
 
 
                     #-------------------#
@@ -123,36 +123,47 @@ sb.profile.H2O.systematic   =
 #    *** The order of the entries in sb.sza must correspond to the order of
 #        bands specified in "band = " in the sfit4.ctl file ***
 #----------------------------------------------------------------------------
-sb.sza.random           = 0.001 0.002 0.001
-sb.sza.systematic       = 0.001 0.002 0.001
+sb.omega.random         = 0.001 0.001 0.001
+sb.omega.systematic     = 0.001 0.001 0.001
 
-sb.omega.random         = 0.001 0.002 0.001
-sb.omega.systematic     = 0.001 0.002 0.001
+sb.phase.random         = 0.001 0.001 0.001
+sb.phase.systematic     = 0.001 0.001 0.001
 
-sb.phase.random         = 0.001 0.002 0.001
-sb.phase.systematic     = 0.001 0.002 0.001
+sb.wshift.random        = 0.001 0.001 0.001
+sb.wshift.systematic    = 0.001 0.001 0.001
 
-sb.wshift.random        = 0.001 0.002 0.001
-sb.wshift.systematic    = 0.001 0.002 0.001
+sb.slope.random         = 0.001 0.001 0.001
+sb.slope.systematic     = 0.001 0.001 0.001
 
-sb.slope.random         = 0.001 0.002 0.001
-sb.slope.systematic     = 0.001 0.002 0.001
+sb.curvature.random     = 0.001 0.001 0.001
+sb.curvature.systematic = 0.001 0.001 0.001
 
-sb.curvature.random     = 0.001 0.002 0.001
-sb.curvature.systematic = 0.001 0.002 0.001
-
-sb.max_opd.random       = 0.001 0.002 0.001
-sb.max_opd.systematic   = 0.001 0.002 0.001
+sb.max_opd.random       = 0.00001 0.00001 0.00001
+sb.max_opd.systematic   = 0.00001 0.00001 0.00001
 
 #----------------
 # Single value Sb
 #----------------
-sb.solshft.random       = 0.5
-sb.solstrnth.random     = 0.1
-sb.apod_fcn.random      = 0.2
-sb.apod_fcn.systematic  = 0.2
-sb.phase_fcn.random     = 0.2   ## Micro window 
-sb.phase_fcn.systematic = 0.2
+sb.sza.random           = 0.05 
+sb.sza.systematic       = 0.01 
+sb.solshft.random       = 0.005
+sb.solshft.systematic   = 0.005
+sb.solstrnth.random     = 0.001
+sb.solstrnth.systematic = 0.001
+
+#------------------------------------------------------------
+# If the apodization and phase function are used in the forward model,
+# (fw.apod_fcn.type and fw.phase_fcn.type = 2 or 3 ONLY) then the 
+# Sb's are given for each term of the polynomial or fourier series.
+# Example: 2nd order polynomial would require 2 Sbs.
+# If the apodization or phase function is not included in the forward
+# model then the default value for calculating Kb is a 3rd order
+# polynomial. Therefore 3 values of Sb must be given. 
+#------------------------------------------------------------
+sb.apod_fcn.random      = 0.05 0.05 0.05 
+sb.apod_fcn.systematic  = 0.05 0.05 0.05 
+sb.phase_fcn.random     = 0.05 0.05 0.05  
+sb.phase_fcn.systematic = 0.05 0.05 0.05
 
 #-----------------------------------------------------------
 # Sb for zshift is micro window dependent. However, Sb's are 
@@ -179,12 +190,12 @@ sb.band.4.zshift.systematic  = 0.01
 # Does not work with kb.line.gas = retrieval because it is 
 # unclear which gas and order of gases in Kb
 #----------------------------------------------------------
-**sb.lineInt.systematic               = 0.1     
-**sb.lineTAir.systematic              = 0.1 
-**sb.linePAir.systematic              = 0.1 
+sb.lineInt.systematic               = 0.1     
+sb.lineTAir.systematic              = 0.1 
+sb.linePAir.systematic              = 0.1 
 
-**sb.dwshift.H2O.random                
-**sb.dwshift.H2O.systematic           
+sb.dwshift.H2O.random                
+sb.dwshift.H2O.systematic           
 
 
 

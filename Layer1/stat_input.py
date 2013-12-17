@@ -60,7 +60,7 @@ ilsDir           = ''                                              # ILS file(s)
                                                                    #   3) If string points to specific file, this ils file is used for all data processing
                                                                    
 RatioDir         = '/Users/ebaumer/Data/TestBed/fltrFiles/'        # Directory for ratio files ** Currently NOT used **
-logDirOutput     = '/Users/ebaumer/Code/sfit-core-code/src/'       # Directory to write log files and list files
+logDirOutput     = '/Users/ebaumer/Data/TestBed/'       # Directory to write log files and list files
 
 #------
 # Files

@@ -732,27 +732,28 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	
 	    elif DK.shape[1] == 1:
 		Sb = np.zeros((1,1))
-		try: Sb[0,0] = float(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType][0])**2
-		except: pass
-		
+		#---------------------------------------
+		# Determine whether to scale values for:
+		#  -- SZA
+		#---------------------------------------		
+		if Kbl == 'sza':
+		    if SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'] == 'F':
+			Sb[0,0] = (float(SbctlFileVars.inputs['sb.sza.'+ErrType]) / spDBdataOne['SZen'])**2
+			
+		    else: Sb[0,0] = float(SbctlFileVars.inputs['sb.sza.'+ErrType])**2 
+		    
+		else:
+		    try: Sb[0,0] = float(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType][0])**2
+		    except: pass
+
 	    elif DK.shape[1] == n_window: 
 		Sb = np.zeros((n_window,n_window))
 		
 		#---------------------------------------
 		# Determine whether to scale values for:
-		#  -- SZA, FOV  ??? FLOAT ???
+		#  -- FOV
 		#---------------------------------------
-		if Kbl == 'sza':
-		    Sb_ctl = np.zeros(n_window)
-		    if SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'] == 'F':
-			for ind,Sb_sza_bnd in enumerate(SbctlFileVars.inputs['sb.sza.'+ErrType]):
-			    Sb_ctl[ind] = float(Sb_sza_bnd) / spDBdataOne['SZen']
-			
-		    else:
-			for ind,Sb_sza_bnd in enumerate(SbctlFileVars.inputs['sb.sza.'+ErrType]):
-			    Sb_ctl[ind] = float(Sb_sza_bnd) 
-			    
-		elif Kbl == 'omega':
+		if Kbl == 'omega':
 		    Sb_ctl = np.zeros(n_window)
 		    if SbctlFileVars.inputs['sb.omega.'+ErrType+'.scaled'] == 'F':
 			for ind,Sb_fov_bnd in enumerate(SbctlFileVars.inputs['sb.omega.'+ErrType]):
@@ -762,9 +763,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 			for ind,Sb_fov_bnd in enumerate(SbctlFileVars.inputs['sb.omega.'+ErrType]):
 			    Sb_ctl[ind] = float(Sb_fov_bnd) 
 		
-		#------------------------------------------
-		# All other cases not including SZA and FOV
-		#------------------------------------------
+		#----------------
+		# All other cases
+		#----------------
 		else:
 		    Sb_ctl = np.zeros(n_window)
 		    for ind, Sb_bnd in enumerate(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]):
