@@ -411,10 +411,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	Sm   = np.dot(  np.dot( A, coVar ), A.T )                                                      # Uncertainty covariance matrix [Fractional]
 	Sm_1 = np.sqrt( np.dot( np.dot( aprDensPrf, Sm ), aprDensPrf.T )     )                         # Whole column uncertainty [molecules cm^-2]
 	
-	if VMRoutFlg== 'T': Sm_2 = np.dot(  np.dot( np.diag(retPrfVMR), Sm ), np.diag(retPrfVMR) )     # Uncertainty covariance matrix [VMR]
+	if VMRoutFlg[0].upper()== 'T': Sm_2 = np.dot(  np.dot( np.diag(retPrfVMR), Sm ), np.diag(retPrfVMR) )     # Uncertainty covariance matrix [VMR]
 	else:               Sm_2 = 0
 	
-	if MolsoutFlg == 'T': Sm_3 = np.dot(  np.dot( np.diag(airMass), Sm_2 ), np.diag(airMass)   )   # Uncertainty covariance matrix [molecules cm^-2]
+	if MolsoutFlg[0].upper() == 'T': Sm_3 = np.dot(  np.dot( np.diag(airMass), Sm_2 ), np.diag(airMass)   )   # Uncertainty covariance matrix [molecules cm^-2]
 	else:                 Sm_3 = 0
 	
 	return (Sm_2, Sm_3, Sm_1)
@@ -422,6 +422,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     def writeCoVar(fname,header,var,ind):
 	''' Write covariance matricies to files'''
 	with open(fname, 'w') as fout:
+	    
+    
 	    fout.write('# ' + header + '\n'                                       )
 	    fout.write('# nmatr  = {}\n'.format(len(var)                         ))
 	    fout.write('# nrows  = {}\n'.format(var[var.keys()[0]][0].shape[0]   ))
@@ -517,11 +519,12 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     
     se         = np.zeros((sum(nptsb),sum(nptsb)), float)
 
-    if SbctlFileVars.inputs['SeInputFlg'] == 'F':
+    if SbctlFileVars.inputs['SeInputFlg'][0].upper() == 'F':
 	snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(SNR,nptsb)]))
 	snrList[:] = [val**-2 for val in snrList]
     else:
 	lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
+#	print lines[2].strip().split()
 	snrList    = float( lines[2].strip().split() ) 
 	snrList[:] = [1.0/val for val in snrList]
     
@@ -663,7 +666,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     #------------------------
     AK_int1                   = AK[x_start:x_stop,0:x_start]  
     Sa_int1                   = sa[0:x_start,0:x_start]
-    S_ran['Retrieval_Params'] = calcCoVar(Sa_int1,AK_int1,aprdensprf,pGasPrf.Aprf,SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],asPrf.Airmass)
+    S_ran['Retrieval_Params'] = calcCoVar(Sa_int1,AK_int1,aprdensprf,pGasPrf.Aprf,SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],pGasPrf.Airmass)
     
     #-----------------------
     # 2) Interfering species
@@ -684,7 +687,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     # Determine which microwindows retrieve zshift
     #---------------------------------------------
     for k in ctlFileVars.inputs['band']:
-	if ([ctlFileVars.inputs['band.'+str(int(k))+'.zshift']][0] == 'F'): zerolev_band_b.append(int(k))        # only include bands where zshift is NOT retrieved
+	if (ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0] == 'F'): zerolev_band_b.append(int(k))        # only include bands where zshift is NOT retrieved
   
     nbnds = len(zerolev_band_b)
 	
@@ -744,7 +747,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 		#---------------------------------------
 		if Kbl == 'sza':
 		    Sb_ctl = np.zeros(n_window)
-		    if SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'] == 'F':
+		    if SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'][0].upper() == 'F':
 			for ind,Sb_sza_bnd in enumerate(SbctlFileVars.inputs['sb.sza.'+ErrType]):
 			    Sb_ctl[ind] = float(Sb_sza_bnd) / spDBdataOne['SZen']
 			
@@ -754,7 +757,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 			    
 		elif Kbl == 'omega':
 		    Sb_ctl = np.zeros(n_window)
-		    if SbctlFileVars.inputs['sb.omega.'+ErrType+'.scaled'] == 'F':
+		    if SbctlFileVars.inputs['sb.omega.'+ErrType+'.scaled'][0].upper() == 'F':
 			for ind,Sb_fov_bnd in enumerate(SbctlFileVars.inputs['sb.omega.'+ErrType]):
 			    Sb_ctl[ind] = float(Sb_fov_bnd) / spDBdataOne['FOV']
 			
@@ -805,20 +808,23 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     S_tot_rndm_err       = 0
     S_tot_systematic_err = 0
 
-    if  SbctlFileVars.inputs['VMRoutFlg'] == 'T': 
+
+
+    
+    if  SbctlFileVars.inputs['VMRoutFlg'][0].upper() == 'T': 
 	S_tot_ran_vmr   = np.zeros((n_layer,n_layer))
 	S_tot_sys_vmr   = np.zeros((n_layer,n_layer))
 	
-    if  SbctlFileVars.inputs['MolsoutFlg'] =='T': 
+    if  SbctlFileVars.inputs['MolsoutFlg'][0].upper() =='T': 
 	S_tot_ran_molcs = np.zeros((n_layer,n_layer))
 	S_tot_sys_molcs = np.zeros((n_layer,n_layer))
     
     # Random
     for k in S_ran:
 	S_tot_rndm_err  += S_ran[k][2]**2
-	if  SbctlFileVars.inputs['VMRoutFlg']  =='T': S_tot_ran_vmr   += S_ran[k][0]
+	if  SbctlFileVars.inputs['VMRoutFlg'][0].upper()  =='T': S_tot_ran_vmr   += S_ran[k][0]
 	else:						S_tot_ran_vmr    = 0
-	if  SbctlFileVars.inputs['MolsoutFlg'] =='T': S_tot_ran_molcs += S_ran[k][1]
+	if  SbctlFileVars.inputs['MolsoutFlg'][0].upper() =='T': S_tot_ran_molcs += S_ran[k][1]
 	else:                                         S_tot_ran_molcs  = 0
 	
     S_tot_rndm_err  = np.sqrt(S_tot_rndm_err)
@@ -826,9 +832,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     # Systematic
     for k in S_sys:
 	S_tot_systematic_err += S_sys[k][2]**2
-	if  SbctlFileVars.inputs['VMRoutFlg']  =='T': S_tot_sys_vmr   += S_sys[k][0]
+	if  SbctlFileVars.inputs['VMRoutFlg'][0].upper()  =='T': S_tot_sys_vmr   += S_sys[k][0]
 	else:						S_tot_sys_vmr    = 0
-	if  SbctlFileVars.inputs['MolsoutFlg'] =='T': S_tot_sys_molcs += S_sys[k][1]
+	if  SbctlFileVars.inputs['MolsoutFlg'][0].upper() =='T': S_tot_sys_molcs += S_sys[k][1]
 	else:						S_tot_sys_molcs  = 0 
 	
     S_tot_systematic_err = np.sqrt(S_tot_systematic_err)
@@ -863,41 +869,44 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     #-----------------------------------
     # Write to file covariance matricies
     #-----------------------------------
+    
+    
     if SbctlFileVars.inputs['out.total'][0].upper() == 'T':
-	if SbctlFileVars.inputs['MolsoutFlg'] == 'T':
+	if SbctlFileVars.inputs['MolsoutFlg'][0].upper() == 'T':
 	    # molecules cm^-2
 	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.total'][0]
 	    header = 'TOTAL RANDOM ERROR COVARIANCE MATRIX IN MOL CM^-2'
 	    writeCoVar(fname,header,S_tot,1) 
 	
-	if SbctlFileVars.inputs['VMRoutFlg'] == 'T':
+	if SbctlFileVars.inputs['VMRoutFlg'][0].upper() == 'T':
 	    # vmr
 	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.total.vmr'][0]
 	    header = 'TOTAL RANDOM ERROR COVARIANCE MATRICES IN VMR UNITS'
 	    writeCoVar(fname,header,S_tot,0) 	
 
     if SbctlFileVars.inputs['out.srandom'][0].upper() == 'T':
-	if SbctlFileVars.inputs['MolsoutFlg'] == 'T':
+	if SbctlFileVars.inputs['MolsoutFlg'][0].upper() == 'T':
 	    # molecules cm^-2
 	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.srandom'][0]
 	    header = 'RANDOM ERROR COVARIANCE MATRIX IN MOL CM^-2'
 	    writeCoVar(fname,header,S_ran,1)
 	
-	if SbctlFileVars.inputs['VMRoutFlg'] == 'T':
+	if SbctlFileVars.inputs['VMRoutFlg'][0].upper() == 'T':
 	    # vmr
 	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.srandom.vmr'][0]
 	    header = 'RANDOM ERROR COVARIANCE MATRICES IN VMR UNITS'
+    
 	    writeCoVar(fname,header,S_ran,0)	
 		
     if SbctlFileVars.inputs['out.ssystematic'][0].upper() == 'T':
 	
-	if SbctlFileVars.inputs['MolsoutFlg'] == 'T':
+	if SbctlFileVars.inputs['MolsoutFlg'][0].upper() == 'T':
 	    # molecules cm^-2
 	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic'][0]
 	    header = 'SYSTEMATIC ERROR COVARIANCE MATRIX IN MOL CM^-2'
 	    writeCoVar(fname,header,S_sys,1)
 	
-	if SbctlFileVars.inputs['VMRoutFlg'] == 'T':
+	if SbctlFileVars.inputs['VMRoutFlg'][0].upper() == 'T':
 	    # vmr
 	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic.vmr'][0]
 	    header = 'SYSTEMATIC ERROR COVARIANCE MATRICES IN VMR UNITS'
