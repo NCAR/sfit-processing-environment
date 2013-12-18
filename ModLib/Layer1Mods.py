@@ -503,17 +503,21 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.summary'][0], logFile) 
     if not lines: sys.exit()    # Critical file, if missing terminate program
 
+    #---------------------------------------------------------
+    # Currently set up to read SNR from summary file where the
+    # summary file format has INIT_SNR on the line below IBAND 
+    #---------------------------------------------------------
     lstart   = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
     indNPTSB = lines[lstart].strip().split().index('NPTSB')
-    indSNR   = lines[lstart].strip().split().index('INIT_SNR')
+    indSNR   = lines[lstart].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
         
     SNR   = []
     nptsb = []
     
-    for lnum in range(lstart+1,lend):
+    for lnum in range(lstart+1,lend,2):
         nptsb.append(    float( lines[lnum].strip().split()[indNPTSB] ) )
-        SNR.append( float( lines[lnum].strip().split()[indSNR]   ) )
+        SNR.append( float( lines[lnum+1].strip().split()[indSNR]   ) )       # Add 1 to line number because INIT_SNR exists on next line
     
     se         = np.zeros((sum(nptsb),sum(nptsb)), float)
 
@@ -805,9 +809,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     S_tot                = {}
     S_tot_rndm_err       = 0
     S_tot_systematic_err = 0
-
-
-
     
     if  SbctlFileVars.inputs['VMRoutFlg'][0].upper() == 'T': 
 	S_tot_ran_vmr   = np.zeros((n_layer,n_layer))

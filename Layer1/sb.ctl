@@ -123,23 +123,23 @@ sb.profile.H2O.systematic   =
 #    *** The order of the entries in sb.sza must correspond to the order of
 #        bands specified in "band = " in the sfit4.ctl file ***
 #----------------------------------------------------------------------------
-sb.omega.random         = 0.001 0.001 0.001
-sb.omega.systematic     = 0.001 0.001 0.001
+sb.omega.random         = 0.001 0.001 0.001 0.001 0.001
+sb.omega.systematic     = 0.001 0.001 0.001 0.001 0.001
 
-sb.phase.random         = 0.001 0.001 0.001
-sb.phase.systematic     = 0.001 0.001 0.001
+sb.phase.random         = 0.001 0.001 0.001 0.001 0.001
+sb.phase.systematic     = 0.001 0.001 0.001 0.001 0.001
 
-sb.wshift.random        = 0.001 0.001 0.001
-sb.wshift.systematic    = 0.001 0.001 0.001
+sb.wshift.random        = 0.001 0.001 0.001 0.001 0.001
+sb.wshift.systematic    = 0.001 0.001 0.001 0.001 0.001
 
-sb.slope.random         = 0.001 0.001 0.001
-sb.slope.systematic     = 0.001 0.001 0.001
+sb.slope.random         = 0.001 0.001 0.001 0.001 0.001
+sb.slope.systematic     = 0.001 0.001 0.001 0.001 0.001
 
-sb.curvature.random     = 0.001 0.001 0.001
-sb.curvature.systematic = 0.001 0.001 0.001
+sb.curvature.random     = 0.001 0.001 0.001 0.001 0.001
+sb.curvature.systematic = 0.001 0.001 0.001 0.001 0.001
 
-sb.max_opd.random       = 0.00001 0.00001 0.00001
-sb.max_opd.systematic   = 0.00001 0.00001 0.00001
+sb.max_opd.random       = 0.00001 0.00001 0.00001 0.00001 0.00001
+sb.max_opd.systematic   = 0.00001 0.00001 0.00001 0.00001 0.00001
 
 #----------------
 # Single value Sb
@@ -160,10 +160,10 @@ sb.solstrnth.systematic = 0.001
 # model then the default value for calculating Kb is a 3rd order
 # polynomial. Therefore 3 values of Sb must be given. 
 #------------------------------------------------------------
-sb.apod_fcn.random      = 0.05 0.05 0.05 
-sb.apod_fcn.systematic  = 0.05 0.05 0.05 
-sb.phase_fcn.random     = 0.05 0.05 0.05  
-sb.phase_fcn.systematic = 0.05 0.05 0.05
+sb.apod_fcn.random      = 0.05 0.05 0.05 0.05 0.05 
+sb.apod_fcn.systematic  = 0.05 0.05 0.05 0.05 0.05 
+sb.phase_fcn.random     = 0.05 0.05 0.05 0.05 0.05  
+sb.phase_fcn.systematic = 0.05 0.05 0.05 0.05 0.05
 
 #-----------------------------------------------------------
 # Sb for zshift is micro window dependent. However, Sb's are 
@@ -178,11 +178,12 @@ sb.band.1.zshift.random      = 0.01
 sb.band.2.zshift.random      = 0.01
 sb.band.3.zshift.random      = 0.01
 sb.band.4.zshift.random      = 0.01
+sb.band.5.zshift.random      = 0.01
 sb.band.1.zshift.systematic  = 0.01
 sb.band.2.zshift.systematic  = 0.01
 sb.band.3.zshift.systematic  = 0.01
 sb.band.4.zshift.systematic  = 0.01
-
+sb.band.5.zshift.systematic  = 0.01
 
 #----------------------------------------------------------
 # Sb's for lineInt, lineTair, and linePair currently only
@@ -190,12 +191,15 @@ sb.band.4.zshift.systematic  = 0.01
 # Does not work with kb.line.gas = retrieval because it is 
 # unclear which gas and order of gases in Kb
 #----------------------------------------------------------
+sb.lineInt.random                   = 0.1
+sb.linTAir.random                   = 0.1
+sb.linePAir.random                  = 0.1
 sb.lineInt.systematic               = 0.1     
 sb.lineTAir.systematic              = 0.1 
 sb.linePAir.systematic              = 0.1 
 
-sb.dwshift.H2O.random                
-sb.dwshift.H2O.systematic           
+sb.dwshift.H2O.random               = 0.1 
+sb.dwshift.H2O.systematic           = 0.1
 
 
 

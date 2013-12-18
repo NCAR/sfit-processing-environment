@@ -62,7 +62,7 @@ import glob
 import re
 import sfitClasses as sc
 import shutil
-from Layer1Mods import refMkrNCAR, t15ascPrep#, errAnalysis
+from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis
 
 
 
