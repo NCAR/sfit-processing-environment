@@ -734,8 +734,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 		# Temperature (in case of scaling)
 		#---------------------------------
 		elif (Kbl.lower() == 'temperature') and (SbctlFileVars.inputs['sb.temperature.'+ErrType+'.scaled'][0].upper() == 'T'):
-			diagFill = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
-			for i in range(0,len(diagFill)): diagFill[i] = (diagFill[i] / pGasPrf.T[i])
+		    diagFill = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
+		    for i in range(0,len(diagFill)): diagFill[i] = (diagFill[i] / pGasPrf.T[i])
 		    
 		#------------
 		# Profile Gas
