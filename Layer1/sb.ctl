@@ -160,10 +160,10 @@ sb.solstrnth.systematic = 0.001
 # model then the default value for calculating Kb is a 3rd order
 # polynomial. Therefore 3 values of Sb must be given. 
 #------------------------------------------------------------
-sb.apod_fcn.random      = 0.05 0.05 0.05 0.05 0.05 
-sb.apod_fcn.systematic  = 0.05 0.05 0.05 0.05 0.05 
-sb.phase_fcn.random     = 0.05 0.05 0.05 0.05 0.05  
-sb.phase_fcn.systematic = 0.05 0.05 0.05 0.05 0.05
+sb.apod_fcn.random      = 0.05 0.05 0.05 0.05
+sb.apod_fcn.systematic  = 0.05 0.05 0.05 0.05
+sb.phase_fcn.random     = 0.05 0.05 0.05 0.05  
+sb.phase_fcn.systematic = 0.05 0.05 0.05 0.05
 
 #-----------------------------------------------------------
 # Sb for zshift is micro window dependent. However, Sb's are 
@@ -186,20 +186,24 @@ sb.band.4.zshift.systematic  = 0.01
 sb.band.5.zshift.systematic  = 0.01
 
 #----------------------------------------------------------
-# Sb's for lineInt, lineTair, and linePair currently only
-# work for when kb.line.gas = target in the sfit4.ctl file.
-# Does not work with kb.line.gas = retrieval because it is 
-# unclear which gas and order of gases in Kb
+# Sb's for lineInt, lineTair, and linePair are specific to
+# an individual gas. They should be specified as:
+#      lineInt_<GAS>    example: lineInt_H2O
+#      linePAir_<GAS>   example: linePAir_H2O
+#      lineTAir_<GAS>   example: lineTAir_H2O
+#
+# Sb's (lineInt, linePAir, lineTAir) should be specified 
+# for gases given in kb.line.gas
 #----------------------------------------------------------
-sb.lineInt.random                   = 0.1
-sb.linTAir.random                   = 0.1
-sb.linePAir.random                  = 0.1
-sb.lineInt.systematic               = 0.1     
-sb.lineTAir.systematic              = 0.1 
-sb.linePAir.systematic              = 0.1 
+sb.lineInt_CH4.random                   = 0.1
+sb.lineTAir_CH4.random                  = 0.1
+sb.linePAir_CH4.random                  = 0.1
+sb.lineInt_CH4.systematic               = 0.1     
+sb.lineTAir_CH4.systematic              = 0.1 
+sb.linePAir_CH4.systematic              = 0.1 
 
-sb.dwshift.H2O.random               = 0.1 
-sb.dwshift.H2O.systematic           = 0.1
+sb.dwshift_H2O.random               = 0.1 
+sb.dwshift_H2O.systematic           = 0.1
 
 
 

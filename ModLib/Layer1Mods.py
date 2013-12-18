@@ -442,6 +442,11 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	   file variable names to what is used in ctl file. Kb_labels are the 
 	   parameter names as they appear in the ctl file'''
 	
+	#------------------------------------------------
+	# Split gas name from parameter if it is appended
+	#------------------------------------------------
+	if len(paramName.split('_')) == 2: paramName,gas = paramName.split('_')
+	
 	#--------------------------------------------------------
 	# List of parameters as they appear in the Kb.output file 
 	#--------------------------------------------------------
@@ -455,7 +460,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	try:               ind = Kb_labels_orig.index(paramName)
 	except ValueError: return paramName
 	
-	return Kb_labels[ind]
+	if 'gas' in locals(): rtrnVal = Kb_labels[ind] + '_' + gas 
+	else:                 rtrnVal = Kb_labels[ind]
+	
+	return rtrnVal
 			
 
     #----------------------------------------------
@@ -588,7 +596,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     # Read in profile data of primary gas
     #------------------------------------
     pGasPrf = sc.GasPrfs( wrkingDir + ctlFileVars.inputs['file.out.retprofiles'][0], 
-                               wrkingDir + ctlFileVars.inputs['file.out.aprprofiles'][0], primgas, npFlg=True, logFile=logFile)
+                          wrkingDir + ctlFileVars.inputs['file.out.aprprofiles'][0], primgas, npFlg=True, logFile=logFile)
         
     #-------------------------------------
     # Get gain matrix for the retrieved 
@@ -688,7 +696,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     # Determine which microwindows retrieve zshift
     #---------------------------------------------
     for k in ctlFileVars.inputs['band']:
-	if (ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0] == 'F'): zerolev_band_b.append(int(k))        # only include bands where zshift is NOT retrieved
+	if (ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper() == 'F'): zerolev_band_b.append(int(k))        # only include bands where zshift is NOT retrieved
   
     nbnds = len(zerolev_band_b)
 	
@@ -706,89 +714,77 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     for Kbl in Kb:
 	DK = np.dot(Dx,Kb[Kbl])
 	for ErrType in ['random','systematic']:
-	    if Kbl == 'zshift':
-		Sb = np.zeros( (nbnds, nbnds) )
-		for i in range(0,nbnds): Sb[i,i] = float( SbctlFileVars.inputs['sb.band.'+str(zerolev_band_b[i])+'.zshift.'+ErrType][0] )**2 
-	
-	    elif Kbl == 'temperature':
-		Sb   = np.zeros((n_layer,n_layer))
-		try:
-		    T_Sb = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
-		    
-		    #------------------------------------------------------------------
-		    # Determine whether to scale temperature (absolute units vs scaled)
-		    #------------------------------------------------------------------
-		    if SbctlFileVars.inputs['sb.temperature.'+ErrType+'.scaled'] == 'F':
-			np.fill_diagonal(Sb,T_Sb)
-		    else:
-			#-------------------------------------
-			# Scale the temperature using a priori
-			#-------------------------------------
-			for i in range(0,len(T_Sb)): Sb[i,i] = (float(T_Sb[i]) / pGasPrf.T[i])**2
-		except: pass
-	
-	    elif Kbl in kb_profile_gas:
-		Sb = np.zeros((n_layer,n_layer))
-		try:
-		    Sb_gas = np.array(SbctlFileVars.inputs['sb.profile.'+Kbl+'.'+ErrType])
-		    np.fill_diagonal(Sb,Sb_gas)
-		except: pass
-	
-	    elif DK.shape[1] == 1:
-		Sb = np.zeros((1,1))
-		#---------------------------------------
-		# Determine whether to scale values for:
-		#  -- SZA
-		#---------------------------------------		
-		if Kbl == 'sza':
-		    if SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'] == 'F':
-			Sb[0,0] = (float(SbctlFileVars.inputs['sb.sza.'+ErrType]) / spDBdataOne['SZen'])**2
-			
-		    else: Sb[0,0] = float(SbctlFileVars.inputs['sb.sza.'+ErrType])**2 
-		    
-		else:
-		    try: Sb[0,0] = float(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType][0])**2
-		    except: pass
 
-	    elif DK.shape[1] == n_window: 
-		Sb = np.zeros((n_window,n_window))
+	    #-------------------------------------------
+	    # Pre-allocate Sb matrix based on size of Kb
+	    #-------------------------------------------
+	    Sb = np.zeros((DK.shape[1],DK.shape[1]))
+	    
+	    try:
+		#-------------------------------------------------------------------------------------
+		# Get diagonal elements for Sb matricies. Some special cases require seperate handling
+		#-------------------------------------------------------------------------------------
+		#-------
+		# Zshift
+		#-------
+		if Kbl.lower() == 'zshift':	
+		    diagFill = np.array( [ SbctlFileVars.inputs['sb.band.'+str(x)+'.zshift.'+ErrType][0]  for x in zerolev_band_b ])
 		
-		#---------------------------------------
-		# Determine whether to scale values for:
-		#  -- FOV
-		#---------------------------------------
-		if Kbl == 'omega':
-		    Sb_ctl = np.zeros(n_window)
-		    if SbctlFileVars.inputs['sb.omega.'+ErrType+'.scaled'] == 'F':
-			for ind,Sb_fov_bnd in enumerate(SbctlFileVars.inputs['sb.omega.'+ErrType]):
-			    Sb_ctl[ind] = float(Sb_fov_bnd) / spDBdataOne['FOV']
-			
-		    else:
-			for ind,Sb_fov_bnd in enumerate(SbctlFileVars.inputs['sb.omega.'+ErrType]):
-			    Sb_ctl[ind] = float(Sb_fov_bnd) 
-		
+		#---------------------------------
+		# Temperature (in case of scaling)
+		#---------------------------------
+		elif (Kbl.lower() == 'temperature') and (SbctlFileVars.inputs['sb.temperature.'+ErrType+'.scaled'][0].upper() == 'T'):
+			diagFill = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
+			for i in range(0,len(diagFill)): diagFill[i] = (diagFill[i] / pGasPrf.T[i])
+		    
+		#------------
+		# Profile Gas
+		#------------
+		elif Kbl.upper() in [x.upper() for x in kb_profile_gas]:
+		    diagFill = np.array(SbctlFileVars.inputs['sb.profile.'+Kbl+'.'+ErrType])
+		    
+		#-------------------------
+		# SZA (in case of scaling)
+		#-------------------------
+		elif (Kbl.lower() == 'sza') and (SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'][0].upper() == 'T'):
+		    diagFill = np.array(SbctlFileVars.inputs['sb.sza.'+ErrType]) / spDBdataOne['SZen']
+		    
+		#---------------------------------
+		# Omega (FOV) (in case of scaling)
+		#---------------------------------
+		elif (Kbl.lower() == 'omega') and (SbctlFileVars.inputs['sb.omega.'+ErrType+'.scaled'][0].upper() == 'T'):
+		    diagFill = np.array(SbctlFileVars.inputs['sb.omega.'+ErrType]) / spDBdataOne['FOV']
+	    
 		#----------------
 		# All other cases
 		#----------------
-		else:
-		    Sb_ctl = np.zeros(n_window)
-		    for ind, Sb_bnd in enumerate(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]):
-			Sb_ctl[ind] = float(Sb_bnd)
-		
-		
-		try: np.fill_diagonal(Sb,Sb_ctl**2)
-		except: pass
+		else: 
+		    #--------------------------------------------------------------------
+		    # Catch errors where number of specified Sb does not match Kb columns
+		    #--------------------------------------------------------------------
+		    if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise Exception('Number of specified Sb does not match number of Kb columns!! Check Sb.ctl file.')
+		    diagFill = np.array(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) 
+		    
+		#--------------------------------------
+		# Fill Sb matrix with diagonal elements
+		#--------------------------------------
+		np.fill_diagonal(Sb,diagFill**2)
 	
-	    else: Sb = np.zeros((1,1))
-	    
+	    except: 
+		errmsg = sys.exc_info()[1]
+		print 'Problem calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType 
+		print errmsg
+		if logFile: logFile.error('Problem calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrTypeerrmsg+'\n'+errmsg)	
+		
+
 	    #----------------------------------------------------------------------
 	    # Check if Error covariance matrix has not been filled from sb.ctl file
 	    #----------------------------------------------------------------------
 	    if np.sum(Sb) == 0:
-		if Kbl == 'zshift': 
+		if Kbl.lower() == 'zshift': 
 		    print 'sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated'
 		    if logFile: logFile.info('sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated')
-		elif Kbl in kb_profile_gas:
+		elif Kbl.upper() in [x.upper() for x in kb_profile_gas]:
 		    print 'sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated'
 		    if logFile: logFile.info('sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')		    
 		else:               
@@ -822,9 +818,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     for k in S_ran:
 	S_tot_rndm_err  += S_ran[k][2]**2
 	if  SbctlFileVars.inputs['VMRoutFlg'][0].upper()  =='T': S_tot_ran_vmr   += S_ran[k][0]
-	else:						S_tot_ran_vmr    = 0
+	else:						           S_tot_ran_vmr    = 0
 	if  SbctlFileVars.inputs['MolsoutFlg'][0].upper() =='T': S_tot_ran_molcs += S_ran[k][1]
-	else:                                         S_tot_ran_molcs  = 0
+	else:                                                    S_tot_ran_molcs  = 0
 	
     S_tot_rndm_err  = np.sqrt(S_tot_rndm_err)
     
@@ -832,9 +828,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     for k in S_sys:
 	S_tot_systematic_err += S_sys[k][2]**2
 	if  SbctlFileVars.inputs['VMRoutFlg'][0].upper()  =='T': S_tot_sys_vmr   += S_sys[k][0]
-	else:						S_tot_sys_vmr    = 0
+	else:						           S_tot_sys_vmr    = 0
 	if  SbctlFileVars.inputs['MolsoutFlg'][0].upper() =='T': S_tot_sys_molcs += S_sys[k][1]
-	else:						S_tot_sys_molcs  = 0 
+	else:						           S_tot_sys_molcs  = 0 
 	
     S_tot_systematic_err = np.sqrt(S_tot_systematic_err)
     S_tot['Random']      = (S_tot_ran_vmr,S_tot_ran_molcs,S_tot_rndm_err)
