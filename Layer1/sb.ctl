@@ -40,8 +40,6 @@
 # Notes:
 #  1) phase and phase_fcn are different ways to describe the same parameter. 
 #     It is not recommended to calculate an error on both simultaneously. 
-#  2) dwshift is currently not implemented.
-#  3) Line parameters (lineInt, linePAir, and lineTAir) currently only work for 
 #     
 #-----------------------------------------------------------------
 
