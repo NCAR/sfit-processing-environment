@@ -91,7 +91,6 @@ file.out.ssystematic.vmr              = Ssystematic.vmr.output
 file.out.error.summary                = Errorsummary.output
 
 
-
                     #-------------------#
                     #     Sb values     #
                     #-------------------#
@@ -106,16 +105,16 @@ sb.temperature.random       =
 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
 
 sb.temperature.systematic   =
-9  9  9  9  9  9  9  7  7  7  7  6  6  5  5  2  2  2  2  2  2  2  2 2
-2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+9  9  9  9  9  9  9  7  7  7  7  6  6  5  5  2  2  2  2  2  2  2  2  2
+2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
 
 sb.profile.H2O.random       = 
- 9  9  9  9  9  9  9  7  7  7  7  6  6  5  5  2  2  2  2  2  2  2  2  2
- 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+9  9  9  9  9  9  9  7  7  7  7  6  6  5  5  2  2  2  2  2  2  2  2  2
+2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
 
 sb.profile.H2O.systematic   = 
- 9  9  9  9  9  9  9  7  7  7  7  6  6  5  5  2  2  2  2  2  2  2  2  2
- 2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+9  9  9  9  9  9  9  7  7  7  7  6  6  5  5  2  2  2  2  2  2  2  2  2
+2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
 
 #----------------------------------------------------------------------------
 # Micro-window dependent Sb:
@@ -202,6 +201,12 @@ sb.lineInt_CH4.systematic               = 0.1
 sb.lineTAir_CH4.systematic              = 0.1 
 sb.linePAir_CH4.systematic              = 0.1 
 
+#--------------------------------------------------------------
+# Kbs are calculated for dwshift for all interfering species.
+# (i.e. all gases, except the first gas listed (the primary gas)
+#  They should be specified as:
+#      dwshift_<GAS>    example: dwshift_H2O
+#-------------------------------------------------------------- 
 sb.dwshift_H2O.random               = 0.1 
 sb.dwshift_H2O.systematic           = 0.1
 
