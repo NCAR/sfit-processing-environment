@@ -748,7 +748,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 		#---------------------------------
 		# Temperature (in case of scaling)
 		#---------------------------------
-		elif (Kbl.lower() == 'temperature') and (SbctlFileVars.inputs['sb.temperature.'+ErrType+'.scaled'][0].upper() == 'T'):
+		elif (Kbl.lower() == 'temperature') and (SbctlFileVars.inputs['sb.temperature.'+ErrType+'.scaled'][0].upper() == 'F'):
 		    diagFill = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
 		    for i in range(0,len(diagFill)): diagFill[i] = (diagFill[i] / pGasPrf.T[i])
 		    
@@ -761,13 +761,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 		#-------------------------
 		# SZA (in case of scaling)
 		#-------------------------
-		elif (Kbl.lower() == 'sza') and (SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'][0].upper() == 'T'):
+		elif (Kbl.lower() == 'sza') and (SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'][0].upper() == 'F'):
 		    diagFill = np.array(SbctlFileVars.inputs['sb.sza.'+ErrType]) / spDBdataOne['SZen']
 		    
 		#---------------------------------
 		# Omega (FOV) (in case of scaling)
 		#---------------------------------
-		elif (Kbl.lower() == 'omega') and (SbctlFileVars.inputs['sb.omega.'+ErrType+'.scaled'][0].upper() == 'T'):
+		elif (Kbl.lower() == 'omega') and (SbctlFileVars.inputs['sb.omega.'+ErrType+'.scaled'][0].upper() == 'F'):
 		    diagFill = np.array(SbctlFileVars.inputs['sb.omega.'+ErrType]) / spDBdataOne['FOV']
 	    
 		#----------------
