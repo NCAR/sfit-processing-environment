@@ -750,7 +750,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 		#---------------------------------
 		elif (Kbl.lower() == 'temperature') and (SbctlFileVars.inputs['sb.temperature.'+ErrType+'.scaled'][0].upper() == 'F'):
 		    diagFill = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
-		    for i in range(0,len(diagFill)): diagFill[i] = (diagFill[i] / pGasPrf.T[i])
+		    if len(diagFill) != len(pGasPrf.T): raise Exception('Number of Sb for temperature does not match atmospheric layers!!')
+		    diagFill = diagFill / pGasPrf.T
 		    
 		#------------
 		# Profile Gas
