@@ -493,7 +493,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     # Read in Sa matrix
     #------------------
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.sa_matrix'][0], logFile)
-    if not lines: sys.exit()    # Critical file, if missing terminate program    
+    if not lines: 
+	print 'file.out.sa_matrix missing for observation, Date: ' + spDBdataOne['Date'] + ' Time: ' + spDBdataOne['Time']
+	if logFile: logFile.error('file.out.sa_matrix missing for observation, Date: ' + spDBdataOne['Date'] + ' Time: ' + spDBdataOne['Time'])
+	return False    # Critical file, if missing terminate program    
     
     sa = np.array( [ [ float(x) for x in row.split()] for row in lines[3:] ] )
     
@@ -509,7 +512,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     #    calculations.
     #---------------------------------------------------------------
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.summary'][0], logFile) 
-    if not lines: sys.exit()    # Critical file, if missing terminate program
+    if not lines: 
+	print 'file.out.summary missing for observation, Date: ' + spDBdataOne['Date'] + ' Time: ' + spDBdataOne['Time']
+	if logFile: logFile.error('file.out.summary missing for observation, Date: ' + spDBdataOne['Date'] + ' Time: ' + spDBdataOne['Time'])
+	return False    # Critical file, if missing terminate program   	
 
     #---------------------------------------------------------
     # Currently set up to read SNR from summary file where the
@@ -543,7 +549,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     # Read in K matrix
     #-----------------
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.k_matrix'][0], logFile) 
-    if not lines: sys.exit()      # Critical file, if missing terminate program
+    if not lines: 
+	print 'file.out.k_matrix missing for observation, Date: ' + spDBdataOne['Date'] + ' Time: ' + spDBdataOne['Time']
+	if logFile: logFile.error('file.out.k_matrix missing for observation, Date: ' + spDBdataOne['Date'] + ' Time: ' + spDBdataOne['Time'])
+	return False    # Critical file, if missing terminate program   
     
     n_wav   = int( lines[1].strip().split()[0] )
     x_start = int( lines[1].strip().split()[2] )
@@ -555,7 +564,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     # Read in Gain matrix
     #--------------------
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.g_matrix'][0], logFile)
-    if not lines: sys.exit()      # Critical file, if missing terminate program
+    if not lines: 
+	print 'file.out.g_matrix missing for observation, Date: ' + spDBdataOne['Date'] + ' Time: ' + spDBdataOne['Time']
+	if logFile: logFile.error('file.out.g_matrix missing for observation, Date: ' + spDBdataOne['Date'] + ' Time: ' + spDBdataOne['Time'])
+	return False    # Critical file, if missing terminate program   
     
     D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
 
@@ -563,8 +575,11 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     # Read in Kb matrix
     #------------------    
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.kb_matrix'][0], logFile)
-    if not lines: sys.exit()      # Critical file, if missing terminate program
-     
+    if not lines: 
+	print 'file.out.kb_matrix missing for observation, Date: ' + spDBdataOne['Date'] + ' Time: ' + spDBdataOne['Time']
+	if logFile: logFile.error('file.out.kb_matrix missing for observation, Date: ' + spDBdataOne['Date'] + ' Time: ' + spDBdataOne['Time'])
+	return False    # Critical file, if missing terminate program   
+    
     Kb_param = lines[2].strip().split()
     Kb_unsrt = np.array([[float(x) for x in row.split()] for row in lines[3:]])
     
