@@ -40,6 +40,7 @@
 # Notes:
 #  1) phase and phase_fcn are different ways to describe the same parameter. 
 #     It is not recommended to calculate an error on both simultaneously. 
+#  2) dwshift is currently not functional. Do NOT use.
 #     
 #-----------------------------------------------------------------
 
@@ -69,8 +70,8 @@ SeInputFlg = F                # This flag determines where the Se matrix is read
 # native units or scaled
 #     F = Native Units, T = Fractional
 #-----------------------------------------------
-sb.temperature.random.scaled                = F         # If = T (fractional) -- scaled by a priori
-sb.temperature.systematic.scaled            = T         # If = T (fractional) -- scaled by a priori
+sb.temperature.random.scaled                = F         # If = T (fractional) --> scaled by a priori
+sb.temperature.systematic.scaled            = T         # If = T (fractional) --> scaled by a priori
 sb.sza.random.scaled                        = T
 sb.sza.systematic.scaled                    = T
 sb.omega.random.scaled                      = T
@@ -87,6 +88,7 @@ file.out.srandom.vmr                  = Srandom.vmr.output
 file.out.ssystematic                  = Ssystematic.output
 file.out.ssystematic.vmr              = Ssystematic.vmr.output
 file.out.error.summary                = Errorsummary.output
+file.out.avk                          = avk.output
 
 
                     #-------------------#
@@ -200,13 +202,14 @@ sb.lineTAir_CH4.systematic              = 0.1
 sb.linePAir_CH4.systematic              = 0.1 
 
 #--------------------------------------------------------------
+# DO NOT USE!!!!!
 # Kbs are calculated for dwshift for all interfering species.
 # (i.e. all gases, except the first gas listed (the primary gas)
 #  They should be specified as:
 #      dwshift_<GAS>    example: dwshift_H2O
 #-------------------------------------------------------------- 
-sb.dwshift_H2O.random               = 0.1 
-sb.dwshift_H2O.systematic           = 0.1
+#sb.dwshift_H2O.random               = 0.1 
+#sb.dwshift_H2O.systematic           = 0.1
 
 
 

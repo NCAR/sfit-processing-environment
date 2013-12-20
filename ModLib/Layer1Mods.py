@@ -919,6 +919,16 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	    fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic.vmr'][0]
 	    header = 'SYSTEMATIC ERROR COVARIANCE MATRICES IN VMR UNITS'
 	    writeCoVar(fname,header,S_sys,0)	
-	
+
+    #-----------------------
+    # Write Averaging Kernel
+    #-----------------------
+    fname      = wrkingDir+SbctlFileVars.inputs['file.out.avk'][0]    
+    header     = 'Averaging Kernel for '+ primgas.upper()
+    AVK        = {}
+    AVK['AVK'] = (AKx)
+    writeCoVar(fname,header,AVK,0)
+    
+    
     return True
 
