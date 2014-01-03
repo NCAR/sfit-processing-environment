@@ -140,6 +140,26 @@ sb.curvature.systematic = 0.001 0.001 0.001 0.001 0.001
 sb.max_opd.random       = 0.00001 0.00001 0.00001 0.00001 0.00001
 sb.max_opd.systematic   = 0.00001 0.00001 0.00001 0.00001 0.00001
 
+#-----------------------------------------------------------
+# Sb for zshift is micro window dependent. However, Sb's are 
+# only to be specified in microwindows where zshift is not
+# retrieved. For example, if you have two microwindows and 
+# you retrieve the first (1), then you would specify:
+#  sb.band.2.zshift.random and sb.band.2.zshift.systematic
+# The number corresponds to the band number in the sfit4.ctl
+# file.
+#-----------------------------------------------------------
+sb.band.1.zshift.random      = 0.01
+sb.band.2.zshift.random      = 0.01
+sb.band.3.zshift.random      = 0.01
+sb.band.4.zshift.random      = 0.01
+sb.band.5.zshift.random      = 0.01
+sb.band.1.zshift.systematic  = 0.01
+sb.band.2.zshift.systematic  = 0.01
+sb.band.3.zshift.systematic  = 0.01
+sb.band.4.zshift.systematic  = 0.01
+sb.band.5.zshift.systematic  = 0.01
+
 #----------------
 # Single value Sb
 #----------------
@@ -163,26 +183,6 @@ sb.apod_fcn.random      = 0.05 0.05 0.05 0.05
 sb.apod_fcn.systematic  = 0.05 0.05 0.05 0.05
 sb.phase_fcn.random     = 0.05 0.05 0.05 0.05  
 sb.phase_fcn.systematic = 0.05 0.05 0.05 0.05
-
-#-----------------------------------------------------------
-# Sb for zshift is micro window dependent. However, Sb's are 
-# only to be specified in microwindows where zshift is not
-# retrieved. For example, if you have two microwindows and 
-# you retrieve the first (1), then you would specify:
-#  sb.band.2.zshift.random and sb.band.2.zshift.systematic
-# The number corresponds to the band number in the sfit4.ctl
-# file.
-#-----------------------------------------------------------
-sb.band.1.zshift.random      = 0.01
-sb.band.2.zshift.random      = 0.01
-sb.band.3.zshift.random      = 0.01
-sb.band.4.zshift.random      = 0.01
-sb.band.5.zshift.random      = 0.01
-sb.band.1.zshift.systematic  = 0.01
-sb.band.2.zshift.systematic  = 0.01
-sb.band.3.zshift.systematic  = 0.01
-sb.band.4.zshift.systematic  = 0.01
-sb.band.5.zshift.systematic  = 0.01
 
 #----------------------------------------------------------
 # Sb's for lineInt, lineTair, and linePair are specific to

@@ -442,9 +442,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	   file variable names to what is used in ctl file. Kb_labels are the 
 	   parameter names as they appear in the ctl file'''
 	
-	#------------------------------------------------
-	# Split gas name from parameter if it is appended
-	#------------------------------------------------
+	#----------------------------------
+	# Split parameter name if necessary
+	#----------------------------------
 	if len(paramName.split('_')) == 2: paramName,gas = paramName.split('_')
 	
 	#--------------------------------------------------------
@@ -454,13 +454,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	
 	#------------------------------------------------------
 	# Find index of input paramName. If this is not matched
-	# then program returns origina paramName. This is for
+	# then program returns original paramName. This is for
 	# kb.profile.gases
 	#------------------------------------------------------
 	try:               ind = Kb_labels_orig.index(paramName)
 	except ValueError: return paramName
 	
-	if 'gas' in locals(): rtrnVal = Kb_labels[ind] + '_' + gas 
+	if 'gas' in locals(): rtrnVal = Kb_labels[ind] + '_' + gas
 	else:                 rtrnVal = Kb_labels[ind]
 	
 	return rtrnVal
@@ -517,21 +517,21 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	if logFile: logFile.error('file.out.summary missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time'])
 	return False    # Critical file, if missing terminate program   	
 
-    #---------------------------------------------------------
+    #-----------------------------------------------------------
     # Currently set up to read SNR from summary file where the
-    # summary file format has INIT_SNR on the line below IBAND 
-    #---------------------------------------------------------
+    # summary file format has INIT_SNR on the same line as IBAND 
+    #-----------------------------------------------------------
     lstart   = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
     indNPTSB = lines[lstart].strip().split().index('NPTSB')
-    indSNR   = lines[lstart].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
+    indSNR   = lines[lstart].strip().split().index('INIT_SNR') 
     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
         
     SNR   = []
     nptsb = []
     
-    for lnum in range(lstart+1,lend,2):
-        nptsb.append(    float( lines[lnum].strip().split()[indNPTSB] ) )
-        SNR.append( float( lines[lnum+1].strip().split()[indSNR]   ) )       # Add 1 to line number because INIT_SNR exists on next line
+    for lnum in range(lstart+1,lend):
+        nptsb.append( float( lines[lnum].strip().split()[indNPTSB] ) )
+        SNR.append(   float( lines[lnum].strip().split()[indSNR]   ) )       
     
     se         = np.zeros((sum(nptsb),sum(nptsb)), float)
 
@@ -581,6 +581,19 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	return False    # Critical file, if missing terminate program   
     
     Kb_param = lines[2].strip().split()
+    #---------------------------------------------------------------
+    # Some parameter names in the Kb file are appended by either 
+    # micro-window or gas name. If they are appended by micro-window
+    # strip this and just keep parameter name so that we may group
+    # the micro-windows under one key
+    #---------------------------------------------------------------
+    for ind,val in enumerate(Kb_param):
+	if len(val.split('_')) == 2:
+	    pname,appnd = val.split('_')
+	    try:               int(appnd); val = pname
+	    except ValueError: pass
+	Kb_param[ind] = val
+				
     Kb_unsrt = np.array([[float(x) for x in row.split()] for row in lines[3:]])
     
     #----------------------------------
@@ -704,16 +717,17 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     #----------------------------------------------
     # Errors from parameters not retrieved by sfit4
     #----------------------------------------------
-    zerolev_band_b = []
-    
-    
-    #---------------------------------------------
-    # Determine which microwindows retrieve zshift
-    #---------------------------------------------
+    #-------------------------------------------------
+    # Determine which microwindows retrieve for zshift
+    #-------------------------------------------------
+    bands = {}
     for k in ctlFileVars.inputs['band']:
-	if (ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper() == 'F'): zerolev_band_b.append(int(k))        # only include bands where zshift is NOT retrieved
-  
-    nbnds = len(zerolev_band_b)
+	if (ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper() == 'F'): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
+    
+    #--------------------------------------------------------------------
+    # Set band ordering for micro-window dependent Sb's other than zshift
+    #--------------------------------------------------------------------
+	bands.setdefault('other',[]).append(int(k))
 	
     #-------------------------------------------------------------------
     # Get kb.profile.gas(es) list from sfit4.ctl file. These are used 
@@ -743,7 +757,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 		# Zshift
 		#-------
 		if Kbl.lower() == 'zshift':	
-		    diagFill = np.array( [ SbctlFileVars.inputs['sb.band.'+str(x)+'.zshift.'+ErrType][0]  for x in zerolev_band_b ])
+		    diagFill = np.array( [ SbctlFileVars.inputs['sb.band.'+str(x)+'.zshift.'+ErrType][0]  for x in bands['zshift'] ])
 		
 		#---------------------------------
 		# Temperature (in case of scaling)
