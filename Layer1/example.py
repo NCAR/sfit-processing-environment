@@ -5,11 +5,16 @@
 import tools_bavo
 import os,h5py
 <<<<<<< HEAD
-os.chdir('.')
+<<<<<<< HEAD
 =======
-os.chdir('/dev/shm/bavol/testbavon2o/12223002.Shh/NO2/')
+>>>>>>> e2f1482c24fe0acd65439d82d175d2fbd1ebb477
+os.chdir('.')
+
 sbctl=tools_bavo.trim_dict(tools_bavo.read_dictfile('sb.ctl')) #dict files are loaded with line numbers, ... trim removes this
+<<<<<<< HEAD
 >>>>>>> Dev_Bavo
+=======
+>>>>>>> e2f1482c24fe0acd65439d82d175d2fbd1ebb477
 ctl=tools_bavo.read_dictfile('sfit4.ctl',sfit4=True)
 sbdict=tools_bavo.create_sfit4_sb(ctl,sbctl)
 tools_bavo.update_dict(ctl,'option.sb',sbdict) #glue sb in ctl with a separate key (all keys starting with option are seperated from sfit4.cl)

@@ -849,8 +849,8 @@ def print_dictfile(ctl,keysep='=',quiet=True):
     if type(v[0])==float: out+='%8.4f'%v[0]
     elif type(v[0])==ndarray: 
       out+='\n'
-#      out+=''.join(map(lambda x: '%8.4f' %x, v[0]))
-      out+=print_array(v[0],fmt='8.4f') #      out+=print_mix(v[0],fmt='8.4f') print_mix does not exist in my setup. I believe the line above is doing the same
+      out+=''.join(map(lambda x: '%8.4f' %x, v[0]))
+#      out+=print_mix(v[0],fmt='8.4f') print_mix does not exist in my setup. I believe the line above is doing the same
     elif type(v[0])==int: out+='%d'%v[0]
     elif type(v[0])==list: out+=' '.join([str(i) for i in v[0]])
     elif type(v[0])==bool: out+=str(v[0])[0]
@@ -1154,12 +1154,9 @@ def create_sfit4_errorbudget(ctl,retdata={},logger=rootlogger):
   for mol in ctl['gas.column.list']:
     colidx=where(retdata['attr']['APRprofs']['columns']==mol)[0][0]
     PCap=retdata['APRprofs'][:,colidx].squeeze()*retdata['s/airmass']
-<<<<<<< HEAD
     # I believe this is wanted in line 916 (column in sa matrix)
-    colidx=where(retdata['attr']['sa']['columns']==mol)[0][0]
-=======
+    # colidx=where(retdata['attr']['sa']['columns']==mol)[0][0]
     colidx=where(retdata['attr']['k']['columns']==mol)[0][0]
->>>>>>> Dev_Bavo
     for ErrType in ['random','systematic']:
       speckey='%s/uncertainties/%s/%s'%(sbprokey,mol,ErrType)
       if speckey in retdata:
