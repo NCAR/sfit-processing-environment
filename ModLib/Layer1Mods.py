@@ -722,7 +722,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     #-------------------------------------------------
     bands = {}
     for k in ctlFileVars.inputs['band']:
-	if (ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper() == 'F'): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
+        zsh = ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper()
+        zsh_t = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]
+	if (zsh == 'F' or zsh_t == 1): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
     
     #--------------------------------------------------------------------
     # Set band ordering for micro-window dependent Sb's other than zshift
