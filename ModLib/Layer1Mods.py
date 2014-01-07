@@ -517,21 +517,21 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	if logFile: logFile.error('file.out.summary missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time'])
 	return False    # Critical file, if missing terminate program   	
 
-    #-----------------------------------------------------------
+    #---------------------------------------------------------
     # Currently set up to read SNR from summary file where the
-    # summary file format has INIT_SNR on the same line as IBAND 
-    #-----------------------------------------------------------
+    # summary file format has INIT_SNR on the line below IBAND 
+    #---------------------------------------------------------
     lstart   = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
     indNPTSB = lines[lstart].strip().split().index('NPTSB')
-    indSNR   = lines[lstart].strip().split().index('INIT_SNR') 
+    indSNR   = lines[lstart].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
         
     SNR   = []
     nptsb = []
     
-    for lnum in range(lstart+1,lend):
-        nptsb.append( float( lines[lnum].strip().split()[indNPTSB] ) )
-        SNR.append(   float( lines[lnum].strip().split()[indSNR]   ) )       
+    for lnum in range(lstart+1,lend,2):
+        nptsb.append(    float( lines[lnum].strip().split()[indNPTSB] ) )
+        SNR.append( float( lines[lnum+1].strip().split()[indSNR]   ) )       # Add 1 to line number because INIT_SNR exists on next line
     
     se         = np.zeros((sum(nptsb),sum(nptsb)), float)
 
@@ -722,7 +722,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     #-------------------------------------------------
     bands = {}
     for k in ctlFileVars.inputs['band']:
-	if (ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper() == 'F'): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
+	test1 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper()
+	test2 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]
+	if (test1 == 'F' or test2 == 1): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
     
     #--------------------------------------------------------------------
     # Set band ordering for micro-window dependent Sb's other than zshift
