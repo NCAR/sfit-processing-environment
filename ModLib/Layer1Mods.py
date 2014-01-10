@@ -738,7 +738,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     bands = {}
     for k in ctlFileVars.inputs['band']:
 	test1 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper()
-	test2 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]
+	try:    test2 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]            # This parameter might not exist in the ctl file if zshift = false
+	except: test2 = 1 
 	if (test1 == 'F' or test2 == 1): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
     
     #--------------------------------------------------------------------
