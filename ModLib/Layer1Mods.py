@@ -555,8 +555,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	snrList[:] = [val**-2 for val in snrList]
     else:
 	lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
-	snrList    = float( lines[2].strip().split() ) 
-	snrList[:] = [1.0/val for val in snrList]
+	snrList    = lines[2].strip().split()
+	snrList[:] = [1.0/float(val) for val in snrList]
     
     np.fill_diagonal(se,snrList)    
       
