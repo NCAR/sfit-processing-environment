@@ -11,6 +11,7 @@
 #			3) Calls sfit4
 #			4) Clean outputs from sfit4 call
 #			5) Creates a log file
+#                       6) Calculates error matrices
 #
 #
 # External Subprocess Calls:
@@ -33,6 +34,7 @@
 #			 --hbin_off	 : Flag to not run hbin (default is to run)
 #			 --pspec_off : Flag to not run pspec (default is to run)
 #			 --sfit4_off : Flag to not run sfit4 (default is to run)
+#                        --errror_off: Flag to no calculate errors
 #			
 #
 # Usage:
@@ -53,7 +55,22 @@
 #       Created, May, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
 #
 #
-# References:
+# License:
+#    Copyright (c) 2013-2014 NDACC/IRWG
+#    This file is part of sfit4.
+#
+#    sfit4 is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    any later version.
+#
+#    sfit4 is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #
 #----------------------------------------------------------------------------------------
 
@@ -67,7 +84,10 @@ import os
 import getopt
 import datetime
 import subprocess
-
+import sys, os
+sys.path.append(os.path.dirname(os.path.realpath(__file__))+'/../ModLib/')
+from Layer1Mods import errAnalysis
+import sfitClasses as sc
 
 #------------------------
 # Define helper functions
@@ -98,7 +118,7 @@ def main(argv):
         #--------------------------------
         try:
                 opts, args = getopt.getopt(sys.argv[1:], 'i:e:l:c:h', 
-                                           ['log_off', 'hbin_off', 'pspec_off', 'sfit4_off'])
+                                           ['log_off', 'hbin_off', 'pspec_off', 'sfit4_off', 'error_off'])
 
         except getopt.GetoptError as err:
                 print str(err)
@@ -131,6 +151,7 @@ def main(argv):
         pspec_flg = True		# Flag for pspec run
         sfit4_flg = True		# Flag for sfit4 run
         cln_flg   = False		# Flag for cleaning sfit4 output
+	error_flg = True
 
         #-----------------------------
         # Parse command line arguments
@@ -191,6 +212,9 @@ def main(argv):
                 elif opt == '--sfit4_off':
                         sfit4_flg = False
 
+                elif opt == '--error_off':
+                        error_flg = False
+
                 elif opt == '-c':
                         cln_flg = True
                         cln_fpath = arg
@@ -225,6 +249,7 @@ def main(argv):
                 logging.info('hbin flag = '     + str(hbin_flg)  )
                 logging.info('pspec flag = '    + str(pspec_flg) )
                 logging.info('sfit4 flag = '    + str(sfit4_flg) )
+                logging.info('error flag = '    + str(error_flg) )
 
         #-------------------------------------------
         # Change working directory to directory with
@@ -311,6 +336,19 @@ def main(argv):
                         #if log_flg:
                                 #logging.error('Error running sfit4 \n' + stdout)
                         #sys.exit()   
+	#----------
+	# Run error calculation
+	#----------
+        if error_flg:
+                print 'Error calculation.....'
+		ctl = sc.CtlInputFile('sfit4.ctl')
+		ctl.getInputs()
+		Sbctl = sc.CtlInputFile('Sb.ctl')
+		Sbctl.getInputs()
+		errAnalysis(ctl,Sbctl,'./',False)
+                                                                
+                if log_flg:
+                        logging.info( '\n' + stdout + stderr )
                         
 
 
