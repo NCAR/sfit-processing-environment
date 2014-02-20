@@ -24,7 +24,22 @@
 #       Created, June, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
 #
 #
-# References:
+# License:
+#    Copyright (c) 2013-2014 NDACC/IRWG
+#    This file is part of sfit4.
+#
+#    sfit4 is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    sfit4 is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #
 #----------------------------------------------------------------------------------------
 
@@ -517,21 +532,21 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	if logFile: logFile.error('file.out.summary missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time'])
 	return False    # Critical file, if missing terminate program   	
 
-    #-----------------------------------------------------------
+    #---------------------------------------------------------
     # Currently set up to read SNR from summary file where the
-    # summary file format has INIT_SNR on the same line as IBAND 
-    #-----------------------------------------------------------
+    # summary file format has INIT_SNR on the line below IBAND 
+    #---------------------------------------------------------
     lstart   = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
     indNPTSB = lines[lstart].strip().split().index('NPTSB')
-    indSNR   = lines[lstart].strip().split().index('INIT_SNR') 
+    indSNR   = lines[lstart].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
         
     SNR   = []
     nptsb = []
     
-    for lnum in range(lstart+1,lend):
-        nptsb.append( float( lines[lnum].strip().split()[indNPTSB] ) )
-        SNR.append(   float( lines[lnum].strip().split()[indSNR]   ) )       
+    for lnum in range(lstart+1,lend,2):
+        nptsb.append(    float( lines[lnum].strip().split()[indNPTSB] ) )
+        SNR.append( float( lines[lnum+1].strip().split()[indSNR]   ) )       # Add 1 to line number because INIT_SNR exists on next line
     
     se         = np.zeros((sum(nptsb),sum(nptsb)), float)
 
@@ -540,8 +555,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	snrList[:] = [val**-2 for val in snrList]
     else:
 	lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
-	snrList    = float( lines[2].strip().split() ) 
-	snrList[:] = [1.0/val for val in snrList]
+	snrList    = lines[2].strip().split()
+	snrList[:] = [1.0/float(val) for val in snrList]
     
     np.fill_diagonal(se,snrList)    
       
@@ -722,9 +737,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     #-------------------------------------------------
     bands = {}
     for k in ctlFileVars.inputs['band']:
-        zsh = ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper()
-        zsh_t = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]
-	if (zsh == 'F' or zsh_t == 1): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
+	test1 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper()
+	try:    test2 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]            # This parameter might not exist in the ctl file if zshift = false
+	except: test2 = 1 
+	if (test1 == 'F' or test2 == 1): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
     
     #--------------------------------------------------------------------
     # Set band ordering for micro-window dependent Sb's other than zshift
