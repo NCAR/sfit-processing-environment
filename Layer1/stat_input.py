@@ -24,7 +24,22 @@
 #       Created, May, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
 #
 #
-# References:
+# License:
+#    Copyright (c) 2013-2014 NDACC/IRWG
+#    This file is part of sfit4.
+#
+#    sfit4 is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    any later version.
+#
+#    sfit4 is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #
 #----------------------------------------------------------------------------------------
 
@@ -53,21 +68,22 @@ fday  = 26                 # Day
 #------------
 BaseDirInput     = '/Users/ebaumer/Data/TestBed/Input/'            # Input base directory
 BaseDirOutput    = '/Users/ebaumer/Data/TestBed/Output/'           # Output base directory
-binDir           = '/Users/ebaumer/Code/sfit-core-code/src/'              # binary directory
+binDir           = '/Users/ebaumer/Code/sfit-core-code/src/'       # binary directory
 ilsDir           = ''                                              # ILS file(s). Options:
                                                                    #   1) Use empty string ('') to indicate no ILS file!!
                                                                    #   2) If string points to directory finds ils file closest in date (ils file name must be in format: *ilsYYYYMMDD.*)
                                                                    #   3) If string points to specific file, this ils file is used for all data processing
                                                                    
 RatioDir         = '/Users/ebaumer/Data/TestBed/fltrFiles/'        # Directory for ratio files ** Currently NOT used **
-logDirOutput     = '/Users/ebaumer/Data/TestBed/'       # Directory to write log files and list files
+logDirOutput     = '/Users/ebaumer/Data/TestBed/'                  # Directory to write log files and list files
 
 #------
 # Files
 #------
 # FORMAT=>[Control file Path/name, Filter ID, Version Name] 
-#             Control file Path/name (str) -- full name and path to control file 
-#             Version Name (str) -- Version name of control file. Used to create directory under timestamp directory
+#             Control file Path/name (str) -- Full name and path to control file 
+#             Filter ID (str)              -- Filter ID
+#             Version Name (str)           -- Version name of control file. Used to create directory under timestamp directory
 ctlList   = [['/Users/ebaumer/Data/TestBed/ctlFiles/sfit4.ctl','','VerA']]
 
 
