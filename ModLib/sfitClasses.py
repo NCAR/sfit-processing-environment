@@ -42,6 +42,7 @@
 #----------------------------------------------------------------------------------------
 
 import datetime
+import os
 import re
 import csv
 import itertools
@@ -76,6 +77,26 @@ def sortDict(DataDict,keyval):
     for k in DataDict:
         DataDict[k] = [y for (x,y) in sorted(zip(base,DataDict[k]))]
     return DataDict
+
+def ckFile(fName,logFlg=False,exit=False):
+    '''Check the existence of a file'''
+    if not os.path.isfile(fName):
+        print 'File %s does not exist' % (fName)
+        if logFlg: logFlg.error('Unable to find file: %s' % fName)
+        if exit: sys.exit()
+        return False
+    else:
+        return True  
+
+def ckDir(dirName,logFlg=False,exitFlg=False):
+    ''' Check the existence of a directory'''
+    if not os.path.exists( dirName ):
+        print 'Input Directory %s does not exist' % (dirName)
+        if logFlg: logFlg.error('Directory %s does not exist' % dirName)
+        if exit: sys.exit()
+        return False
+    else:
+        return True   
 
                                                 #----------------#
                                                 # Define classes #
@@ -126,22 +147,10 @@ class DateRange:
         else:
             print 'Error!! Year must be type int for daysInYear'
             return False
-        
-
-#-------------------------------------------InputFile-------------------------------------------------------
-class InputFile:
-    ''' Class for input files with generic method to check the existance of file'''
-    def __init__(self,fname,logFile=False):
-        self.fname = fname
-        try:
-            with open(fname): pass
-        except IOError as errmsg:
-            print 'Unable to find',fname
-            if logFile: logFile.error(errmsg)
-            sys.exit()         
+         
 
 #----------------------------------------Layer1InputFile-------------------------------------------------------
-class Layer1InputFile(InputFile):
+class Layer1InputFile():
     '''
     This class deals with batch processing Layer 1
     input files. Reads in input values. Input file 
@@ -149,14 +158,8 @@ class Layer1InputFile(InputFile):
     inputs are read in using execfile
     '''   
     def __init__(self,fname,logFile=False):
-        InputFile.__init__(self,fname,logFile)
+        ckFile(fname, logFlg, exit=True)
         self.inputs  = {}
-        #try:
-            #with open(self.fname): pass
-        #except IOError as errmsg:
-            #print 'Unable to find',self.fname
-            #if self.logFile: self.logFile.error(errmsg)
-            #sys.exit()
             
     def getInputs(self,logFile=False):
         ''' Layer 1 input file is treated as a python
@@ -172,15 +175,15 @@ class Layer1InputFile(InputFile):
             del self.inputs['__builtins__']          
             
 #----------------------------------------CtlInputFile-------------------------------------------------------
-class CtlInputFile(InputFile):
+class CtlInputFile():
     '''
     This class deals with reading in ctl files to dictionary and replacing
     values in ctl file
     '''
 
     def __init__(self,fname,logFile=False):
-        InputFile.__init__(self,fname,logFile)
-        self.inputs = {}
+        ckFile(fname, logFlg, exit=True)
+        self.inputs  = {}
                    
                    
     def __convrtD(self,rhs):
@@ -306,14 +309,13 @@ class CtlInputFile(InputFile):
             fopen.writelines(lines)
             
 #--------------------------------------DbInputFile---------------------------------------------------------
-class DbInputFile(InputFile):
+class DbInputFile():
     '''
     This class deals with reading and filtering 
     the spectral database file.
     '''    
     def __init__(self,fname,logFile=False):
-        ''' Initializations '''
-        InputFile.__init__(self,fname,logFile)
+        ckFile(fname, logFlg, exit=True)
         self.dbInputs    = {}
         self.dbFltInputs = {}
             
@@ -421,75 +423,131 @@ class DbInputFile(InputFile):
         return dbFltInputs
     
 #---------------------------------------GasPrfs--------------------------------------------------------
-class GasPrfs(InputFile):
-    ''' This class gets the Zbar, P, Airmass and VMR of specified gas for 
-        both retrieved and a prior states'''
-    
-    def __init__(self,rprfsFile,aprfsFile,gas, npFlg=False, logFile=False):
+class RetOutput():
+    ''' This class deals with reading output from a retrieval '''
+
+    def __init__(self,wrkDir,logFile=False):
+        ''' Check existance of directory '''
+        ckDir(dirName,logFile,exitFlg=True)
+        if not(dirName.endswith('/')): wrkDir = wrkDir + '/'
+        self.wrkDir = wrkDir
+
+    def readPrf(self, fName, gasName, retapFlg=1, logFile=False):
+        ''' Reads in retrieved profile data from SFIT output. Profiles are given as columns. Each row corresponds to
+            to an altitude layer [nLayers,nObservations]. retapFlg determines whether retrieved profiles (=1) or a priori profiles (=0) are read'''
+
+        ckFile(wrkDir + fName , LogFile, exit=True)
+
+        self.deflt = {}
+        retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be retrieved        
         
-        InputFile.__init__(self,rprfsFile,logFile)
-        self.rprfsFile = self.fname
-        
-        InputFile.__init__(self,aprfsFile,logFile)
-        self.aprfsFile = self.fname
-        
-        del self.fname
-        
-        #---------------------------
-        # Get retrieved profile data
-        #---------------------------
-        with open(rprfsFile,'r') as fopen:
-            rprfsLines = fopen.readlines()
-        
-        rprfsParm = rprfsLines[3].strip().split()
-        
-        #--------------------------
-        # Get a priori profile data
-        #--------------------------
-        with open(aprfsFile,'r') as fopen:
-            aprfsLines = fopen.readlines()
-    
-        aprfsParm = aprfsLines[3].strip().split()
-        
-        #------
-        # Get Z
-        #------
-        self.Z = [ float(row.strip().split()[rprfsParm.index('Z')]) for row in rprfsLines[4:] ]        
-        if npFlg: self.Z = np.asarray(self.Z)
-        
-        #---------
-        # Get ZBAR
-        #---------
-        self.Zbar = [ float(row.strip().split()[rprfsParm.index('ZBAR')]) for row in rprfsLines[4:] ]
-        if npFlg: self.Zbar = np.asarray(self.Zbar)
-        
-        #----------------
-        # Get Temperature
-        #----------------
-        self.T = [ float(row.strip().split()[rprfsParm.index('TEMPERATURE')]) for row in rprfsLines[4:] ]   
-        if npFlg: self.T = np.asarray(self.T)
-        
-        #-------------
-        # Get Pressure
-        #-------------        
-        self.P = [ float(row.strip().split()[rprfsParm.index('PRESSURE')]) for row in rprfsLines[4:] ]
-        if npFlg: self.P = np.asarray(self.P)
-        
-        #------------
-        # Get Airmass
-        #------------        
-        self.Airmass = [ float(row.strip().split()[rprfsParm.index('AIRMASS')]) for row in rprfsLines[4:] ]        
-        if npFlg: self.Airmass = np.asarray(self.Airmass)
+        #--------------------------------------
+        # Add user specified retrieved gas list 
+        # to standard retrievals
+        #--------------------------------------
+        retrvdAll.extend(gasName)        
         
         #--------------------------
-        # Get gas retrieved profile
+        # Open and read output file
         #--------------------------
-        self.Rprf = [ float(row.strip().split()[rprfsParm.index(gas.upper())]) for row in rprfsLines[4:] ]
-        if npFlg: self.Rprf = np.asarray(self.Rprf)
+        with open(wrkDir+fName, 'r') as fopen:
+            defltLines = fopen.readlines()
+
+        #--------------------------------
+        # Get Names of profiles retrieved
+        #--------------------------------
+        defltParm = defltLines[3].strip().split()        
         
-        #-------------------------
-        # Get gas a priori profile
-        #-------------------------
-        self.Aprf = [ float(row.strip().split()[aprfsParm.index(gas.upper())]) for row in aprfsLines[4:] ]        
-        if npFlg: self.Aprf = np.asarray(self.Aprf)
+        #----------------------------------------
+        # Loop through retrieved profiles to read
+        #----------------------------------------
+        for rtrvdSing in retrvdAll:
+            self.deflt.setdefault(rtrvdSing,[]).extend([ float(row.strip().split()[defltParm.index(rtrvdSing.upper())]) for row in defltLines[4:] ] )
+
+            # Convert to numpy array
+            self.deflt[rtrvdSing] = np.asarray( self.deflt[rtrvdSing] )
+
+        # Get total column for retrieval gas
+        self.deflt[gasName+'_tot_col'] = np.sum(self.deflt[gasName] * self.deflt['AIRMASS'])        
+        
+        #-------------------------------------------
+        # Assign to aprfs or rprfs according to flag
+        #-------------------------------------------
+        if   retapFlg == 1: self.rprfs = self.deflt
+        elif retapFlg == 0: self.aprfs = self.deflt
+        del self.deflt        
+        
+        
+    def readSum(self, fName, logFile=False):
+        ''' Reads variables from summary file of retrieval '''
+        
+        ckFile(wrkDir + fName , LogFile, exit=True)
                  
+        #--------------------------
+        # Open and read summary file
+        #--------------------------
+        with open(wrkDir + fName, 'r') as fopen:
+            lines = fopen.readlines()
+
+        #--------------------------------
+        # Get date/time of retrieval and
+        # solar zenith angle
+        #--------------------------------
+
+
+        #--------------------------------
+        # Get retrieved column amount for 
+        # each gas retrieved
+        #--------------------------------
+        ind1       = [ind for ind,line in enumerate(lines) if 'IRET' in line][0]
+        ngas       = int(lines[ind1-1].strip())
+        indGasName = lines[ind1].index('GAS_NAME')
+        indRETCOL  = lines[ind1].index('RET_COLUMN')
+
+
+        for i in range(ind1+1,ind1+ngas+2):
+            gasname = lines[i].strip().split()[indGasName]
+            self.summary[gasname+'_RetColmn'] = float(lines[i].strip().split()[indRETCOL])
+
+
+        #---------------------------------------------------------
+        # Get NPTSB, FOVDIA, and INIT_SNR
+        # Currently set up to read SNR from summary file where the
+        # summary file format has INIT_SNR on the line below IBAND 
+        #---------------------------------------------------------
+        ind2     = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
+        indNPTSB = lines[ind2].strip().split().index('NPTSB')
+        indFOV   = lines[ind2].strip().split().index('FOVDIA')
+        indSNR   = lines[ind2].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
+        lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
+            
+        SNR   = []
+        nptsb = []
+        
+        for lnum in range(ind2+1,lend,2):
+            nptsb.append(    float( lines[lnum].strip().split()[indNPTSB] ) )
+            SNR.append( float( lines[lnum+1].strip().split()[indSNR]   ) )       # Add 1 to line number because INIT_SNR exists on next line
+
+
+
+
+        #----------------------------------------------------------------
+        # Get fit rms, chi_y^2, degrees of freedom target, converged flag
+        #----------------------------------------------------------------
+        ind3       = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0]
+        indRMS     = lines[ind3].index('FITRMS')
+        indCHIY2   = lines[ind3].index('CHI_2_Y')
+        indDOFtrgt = lines[ind3].index('DOFS_TRG')
+        indCNVRG   = lines[ind3].index('CONVERGED')
+
+        self.summary[self.PrimaryGas.upper()+'_FITRMS']   = float(lines[i].strip().split()[indRMS])
+        self.summary[self.PrimaryGas.upper()+'_CHI_2_Y']   = float(lines[i].strip().split()[indCHIY2])
+        self.summary[self.PrimaryGas.upper()+'_DOFS_TRG']  = float(lines[i].strip().split()[indDOFtrgt])
+        self.summary[self.PrimaryGas.upper()+'_CONVERGED'] = float(lines[i].strip().split()[indCNVRG])
+
+        #------------------------
+        # Convert to numpy arrays
+        # and sort based on date
+        #------------------------
+        for k in self.summary:
+            self.summary[k] = np.asarray(self.summary[k])
