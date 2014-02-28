@@ -42,6 +42,7 @@
 #----------------------------------------------------------------------------------------
 
 import datetime
+import math
 import os
 import re
 import csv
@@ -428,15 +429,16 @@ class RetOutput():
 
     def __init__(self,wrkDir,logFile=False):
         ''' Check existance of directory '''
-        ckDir(dirName,logFile,exitFlg=True)
-        if not(dirName.endswith('/')): wrkDir = wrkDir + '/'
-        self.wrkDir = wrkDir
+        ckDir(wrkDir,logFile,exitFlg=True)
+        if not(wrkDir.endswith('/')): wrkDir = wrkDir + '/'
+        self.wrkDir  = wrkDir
+        self.logFile = logFile
 
-    def readPrf(self, fName, gasName, retapFlg=1, logFile=False):
+    def readPrf(self, fName, gasName, retapFlg=1):
         ''' Reads in retrieved profile data from SFIT output. Profiles are given as columns. Each row corresponds to
             to an altitude layer [nLayers,nObservations]. retapFlg determines whether retrieved profiles (=1) or a priori profiles (=0) are read'''
 
-        ckFile(wrkDir + fName , LogFile, exit=True)
+        ckFile(self.wrkDir + fName , self.logFile, exit=True)
 
         self.deflt = {}
         retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be retrieved        
@@ -450,7 +452,7 @@ class RetOutput():
         #--------------------------
         # Open and read output file
         #--------------------------
-        with open(wrkDir+fName, 'r') as fopen:
+        with open(self.wrkDir+fName, 'r') as fopen:
             defltLines = fopen.readlines()
 
         #--------------------------------
@@ -478,22 +480,17 @@ class RetOutput():
         del self.deflt        
         
         
-    def readSum(self, fName, logFile=False):
+    def readSum(self, fName):
         ''' Reads variables from summary file of retrieval '''
+        self.summary = {}
         
-        ckFile(wrkDir + fName , LogFile, exit=True)
+        ckFile(self.wrkDir + fName , self.logFile, exit=True)
                  
         #--------------------------
         # Open and read summary file
         #--------------------------
-        with open(wrkDir + fName, 'r') as fopen:
+        with open(self.wrkDir + fName, 'r') as fopen:
             lines = fopen.readlines()
-
-        #--------------------------------
-        # Get date/time of retrieval and
-        # solar zenith angle
-        #--------------------------------
-
 
         #--------------------------------
         # Get retrieved column amount for 
@@ -504,11 +501,9 @@ class RetOutput():
         indGasName = lines[ind1].index('GAS_NAME')
         indRETCOL  = lines[ind1].index('RET_COLUMN')
 
-
         for i in range(ind1+1,ind1+ngas+2):
             gasname = lines[i].strip().split()[indGasName]
             self.summary[gasname+'_RetColmn'] = float(lines[i].strip().split()[indRETCOL])
-
 
         #---------------------------------------------------------
         # Get NPTSB, FOVDIA, and INIT_SNR
@@ -521,15 +516,11 @@ class RetOutput():
         indSNR   = lines[ind2].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
         lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
             
-        SNR   = []
-        nptsb = []
-        
         for lnum in range(ind2+1,lend,2):
-            nptsb.append(    float( lines[lnum].strip().split()[indNPTSB] ) )
-            SNR.append( float( lines[lnum+1].strip().split()[indSNR]   ) )       # Add 1 to line number because INIT_SNR exists on next line
-
-
-
+            self.summary.setdefault('nptsb',[]).append(  float( lines[lnum].strip().split()[indNPTSB] ) )
+            self.summary.setdefault('FOVDIA',[]).append( float( lines[lnum].strip().split()[indFOV]   ) )
+            self.summary.setdefault('SNR',[]).append(    float( lines[lnum+1].strip().split()[indSNR] ) )       # Add 1 to line number because INIT_SNR exists on next line
+            
 
         #----------------------------------------------------------------
         # Get fit rms, chi_y^2, degrees of freedom target, converged flag
@@ -540,14 +531,70 @@ class RetOutput():
         indDOFtrgt = lines[ind3].index('DOFS_TRG')
         indCNVRG   = lines[ind3].index('CONVERGED')
 
-        self.summary[self.PrimaryGas.upper()+'_FITRMS']   = float(lines[i].strip().split()[indRMS])
+        self.summary[self.PrimaryGas.upper()+'_FITRMS']    = float(lines[i].strip().split()[indRMS])
         self.summary[self.PrimaryGas.upper()+'_CHI_2_Y']   = float(lines[i].strip().split()[indCHIY2])
         self.summary[self.PrimaryGas.upper()+'_DOFS_TRG']  = float(lines[i].strip().split()[indDOFtrgt])
         self.summary[self.PrimaryGas.upper()+'_CONVERGED'] = float(lines[i].strip().split()[indCNVRG])
 
         #------------------------
         # Convert to numpy arrays
-        # and sort based on date
         #------------------------
         for k in self.summary:
             self.summary[k] = np.asarray(self.summary[k])
+            
+            
+    def readPbp(self, fName):
+        ''' Reads pbpfile to get SZA, observed, fitted, and difference spectra'''
+        self.pbp = {}
+                
+        ckFile(self.wrkDir + fName , self.logFile, exit=True)        
+            
+        #----------------------
+        # Open and read pbpfile
+        #----------------------
+        with open(self.wrkDir + fName,'r') as fopen:
+            lines = fopen.readlines()        
+
+        #--------------------
+        # Get Number of bands
+        #--------------------
+        nbands = int(lines[1].strip().split()[1])
+        
+        #-------------------------------------------------------
+        # Loop through bands. Header of first band is on line[3]
+        #-------------------------------------------------------
+        lstart = 3
+        for i in range(1,nbands+1):
+            #--------------------------
+            # Read header for each band
+            #--------------------------
+            self.pbp.setdefault('sza',[]).append( float(lines[lstart].strip().split()[0])/ 1000.0 )
+            nSpac = float(lines[lstart].strip().split()[1])
+            npnts = int(lines[lstart].strip().split()[2])
+            iWN   = float(lines[lstart].strip().split()[3])
+            fWN   = float(lines[lstart].strip().split()[4])
+
+            #--------------------------------------------------------------------
+            # Determine the number of lines for each band. From lines 363 and 364 
+            # of writeout.f90, 12 spectral points are written for each line
+            #--------------------------------------------------------------------
+            nlines = int( math.ceil( float(lines[lstart].strip().split()[2])/ 12.0) )
+            self.pbp.setdefault('wavenumber',[]).append(np.arange(iWN,fWN,nSpac))
+            
+            #---------------------------------------------------------------------
+            # Read in observed, fitted, and difference spectra for particular band
+            #---------------------------------------------------------------------
+            self.pbp.setdefault('Obs',[]).append(np.array([float(x) for row in lines[lstart+1:(lstart+1+nlines*3):3] for x in row.strip().split()[1:] ]))
+            self.pbp.setdefault('Fitted',[]).append(np.array([float(x) for row in lines[lstart+2:(lstart+1+nlines*3):3] for x in row.strip().split() ]))
+            self.pbp.setdefault('Difference',[]).append(np.array([float(x) for row in lines[lstart+3:(lstart+1+nlines*3):3] for x in row.strip().split() ]))
+            
+            #----------------------------------------
+            # Set new line number start for next band
+            #----------------------------------------
+            lstart += nlines*3 + 2            
+            
+        #---------------------------------
+        # Convert sza list to numpy arrays
+        #---------------------------------
+        self.pbp['sza'] = np.asarray(self.pbp['sza'])        
+        

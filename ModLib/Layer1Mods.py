@@ -509,8 +509,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     #------------------
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.sa_matrix'][0], logFile)
     if not lines: 
-	print 'file.out.sa_matrix missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time']
-	if logFile: logFile.error('file.out.sa_matrix missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time'])
+	print 'file.out.sa_matrix missing for observation, directory: ' + wrkingDir
+	if logFile: logFile.error('file.out.sa_matrix missing for observation, directory: ' + wrkingDir)
 	return False    # Critical file, if missing terminate program    
     
     sa = np.array( [ [ float(x) for x in row.split()] for row in lines[3:] ] )
@@ -526,32 +526,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     #    will be carried through (via seinv.output) to the error
     #    calculations.
     #---------------------------------------------------------------
-    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.summary'][0], logFile) 
-    if not lines: 
-	print 'file.out.summary missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time']
-	if logFile: logFile.error('file.out.summary missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time'])
-	return False    # Critical file, if missing terminate program   	
+    sumVars = sc.RetOutput(wrkingDir,logFile)
+    sumVars.readSum(ctlFileVars.inputs['file.out.summary'][0])
 
-    #---------------------------------------------------------
-    # Currently set up to read SNR from summary file where the
-    # summary file format has INIT_SNR on the line below IBAND 
-    #---------------------------------------------------------
-    lstart   = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
-    indNPTSB = lines[lstart].strip().split().index('NPTSB')
-    indSNR   = lines[lstart].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
-    lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
-        
-    SNR   = []
-    nptsb = []
-    
-    for lnum in range(lstart+1,lend,2):
-        nptsb.append(    float( lines[lnum].strip().split()[indNPTSB] ) )
-        SNR.append( float( lines[lnum+1].strip().split()[indSNR]   ) )       # Add 1 to line number because INIT_SNR exists on next line
-    
-    se         = np.zeros((sum(nptsb),sum(nptsb)), float)
+    se  = np.zeros((sum(sumVars.summary['nptsb']),sum(sumVars.summary['nptsb'])), float)
 
     if SbctlFileVars.inputs['SeInputFlg'][0].upper() == 'F':
-	snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(SNR,nptsb)]))
+	snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(sumVars.summary['SNR'],sumVars.summary['nptsb'])]))
 	snrList[:] = [val**-2 for val in snrList]
     else:
 	lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
@@ -565,8 +546,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     #-----------------
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.k_matrix'][0], logFile) 
     if not lines: 
-	print 'file.out.k_matrix missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time']
-	if logFile: logFile.error('file.out.k_matrix missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time'])
+	print 'file.out.k_matrix missing for observation, directory: ' + wrkingDir
+	if logFile: logFile.error('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
 	return False    # Critical file, if missing terminate program   
     
     n_wav   = int( lines[1].strip().split()[0] )
@@ -580,8 +561,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     #--------------------
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.g_matrix'][0], logFile)
     if not lines: 
-	print 'file.out.g_matrix missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time']
-	if logFile: logFile.error('file.out.g_matrix missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time'])
+	print 'file.out.g_matrix missing for observation, directory: ' + wrkingDir
+	if logFile: logFile.error('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
 	return False    # Critical file, if missing terminate program   
     
     D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
@@ -591,8 +572,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     #------------------    
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.kb_matrix'][0], logFile)
     if not lines: 
-	print 'file.out.kb_matrix missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time']
-	if logFile: logFile.error('file.out.kb_matrix missing for observation, Date: ' + str(int(spDBdataOne['Date'])) + ' Time: ' + spDBdataOne['Time'])
+	print 'file.out.kb_matrix missing for observation, directory: ' + wrkingDir
+	if logFile: logFile.error('file.out.kb_matrix missing for observation, directory: ' + wrkingDir)
 	return False    # Critical file, if missing terminate program   
     
     Kb_param = lines[2].strip().split()
