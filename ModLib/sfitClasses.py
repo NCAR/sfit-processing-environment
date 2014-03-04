@@ -79,7 +79,7 @@ def sortDict(DataDict,keyval):
         DataDict[k] = [y for (x,y) in sorted(zip(base,DataDict[k]))]
     return DataDict
 
-def ckFile(fName,logFlg=False,exit=False):
+def ckFile(fName,logFlg=False,exitFlg=False):
     '''Check the existence of a file'''
     if not os.path.isfile(fName):
         print 'File %s does not exist' % (fName)
@@ -94,7 +94,7 @@ def ckDir(dirName,logFlg=False,exitFlg=False):
     if not os.path.exists( dirName ):
         print 'Input Directory %s does not exist' % (dirName)
         if logFlg: logFlg.error('Directory %s does not exist' % dirName)
-        if exit: sys.exit()
+        if exitFlg: sys.exit()
         return False
     else:
         return True   
@@ -159,7 +159,8 @@ class Layer1InputFile():
     inputs are read in using execfile
     '''   
     def __init__(self,fname,logFile=False):
-        ckFile(fname, logFlg, exit=True)
+        ckFile(fname, logFlg=logFile, exitFlg=True)
+        self.fname = fname
         self.inputs  = {}
 
     def getInputs(self,logFile=False):
@@ -183,8 +184,10 @@ class CtlInputFile():
     '''
 
     def __init__(self,fname,logFile=False):
-        ckFile(fname, logFlg, exit=True)
+        ckFile(fname, logFlg=logFile, exitFlg=True)
+        self.fname = fname
         self.inputs  = {}
+        
 
 
     def __convrtD(self,rhs):
@@ -316,7 +319,8 @@ class DbInputFile():
     the spectral database file.
     '''    
     def __init__(self,fname,logFile=False):
-        ckFile(fname, logFlg, exit=True)
+        ckFile(fname, logFlg=logFile, exitFlg=True)
+        self.fname = fname
         self.dbInputs    = {}
         self.dbFltInputs = {}
 
@@ -438,7 +442,7 @@ class RetOutput():
         ''' Reads in retrieved profile data from SFIT output. Profiles are given as columns. Each row corresponds to
             to an altitude layer [nLayers,nObservations]. retapFlg determines whether retrieved profiles (=1) or a priori profiles (=0) are read'''
 
-        ckFile(self.wrkDir + fName , self.logFile, exit=True)
+        ckFile(self.wrkDir + fName , logFlg=self.logFile, exitFlg=True)
 
         self.deflt = {}
         retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be retrieved        
@@ -447,7 +451,7 @@ class RetOutput():
         # Add user specified retrieved gas list 
         # to standard retrievals
         #--------------------------------------
-        retrvdAll.extend(gasName.upper())        
+        retrvdAll.append(gasName.upper())        
 
         #--------------------------
         # Open and read output file
@@ -484,7 +488,7 @@ class RetOutput():
         ''' Reads variables from summary file of retrieval '''
         self.summary = {}
 
-        ckFile(self.wrkDir + fName , self.logFile, exit=True)
+        ckFile(self.wrkDir + fName , logFlg=self.logFile, exitFlg=True)
 
         #--------------------------
         # Open and read summary file
@@ -498,12 +502,12 @@ class RetOutput():
         #--------------------------------
         ind1       = [ind for ind,line in enumerate(lines) if 'IRET' in line][0]
         ngas       = int(lines[ind1-1].strip())
-        indGasName = lines[ind1].index('GAS_NAME')
-        indRETCOL  = lines[ind1].index('RET_COLUMN')
+        indGasName = lines[ind1].strip().split().index('GAS_NAME')
+        indRETCOL  = lines[ind1].strip().split().index('RET_COLUMN')
 
-        for i in range(ind1+1,ind1+ngas+2):
+        for i in range(ind1+1,ind1+ngas+1):
             gasname = lines[i].strip().split()[indGasName]
-            self.summary[gasname+'_RetColmn'] = float(lines[i].strip().split()[indRETCOL])
+            self.summary.setdefault(gasname.upper()+'_RetColmn',[]).append(float(lines[i].strip().split()[indRETCOL]))
 
         #---------------------------------------------------------
         # Get NPTSB, FOVDIA, and INIT_SNR
@@ -526,15 +530,15 @@ class RetOutput():
         # Get fit rms, chi_y^2, degrees of freedom target, converged flag
         #----------------------------------------------------------------
         ind3       = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0]
-        indRMS     = lines[ind3].index('FITRMS')
-        indCHIY2   = lines[ind3].index('CHI_2_Y')
-        indDOFtrgt = lines[ind3].index('DOFS_TRG')
-        indCNVRG   = lines[ind3].index('CONVERGED')
+        indRMS     = lines[ind3].strip().split().index('FITRMS')
+        indCHIY2   = lines[ind3].strip().split().index('CHI_2_Y')
+        indDOFtrgt = lines[ind3].strip().split().index('DOFS_TRG')
+        indCNVRG   = lines[ind3].strip().split().index('CONVERGED')
 
-        self.summary[self.PrimaryGas.upper()+'_FITRMS']    = float(lines[i].strip().split()[indRMS])
-        self.summary[self.PrimaryGas.upper()+'_CHI_2_Y']   = float(lines[i].strip().split()[indCHIY2])
-        self.summary[self.PrimaryGas.upper()+'_DOFS_TRG']  = float(lines[i].strip().split()[indDOFtrgt])
-        self.summary[self.PrimaryGas.upper()+'_CONVERGED'] = float(lines[i].strip().split()[indCNVRG])
+        self.summary.setdefault(gasname.upper()+'_FITRMS'   ,[]).append( float( lines[ind3+1].strip().split()[indRMS]     ) )
+        self.summary.setdefault(gasname.upper()+'_CHI_2_Y'  ,[]).append( float( lines[ind3+1].strip().split()[indCHIY2]   ) )
+        self.summary.setdefault(gasname.upper()+'_DOFS_TRG' ,[]).append( float( lines[ind3+1].strip().split()[indDOFtrgt] ) )
+        self.summary.setdefault(gasname.upper()+'_CONVERGED',[]).append(        lines[ind3+1].strip().split()[indCNVRG]     )   
 
         #------------------------
         # Convert to numpy arrays
@@ -547,7 +551,7 @@ class RetOutput():
         ''' Reads pbpfile to get SZA, observed, fitted, and difference spectra'''
         self.pbp = {}
 
-        ckFile(self.wrkDir + fName , self.logFile, exit=True)        
+        ckFile(self.wrkDir + fName , logFlg=self.logFile, exitFlg=True)        
 
         #----------------------
         # Open and read pbpfile

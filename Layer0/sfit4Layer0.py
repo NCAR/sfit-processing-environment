@@ -118,7 +118,7 @@ def main(argv):
         # Retrieve command line arguments
         #--------------------------------
         try:
-                opts, args = getopt.getopt(sys.argv[1:], 'i:b:f')
+                opts, args = getopt.getopt(sys.argv[1:], 'i:b:f:')
 
         except getopt.GetoptError as err:
                 print str(err)
@@ -137,7 +137,7 @@ def main(argv):
 
                 # Binary directory
                 elif opt == '-b':                   
-                        if sc.ckDir(arg,exitFlg=False):
+                        if not sc.ckDir(arg,exitFlg=False):
                                 try:             binDir = binDirVer[arg.lower()]
                                 except KeyError: print '{} not a recognized version for -b option'.format(arg); sys.exit()
                                 
