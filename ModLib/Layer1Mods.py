@@ -759,6 +759,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
     # determine errors
     #--------------------------------
     for Kbl in Kb:
+        print Kbl
 	DK = np.dot(Dx,Kb[Kbl])
 	for ErrType in ['random','systematic']:
 
