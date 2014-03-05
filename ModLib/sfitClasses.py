@@ -79,12 +79,12 @@ def sortDict(DataDict,keyval):
         DataDict[k] = [y for (x,y) in sorted(zip(base,DataDict[k]))]
     return DataDict
 
-def ckFile(fName,logFlg=False,exitFlg=False):
+def ckFile(fName,logFlg=False,exitFlg=False,quietFlg=False):
     '''Check the existence of a file'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
-        if logFlg: logFlg.error('Unable to find file: %s' % fName)
-        if exit: sys.exit()
+        if not quietFlg: print 'File %s does not exist' % (fName)
+        if logFlg:       logFlg.error('Unable to find file: %s' % fName)
+        if exit:         sys.exit()
         return False
     else:
         return True  

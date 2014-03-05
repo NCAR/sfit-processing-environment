@@ -136,7 +136,7 @@ def main(argv):
 
                 # Binary directory
                 elif opt == '-b':                   
-                        if not sc.ckDir(arg,exitFlg=False):
+                        if not sc.ckDir(arg,exitFlg=False,quietFlg=True):
                                 try:             binDir = binDirVer[arg.lower()]
                                 except KeyError: print '{} not a recognized version for -b option'.format(arg); sys.exit()
                                 
