@@ -719,7 +719,7 @@ def main(argv):
                             #-----------------------------------
                             # Enter into Error Analysis function
                             #-----------------------------------
-                            rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, specDBone, logFile )  
+                            rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, logFile )  
                                 
                         #---------------------------
                         # Continuation for Pause flg
