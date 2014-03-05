@@ -89,12 +89,12 @@ def ckFile(fName,logFlg=False,exitFlg=False,quietFlg=False):
     else:
         return True  
 
-def ckDir(dirName,logFlg=False,exitFlg=False):
+def ckDir(dirName,logFlg=False,exitFlg=False,quietFlg=False):
     ''' Check the existence of a directory'''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
-        if logFlg: logFlg.error('Directory %s does not exist' % dirName)
-        if exitFlg: sys.exit()
+        if not quietFlg: print 'Input Directory %s does not exist' % (dirName)
+        if logFlg:       logFlg.error('Directory %s does not exist' % dirName)
+        if exitFlg:      sys.exit()
         return False
     else:
         return True   
