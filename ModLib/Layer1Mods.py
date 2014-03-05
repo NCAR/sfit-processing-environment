@@ -31,7 +31,7 @@
 #    sfit4 is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
 #    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
+#    any later version.
 #
 #    sfit4 is distributed in the hope that it will be useful,
 #    but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -555,6 +555,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, spDBdataOne, logFile=Fals
 	snrList[:] = [val**-2 for val in snrList]
     else:
 	lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
+
 	snrList    = lines[2].strip().split()
 	snrList[:] = [1.0/float(val) for val in snrList]
     
