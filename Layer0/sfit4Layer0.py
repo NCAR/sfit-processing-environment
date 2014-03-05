@@ -132,8 +132,7 @@ def main(argv):
                 # Data directory
                 if opt == '-i':                     
                         wrkDir = arg
-                        sc.ckDir(wrkDir,exitFlg=True)
-                        if not(wrkDir.endswith('/')): wrkDir = wrkDir + '/'
+                        sc.ckDir(wrkDir,exitFlg=True)                    
 
                 # Binary directory
                 elif opt == '-b':                   
@@ -164,7 +163,8 @@ def main(argv):
         # If necessary change working directory 
         # to directory with input data. 
         #--------------------------------------
-        if wrkDir != (os.getcwd()+'/'): os.chdir(wrkDir)
+        if os.path.abspath(wrkDir) != os.getcwd(): os.chdir(wrkDir)
+        if not(wrkDir.endswith('/')): wrkDir = wrkDir + '/'
         
         #--------------------------
         # Initialize sfit ctl class
