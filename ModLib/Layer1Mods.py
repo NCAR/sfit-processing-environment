@@ -426,13 +426,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         Sm   = np.dot(  np.dot( A, coVar ), A.T )                                                      # Uncertainty covariance matrix [Fractional]
         Sm_1 = np.sqrt( np.dot( np.dot( aprDensPrf, Sm ), aprDensPrf.T )     )                         # Whole column uncertainty [molecules cm^-2]
 
-        if VMRoutFlg[0].upper()== 'T': Sm_2 = np.dot(  np.dot( np.diag(retPrfVMR), Sm ), np.diag(retPrfVMR) )     # Uncertainty covariance matrix [VMR]
+        if VMRoutFlg[0].upper()== 'T': Sm_2 = np.dot(  np.dot( np.diag(retPrfVMR), Sm ), np.diag(retPrfVMR) )     # Uncertainty covariance matrix [(VMR)^2]
         else:               Sm_2 = 0
 
-        if MolsoutFlg[0].upper() == 'T': Sm_3 = np.dot(  np.dot( np.diag(airMass), Sm_2 ), np.diag(airMass)   )   # Uncertainty covariance matrix [molecules cm^-2]
+        if MolsoutFlg[0].upper() == 'T': Sm_3 = np.dot(  np.dot( np.diag(airMass), Sm_2 ), np.diag(airMass)   )   # Uncertainty covariance matrix [(molecules cm^-2)^2]
         else:                 Sm_3 = 0
 
-        return (Sm_2, Sm_3, Sm_1)
+        return (Sm_2, Sm_3, Sm_1)     # (Variance, Variance, STD)
 
     def writeCoVar(fname,header,var,ind):
         ''' Write covariance matricies to files'''
