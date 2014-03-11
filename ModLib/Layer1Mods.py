@@ -697,7 +697,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #------------------------
     AK_int1                   = AK[x_start:x_stop,0:x_start]  
     Sa_int1                   = sa[0:x_start,0:x_start]
-    S_ran['Retrieval_Params'] = calcCoVar(Sa_int1,AK_int1,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+    S_ran['Retrieval_Parameters'] = calcCoVar(Sa_int1,AK_int1,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
 
     #-----------------------
     # 2) Interfering species
@@ -706,7 +706,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     n_int2_column              = ( n_profile - 1 ) * n_layer + n_column
     AK_int2                    = AK[x_start:x_stop, x_stop:x_stop + n_int2_column] 
     Sa_int2                    = sa[x_stop:x_stop + n_int2_column, x_stop:x_stop + n_int2_column]
-    S_ran['Interfering_Specs'] = calcCoVar(Sa_int2,AK_int2,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+    S_ran['Interfering_Species'] = calcCoVar(Sa_int2,AK_int2,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
 
     #----------------------------------------------
     # Errors from parameters not retrieved by sfit4
@@ -802,7 +802,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             except: 
                 errmsg = sys.exc_info()[1]
                 print 'Problem calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType 
-                print errmsg
+                #print errmsg
                 if logFile: logFile.error('Problem calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrTypeerrmsg+'\n'+errmsg)	
 
 
@@ -811,13 +811,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             #----------------------------------------------------------------------
             if np.sum(Sb) == 0:
                 if Kbl.lower() == 'zshift': 
-                    print 'sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated'
+                    print 'sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated\n\n'
                     if logFile: logFile.info('sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated')
                 elif Kbl.upper() in [x.upper() for x in kb_profile_gas]:
-                    print 'sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated'
+                    print 'sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated\n\n'
                     if logFile: logFile.info('sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')		    
                 else:               
-                    print 'sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated'
+                    print 'sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated\n\n'
                     if logFile: logFile.info('sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')
 
             #----------------------------
@@ -855,11 +855,12 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 
     # Systematic
     for k in S_sys:
-        S_tot_systematic_err += S_sys[k][2]**2
-        if  SbctlFileVars.inputs['VMRoutFlg'][0].upper()  =='T': S_tot_sys_vmr   += S_sys[k][0]
-        else:						           S_tot_sys_vmr    = 0
-        if  SbctlFileVars.inputs['MolsoutFlg'][0].upper() =='T': S_tot_sys_molcs += S_sys[k][1]
-        else:						           S_tot_sys_molcs  = 0 
+        if k != 'Smoothing':
+            S_tot_systematic_err += S_sys[k][2]**2
+            if  SbctlFileVars.inputs['VMRoutFlg'][0].upper()  =='T': S_tot_sys_vmr   += S_sys[k][0]
+            else:						           S_tot_sys_vmr    = 0
+            if  SbctlFileVars.inputs['MolsoutFlg'][0].upper() =='T': S_tot_sys_molcs += S_sys[k][1]
+            else:						           S_tot_sys_molcs  = 0 
 
     S_tot_systematic_err = np.sqrt(S_tot_systematic_err)
     S_tot['Random']      = (S_tot_ran_vmr,S_tot_ran_molcs,S_tot_rndm_err)
