@@ -159,6 +159,7 @@ class Layer1InputFile():
     inputs are read in using execfile
     '''   
     def __init__(self,fname,logFile=False):
+        logFlg = False
         ckFile(fname, logFlg, exit=True)
         self.inputs  = {}
 
@@ -183,8 +184,10 @@ class CtlInputFile():
     '''
 
     def __init__(self,fname,logFile=False):
+        logFlg = False
         ckFile(fname, logFlg, exit=True)
         self.inputs  = {}
+        self.fname = fname
 
 
     def __convrtD(self,rhs):
@@ -447,7 +450,7 @@ class RetOutput():
         # Add user specified retrieved gas list 
         # to standard retrievals
         #--------------------------------------
-        retrvdAll.extend(gasName.upper())        
+        retrvdAll.append(gasName.upper())        
 
         #--------------------------
         # Open and read output file
@@ -463,6 +466,7 @@ class RetOutput():
         #----------------------------------------
         # Loop through retrieved profiles to read
         #----------------------------------------
+
         for rtrvdSing in retrvdAll:
             self.deflt.setdefault(rtrvdSing,[]).extend([ float(row.strip().split()[defltParm.index(rtrvdSing.upper())]) for row in defltLines[4:] ] )
 
@@ -498,10 +502,11 @@ class RetOutput():
         #--------------------------------
         ind1       = [ind for ind,line in enumerate(lines) if 'IRET' in line][0]
         ngas       = int(lines[ind1-1].strip())
-        indGasName = lines[ind1].index('GAS_NAME')
-        indRETCOL  = lines[ind1].index('RET_COLUMN')
+        indGasName = lines[ind1].split().index('GAS_NAME')
+        indRETCOL  = lines[ind1].split().index('RET_COLUMN')
 
-        for i in range(ind1+1,ind1+ngas+2):
+        self.PrimaryGas = lines[ind1+1].strip().split()[indGasName]
+        for i in range(ind1+1,ind1+ngas+1):
             gasname = lines[i].strip().split()[indGasName]
             self.summary[gasname+'_RetColmn'] = float(lines[i].strip().split()[indRETCOL])
 
@@ -526,15 +531,15 @@ class RetOutput():
         # Get fit rms, chi_y^2, degrees of freedom target, converged flag
         #----------------------------------------------------------------
         ind3       = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0]
-        indRMS     = lines[ind3].index('FITRMS')
-        indCHIY2   = lines[ind3].index('CHI_2_Y')
-        indDOFtrgt = lines[ind3].index('DOFS_TRG')
-        indCNVRG   = lines[ind3].index('CONVERGED')
+        indRMS     = lines[ind3].split().index('FITRMS')
+        indCHIY2   = lines[ind3].split().index('CHI_2_Y')
+        indDOFtrgt = lines[ind3].split().index('DOFS_TRG')
+        indCNVRG   = lines[ind3].split().index('CONVERGED')
 
-        self.summary[self.PrimaryGas.upper()+'_FITRMS']    = float(lines[i].strip().split()[indRMS])
-        self.summary[self.PrimaryGas.upper()+'_CHI_2_Y']   = float(lines[i].strip().split()[indCHIY2])
-        self.summary[self.PrimaryGas.upper()+'_DOFS_TRG']  = float(lines[i].strip().split()[indDOFtrgt])
-        self.summary[self.PrimaryGas.upper()+'_CONVERGED'] = float(lines[i].strip().split()[indCNVRG])
+        self.summary[self.PrimaryGas.upper()+'_FITRMS']    = float(lines[ind3+1].strip().split()[indRMS])
+        self.summary[self.PrimaryGas.upper()+'_CHI_2_Y']   = float(lines[ind3+1].strip().split()[indCHIY2])
+        self.summary[self.PrimaryGas.upper()+'_DOFS_TRG']  = float(lines[ind3+1].strip().split()[indDOFtrgt])
+        self.summary[self.PrimaryGas.upper()+'_CONVERGED'] = lines[ind3+1].strip().split()[indCNVRG]
 
         #------------------------
         # Convert to numpy arrays

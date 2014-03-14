@@ -652,7 +652,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Calculate A priori density profile:
     # molec/cm**2
     #------------------------------------
-    aprdensprf =  sumVars.aprfs[primgas.upper] * sumVars.aprfs['AIRMASS'] 
+    aprdensprf =  sumVars.aprfs[primgas.upper()] * sumVars.aprfs['AIRMASS'] 
 
     #---------------------------
     # Determine DOFS for column:
@@ -679,7 +679,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #---------------------------------
     mat1               = sa[x_start:x_stop,x_start:x_stop]
     mat2               = AKx - np.identity( AKx.shape[0] )
-    S_sys['Smoothing'] = calcCoVar(mat1,mat2,aprdensprf,sumVars.aprfs[primgas.upper],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+    S_sys['Smoothing'] = calcCoVar(mat1,mat2,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
 
     #----------------------------------
     # Calculate Measurement error using 
@@ -687,7 +687,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #                    T
     #  Sm = Dx * Se * Dx
     #----------------------------------
-    S_ran['Measurement'] = calcCoVar(se,Dx,aprdensprf,sumVars.aprfs[primgas.upper],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+    S_ran['Measurement'] = calcCoVar(se,Dx,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
 
     #---------------------
     # Interference Errors:
@@ -697,7 +697,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #------------------------
     AK_int1                   = AK[x_start:x_stop,0:x_start]  
     Sa_int1                   = sa[0:x_start,0:x_start]
-    S_ran['Retrieval_Params'] = calcCoVar(Sa_int1,AK_int1,aprdensprf,sumVars.aprfs[primgas.upper],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+    S_ran['Retrieval_Params'] = calcCoVar(Sa_int1,AK_int1,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
 
     #-----------------------
     # 2) Interfering species
@@ -706,7 +706,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     n_int2_column              = ( n_profile - 1 ) * n_layer + n_column
     AK_int2                    = AK[x_start:x_stop, x_stop:x_stop + n_int2_column] 
     Sa_int2                    = sa[x_stop:x_stop + n_int2_column, x_stop:x_stop + n_int2_column]
-    S_ran['Interfering_Specs'] = calcCoVar(Sa_int2,AK_int2,aprdensprf,sumVars.aprfs[primgas.upper],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+    S_ran['Interfering_Specs'] = calcCoVar(Sa_int2,AK_int2,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
 
     #----------------------------------------------
     # Errors from parameters not retrieved by sfit4
@@ -824,8 +824,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             # Calculate
             #----------------------------
             else:
-                if ErrType == 'random': S_ran[Kbl] = calcCoVar(Sb,DK,aprdensprf,sumVars.aprfs[primgas.upper],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
-                else:                   S_sys[Kbl] = calcCoVar(Sb,DK,aprdensprf,sumVars.aprfs[primgas.upper],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+                if ErrType == 'random': S_ran[Kbl] = calcCoVar(Sb,DK,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+                else:                   S_sys[Kbl] = calcCoVar(Sb,DK,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
 
     #---------------------------------------------
     # Calculate total systematic and random errors
