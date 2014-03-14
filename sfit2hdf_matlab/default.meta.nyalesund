@@ -1,0 +1,69 @@
+! FTIR METADATA file
+!
+! Made by Christof Petri, last modification 02/2014
+! Version 0.6
+! Input to program IDLCR8HDF, table.dat version 04R007
+!
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! ACHTUNG!!!!  Die folgenden Variablen überprüfen:
+!
+! 1. DATA_DESCRIPTION=
+!    Daily mean / Hourly mean ... with a Bruker IFS120M / IFS120HR instrument
+!
+! 2. DATA_SOURCE=
+!    FTIR_AWI001: IFS120M bis 1995
+!    FTIR_AWI002: IFS120HR ab 1995
+!
+! 3. DATA_TYPE= H2 / D2
+!
+! 4. DATA_FILE_VERSION= 003 (vergleich mit Datenbank!)
+!
+! 5. DATA_CAVEATS= preliminary / final
+!
+! 6. FILE_NAME= groundbased_ftir_awi002_ny.alesund_d2_  (stimmt das?)
+!
+! 7. bei Ergänzungen von Gasen: DATA_VARIABLES, Variable Metadata Attributes
+!    und Variable Visualization Attributes ergänzen
+!
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!
+! Data Originator Attributes
+PI_NAME = Notholt; Justus
+PI_AFFILIATION = Institut fuer Umweltphysik, Universitaet Bremen; IUP
+PI_ADDRESS = Postfach 33 04 40; D-28334 Bremen; GERMANY
+PI_EMAIL = jnotholt@iup.physik.uni-bremen.de
+DO_NAME = Palm; Mathias
+DO_AFFILIATION = Institut fuer Umweltphysik, Universitaet Bremen; IUP
+DO_ADDRESS = Postfach 33 04 40; D-28334 Bremen; GERMANY
+DO_EMAIL = mathias@iup.physik.uni-bremen.de
+DS_NAME = Petri; Christof
+DS_AFFILIATION = Institut fuer Umweltphysik, Universitaet Bremen; IUP
+DS_ADDRESS = Postfach 33 04 40; D-28334 Bremen; GERMANY
+DS_EMAIL = christof.petri@iup.physik.uni-bremen.de
+!
+! Dataset Attributes
+DATA_DESCRIPTION = FTIR XXX vmr vertical profiles from solar absorption spectra obtained at Ny-Aalesund, Norway with a Bruker IFS120HR instrument
+DATA_DISCIPLINE = ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED
+DATA_GROUP = EXPERIMENTAL; PROFILE.STATIONARY
+DATA_LOCATION = NY.ALESUND
+DATA_SOURCE = FTIR.XXX_AWI001
+DATA_LEVEL  = 02
+!
+DATA_START_DATE = 
+DATA_STOP_DATE = 
+DATA_FILE_VERSION = 001
+DATA_MODIFICATIONS = No modifications yet!
+DATA_QUALITY= FINAL
+DATA_CAVEATS = none
+DATA_RULES_OF_USE = Refer to data protocol, or contact jnotholt@iup.physik.uni-bremen.de (this is mandatory)
+DATA_ACKNOWLEDGEMENT = The measurements are supported by AWI Bremerhaven.
+DATA_TEMPLATE = GEOMS-FTIR-TE-002
+DATA_PROCESSOR = sfit4 V0.9.4.3_BF_MP
+!
+! File Attributes
+FILE_NAME = 
+FILE_GENERATION_DATE =
+FILE_ACCESS = CALVAL;NDACC
+FILE_PROJECT_ID = AOID331
+FILE_ASSOCIATION = NDACC
+FILE_META_VERSION = 04R007;IDLCR8HDF
