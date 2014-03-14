@@ -11,6 +11,8 @@ function make_bunch_hdf(p, location)
 
     
     hdf_v5 = 1;
+    monthly = 1;
+
     headerfile = sprintf('data.meta');
     datafile   = 'data.data';
     defaultmeta = sprintf('default.meta.%s', lower(location));
@@ -43,6 +45,7 @@ function make_bunch_hdf(p, location)
     dd_vec(:,4:end) = 0;
     if monthly
        dd_vec(:,2) = 1;
+    end	   
     dd_vec(:,3) = 1;
     all_months = datenum(dd_vec);    
     all_months2 = unique(all_months);
