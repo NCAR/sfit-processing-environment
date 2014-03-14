@@ -76,9 +76,13 @@ class show_results:
 
         if (type=='avk'):
             self.winavk.clf()
-            ax = self.winavk.add_subplot(111)
+            ax = self.winavk.add_subplot(131)
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
-            ax.plot(self.avk.avk('frac').T, z)
+            ax.plot(self.avk.avk('frac'), z)
+            ax = self.winavk.add_subplot(132)
+            ax.plot(self.avk.avk('vmr'), z)
+            ax = self.winavk.add_subplot(133)
+            ax.plot(self.avk.avk('col'), z)
             self.winavk.show()
 
 

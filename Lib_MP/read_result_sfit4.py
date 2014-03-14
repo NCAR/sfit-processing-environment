@@ -58,7 +58,7 @@ class avk:
 
     def renormalize(self):
         
-        ap = read_table(self.direc+'/aprfs.table')
+        ap = read_table(os.path.join(self.direc, 'aprfs.table'))
         prf,z = ap.get_gas_vmr(ap.get_retrieval_gasnames()[0])
         self.AK_vmr = np.dot(np.dot(np.diag(prf),self.AK_frac),np.diag(1/prf))
         prf,z = ap.get_gas_col(ap.get_retrieval_gasnames()[0])
