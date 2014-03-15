@@ -119,11 +119,14 @@ sb.profile.H2O.systematic   =
 #----------------------------------------------------------------------------
 # Micro-window dependent Sb:
 # -- Number of entries corresponds to the number of bands
-#    *** The order of the entries in sb.sza must correspond to the order of
+#    *** The order of the entries for sb must correspond to the order of
 #        bands specified in "band = " in the sfit4.ctl file ***
 #----------------------------------------------------------------------------
 sb.omega.random         = 0.001 0.001 0.001 0.001 0.001
 sb.omega.systematic     = 0.001 0.001 0.001 0.001 0.001
+
+sb.sza.random           = 0.05  0.05  0.05  0.05  0.05
+sb.sza.systematic       = 0.01  0.01  0.01  0.01  0.01
 
 sb.phase.random         = 0.001 0.001 0.001 0.001 0.001
 sb.phase.systematic     = 0.001 0.001 0.001 0.001 0.001
@@ -163,8 +166,6 @@ sb.band.5.zshift.systematic  = 0.01
 #----------------
 # Single value Sb
 #----------------
-sb.sza.random           = 0.05 
-sb.sza.systematic       = 0.01 
 sb.solshft.random       = 0.005
 sb.solshft.systematic   = 0.005
 sb.solstrnth.random     = 0.001
