@@ -9,9 +9,8 @@
 #			1) Calls pspec to convert binary spectra file (bnr) to ascii (t15asc)
 #			2) Calls hbin to gather line parameters from hitran
 #			3) Calls sfit4
-#			4) Clean outputs from sfit4 call
-#			5) Creates a log file
-#                       6) Calculates error matrices
+#			4) Calls error analysis from Layer1mods.py
+#			5) Clean outputs from sfit4 call
 #
 #
 # External Subprocess Calls:
@@ -125,7 +124,6 @@ def main(argv):
                 print str(err)
                 usage()
                 sys.exit()
-
 
         #-----------------------------
         # Parse command line arguments
