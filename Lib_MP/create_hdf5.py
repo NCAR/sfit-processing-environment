@@ -239,8 +239,8 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	                                 (len_ak,len_ak,0), title="AVK (vmr)", 
 	                                 expectedrows=nr_entries)
 	    AK.append(np.reshape(avk,(len_ak,len_ak,1)))
-	    AKc.append(np.reshape(avk_vmr,(len_ak,len_ak,1)))
-	    AKv.append(np.reshape(avk_col,(len_ak,len_ak,1)))
+	    AKc.append(np.reshape(avk_col,(len_ak,len_ak,1)))
+	    AKv.append(np.reshape(avk_vmr,(len_ak,len_ak,1)))
 	
 	
 	col_rt = col_rt[:,0:nr_res]

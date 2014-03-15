@@ -1,0 +1,27 @@
+VAR_NAME:VAR_DESCRIPTION:VAR_NOTES:VAR_DEPEND:VAR_DATA_TYPE:VAR_UNITS:VAR_SI_CONVERSION:VAR_FILL_VALUE:VAR_VALID_MIN:VAR_VALID_MAX:end
+DATETIME:Effective Measurement time::DATETIME:DOUBLE:MJD2K:0;86400;s:-90000:-36500:36500:
+LATITUDE.INSTRUMENT:Latitude of the observation site (deg)::CONSTANT:REAL:deg:0;1.74533E-2;rad:-90000:-90:90:
+LONGITUDE.INSTRUMENT:Longitude of the observation site (deg)::CONSTANT:REAL:deg:0;1.74533E-2;rad:-90000:-180:180:
+ALTITUDE.INSTRUMENT:Altitude of the observation site (km)::CONSTANT:REAL:km:0;1.03e;m:-90000:0:5000:
+SURFACE.PRESSURE_INDEPENDENT:daily average surface pressure measured at the observation site::DATETIME:REAL:hPa: 0.0;1.0E2;kg m-1 s-2:-90000:0:1100:
+SURFACE.TEMPERATURE_INDEPENDENT:daily average temperature at ground level: measured at the observation site:DATETIME:REAL:K:0.0;1.0;K:-90000:0:500:
+ALTITUDE:Geometric altitude (in kilometer)::ALTITUDE:REAL:km:0;1e3;m:-90000:0:120:
+ALTITUDE.BOUNDARIES:layer boundaries used for vertical profile retrieval::ALTITUDE;INDEPENDENT:REAL:km:0;1e3;m:-90000:0:150:
+PRESSURE_INDEPENDENT:Atmospheric Pressure:Pressure from ECMWF operational used in the retrieval (in hPa):ALTITUDE;DATETIME:REAL:hPa:0;100;kg m-1 s-2:-90000:0:1100:
+TEMPERATURE_INDEPENDENT:Temperature Profile (K):Temperature from ECMWF operational used in the retrieval (in K):ALTITUDE;DATETIME:REAL:K:0.0;1.0;K:-90000:100:350:
+INTEGRATION.TIME:Approximate integration time of the ozone profiles (in s).::DATETIME:REAL:s:0.0;1.0;s:-90000:0:86400:
+[GAS].MIXING.RATIO.VOLUME_ABSORPTION.SOLAR:Retrieved Target  Profile:Retrieval is using the Optimal Estimation Method:ALTITUDE;DATETIME:REAL:ppmv:0.0;1.0;1:-90000:-100:100:
+[GAS].MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI:A priori Target Profile :Profile a-priori used in the Optimal Estimation retrieval (in ppv:ALTITUDE;DATETIME:REAL:ppmv:0.0;1.0;1:-90000:0:100:
+[GAS].MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_AVK:Averaging kernels associated with retrieved VMR values of target gas:Averaging Kernels are associated with the given mixing ratio values only.:ALTITUDE;ALTITUDE;DATETIME:REAL:1:0.0;1.0;1:-90000:-1000:1000:
+[GAS].MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM.COVARIANCE:standard deviation due to random errors::ALTITUDE;ALTITUDE;DATETIME:REAL:ppmv2:0.0;0.01;1:-90000:-10000:100000:
+[GAS].MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC.COVARIANCE:standard deviation due to systematic errors::ALTITUDE;ALTITUDE;DATETIME:REAL:ppmv2:0.0;0.01;1:-90000:-10000:100000:
+[GAS].COLUMN.PARTIAL_ABSORPTION.SOLAR:retrieved (vertical) partial columns in the retrieval layers:partial column evaluations use a priori pressure and temperature values from NCEP:ALTITUDE;DATETIME:REAL:molec cm-2:0.0;1.66054E-20;mol m-2:-900000000000000000000000000000:-100000000000000000000:10000000000000000000000000:
+[GAS].COLUMN.PARTIAL_ABSORPTION.SOLAR_APRIORI:Apriori (vertical) partial columns in the retrieval layers::ALTITUDE;DATETIME:REAL:molec cm-2:0.0;1.66054E-20;mol m-2:-90000:0:10000000000000000000000000:
+[GAS].COLUMN_ABSORPTION.SOLAR:retrieved vertical column:partial column evaluations use a priori pressure and temperature values from NCEP:DATETIME:REAL:molec cm-2:0.0;1.66054E-20;mol m-2:-90000:0:10000000000000000000000000:
+[GAS].COLUMN_ABSORPTION.SOLAR_APRIORI:Apriori vertical column::DATETIME:REAL:molec cm-2:0.0;1.66054E-20;mol m-2:-90000:0:10000000000000000000000000:
+[GAS].COLUMN_ABSORPTION.SOLAR_AVK:Retrieval Averaging Kernel for column:This AVK is calculated for the total column.:ALTITUDE;DATETIME:REAL:1:0.0;1.0;1:-90000:-1000:1000:
+[GAS].COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM.STANDARD:estimated total random uncertainty on the retrieved total vertical columns. :smoothing error is not included:DATETIME:REAL:molec cm-2:0.0;1.66054E-20;mol m-2:-90000:0:100000000000000000000:
+[GAS].COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC.STANDARD:total systematic uncertainty on the retrieved total vertical columns.::DATETIME:REAL:molec cm-2:0.0;1.66054E-20;mol m-2:-90000:0:100000000000000000000:
+ANGLE.SOLAR_ZENITH.ASTRONOMICAL:Mean Viewing Zenith angle (deg)::DATETIME:REAL:deg:0;1.74533E-2;rad:-90000:0:90:
+ANGLE.SOLAR_AZIMUTH:Viewing Azimuth angle (deg)::DATETIME:REAL:deg:0;1.74533E-2;rad:-90000:0:360:
+H2O.COLUMN_ABSORPTION.SOLAR:Column of interfering gas H2O if retrieved::DATETIME:REAL:molec cm-2:0.0;1.66054E-20;mol m-2:-90000:0:10000000000000000000000000:
