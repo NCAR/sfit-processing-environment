@@ -1,0 +1,374 @@
+! FTIR METADATA file
+!
+! Made by Mathias Palm, last modification 07/2009
+! Version 0.5
+! Input to program IDLCR8HDF, table.dat version 04R002
+!
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+! ACHTUNG!!!!  Die folgenden Variablen überprüfen:
+!
+! 1. DATA_DESCRIPTION=
+!    Daily mean / Hourly mean ... with a Bruker IFS120M / IFS120HR instrument
+!
+! 2. DATA_SOURCE=
+!    FTIR_AWI001: IFS120M bis 1995
+!    FTIR_AWI002: IFS120HR ab 1995
+!
+! 3. DATA_TYPE= H2 / D2
+!
+! 4. DATA_FILE_VERSION= 003 (vergleich mit Datenbank!)
+!
+! 5. DATA_CAVEATS= preliminary / final
+!
+! 6. FILE_NAME= groundbased_ftir_awi002_ny.alesund_d2_  (stimmt das?)
+!
+! 7. bei Ergänzungen von Gasen: DATA_VARIABLES, Variable Metadata Attributes
+!    und Variable Visualization Attributes ergänzen
+!
+!~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+!
+! Data Originator Attributes
+PI_NAME = Notholt; Justus
+PI_AFFILIATION = Institut fuer Umweltphysik, Universitaet Bremen; IUP
+PI_ADDRESS = Postfach 33 04 40; D-28334 Bremen; GERMANY
+PI_EMAIL = jnotholt@iup.physik.uni-bremen.de
+DO_NAME = Palm; Mathias
+DO_AFFILIATION = Institut fuer Umweltphysik, Universitaet Bremen; IUP
+DO_ADDRESS = Postfach 33 04 40; D-28334 Bremen; GERMANY
+DO_EMAIL = mathias@iup.physik.uni-bremen.de
+DS_NAME = Palm; Mathias
+DS_AFFILIATION = Institut fuer Umweltphysik, Universitaet Bremen; IUP
+DS_ADDRESS = Postfach 33 04 40; D-28334 Bremen; GERMANY
+DS_EMAIL = mathias@iup.physik.uni-bremen.de
+!
+! Dataset Attributes
+DATA_DESCRIPTION = FTIR XXX vmr vertical profiles from solar absorption spectra obtained at Ny-Aalesund, Norway with a Bruker IFS120HR instrument
+DATA_DISCIPLINE = ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED
+DATA_GROUP = EXPERIMENTAL; SCALAR.STATIONARY
+DATA_LOCATION = NY.ALESUND
+DATA_SOURCE = FTIR_AWI002
+!
+DATA_VARIABLES=DATETIME; LATITUDE.INSTRUMENT;LONGITUDE.INSTRUMENT;ALTITUDE.INSTRUMENT;SURFACE.PRESSURE_INDEPENDENT;SURFACE.TEMPERATURE_INDEPENDENT;ALTITUDE;ALTITUDE.BOUNDARIES;PRESSURE_INDEPENDENT;TEMPERATURE_INDEPENDENT;XXX.MIXING.RATIO_ABSORPTION.SOLAR;XXX.MIXING.RATIO_ABSORPTION.SOLAR_APRIORI;XXX.MIXING.RATIO_ABSORPTION.SOLAR_AVK;INTEGRATION.TIME;XXX.MIXING.RATIO_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM;XXX.MIXING.RATIO_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC;XXX.COLUMN.PARTIAL_ABSORPTION.SOLAR;XXX.COLUMN.PARTIAL_ABSORPTION.SOLAR_APRIORI;XXX.COLUMN_ABSORPTION.SOLAR;XXX.COLUMN_ABSORPTION.SOLAR_APRIORI;XXX.COLUMN_ABSORPTION.SOLAR_AVK;XXX.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM;XXX.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC;ANGLE.SOLAR_ZENITH.ASTRONOMICAL;ANGLE.SOLAR_AZIMUTH
+!
+DATA_START_DATE = DATASTARTDATE
+DATA_STOP_DATE = DATASTOPDATE
+DATA_FILE_VERSION = 001
+DATA_NOTES = Please look at the http://nadir.nilu.no/calval web site!
+DATA_MODIFICATIONS = No modifications yet!
+DATA_QUALITY= HBR cell measurements analysed with Linefit v12
+DATA_CAVEATS = none
+DATA_RULES_OF_USE = Refer to data protocol, or contact jnotholt@iup.physik.uni-bremen.de
+DATA_ACKNOWLEDGEMENT = The measurements are supported by AWI Bremerhaven.
+!
+! File Attributes
+FILE_NAME = groundbased_ftir_awi002_ny.alesund_d2_
+FILE_GENERATION_DATE = FILEGENERATIONDATE
+FILE_ACCESS = CALVAL
+FILE_PROJECT_ID = AOID331
+FILE_ASSOCIATION =
+FILE_META_VERSION = IDLCR8HDF
+!
+!
+! Section 5.1 & 5.2: Variable Attributes
+! --------------------------------------
+!
+VAR_NAME=DATETIME
+VAR_DESCRIPTION=datetime (UT), defined relative to reference datetime of Jan. 1, 2000 at 0:00:00 UT which is equal to 0.00
+VAR_NOTES=
+VAR_DATA_TYPE=DOUBLE
+VAR_SIZE=
+VAR_DEPEND=DATETIME
+VAR_UNITS=MJD2K
+VAR_SI_CONVERSION=0.0;86400.0;s
+VAR_VALID_MIN=-5500
+VAR_VALID_MAX=4000
+VAR_FILL_VALUE=-90000.000000000
+!
+VAR_NAME=LATITUDE.INSTRUMENT
+VAR_DESCRIPTION=latitude north (decimal degrees) of the location of the instrument
+VAR_NOTES=
+VAR_DATA_TYPE=REAL
+VAR_SIZE=1
+VAR_DEPEND=CONSTANT
+VAR_UNITS=deg
+VAR_SI_CONVERSION=0.0;1.74533E-2;rad
+VAR_VALID_MIN=-90
+VAR_VALID_MAX=90
+VAR_FILL_VALUE=-90000.00
+!
+VAR_NAME=LONGITUDE.INSTRUMENT
+VAR_DESCRIPTION=longitude east (decimal degrees) of the location of the instrument
+VAR_NOTES=
+VAR_DATA_TYPE=REAL
+VAR_SIZE=1
+VAR_DEPEND=CONSTANT
+VAR_UNITS=deg
+VAR_SI_CONVERSION=0.0;1.74533E-2;rad
+VAR_VALID_MIN=-180
+VAR_VALID_MAX=180
+VAR_FILL_VALUE=-90000.00
+!
+VAR_NAME=ALTITUDE.INSTRUMENT
+VAR_DESCRIPTION=altitude of the location of the instrument
+VAR_NOTES=
+VAR_DATA_TYPE=REAL
+VAR_SIZE=1
+VAR_DEPEND=CONSTANT
+VAR_UNITS=km
+VAR_SI_CONVERSION= 0.0;1.0E3;m
+VAR_VALID_MIN=-0.05
+VAR_VALID_MAX=10
+VAR_FILL_VALUE=-90000.000
+!
+VAR_NAME=SURFACE.PRESSURE_INDEPENDENT
+VAR_DESCRIPTION=
+VAR_NOTES=values are operational data recorded by NOAA ESRL
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=DATETIME
+VAR_UNITS=hPa
+VAR_SI_CONVERSION= 0.0;1.0E2;kg m-1 s-2
+VAR_VALID_MIN=0
+VAR_VALID_MAX=1100
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=SURFACE.TEMPERATURE_INDEPENDENT
+VAR_DESCRIPTION=
+VAR_NOTES=values are operational data recorded by NOAA ESRL
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=DATETIME
+VAR_UNITS=K
+VAR_SI_CONVERSION= 0.0;1.0;K
+VAR_VALID_MIN=0
+VAR_VALID_MAX=500
+VAR_FILL_VALUE=-90000.000
+!
+VAR_NAME=ALTITUDE
+VAR_DESCRIPTION=Grid of altitude levels upon which the retrieved target vmr profile as well as pressure and temperature profiles are reported
+VAR_NOTES= these altitudes are the centers of the retrieval altitude layers (geometric mean between the 2 layer boundaries); the reported vmr, P and T are effective layer values.
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=ALTITUDE
+VAR_UNITS=km
+VAR_SI_CONVERSION=0.0;1.0E3;m
+VAR_VALID_MIN=0
+VAR_VALID_MAX=120
+VAR_FILL_VALUE=-90000.000
+!
+VAR_NAME=ALTITUDE.BOUNDARIES
+VAR_DESCRIPTION= 2D matrix providing the layer boundaries used for vertical profile retrieval
+VAR_NOTES= The retrieved partial columns are given between the boundaries provided in this vector. The lowermost boundary is equal to ALTITUDE.INSTRUMENT.
+VAR_DATA_TYPE=REAL
+VAR_SIZE=NR_ALTS;2
+VAR_DEPEND=ALTITUDE;INDEPENDENT
+VAR_UNITS=km
+VAR_SI_CONVERSION=0.0;1.0E3;m
+VAR_VALID_MIN=0
+VAR_VALID_MAX=150
+VAR_FILL_VALUE=-90000.000
+!
+VAR_NAME=PRESSURE_INDEPENDENT
+VAR_DESCRIPTION= Total effective air pressures in layers for vertical profile retrieval
+VAR_NOTES=Pressure/temperature profiles are taken from NCEP; the pressure values represent the effective pressure in each layer and are reported at the center altitude of each layer. Above NCEP (~32 km), WACCM monthly mean pressure is used.
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=ALTITUDE;DATETIME
+VAR_UNITS=hPa
+VAR_SI_CONVERSION=0.0;1.0E2;kg m-1 s-2
+VAR_VALID_MIN=0
+VAR_VALID_MAX=1100
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=TEMPERATURE_INDEPENDENT
+VAR_DESCRIPTION=effective air temperatures in layers for vertical profile retrieval
+VAR_NOTES=Pressure/temperature profiles are taken from NCEP; the temperature values represent the effective temperatures in each layer and are reported at the center altitude of each layer. Above NCEP (~32 km), WACCM monthly mean pressure is used.
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=ALTITUDE;DATETIME
+VAR_UNITS=K
+VAR_SI_CONVERSION=0.0;1.0;K
+VAR_VALID_MIN=0
+VAR_VALID_MAX=500
+VAR_FILL_VALUE=-90000.000
+!
+VAR_NAME=XXX.MIXING.RATIO_ABSORPTION.SOLAR
+VAR_DESCRIPTION= retrieved vertical profile of XXX from solar absorption measurements, in VMR units
+VAR_NOTES= retrieval algorithm sfit2 v3.94; NDACC IRWG retrieval strategy; HITRAN2008 spectroscopy
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=ALTITUDE;DATETIME
+VAR_UNITS=ppv
+VAR_SI_CONVERSION=0.0;1.0;1
+VAR_VALID_MIN=-1
+VAR_VALID_MAX=10
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=XXX.MIXING.RATIO_ABSORPTION.SOLAR_APRIORI
+VAR_DESCRIPTION=a priori vertical profile of XXX used in the retrieval (OEM-SFIT2), in VMR units
+VAR_NOTES= the same a priori vertical profile was taken for all days in the present datafile and is based on WACCM 1980-2020 output
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=ALTITUDE; DATETIME
+VAR_UNITS=ppv
+VAR_SI_CONVERSION=0.0;1.0;1
+VAR_VALID_MIN=0
+VAR_VALID_MAX=10
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=XXX.MIXING.RATIO_ABSORPTION.SOLAR_AVK
+VAR_DESCRIPTION= averaging kernel matrix (AVK) of the retrieved vertical profile of XXX, in VMR/VMR units
+VAR_NOTES=dimension 1 are the AVK rows; dimension 2 are the AVK columns
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=ALTITUDE;ALTITUDE;DATETIME
+VAR_UNITS=1
+VAR_SI_CONVERSION=0.0;1.0;1
+VAR_VALID_MIN=-5.
+VAR_VALID_MAX=5.
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=INTEGRATION.TIME
+VAR_DESCRIPTION= duration of the measurement of the interferogram (and thus spectrum) from which the profile has been retrieved
+VAR_NOTES= the duration of the measurement may include 1 or more scans (inteferograms) coadded together
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=DATETIME
+VAR_UNITS=s
+VAR_SI_CONVERSION=0.0;1.0;s
+VAR_VALID_MIN=0
+VAR_VALID_MAX=21600
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=XXX.MIXING.RATIO_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM
+VAR_DESCRIPTION= total random error covariance matrix associated with the retrieved vertical profiles of XXX, in VMR units
+VAR_NOTES=This error covariance matrix includes the contributions from the measurement error (where the SNR has been defined from 1/mean RMS), interference errors (interfering species, background slope, wavenumber shift and solar line shift fitted in the state vector) and the model parameter errors (pointing, instrument line shape, temperature), added in quadrature. Spectral and smoothing errors are not included.
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=ALTITUDE;ALTITUDE;DATETIME
+VAR_UNITS=1
+VAR_SI_CONVERSION=0.0;1.0;1
+VAR_VALID_MIN=-2
+VAR_VALID_MAX=2
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=XXX.MIXING.RATIO_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC
+VAR_DESCRIPTION= total systematic error covariance matrix associated with the retrieved vertical profiles of XXX, in VMR units
+VAR_NOTES=This error covariance matrix includes the contributions from the spectroscopic errors, added in quadrature. Spectroscopy is from Hitran 2008. Uncertainty in the line intensity has been taken at 10% (representative of the error estimate for XXX in this region given in Hitran2008), and the air broadened half width at 20% (representative of the error estimate for XXX in this region given in Hitran2008). Smoothing error is not included.
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=ALTITUDE;ALTITUDE;DATETIME
+VAR_UNITS=1
+VAR_SI_CONVERSION=0.0;1.0;1
+VAR_VALID_MIN=-2
+VAR_VALID_MAX=2
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=XXX.COLUMN.PARTIAL_ABSORPTION.SOLAR
+VAR_DESCRIPTION= retrieved XXX (vertical) partial columns in the retrieval layers
+VAR_NOTES= partial column evaluations use a priori pressure and temperature values from NCEP
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=ALTITUDE;DATETIME
+VAR_UNITS=molec cm-2
+VAR_SI_CONVERSION= 0.0;1.66054E-20;mol m-2
+VAR_VALID_MIN=0
+VAR_VALID_MAX=1E20
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=XXX.COLUMN.PARTIAL_ABSORPTION.SOLAR_APRIORI
+VAR_DESCRIPTION= a priori XXX (vertical) partial columns in the retrieval layers
+VAR_NOTES= partial column evaluations use a priori pressure and temperature values from NCEP and WACCM monthly means above NCEP
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=ALTITUDE;DATETIME
+VAR_UNITS=molec cm-2
+VAR_SI_CONVERSION= 0.0;1.66054E-20;mol m-2
+VAR_VALID_MIN=0
+VAR_VALID_MAX=1E20
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=XXX.COLUMN_ABSORPTION.SOLAR
+VAR_DESCRIPTION=retrieved total vertical column of XXX - corresponding to retrieved vmr profiles
+VAR_NOTES=
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=DATETIME
+VAR_UNITS=molec cm-2
+VAR_SI_CONVERSION= 0.0;1.66054E-20;mol m-2
+VAR_VALID_MIN=0
+VAR_VALID_MAX=1E20
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=XXX.COLUMN_ABSORPTION.SOLAR_APRIORI
+VAR_DESCRIPTION=a priori total vertical column of XXX - corresponding to a priori vmr profiles
+VAR_NOTES=
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=DATETIME
+VAR_UNITS=molec cm-2
+VAR_SI_CONVERSION= 0.0;1.66054E-20;mol m-2
+VAR_VALID_MIN=0
+VAR_VALID_MAX=1E20
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=XXX.COLUMN_ABSORPTION.SOLAR_AVK
+VAR_DESCRIPTION= total vertical column averaging kernel for XXX derived from mixing ratio averaging kernel
+VAR_NOTES= this averaging kernel multiplies the partial column vector in order to get smoothed total column
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=ALTITUDE;DATETIME
+VAR_UNITS=1
+VAR_SI_CONVERSION=0.0;1.0;1
+VAR_VALID_MIN=-3
+VAR_VALID_MAX=3
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=XXX.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM
+VAR_DESCRIPTION=estimated total random uncertainty on the retrieved total vertical columns of XXX. Random error contributions are as described for the random error covariance matrix, with the uncertainty determined from representative spectra and applied as a constant percentage to all total columns.
+VAR_NOTES=smoothing error is not included
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=DATETIME
+VAR_UNITS=molec cm-2
+VAR_SI_CONVERSION= 0.0;1.66054E-20;mol m-2
+VAR_VALID_MIN=0
+VAR_VALID_MAX=1E20
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=XXX.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC
+VAR_DESCRIPTION=total systematic uncertainty on the retrieved total vertical columns of XXX.  Systematic error contributions are as described for the systematic covariance matrix, with the uncertainty determined from representative spectra and applied as a constant percentage to all total columns.
+VAR_NOTES=
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=DATETIME
+VAR_UNITS=molec cm-2
+VAR_SI_CONVERSION= 0.0;1.66054E-20;mol m-2
+VAR_VALID_MIN=0
+VAR_VALID_MAX=1E20
+VAR_FILL_VALUE=-9.0000E+004
+!
+VAR_NAME=ANGLE.SOLAR_ZENITH.ASTRONOMICAL
+VAR_DESCRIPTION=astronomical zenith angle of the sun at the time of the measurement
+VAR_NOTES=in solar absorption mode, the sun defines the line of sight
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=DATETIME
+VAR_UNITS=deg
+VAR_SI_CONVERSION=0.0;1.74533E-2;rad
+VAR_VALID_MIN=0
+VAR_VALID_MAX=180
+VAR_FILL_VALUE=-90000.00
+!
+VAR_NAME=ANGLE.SOLAR_AZIMUTH
+VAR_DESCRIPTION=azimuth angle of the sun (O at South, neg. to East, pos. to West)
+VAR_NOTES=in solar absorption mode, the sun defines the line of sight
+VAR_DATA_TYPE=REAL
+VAR_SIZE=
+VAR_DEPEND=DATETIME
+VAR_UNITS=deg
+VAR_SI_CONVERSION=0.0;1.74533E-2;rad
+VAR_VALID_MIN=-180
+VAR_VALID_MAX=180
+VAR_FILL_VALUE=-90000.00
+!
