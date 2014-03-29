@@ -86,8 +86,7 @@ def pspecInputStr():
         '#\n'
         '# zflag - zero offset\n',
         '#     = 0 no zero offset\n',
-        '#     = 1 try w/ baselincorrect\n',
-        '#     0 < z < 1 use this value\n',
+        '#     = 0 < zflag < 1, use this value for baselincorrect,\n',
         '#     = 2 use optimized 2nd polynomial fit to fully absorbed regions in 10m region\n',
         '#\n',
         '# roe, nterp, rflag, fflag, zflag\n',
