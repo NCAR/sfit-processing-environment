@@ -118,7 +118,7 @@ def main(argv):
         # Retrieve command line arguments
         #--------------------------------
         try:
-                opts, args = getopt.getopt(sys.argv[1:], 'i:b:f')
+                opts, args = getopt.getopt(sys.argv[1:], 'i:b:f:')
 
         except getopt.GetoptError as err:
                 print str(err)
@@ -132,12 +132,11 @@ def main(argv):
                 # Data directory
                 if opt == '-i':                     
                         wrkDir = arg
-                        sc.ckDir(wrkDir,exitFlg=True)
-                        if not(wrkDir.endswith('/')): wrkDir = wrkDir + '/'
+                        sc.ckDir(wrkDir,exitFlg=True)                    
 
                 # Binary directory
                 elif opt == '-b':                   
-                        if sc.ckDir(arg,exitFlg=False):
+                        if not sc.ckDir(arg,exitFlg=False,quietFlg=True):
                                 try:             binDir = binDirVer[arg.lower()]
                                 except KeyError: print '{} not a recognized version for -b option'.format(arg); sys.exit()
                                 
@@ -164,7 +163,8 @@ def main(argv):
         # If necessary change working directory 
         # to directory with input data. 
         #--------------------------------------
-        if wrkDir != (os.getcwd()+'/'): os.chdir(wrkDir)
+        if os.path.abspath(wrkDir) != os.getcwd(): os.chdir(wrkDir)
+        if not(wrkDir.endswith('/')): wrkDir = wrkDir + '/'
         
         #--------------------------
         # Initialize sfit ctl class
