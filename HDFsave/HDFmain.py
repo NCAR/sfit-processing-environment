@@ -33,7 +33,12 @@ def main():
     outDir         = '/Users/ebaumer/Data/HDF/'               # This is the directory where the HDF file will be written to
     loc            = 'THULE'                                  # This is the location of the instrument
     sfitVer        = '0.9.4.3'                                # This is the version of sfit4 used for the retrievals
-
+    iyear          = 2012
+    imonth         = 1
+    iday           = 1
+    fyear          = 2012
+    fmonth         = 12
+    fday           = 31
    
     print("Creating HDF file")
     
@@ -51,7 +56,7 @@ def main():
     # using our pre-defined interface
     #------------------------------------------------
     #myhdf.initDummy()
-    myhdf.initIDL(idlFname)
+    myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.

@@ -42,7 +42,7 @@ from itertools import izip
 
 class HDFinitData(object):
     
-    def initIDL(self,fname):
+    def initIDL(self,fname,iyear,imonth,iday,fyear,fmonth,fday):
         ''' Interface for initializing data with IDL save files'''
         #--------------------------------------------------------------------------------------------------------------------        
         #                             -------- IDL Data Structure Variables --------
@@ -84,6 +84,12 @@ class HDFinitData(object):
         HHMMSS     = dataStrc['ds']['HHMMSS']        
         self.dates = np.array([dt.datetime(int(ymd[0:4]),int(ymd[4:6]),int(ymd[6:]),int(hms[0:2]),int(hms[2:4]),int(hms[4:])) for (ymd,hms) in izip(YYYYMMDD,HHMMSS)])
         
+        #------------------------------------------
+        # Find indicies of dates in specified range
+        #------------------------------------------
+        idate = dt.datetime(iyear,imonth,iday)
+        fdate = dt.datetime(fyear,fmonth,fday)
+        inds  = np.where((self.dates >= idate) & (self.dates <= fdate))
         
         #---------------------------------------------------
         # Assign IDL data to attributes to be written to HDF
@@ -115,6 +121,33 @@ class HDFinitData(object):
         self.angleSolAz                     = np.asarray(dataStrc['ds']['AZI']) 
         self.h2oMxRatAbsSolar               = np.vstack(dataStrc['ds']['H2O_VMR']).reshape(nobs,nlyrs) 
         self.h2oColAbsSol                   = np.asarray(dataStrc['ds']['H2O_TC'])  
+
+        #----------------------------------------------
+        # Filter data according to specified date range
+        #----------------------------------------------
+        self.datesJD2K                      = self.datesJD2K[inds]
+        self.surfPressures                  = self.surfPressures[inds]
+        self.surfTemperatures               = self.surfTemperatures[inds]
+        self.pressures                      = self.pressures[inds,:]
+        self.temperatures                   = self.temperatures[inds,:]
+        self.gasMxRatAbsSolar               = self.gasMxRatAbsSolar[inds,:]
+        self.gasMxRatAbsSolarApriori        = self.gasMxRatAbsSolarApriori[inds,:]
+        self.gasMxRatAbsSolarAVK            = self.gasMxRatAbsSolarAVK[inds,:,:]
+        self.integrationTimes               = self.integrationTimes[inds]
+        self.gasMxRatAbsSolarUncRand        = self.gasMxRatAbsSolarUncRand[inds,:,:]
+        self.gasMxRatAbsSolarUncSys         = self.gasMxRatAbsSolarUncSys[inds,:,:]
+        self.gasColPartAbsSolar             = self.gasColPartAbsSolar[inds,:]
+        self.gasColPartAbsApriori           = self.gasColPartAbsApriori[inds,:]
+        self.gasColAbsSolar                 = self.gasColAbsSolar[inds]
+        self.gasColAbsSolarApriori          = self.gasColAbsSolarApriori[inds]
+        self.gasColAbsSolarAVK              = self.gasColAbsSolarAVK[inds,:]
+        self.gasColAbsSolarUncRand          = self.gasColAbsSolarUncRand[inds]
+        self.gasColAbsSolarUncSys           = self.gasColAbsSolarUncSys[inds]
+        self.angleZastr                     = self.angleZastr[inds]
+        self.angleSolAz                     = self.angleSolAz[inds]
+        self.h2oMxRatAbsSolar               = self.h2oMxRatAbsSolar[inds,:]
+        self.h2oColAbsSol                   = self.h2oColAbsSol[inds]
+        
 
     def initPy(self):
         ''' Interface for initializing data with python set of routines'''
