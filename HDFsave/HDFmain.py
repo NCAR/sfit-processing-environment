@@ -28,15 +28,15 @@ import hdfsave
                             
 def main():
     
-    gasName        = 'HCN'                                    # This is the target gas for retrieval
-    idlFname       = '/Users/ebaumer/Data/Test_HCN_TAB.sav'   # This is path and name of the IDL save file we use to store the data
-    outDir         = '/Users/ebaumer/Data/HDF/'               # This is the directory where the HDF file will be written to
-    loc            = 'THULE'                                  # This is the location of the instrument
-    sfitVer        = '0.9.4.3'                                # This is the version of sfit4 used for the retrievals
-    iyear          = 2012
+    gasName        = 'CO'                                        # This is the target gas for retrieval
+    idlFname       = '/Users/ebaumer/Data/1999_2012_TAB_CO.sav'   # This is path and name of the IDL save file we use to store the data
+    outDir         = '/Users/ebaumer/Data/HDF/'                   # This is the directory where the HDF file will be written to
+    loc            = 'THULE'                                      # This is the location of the instrument
+    sfitVer        = '0.9.4.3'                                    # This is the version of sfit4 used for the retrievals
+    iyear          = 1999
     imonth         = 1
     iday           = 1
-    fyear          = 2012
+    fyear          = 1999
     fmonth         = 12
     fday           = 31
    

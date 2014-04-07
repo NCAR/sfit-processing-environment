@@ -89,11 +89,12 @@ class HDFinitData(object):
         #------------------------------------------
         idate = dt.datetime(iyear,imonth,iday)
         fdate = dt.datetime(fyear,fmonth,fday)
-        inds  = np.where((self.dates >= idate) & (self.dates <= fdate))
+        inds  = np.where((self.dates >= idate) & (self.dates <= fdate))[0]
         
         #---------------------------------------------------
         # Assign IDL data to attributes to be written to HDF
         #---------------------------------------------------
+        self.dates                          = self.dates[inds]
         self.datesJD2K                      = np.asarray(dataStrc['ds']['DATETIME'])
         self.latitude                       = dataStrc['ds']['LATITUDE'][0]
         self.longitude                      = dataStrc['ds']['LONGITUDE'][0]
