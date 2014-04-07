@@ -94,7 +94,6 @@ class HDFinitData(object):
         #---------------------------------------------------
         # Assign IDL data to attributes to be written to HDF
         #---------------------------------------------------
-        self.dates                          = self.dates[inds]
         self.datesJD2K                      = np.asarray(dataStrc['ds']['DATETIME'])
         self.latitude                       = dataStrc['ds']['LATITUDE'][0]
         self.longitude                      = dataStrc['ds']['LONGITUDE'][0]
@@ -126,6 +125,7 @@ class HDFinitData(object):
         #----------------------------------------------
         # Filter data according to specified date range
         #----------------------------------------------
+        self.dates                          = self.dates[inds]
         self.datesJD2K                      = self.datesJD2K[inds]
         self.surfPressures                  = self.surfPressures[inds]
         self.surfTemperatures               = self.surfTemperatures[inds]
