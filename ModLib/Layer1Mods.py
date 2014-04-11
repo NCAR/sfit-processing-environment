@@ -636,11 +636,19 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         print 'Gain matrix shape: %s, K matrix shape: %s' %(str(D.shape),str(K.shape))
         if logFile: logFile.error('Unable to multiple Gain and K matrix; Gain matrix shape: %s, K matrix shape: %s' %(str(D.shape),str(K.shape)) ) 
 
+    #---------------------------------
+    # TESTING!!!!!!!!!!!!!!!!!!!!!!!!!
+    #---------------------------------
+    Kx       = K[:,x_start:x_stop]
+    Iapriori = np.zeros((n_layer,n_layer))
+    np.fill_diagonal(Iapriori,sumVars.aprfs[primgas.upper()])
+    AKxVMR   = np.dot(np.dot(Iapriori,Dx),np.dot(Iapriori,Kx))
+
     #-----------------------------------------------
     # Get unscaled Averaging Kernel for the 
     # retrieved profile of the gas in questions only
     #-----------------------------------------------
-    AKx = AK[x_start:x_stop,x_start:x_stop]
+    AKx    = AK[x_start:x_stop,x_start:x_stop]
 
     #----------------------------------
     # Calculate retrieved total column:
@@ -940,7 +948,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     fname      = wrkingDir+SbctlFileVars.inputs['file.out.avk'][0]    
     header     = 'Averaging Kernel for '+ primgas.upper()
     AVK        = {}
-    AVK['AVK'] = (AKx,[],[])
+    AVK['AVK_scale_factor'] = (AKx,[],[])
+    AVK['AVK_VMR']          = (AKxVMR,[],[])
     writeCoVar(fname,header,AVK,0)
 
 
