@@ -640,9 +640,11 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # TESTING!!!!!!!!!!!!!!!!!!!!!!!!!
     #---------------------------------
     Kx       = K[:,x_start:x_stop]
-    Iapriori = np.zeros((n_layer,n_layer))
+    Iapriori    = np.zeros((n_layer,n_layer))
+    IaprioriInv = np.zeros((n_layer,n_layer))
     np.fill_diagonal(Iapriori,sumVars.aprfs[primgas.upper()])
-    AKxVMR   = np.dot(np.dot(Iapriori,Dx),np.dot(Iapriori,Kx))
+    np.fill_diagonal(IaprioriInv, 1.0 / (sumVars.aprfs[primgas.upper()]))
+    AKxVMR   = np.dot(np.dot(Iapriori,Dx),np.dot(Kx,IaprioriInv))
 
     #-----------------------------------------------
     # Get unscaled Averaging Kernel for the 
