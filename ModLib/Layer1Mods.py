@@ -652,6 +652,14 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #-----------------------------------------------
     AKx    = AK[x_start:x_stop,x_start:x_stop]
 
+    #---------------------------------
+    # TESTING!!!!!!!!!!!!!!!!!!!!!!!!!
+    #---------------------------------
+    AKxVMRidl = np.zeros((n_layer,n_layer))
+    for i in range(0,n_layer):
+        for j in range(0,n_layer):
+            AKxVMRidl[i,j] = AKx[i,j]*(sumVars.aprfs[primgas.upper()][i] / sumVars.aprfs[primgas.upper()][j])
+
     #----------------------------------
     # Calculate retrieved total column:
     # molec/cm**2
@@ -952,6 +960,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     AVK        = {}
     AVK['AVK_scale_factor'] = (AKx,[],[])
     AVK['AVK_VMR']          = (AKxVMR,[],[])
+    AVK['AVK_VMR_IDL']      = (AKxVMRidl,[],[])
     writeCoVar(fname,header,AVK,0)
 
 
