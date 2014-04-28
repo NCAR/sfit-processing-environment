@@ -11,7 +11,7 @@ class show_results:
     def __init__(self,direc='.'):
 
         # out.level = 1
-        plt.rcParams['font.size'] = 24
+        plt.rcParams['font.size'] = 18
 #        plt.rc('text', usetex=True)
         self.retprf = sfit4.read_table(direc+'/rprfs.table')
         self.aprprf = sfit4.read_table(direc+'/aprfs.table')
@@ -92,7 +92,7 @@ class show_results:
             ax1.autoscale_view(True)
             ax1.plot(self.sp.nu[band_nr-1], self.sp.obs[band_nr-1],label='obs')
             ax1.plot(self.sp.nu[band_nr-1], self.sp.clc[band_nr-1],label='clc')
-            ax1.legend(bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
+            ax1.legend(bbox_to_anchor=(0.5,1.0), loc=8, ncol=2, fontsize=18)
             ax2 = self.winmw.add_subplot(gs[1])
             ax2.xaxis.set_major_formatter(tkr.ScalarFormatter(useOffset=False))
             ax2.yaxis.set_major_formatter(tkr.ScalarFormatter(useOffset=False))
