@@ -1,0 +1,9 @@
+create_hdf5.py           -- creates an intermediate hdf5 file from a directory stucture created by
+			    Layer1 processing (yyyymmdd.HHMMSS)
+show_sfit4_results.py    -- show several results of a single sfit4 run
+			 -- the zoom of the spectra and residual windows are connected in both
+			    show_spectra and show_spectra_by_gas
+
+read_result_sfit4.py     -- reads result of a single sfit4 run
+read_from_file.py        -- reads single strings or characters (separeted by space) and converts 
+			    them to a number if possible.

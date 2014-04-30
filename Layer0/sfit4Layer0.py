@@ -9,30 +9,23 @@
 #			1) Calls pspec to convert binary spectra file (bnr) to ascii (t15asc)
 #			2) Calls hbin to gather line parameters from hitran
 #			3) Calls sfit4
-#			4) Clean outputs from sfit4 call
-#			5) Creates a log file
+#			4) Calls error analysis from Layer1mods.py
+#			5) Clean outputs from sfit4 call
 #
 #
 # External Subprocess Calls:
 #			1) pspec executable file from pspec.f90
 #			2) hbin  executable file from hbin.f90
 #			3) sfit4 executable file from sfit4.f90
+#                       4) errAnalysis from Layer1mods.py
 #
 #
 #
 # Notes:
-#       1) Initializations (i.e. setting paths, log files, programs to execute) can 
-#          either be done in the command line or in file
-#	2) Options include:
-#			 -i	<path>	 : Path to input data files
-#			 -e     <path>	 : Path to sfit4 executable files
-#			 -l	<path>	 : Path to log file 
-#			 -c	<path>	 : Clean outputs from sfit4 run
-#                        -h              : Displays usage (How to use script)
-#			 --log_off	 : Flag to turn loggin off (default is on)
-#			 --hbin_off	 : Flag to not run hbin (default is to run)
-#			 --pspec_off : Flag to not run pspec (default is to run)
-#			 --sfit4_off : Flag to not run sfit4 (default is to run)
+#	1) Options include:
+#			 -i	<dir>	  : Optional. Data directory. Default is current working directory
+#			 -b     <dir/str> : Optional. Binary directory. Default is hard-code. 
+#			 -f	<str>	  : Run flags, h = hbin, p = pspec, s = sfit4, e = error analysis, c = clean 
 #			
 #
 # Usage:
@@ -40,20 +33,35 @@
 #
 #
 # Examples:
-#       1) This example runs hbin, pspec, and sfit4 and creates a log file
-#           ./sfit4Layer0.py -i /User/home/datafiles/ -e /User/bin/ -l /User/logs/
+#       1) This example runs hbin, pspec, sfit4, error analys, and cleans working directory prior to execution
+#           ./sfit4Layer0.py -f hpsec
 #
 #       2) This example just runs sfit4
-#           ./sfit4Layer0.py -i /User/home/datafiles/ -e /User/bin/ --log_off --hbin_off --pspec_off
+#           ./sfit4Layer0.py -f s
 #
-#       3) This example cleans the output file created by sfit4 in directory (/User/home/datafiles/)
-#          ./sfit4Layer0.py -c /User/home/datafiles/
+#       3) This example cleans the output file created by sfit4 in directory (/User/home/datafiles/) which is not the current directory
+#          ./sfit4Layer0.py -i /User/home/datafiles/ -f c
 #
 # Version History:
 #       Created, May, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
 #
 #
-# References:
+# License:
+#    Copyright (c) 2013-2014 NDACC/IRWG
+#    This file is part of sfit4.
+#
+#    sfit4 is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    any later version.
+#
+#    sfit4 is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #
 #----------------------------------------------------------------------------------------
 
@@ -61,257 +69,171 @@
 #---------------
 # Import modules
 #---------------
-import logging
 import sys
 import os
 import getopt
-import datetime
-import subprocess
+import sfitClasses as sc
+from Layer1Mods import errAnalysis
+from Tkinter import Tk
+from tkFileDialog import askopenfilename
 
 
 #------------------------
 # Define helper functions
 #------------------------
 def usage():
-        print 'sfit4Layer0.py -i <path> -e <path> -l <path> ' + \
-              '-c <path> --log_off --hbin_off --pspec_off --sfit4_off'
+        print 'sfit4Layer0.py -f <str> [-i <dir> [-b <dir/str> ] \n'
+        print '-i <dir>     Data directory. Optional: default is current working directory\n'
+        print '-b <dir/str> Binary sfit directory. Optional: default is hard-coded in main(). Also accepts v1, v2, etc.'
+        print '-f <str>     Run Flags: Necessary: h = hbin, p = pspec, s = sfit4, e = error analysis, c = clean\n'
         sys.exit()
 
-def subProcRun( fname ):
-        rtn = subprocess.Popen( fname, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
-        outstr = ''
-        while True:
-                out = rtn.stdout.read(1)
-                if ( out == '' and rtn.poll() != None ):
-                        break
-                if out != '':
-                        outstr += out
-                        sys.stdout.write(out)
-                        sys.stdout.flush()
-        stdout, stderr = rtn.communicate()
-        return (outstr,stderr)
 
 def main(argv):				
+
+        #----------------
+        # Initializations
+        #----------------
+         #------------
+         # Directories
+         #------------
+        wrkDir    = os.getcwd()                              # Set current directory as the data directory
+        binDir    = '/data/bin'                              # Default binary directory. Used of nothing is specified on command line
+        binDirVer = {
+        'v1':   '/data/ebaumer/Code/sfit-core-code/src/',    # Version 1 for binary directory (Eric) 
+        'v2':   '/data/tools/400/sfit-core/src/'             # Version 2 for binary directory (Jim)        
+        }
+
+        
+         #----------
+         # Run flags
+         #----------
+        hbinFlg  = False                                          # Flag to run hbin
+        pspecFlg = False                                          # Flag to run pspec
+        sfitFlg  = False                                          # Flag to run sfit4
+        errFlg   = False                                          # Flag to run error analysis
+        clnFlg   = False                                          # Flag to clean directory of output files listed in ctl file
 
         #--------------------------------
         # Retrieve command line arguments
         #--------------------------------
         try:
-                opts, args = getopt.getopt(sys.argv[1:], 'i:e:l:c:h', 
-                                           ['log_off', 'hbin_off', 'pspec_off', 'sfit4_off'])
+                opts, args = getopt.getopt(sys.argv[1:], 'i:b:f:')
 
         except getopt.GetoptError as err:
                 print str(err)
                 usage()
                 sys.exit()
 
-        #---------------------------------------#
-        # Set defaults for command line options #
-        #---------------------------------------#
-        #-------#
-        # Paths #
-        #-------#
-        # Get current working directory
-        cwdPath = os.getcwd()
-        
-        # Set path to sfit4 executable files
-        exe_fpath = cwdPath
-
-        # Set path to sfit4 data files
-        data_fpath = cwdPath
-
-        # Set Path for log file
-        log_fpath = cwdPath
-
-        #-------#
-        # Flags #
-        #-------#
-        log_flg   = False		# Flag for log file
-        hbin_flg  = True		# Flag for hbin run
-        pspec_flg = True		# Flag for pspec run
-        sfit4_flg = True		# Flag for sfit4 run
-        cln_flg   = False		# Flag for cleaning sfit4 output
-
         #-----------------------------
         # Parse command line arguments
         #-----------------------------
         for opt, arg in opts:
-                if opt == '-i':
-                        data_fpath = arg
+                # Data directory
+                if opt == '-i':                     
+                        wrkDir = arg
+                        sc.ckDir(wrkDir,exitFlg=True)                    
 
-                        # check if '/' is included at end of path
-                        if not( data_fpath.endswith('/') ):
-                                data_fpath = data_fpath + '/'
-
-                        # check if path is valide
-                        if not( os.path.isdir(data_fpath) ):
-                                print 'Unable to find ' + data_fpath
-                                sys.exit()
-
-                        # Set path for log file		
-                        log_fpath = data_fpath
-
-                elif opt == '-e':
-                        exe_fpath = arg
-
-                        # check if '/' is included at end of path
-                        if not( exe_fpath.endswith('/') ):
-                                exe_fpath = exe_fpath + '/'			
-
-                        # check if path is valide
-                        if not( os.path.isdir(exe_fpath) ):
-                                print 'Unable to find ' + exe_fpath
-                                sys.exit()
-
-                elif opt == '-l':
-                        log_fpath = arg
-                        log_flg   = True
-                        # check if '/' is included at end of path
-                        if not( log_fpath.endswith('/') ):
-                                log_fpath = log_fpath + '/'	
-
-                        # check if path is valide				
-                        if not( os.path.isdir(log_fpath) ):
-                                print 'Unable to find ' + log_fpath
-                                sys.exit()	
-                elif opt == '-h':
-                        usage()
-                        sys.exit()
-
-                # Set logical flags		
-                elif opt == '--log_off':
-                        log_flg = False
-
-                elif opt == '--hbin_off':
-                        hbin_flg = False
-
-                elif opt == '--pspec_off':
-                        pspec_flg = False
-
-                elif opt == '--sfit4_off':
-                        sfit4_flg = False
-
-                elif opt == '-c':
-                        cln_flg = True
-                        cln_fpath = arg
+                # Binary directory
+                elif opt == '-b':                   
+                        if not sc.ckDir(arg,exitFlg=False,quietFlg=True):
+                                try:             binDir = binDirVer[arg.lower()]
+                                except KeyError: print '{} not a recognized version for -b option'.format(arg); sys.exit()
+                                
+                        else: binDir = arg
                         
-                        # check if '/' is included at end of path
-                        if not( cln_fpath.endswith('/') ):
-                                cln_fpath = cln_fpath + '/'			
-
-                        # check if path is valide
-                        if not( os.path.isdir(cln_fpath) ):
-                                print 'Unable to find ' + cln_fpath
-                                sys.exit()                        
+                        if not(binDir.endswith('/')): binDir = binDir + '/'
+      
+                # Run flags
+                elif opt == '-f':                   
+                        flgs = list(arg)
+                        for f in flgs:
+                                if   f.lower() == 'h': hbinFlg  = True
+                                elif f.lower() == 'p': pspecFlg = True
+                                elif f.lower() == 's': sfitFlg  = True
+                                elif f.lower() == 'e': errFlg   = True
+                                elif f.lower() == 'c': clnFile  = True
+                                else: print '{} not an option for -f ... ignored'.format(f)
 
                 else:
-                        print 'Unhandled option: ' + opt
+                        print 'Unhandled option: {}'.format(opt)
                         sys.exit()	
 
-        #--------------------
-        # Initialize log file
-        #--------------------
-        if log_flg:		
-                logging.basicConfig(level    = logging.INFO,
-                                    format   = '%(asctime)s %(levelname)-8s %(message)s',
-                                    datefmt  = '%a, %d %b %Y %H:%M:%S',
-                                    filename = log_fpath + 'sfit4_logfile_' + 
-                                    datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.log',
-                                    filemode = 'w' )
-
-        # Write initial log data             		
-                logging.info('Input data path ' + data_fpath     )
-                logging.info('Executable path ' + exe_fpath      )
-                logging.info('hbin flag = '     + str(hbin_flg)  )
-                logging.info('pspec flag = '    + str(pspec_flg) )
-                logging.info('sfit4 flag = '    + str(sfit4_flg) )
-
-        #-------------------------------------------
-        # Change working directory to directory with
-        # input data. Necessary for running sfit4
-        #-------------------------------------------
-        os.chdir(data_fpath)
-
+        #--------------------------------------
+        # If necessary change working directory 
+        # to directory with input data. 
+        #--------------------------------------
+        if os.path.abspath(wrkDir) != os.getcwd(): os.chdir(wrkDir)
+        if not(wrkDir.endswith('/')): wrkDir = wrkDir + '/'
+        
+        #--------------------------
+        # Initialize sfit ctl class
+        #--------------------------
+        if sc.ckFile(wrkDir+'sfit4.ctl'): ctlFileName = wrkDir + 'sfit4.ctl'                       
+        else:
+                TK().withdraw()
+                ctlFileName = askopenfilename(initialdir=wrkDir,message='Please select sfit ctl file')
+                
+        ctlFile = sc.CtlInputFile(ctlFileName)
+        ctlFile.getInputs()    
+        
+        #------------------------
+        # Initialize sb ctl class
+        #------------------------       
+        if errFlg: 
+                if sc.ckFile(wrkDir+'sb.ctl'): sbCtlFileName = wrkDir + 'sb.ctl'
+                else:
+                        TK().withdraw()
+                        sbCtlFileName = askopenfilename(initialdir=wrkDir,message='Please select sb ctl file')
+                        
+                sbCtlFile = sc.CtlInputFile(sbCtlFileName)
+                sbCtlFile.getInputs()                  
 
         #---------------------------
         # Clean up output from sfit4
         #---------------------------
-        if cln_flg:
-                # Create possible list of sfit4 output files to clean
-                clnFiles = [ 'pbpfile', 'statevec', 'k.output', 'kb.output','sa.complete',
-                             'rprfs.table','aprfs.table','ab.output', 'summary', 'parm.output',
-                             'seinv.output', 'sainv.complete', 'smeas.target', 'shat.complete',
-                             'ssmooth.target', 'ak.target', 'solar.output' ]
-
-                # Remove applicable files
-                for clnFile in clnFiles:
-                        try:
-                                os.remove(cln_fpath + clnFile)
-                        except OSError:
-                                pass
-
+        if clnFlg:
+                for k in ctlFile.inputs['file.out']:
+                        if 'file.out' in k:
+                                try:            os.remove(wrkDir + ctlFile.inputs[k])
+                                except OSError: pass
+                
         #----------
         # Run pspec
         #----------	
-        if pspec_flg:
-                print 'Running pspec.....'
-                stdout,stderr = subProcRun( [exe_fpath + 'pspec'] )
-                                        
-                if log_flg:
-                        logging.info( '\n' + stdout + stderr )
-
-                #if ( stderr is None or not stderr ):
-                        #if log_flg:
-                                #logging.info( stdout )
-                                #logging.info('Finished running pspec\n' + stdout)
-                #else:
-                        #print 'Error running pspec!!!'
-                        #if log_flg:
-                                #logging.error('Error running pspec \n' + stdout)
-                        #sys.exit()                        
-
-                        
+        if pspecFlg:
+                print '*************'
+                print 'Running pspec'
+                print '*************'
+                rtn = sc.subProcRun( [binDir + 'pspec'] )
 
         #----------
         # Run hbin
         #----------		
-        if hbin_flg:
-                print 'Running hbin.....'
-                stdout,stderr = subProcRun( [exe_fpath + 'hbin'] )
-
-                if log_flg:
-                        logging.info( '\n' + stdout + stderr )
-
-                #if ( stderr is None or not stderr ):
-                        #if log_flg:
-                                #logging.info( stdout )
-                                #logging.info('Finished running hbin\n' + stdout)
-                #else:
-                        #print 'Error running hbin!!!'
-                        #if log_flg:
-                                #logging.error('Error running hbin \n' + stdout)
-                        #sys.exit()       
-                        
+        if hbinFlg:
+                print '************'
+                print 'Running hbin'
+                print '************'
+                rtn = sc.subProcRun( [binDir + 'hbin'] )
 
         #----------
         # Run sfit4
         #----------		
-        if sfit4_flg:
-                print 'Running sfit4.....'
-                stdout,stderr = subProcRun( [exe_fpath + 'sfit4'] )
+        if sfitFlg:
+                print '************'
+                print 'Running sfit'
+                print '************'
+                rtn = sc.subProcRun( [binDir + 'sfit4'] )
                                                                 
-                if log_flg:
-                        logging.info( '\n' + stdout + stderr )
-                
-                #if ( stderr is None or not stderr):
-                        #if log_flg:
-                                #logging.info('Finished running sfit4\n' + stdout)
-                #else:
-                        #print 'Error running sfit4!!!'
-                        #if log_flg:
-                                #logging.error('Error running sfit4 \n' + stdout)
-                        #sys.exit()   
-                        
+        #-------------------
+        # Run error analysis
+        #-------------------
+        if errFlg:
+                print '**********************'
+                print 'Running error analysis'
+                print '**********************'                
+                rtn = errAnalysis(ctlFile,sbCtlFile,wrkDir)
+
 
 
 if __name__ == "__main__":
