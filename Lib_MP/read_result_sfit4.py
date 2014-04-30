@@ -253,7 +253,8 @@ class gasspectra:
         self.band = []
         self.scan = []
         self.iteration = []
-
+        self.clc = []
+        self.nu = []
         files = glob.glob(direc + '/spc*')
         for ff in files:
             ascf = rn.read_from_file(ff)
@@ -263,12 +264,13 @@ class gasspectra:
             mw_res = ascf.next(1).pop(0)
             mw_nr = ascf.next(1).pop(0)
             clc = np.array(ascf.next(mw_nr))
-            nu = np.array(range(0, mw_nr)) * mw_res + mw_start     
+            nu = np.array(range(0, mw_nr)) * mw_res + mw_start
             self.gas.append(headerline[1])
-            self.band.append(headerline[3])
-            self.scan.append(headerline[5])
-            self.iteration.append(headerline[7])
-
+            self.band.append(int(headerline[3]))
+            self.scan.append(int(headerline[5]))
+            self.iteration.append(int(headerline[7]))
+            self.clc.append(clc)
+            self.nu.append(nu)
 
             
             del ascf 
