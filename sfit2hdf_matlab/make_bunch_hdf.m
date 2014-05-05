@@ -10,7 +10,7 @@ function make_bunch_hdf(p, location)
     species = p{1}.target;
 
     
-    hdf_v5 = 1;
+    hdf_v5 = 0;
     monthly = 1;
 
     headerfile = sprintf('data.meta');
