@@ -51,14 +51,15 @@ class Kout:
         self.K_frac = np.genfromtxt(filename,skiprows=4)
 
 class avk:
-    def __init__(self, filename):
+    def __init__(self, filename, prfsfile):
     
         self.AK_frac = np.genfromtxt(filename,skiprows=2)
         self.direc = os.path.dirname(filename)
+        self.prfsfile = prfsfile
 
     def renormalize(self):
         
-        ap = read_table(self.direc+'/aprfs.table')
+        ap = read_table(self.prfsfile)
         prf,z = ap.get_gas_vmr(ap.get_retrieval_gasnames()[0])
         self.AK_vmr = np.dot(np.dot(np.diag(prf),self.AK_frac),np.diag(1/prf))
         prf,z = ap.get_gas_col(ap.get_retrieval_gasnames()[0])
