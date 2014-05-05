@@ -130,7 +130,7 @@ end
 function write_SURFACE_PRESSURE_INDEPENDENT(p,species,fid03) 
     fprintf(fid03,'SURFACE.PRESSURE_INDEPENDENT\n');
     for n=1:length(p)
-        fprintf(fid03, '%f\n', p{n}.P(end));
+        fprintf(fid03, '%f\n', -90000);
     end
 end 
 
@@ -144,7 +144,7 @@ end
 function write_SURFACE_TEMPERATURE_INDEPENDENT(p,species,fid03) 
     fprintf(fid03,'SURFACE.TEMPERATURE_INDEPENDENT\n');
     for n=1:length(p)
-        fprintf(fid03, '%f\n', p{n}.T(end));
+        fprintf(fid03, '%f\n', -90000);
     end
 end 
 
@@ -193,7 +193,7 @@ function write_MIXING_RATIO_VOLUME_ABSORPTION_SOLAR_AVK(p,species,fid03)
     fprintf(fid03,'%s.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_AVK\n', species);
     for n=1:length(p)
         for m = 1:size(p{n}.avk,1)
-            fprintf(fid03, '%g\n', p{n}.avk(m,:));
+		  fprintf(fid03, '%g\n', p{n}.avk(:,m));
         end
     end
 end 

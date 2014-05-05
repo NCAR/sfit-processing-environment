@@ -11,6 +11,9 @@ function fail1 = Check_results(p)
     sza_max = -1;
     max_iter = -1;
     species = p{1}.target
+    if strcmp(species, 'C2H6')
+        dofs_min = 0.8
+    end
     if strcmp(species, 'HCN')
         snr_the_min = 0;
         snr_clc_min = 50;
