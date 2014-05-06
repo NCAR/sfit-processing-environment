@@ -792,7 +792,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                 #-------------------------
                 elif (Kbl.lower() == 'sza') and (SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'][0].upper() == 'F'):
                     if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise Exception('Number of specified Sb does not match number of Kb columns!! Check Sb.ctl file.')
-                    diagFill = np.array(SbctlFileVars.inputs['sb.sza.'+ErrType]) / sumVars.readPbp['sza']
+                    diagFill = np.array(SbctlFileVars.inputs['sb.sza.'+ErrType]) / sumVars.pbp['sza']
 
                 #---------------------------------
                 # Omega (FOV) (in case of scaling)
