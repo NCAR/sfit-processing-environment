@@ -121,7 +121,7 @@ def main(argv):
         # Retrieve command line arguments
         #--------------------------------
         try:
-                opts, args = getopt.getopt(sys.argv[1:], 'i:b:f:')
+                opts, args = getopt.getopt(sys.argv[1:], 'i:b:f:v')
 
         except getopt.GetoptError as err:
                 print str(err)
@@ -157,6 +157,12 @@ def main(argv):
                                 elif f.lower() == 'e': errFlg   = True
                                 elif f.lower() == 'c': clnFile  = True
                                 else: print '{} not an option for -f ... ignored'.format(f)
+                                
+                # Print all versions for binary directories
+                elif opt == '-v':
+                        for ver in binDirVer:
+                                print '{}: {}'.format(ver,binDirVer[ver])
+                        sys.exit()
 
                 else:
                         print 'Unhandled option: {}'.format(opt)
