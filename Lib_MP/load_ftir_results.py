@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Script to rpint results in a hdf created by create_hdf5.py
+# Script to print results in a hdf created by create_hdf5.py
 
 import tables as h5
 import numpy as np
@@ -11,8 +11,8 @@ import sys
 
 plt.rc('text', usetex=True)
 
-if __name__ == '__main__':
-    h5_file = sys.argv[1]
+#if __name__ == '__main__':
+#    h5_file = sys.argv[1]
 
 
 h5f = h5.File(h5_file)
@@ -36,6 +36,8 @@ sza = np.double(h5f.root.sza[:])
 snrt = h5f.root.snr_the[:]
 snr = h5f.root.snr_clc[:]
 avk = h5f.root.avk[:]
+avkv = h5f.root.avk_vmr[:]
+avkc = h5f.root.avk_col[:]
 c2y = h5f.root.chi_2_y[:]
 nr_iter = h5f.root.iter[:]
 max_iter = h5f.root.itmx[:]

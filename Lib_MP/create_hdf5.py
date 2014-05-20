@@ -223,7 +223,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    akfile =  string.join([direc, '/', dd, '/', 'ak.out'], '')
 	    if not os.path.isfile(akfile):
 	        continue
-	    ak = sfit4.avk(akfile)
+	    ak = sfit4.avk(akfile,aprfsfile)
 	    avk = ak.avk()
 	    avk_col = ak.avk(type='column')
 	    avk_vmr = ak.avk(type='vmr')

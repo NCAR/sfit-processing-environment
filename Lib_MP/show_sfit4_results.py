@@ -79,9 +79,13 @@ class show_results:
 
         if (type=='avk'):
             self.winavk.clf()
-            ax = self.winavk.add_subplot(111)
+            ax = self.winavk.add_subplot(131)
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             ax.plot(self.avk.avk('frac').T, z)
+            ax = self.winavk.add_subplot(132)
+            ax.plot(self.avk.avk('vmr').T, z)
+            ax = self.winavk.add_subplot(133)
+            ax.plot(self.avk.avk('col').T, z)
             self.winavk.show()
 
 
@@ -115,7 +119,7 @@ class show_results:
             ax1.autoscale_view(True)
             ax1.plot(self.sp.nu[band_nr-1], self.sp.obs[band_nr-1],label='obs')
             ax1.plot(self.sp.nu[band_nr-1], self.sp.clc[band_nr-1],label='clc')
-            ax1.legend(bbox_to_anchor=(0.5,1.0), loc=8, ncol=2, fontsize=18)
+            ax1.legend(bbox_to_anchor=(0.5,1.0), loc=8, ncol=2)
             ax2.xaxis.set_major_formatter(tkr.ScalarFormatter(useOffset=False))
             ax2.yaxis.set_major_formatter(tkr.ScalarFormatter(useOffset=False))
             ax2.set_autoscaley_on(True)
