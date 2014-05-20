@@ -17,8 +17,8 @@ class show_results:
         self.aprprf = sfit4.read_table(direc+'/aprfs.table')
         self.gases = self.aprprf.get_retrieval_gasnames()
         self.sp = sfit4.pbp(direc+'/pbpfile')
-        if os.path.exists(direc+'/ak.out'):
-            self.avk = sfit4.avk(direc+'/ak.out')
+        if os.path.exists(direc+'/ak.target'):
+            self.avk = sfit4.avk(direc+'/ak.target')
         else:
             self.avk = -1
 #        self.error = sfit4.error(direc+'/smeas.target',direc+'/aprfs.table')
