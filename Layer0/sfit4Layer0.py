@@ -104,7 +104,8 @@ def main(argv):
         binDirVer = {
         'v1':   '/data/ebaumer/Code/sfit-core-code/src/',    # Version 1 for binary directory (Eric)
         'v2':   '/data/tools/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
-        'v3':   '/Users/jamesw/FDP/sfit/400/sfit-core/src/'             # Version 2 for binary directory (Jim)
+        'v3':   '/Users/jamesw/FDP/sfit/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
+        'v4':   '/home/ebaumer/Code/sfit4/src/'
         }
 
 
@@ -180,7 +181,7 @@ def main(argv):
         #--------------------------
         if sc.ckFile(wrkDir+'sfit4.ctl'): ctlFileName = wrkDir + 'sfit4.ctl'
         else:
-                TK().withdraw()
+                Tk().withdraw()
                 ctlFileName = askopenfilename(initialdir=wrkDir,message='Please select sfit ctl file')
 
         ctlFile = sc.CtlInputFile(ctlFileName)
