@@ -401,24 +401,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     """
     Calculates systematic and random uncertainty covariance matrix 
     using output from sfit4 and sb values from ctl file
-
-    Outputs:
-    error_analysis.log: summary of calculated erros in %
-    error_analysis.summary: summary of calculated erros in molec / cm^2
-    outputs for covariance matrices are controlled by sfit4.ctl file
-    options:
-      total systematic uncertainty covariance matrix
-      total random uncertainty covariance matrix
-      all systematic uncertainty covariance matrices
-      all random uncertainty covariance matrices
-
-    To Do List: (These are things we hope to implement in the future)
-    1) Calculate errors on interfering gasses (retrieved as profile or total column)
-    2) Investigate necessity of long double (128-bit) for calcCoVar
-
-
-    Created Stephanie Conway (sconway@atmosp.physics.utoronto.ca)
-
     """
 
     def calcCoVar(coVar,A,aprDensPrf,retPrfVMR,VMRoutFlg, MolsoutFlg, airMass):

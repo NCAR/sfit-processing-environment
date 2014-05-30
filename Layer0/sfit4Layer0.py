@@ -83,11 +83,14 @@ from tkFileDialog import askopenfilename
 #------------------------
 # Define helper functions
 #------------------------
-def usage():
+def usage(binDirVer):
         print 'sfit4Layer0.py -f <str> [-i <dir> [-b <dir/str> ] \n'
         print '-i <dir>     Data directory. Optional: default is current working directory'
+        print '-f <str>     Run Flags: Necessary: h = hbin, p = pspec, s = sfit4, e = error analysis, c = clean'
         print '-b <dir/str> Binary sfit directory. Optional: default is hard-coded in main(). Also accepts v1, v2, etc.'
-        print '-f <str>     Run Flags: Necessary: h = hbin, p = pspec, s = sfit4, e = error analysis, c = clean\n'
+        for ver in binDirVer:
+                print '             {}: {}'.format(ver,binDirVer[ver])        
+        
         sys.exit()
 
 
@@ -123,11 +126,11 @@ def main(argv):
         # Retrieve command line arguments
         #--------------------------------
         try:
-                opts, args = getopt.getopt(sys.argv[1:], 'i:b:f:v')
+                opts, args = getopt.getopt(sys.argv[1:], 'i:b:f:?')
 
         except getopt.GetoptError as err:
                 print str(err)
-                usage()
+                usage(binDirVer)
                 sys.exit()
 
         #-----------------------------
@@ -159,12 +162,9 @@ def main(argv):
                                 elif f.lower() == 'e': errFlg   = True
                                 elif f.lower() == 'c': clnFile  = True
                                 else: print '{} not an option for -f ... ignored'.format(f)
-
-                # Print all versions for binary directories
-                elif opt == '-v':
-                        for ver in binDirVer:
-                                print '{}: {}'.format(ver,binDirVer[ver])
-                        sys.exit()
+                elif opt == '-?':
+                        usage(binDirVer)
+                        sys.exit()                        
 
                 else:
                         print 'Unhandled option: {}'.format(opt)
