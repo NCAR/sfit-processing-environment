@@ -105,7 +105,8 @@ def main(argv):
         'v1':   '/data/ebaumer/Code/sfit-core-code/src/',    # Version 1 for binary directory (Eric)
         'v2':   '/data/tools/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
         'v3':   '/Users/jamesw/FDP/sfit/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
-        'v4':   '/home/ebaumer/Code/sfit4/src/'
+        'v4':   '/home/ebaumer/Code/sfit4/src/',
+        'v5':   '/Users/jamesw/FDP/sfit/400/src/src-irwg14-mp'
         }
 
 
@@ -158,7 +159,7 @@ def main(argv):
                                 elif f.lower() == 'e': errFlg   = True
                                 elif f.lower() == 'c': clnFile  = True
                                 else: print '{} not an option for -f ... ignored'.format(f)
-                                
+
                 # Print all versions for binary directories
                 elif opt == '-v':
                         for ver in binDirVer:
