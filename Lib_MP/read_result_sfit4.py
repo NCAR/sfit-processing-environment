@@ -50,10 +50,21 @@ class Kout:
     
         self.K_frac = np.genfromtxt(filename,skiprows=4)
 
+class Kbout:
+    def __init__(self, filename):
+    
+        self.K_frac = np.genfromtxt(filename,skiprows=2,names=True)
+
+    def get_keys(self):
+        return(self.K_frac.dtype.names)
+
+    def get_data(self, key):
+        return(self.K_frac[key])
+
 class avk:
     def __init__(self, filename, prfsfile):
     
-        self.AK_frac = np.genfromtxt(filename,skiprows=2)
+        self.AK_frac = np.genfromtxt(filename,skiprows=3)
         self.direc = os.path.dirname(filename)
         self.prfsfile = prfsfile
 
