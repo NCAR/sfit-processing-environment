@@ -10,6 +10,7 @@ import matplotlib.dates as mdt
 import datetime as dt
 import read_result_sfit4 as sfit4
 import read_misc
+from sfit4_setup import reference_prf
 
 def create_hdf5(sb_ctl, direc, start_date, end_date):
 	
@@ -31,7 +32,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	df = mdt.strpdate2num('%Y%m%d.%H%M%S')
 	dnum = []
 	sza = []
-	zen = []
+	azi = []
 	lat = []
 	lon = []
 	alt = []
@@ -40,6 +41,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	dir = []
 	col_h2o_rt = []
 	col_h2o_ap = []
+	col_h2o_setup = []
 	vmr_rt = []
 	vmr_ap = []
 	snr_clc = []
@@ -72,6 +74,10 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    if not os.path.isfile(aprfsfile):
 	        print 'aprfs.table'
 	        continue
+	    refprofile =  string.join([direc, '/', dd, '/', 'reference.prf'], '')
+	    if not os.path.isfile(refprofile):
+	        print 'refprofile'
+	        continue
 	    miscfile =  string.join([direc, '/', dd, '/', 'misc.out'], '')
 	    if not os.path.isfile(miscfile):
 	        sz = -1
@@ -82,9 +88,9 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	        du = -1
 	        spectrum = 'NA'
 	    else:
-	        mt,du,sz,ze,lati,long,alti,spectrum = read_misc.read_misc(miscfile)
+	        mt,du,sz,az,lati,long,alti,spectrum = read_misc.read_misc(miscfile)
 	        sz = np.double(sz)
-	        ze = np.double(ze)
+	        az = np.double(az)
 	        lati = np.double(lati)
 	        long = np.double(long)
 	        alti = np.double(alti)
@@ -129,7 +135,11 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    cov_srvmr = err.S_vmr_ran;
 	    cov_ssvmr = err.S_vmr_sys;
 	
-	
+
+	    ref = reference_prf()
+	    ref.read_reference_prf(refprofile)
+	    
+
 	    if akt_entry == 0:
 	        col_rt = np.zeros((nr_gas, nr_entries)) *np.nan
 	        col_ap = np.zeros((nr_gas, nr_entries)) *np.nan
@@ -140,6 +150,8 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	        air_col=np.zeros(nr_entries) * np.nan
 	        P = np.zeros((len_vmr, nr_entries)) *np.nan
 	        T = np.zeros((len_vmr, nr_entries)) *np.nan
+		vmr_h2o_setup = np.zeros((len_vmr, nr_entries)) *np.nan
+
 	        h5file.createArray("/", 'Z', np.array(z), "Altitude levels (mid points)")
 	        h5file.createArray("/", 'Zb', np.array(zb), "Altitude levels (boundaries)")
 	        vmr_rt = h5file.createEArray("/", 'vmr_rt', hdf5.Float32Atom(), 
@@ -164,6 +176,8 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	                                     (len_vmr,0), title="Total error random partial column", expectedrows=nr_entries)
 	        pcol_sys = h5file.createEArray("/", 'pcol_sys', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="Total error systematic partial column", expectedrows=nr_entries)
+	        h2o_setup = h5file.createEArray("/", 'h2o_vmr_setup', hdf5.Float32Atom(), 
+	                                     (len_vmr,0), title="H2O VMR profile of setup", expectedrows=nr_entries)
 	        
 	        P = h5file.createEArray("/", 'P', hdf5.Float32Atom(), 
 	                                (len_vmr,0), title="Pressure", expectedrows=nr_entries)
@@ -194,7 +208,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	
 	    mdate.append(df(dd))
 	    sza.append(sz)
-	    zen.append(ze)
+	    azi.append(az)
 	    lat.append(lati)
 	    lon.append(long)
 	    alt.append(alti)
@@ -216,8 +230,9 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    pcol_ap.append(np.reshape(acol[0],(len_vmr, -1)))
 	    P.append(np.reshape(p,(len_vmr, -1)))
 	    T.append(np.reshape(t,(len_vmr, -1)))
-	
-	
+
+	    h2o_setup.append(np.reshape(ref.get_gas_from_refprofile('H2O',z))
+	    col_h2o_setup.append(np.dot(ac,h2o_setup))
 	    nr_res = nr_res + 1
 	
 	    akfile =  string.join([direc, '/', dd, '/', 'ak.out'], '')
@@ -250,12 +265,13 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	air_col = air_col[0:nr_res]
 	chi_2_y = chi_2_y[0:nr_res]
 	dofs = dofs[0:nr_res]
+	col_h2o_setup = col_h2o_setup[0:nr_res]
 	
 	h5file.createArray("/", 'directories', dir, "Directories")
 	h5file.createArray("/", 'spectra', spectra, "Filename of Spectrum")
 	h5file.createArray("/", 'mdate', np.array(mdate), "Measurement date and time")
 	h5file.createArray("/", 'sza', np.array(sza), "Solar zenith angle")
-	h5file.createArray("/", 'zenith', np.array(zen), "Solar azimuth angle")
+	h5file.createArray("/", 'azimuth', np.array(azi), "Solar azimuth angle")
 	h5file.createArray("/", 'lat', np.array(lat), "Latitude")
 	h5file.createArray("/", 'lon', np.array(lon), "Longitude")
 	h5file.createArray("/", 'alt', np.array(alt), "Altitude of Instrument")
@@ -272,6 +288,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	h5file.createArray("/", 'col_sys', col_sys, "Column error systematic")
 	h5file.createArray("/", 'air_col', air_col, "Retrieved AIRMASS")
 	h5file.createArray("/", 'gasnames', gasnames, "Names of retrieved gases")
+	h5file.createArray("/", 'col_h2o_setup', col_h2o_setup, "Columns of H2O in setup")
 
 	h5file.close()
 

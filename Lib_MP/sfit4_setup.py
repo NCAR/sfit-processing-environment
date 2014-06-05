@@ -127,16 +127,26 @@ class reference_prf:
         self.vmr = np.zeros((nr_gas, nr_layers))
         
         for n in range(0,nr_gas):
-            #pdb.set_trace()
+#            pdb.set_trace()
             self.gas_nr[n] = reff.next(1).pop(0)
             self.gasname.extend(reff.next(1))
-            self.notes.extend(reff.get_line())
+#            self.notes.extend(reff.get_line().join(''))
+            reff.skip_reminder_of_line()
             self.vmr[n,0:nr_layers] = np.array(reff.next(nr_layers))
             reff.skip_reminder_of_line()
 
         del reff
         
-    
+    def get_gas_from_refprofile(self, gasname, z=np.array([])):
+        if self.gasname.count == 0:
+            print 'Gas '+gansmae+' not in reference file'
+        ind = self.gasname.index(gasname)
+        vmr = self.vmr[ind]
+        if z.size > 0:
+            vmr = np.interp(z, np.flipud(self.z), np.flipud(vmr))
+        return(list(vmr))
+
+
     def write_reference_prf(self, prffile):
         
         fid = open(prffile, 'w')
