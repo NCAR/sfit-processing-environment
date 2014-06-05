@@ -1,4 +1,6 @@
-#! /usr/local/python-2.7/bin/python
+#! /usr/bin/python
+##! /usr/local/python-2.7/bin/python
+##! /usr/bin/python
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
 # Name:
@@ -24,9 +26,9 @@
 # Notes:
 #	1) Options include:
 #			 -i	<dir>	  : Optional. Data directory. Default is current working directory
-#			 -b     <dir/str> : Optional. Binary directory. Default is hard-code. 
-#			 -f	<str>	  : Run flags, h = hbin, p = pspec, s = sfit4, e = error analysis, c = clean 
-#			
+#			 -b     <dir/str> : Optional. Binary directory. Default is hard-code.
+#			 -f	<str>	  : Run flags, h = hbin, p = pspec, s = sfit4, e = error analysis, c = clean
+#
 #
 # Usage:
 # 		./sfit4Layer0.py [options]
@@ -81,15 +83,18 @@ from tkFileDialog import askopenfilename
 #------------------------
 # Define helper functions
 #------------------------
-def usage():
+def usage(binDirVer):
         print 'sfit4Layer0.py -f <str> [-i <dir> [-b <dir/str> ] \n'
-        print '-i <dir>     Data directory. Optional: default is current working directory\n'
+        print '-i <dir>     Data directory. Optional: default is current working directory'
+        print '-f <str>     Run Flags: Necessary: h = hbin, p = pspec, s = sfit4, e = error analysis, c = clean'
         print '-b <dir/str> Binary sfit directory. Optional: default is hard-coded in main(). Also accepts v1, v2, etc.'
-        print '-f <str>     Run Flags: Necessary: h = hbin, p = pspec, s = sfit4, e = error analysis, c = clean\n'
+        for ver in binDirVer:
+                print '             {}: {}'.format(ver,binDirVer[ver])        
+        
         sys.exit()
 
 
-def main(argv):				
+def main(argv):
 
         #----------------
         # Initializations
@@ -100,11 +105,14 @@ def main(argv):
         wrkDir    = os.getcwd()                              # Set current directory as the data directory
         binDir    = '/data/bin'                              # Default binary directory. Used of nothing is specified on command line
         binDirVer = {
-        'v1':   '/data/ebaumer/Code/sfit-core-code/src/',    # Version 1 for binary directory (Eric) 
-        'v2':   '/data/tools/400/sfit-core/src/'             # Version 2 for binary directory (Jim)        
+        'v1':   '/data/ebaumer/Code/sfit-core-code/src/',    # Version 1 for binary directory (Eric)
+        'v2':   '/data/tools/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
+        'v3':   '/Users/jamesw/FDP/sfit/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
+        'v4':   '/home/ebaumer/Code/sfit4/src/',
+        'v5':   '/Users/jamesw/FDP/sfit/400/src/src-irwg14-mp'
         }
 
-        
+
          #----------
          # Run flags
          #----------
@@ -118,11 +126,11 @@ def main(argv):
         # Retrieve command line arguments
         #--------------------------------
         try:
-                opts, args = getopt.getopt(sys.argv[1:], 'i:b:f:')
+                opts, args = getopt.getopt(sys.argv[1:], 'i:b:f:?')
 
         except getopt.GetoptError as err:
                 print str(err)
-                usage()
+                usage(binDirVer)
                 sys.exit()
 
         #-----------------------------
@@ -130,22 +138,22 @@ def main(argv):
         #-----------------------------
         for opt, arg in opts:
                 # Data directory
-                if opt == '-i':                     
+                if opt == '-i':
                         wrkDir = arg
-                        sc.ckDir(wrkDir,exitFlg=True)                    
+                        sc.ckDir(wrkDir,exitFlg=True)
 
                 # Binary directory
-                elif opt == '-b':                   
+                elif opt == '-b':
                         if not sc.ckDir(arg,exitFlg=False,quietFlg=True):
                                 try:             binDir = binDirVer[arg.lower()]
                                 except KeyError: print '{} not a recognized version for -b option'.format(arg); sys.exit()
-                                
+
                         else: binDir = arg
-                        
+
                         if not(binDir.endswith('/')): binDir = binDir + '/'
-      
+
                 # Run flags
-                elif opt == '-f':                   
+                elif opt == '-f':
                         flgs = list(arg)
                         for f in flgs:
                                 if   f.lower() == 'h': hbinFlg  = True
@@ -154,40 +162,43 @@ def main(argv):
                                 elif f.lower() == 'e': errFlg   = True
                                 elif f.lower() == 'c': clnFile  = True
                                 else: print '{} not an option for -f ... ignored'.format(f)
+                elif opt == '-?':
+                        usage(binDirVer)
+                        sys.exit()                        
 
                 else:
                         print 'Unhandled option: {}'.format(opt)
-                        sys.exit()	
+                        sys.exit()
 
         #--------------------------------------
-        # If necessary change working directory 
-        # to directory with input data. 
+        # If necessary change working directory
+        # to directory with input data.
         #--------------------------------------
         if os.path.abspath(wrkDir) != os.getcwd(): os.chdir(wrkDir)
         if not(wrkDir.endswith('/')): wrkDir = wrkDir + '/'
-        
+
         #--------------------------
         # Initialize sfit ctl class
         #--------------------------
-        if sc.ckFile(wrkDir+'sfit4.ctl'): ctlFileName = wrkDir + 'sfit4.ctl'                       
+        if sc.ckFile(wrkDir+'sfit4.ctl'): ctlFileName = wrkDir + 'sfit4.ctl'
         else:
-                TK().withdraw()
+                Tk().withdraw()
                 ctlFileName = askopenfilename(initialdir=wrkDir,message='Please select sfit ctl file')
-                
+
         ctlFile = sc.CtlInputFile(ctlFileName)
-        ctlFile.getInputs()    
-        
+        ctlFile.getInputs()
+
         #------------------------
         # Initialize sb ctl class
-        #------------------------       
-        if errFlg: 
+        #------------------------
+        if errFlg:
                 if sc.ckFile(wrkDir+'sb.ctl'): sbCtlFileName = wrkDir + 'sb.ctl'
                 else:
                         TK().withdraw()
                         sbCtlFileName = askopenfilename(initialdir=wrkDir,message='Please select sb ctl file')
-                        
+
                 sbCtlFile = sc.CtlInputFile(sbCtlFileName)
-                sbCtlFile.getInputs()                  
+                sbCtlFile.getInputs()
 
         #---------------------------
         # Clean up output from sfit4
@@ -197,10 +208,10 @@ def main(argv):
                         if 'file.out' in k:
                                 try:            os.remove(wrkDir + ctlFile.inputs[k])
                                 except OSError: pass
-                
+
         #----------
         # Run pspec
-        #----------	
+        #----------
         if pspecFlg:
                 print '*************'
                 print 'Running pspec'
@@ -209,7 +220,7 @@ def main(argv):
 
         #----------
         # Run hbin
-        #----------		
+        #----------
         if hbinFlg:
                 print '************'
                 print 'Running hbin'
@@ -218,20 +229,20 @@ def main(argv):
 
         #----------
         # Run sfit4
-        #----------		
+        #----------
         if sfitFlg:
                 print '************'
                 print 'Running sfit'
                 print '************'
                 rtn = sc.subProcRun( [binDir + 'sfit4'] )
-                                                                
+
         #-------------------
         # Run error analysis
         #-------------------
         if errFlg:
                 print '**********************'
                 print 'Running error analysis'
-                print '**********************'                
+                print '**********************'
                 rtn = errAnalysis(ctlFile,sbCtlFile,wrkDir)
 
 

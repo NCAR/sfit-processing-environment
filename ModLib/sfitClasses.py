@@ -84,7 +84,7 @@ def ckFile(fName,logFlg=False,exitFlg=False,quietFlg=False):
     if not os.path.isfile(fName):
         if not quietFlg: print 'File %s does not exist' % (fName)
         if logFlg:       logFlg.error('Unable to find file: %s' % fName)
-        if exit:         sys.exit()
+        if exitFlg:         sys.exit()
         return False
     else:
         return True  
