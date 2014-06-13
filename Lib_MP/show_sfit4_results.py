@@ -1,14 +1,20 @@
 import sys
 sys.path.append('/data/sfit-processing-environment/Lib_MP/')
 import read_result_sfit4 as sfit4
+from sfit4_ctl import *
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import matplotlib.gridspec as gridspec
 import os, pdb
 
+
 class show_results:
 
-    def __init__(self,direc='.'):
+    def __init__(self,direc='.', ctlfile='sfit4.ctl'):
+
+        ctl = sfit4_ctl()
+        ctl.read_ctl_file(ctlfile)
+        ak_m = ctl.get_value('file.out.ak_matrix')
 
         # out.level = 1
         plt.rcParams['font.size'] = 18
@@ -17,8 +23,10 @@ class show_results:
         self.aprprf = sfit4.read_table(direc+'/aprfs.table')
         self.gases = self.aprprf.get_retrieval_gasnames()
         self.sp = sfit4.pbp(direc+'/pbpfile')
-        if os.path.exists(direc+'/ak.target'):
-            self.avk = sfit4.avk(direc+'/ak.target')
+        if os.path.exists(direc+'/'+ak_m):
+            self.avk = sfit4.avk(direc+'/'+ak_m, direc+'/aprfs.table')
+        elif os.path.exists(direc+'/ak.target'):
+            self.avk = sfit4.avk(direc+'/ak.target', direc+'/aprfs.table')
         else:
             self.avk = -1
 #        self.error = sfit4.error(direc+'/smeas.target',direc+'/aprfs.table')
@@ -83,6 +91,8 @@ class show_results:
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             ax.plot(self.avk.avk('frac').T, z)
             ax = self.winavk.add_subplot(132)
+            import ipdb
+            ipdb.set_trace()
             ax.plot(self.avk.avk('vmr').T, z)
             ax = self.winavk.add_subplot(133)
             ax.plot(self.avk.avk('col').T, z)

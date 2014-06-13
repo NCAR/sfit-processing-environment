@@ -37,6 +37,7 @@
 #----------------------------------------------------------------------------------------
 import datetime as dt
 import numpy as np
+import tables as h5
 import scipy.io as si
 from itertools import izip
 
@@ -149,6 +150,41 @@ class HDFinitData(object):
         self.h2oMxRatAbsSolar               = self.h2oMxRatAbsSolar[inds,:]
         self.h2oColAbsSol                   = self.h2oColAbsSol[inds]
         
+
+    def ini_tmphdf5(self,fname,iyear,imonth,iday,fyear,fmonth,fday):
+        ''' Interface to read tmp.hd5 created with create_hdf5.py'''
+
+        h5f = h5.File(fname)
+        #---------------------------------------------------
+        # Assign IDL data to attributes to be written to HDF
+        #---------------------------------------------------
+        self.datesJD2K                      = np.asarray(h5f.root.mdate[:])
+        self.latitude                       = np.asarray(h5f.root.lat[:]
+        self.longitude                      = np.asarray(h5f.root.lon[:]
+        self.instAltitudes                  = np.asarray(h5f.root.Zb[end] / 1000.0  # Convert [m] -> [km]
+        self.surfPressures                  = np.asarray(h5f.root.P_surface[:])
+        self.surfTemperatures               = np.asarray(h5f.root.T_surface[:])
+        self.altitudes                      = np.asarray(h5f.root.Z[:])
+        self.altitudeBoundaries             = np.rot90(h5f.root.Zb[:]) / 1000.0
+        self.pressures                      = np.asarray(h5f.root.P[:])
+        self.temperatures                   = np.asarray(h5f.root.T[:])
+        self.gasMxRatAbsSolar               = np.asarray(h5f.root.vmr_rt[:])
+        self.gasMxRatAbsSolarApriori        = np.asarray(h5f.root.vmr_ap[:])
+        self.gasMxRatAbsSolarAVK            = np.asarray(h5f.root.avk_vmr[:])
+        self.integrationTimes               = np.asarray(h5f.root.dur[:])
+        self.gasMxRatAbsSolarUncRand        = np.asarray(h5f.root.cov_vmr_ran[:])
+        self.gasMxRatAbsSolarUncSys         = np.asarray(h5f.root.cov_vmr_sys[:])
+        self.gasColPartAbsSolar             = np.asarray(h5f.root.pcol_rt[:])
+        self.gasColPartAbsApriori           = np.asarray(h5f.root.pcol_ap[:])
+        self.gasColAbsSolar                 = np.asarray(h5f.root.col_rt[:])
+        self.gasColAbsSolarApriori          = np.asarray(h5f.root.col_ap[:])
+        self.gasColAbsSolarAVK              = np.asarray(h5f.root.avk_col[:])
+        self.gasColAbsSolarUncRand          = np.asarray(h5f.root.col_ran[:])
+        self.gasColAbsSolarUncSys           = np.asarray(h5f.root.col_sys[:])
+        self.angleZastr                     = np.asarray(h5f.root.sza[:])
+        self.angleSolAz                     = np.asarray(h5f.root.azi[:])
+        self.h2oMxRatAbsSolar               = np.asarray(h5f.root.h2o_vmr_setup[:])
+        self.h2oColAbsSol                   = np.asarray(h5f.root.col_h2o_setup[:])
 
     def initPy(self):
         ''' Interface for initializing data with python set of routines'''
