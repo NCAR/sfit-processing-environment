@@ -6,6 +6,9 @@ function make_bunch_hdf(p, location)
     if strcmpi(p{1}.target, 'HCL')
         p{1}.target = 'HCl'
     end
+    if strcmpi(p{1}.target, 'CLONO2')
+        p{1}.target = 'ClONO2'
+    end
     
     species = p{1}.target;
 
@@ -16,7 +19,7 @@ function make_bunch_hdf(p, location)
     headerfile = sprintf('data.meta');
     datafile   = 'data.data';
     defaultmeta = sprintf('default.meta.%s', lower(location));
-    tablefile  = 'tableattrvalue_04R007_idl.dat'; 
+    tablefile  = 'tableattrvalue_04R010_idl.dat'; 
     if hdf_v5
         hdf_dir = 'hdf_v5';
         cstring = sprintf(['%s <<EOF \n idlcr8hdf, ''%s'', ''%s'', ''%s'', ' ...

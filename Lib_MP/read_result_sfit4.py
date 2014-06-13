@@ -64,7 +64,7 @@ class Kbout:
 class avk:
     def __init__(self, filename, prfsfile):
     
-        self.AK_frac = np.genfromtxt(filename,skiprows=3)
+        self.AK_frac = np.genfromtxt(filename,skiprows=2)
         self.direc = os.path.dirname(filename)
         self.prfsfile = prfsfile
 

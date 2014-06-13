@@ -148,12 +148,13 @@ function write_SURFACE_TEMPERATURE_INDEPENDENT(p,species,fid03)
     end
 end 
 
+% H2O profiles are often unrealitstic -> not saved
 function write_MIXING_RATIO_VOLUME_ABSORPTION_SOLAR(p,species,fid03)
     if strcmp(species, 'H2O_i')
         species = 'H2O';
         for n=1:length(p)            
             ind = find(strcmp(p{n}.interfering.gases, 'H2O'));
-            if isempty(ind)
+            if 1 || isempty(ind)
                 vmr(n,:) = -90000*ones(size(p{n}.vmr));
             else
                 vmr(n,:) = p{n}.interfering.vmr(:,ind)*1e6;

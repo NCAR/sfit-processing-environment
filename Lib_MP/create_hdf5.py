@@ -218,7 +218,6 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    T.append(np.reshape(t,(len_vmr, -1)))
 	
 	
-	    nr_res = nr_res + 1
 	
 	    akfile =  string.join([direc, '/', dd, '/', 'ak.out'], '')
 	    if not os.path.isfile(akfile):
@@ -227,6 +226,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    avk = ak.avk()
 	    avk_col = ak.avk(type='column')
 	    avk_vmr = ak.avk(type='vmr')
+	    nr_res = nr_res + 1
 	    if nr_res == 1:
 	        len_ak = avk.shape[0]
 	        AK = h5file.createEArray("/", 'avk', hdf5.Float32Atom(), 
