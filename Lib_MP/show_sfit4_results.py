@@ -5,6 +5,7 @@ from sfit4_ctl import *
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import matplotlib.gridspec as gridspec
+import numpy as np
 import os, pdb
 
 
@@ -15,6 +16,8 @@ class show_results:
         ctl = sfit4_ctl()
         ctl.read_ctl_file(ctlfile)
         ak_m = ctl.get_value('file.out.ak_matrix')
+        if ak_m == -1:
+            ak_m = 'ak.out' # Default name of ak_matrix
 
         # out.level = 1
         plt.rcParams['font.size'] = 18
@@ -87,15 +90,15 @@ class show_results:
 
         if (type=='avk'):
             self.winavk.clf()
-            ax = self.winavk.add_subplot(131)
+            ax = self.winavk.add_subplot(141)
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             ax.plot(self.avk.avk('frac').T, z)
-            ax = self.winavk.add_subplot(132)
-            import ipdb
-            ipdb.set_trace()
+            ax = self.winavk.add_subplot(142)
             ax.plot(self.avk.avk('vmr').T, z)
-            ax = self.winavk.add_subplot(133)
+            ax = self.winavk.add_subplot(143)
             ax.plot(self.avk.avk('col').T, z)
+            ax = self.winavk.add_subplot(144)
+            ax.plot(np.sum(self.avk.avk('col'),0), z)
             self.winavk.show()
 
 

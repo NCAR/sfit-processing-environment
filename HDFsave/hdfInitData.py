@@ -36,6 +36,7 @@
 #
 #----------------------------------------------------------------------------------------
 import datetime as dt
+import matplotlib.dates as mdt
 import numpy as np
 import tables as h5
 import scipy.io as si
@@ -121,7 +122,7 @@ class HDFinitData(object):
         self.filter_for_date(iyear,imonth,iday,fyear,fmonth,fday)
 
 
-    def ini_tmphdf5(self,fname,iyear,imonth,iday,fyear,fmonth,fday):
+    def init_tmphdf5(self,fname,iyear,imonth,iday,fyear,fmonth,fday):
         ''' Interface to read tmp.hd5 created with create_hdf5.py'''
 
 
@@ -129,14 +130,14 @@ class HDFinitData(object):
         #---------------------------------------------------
         # Assign IDL data to attributes to be written to HDF
         #---------------------------------------------------
-        self.datesJD2K                      = np.asarray(h5f.root.mdate[:])
+        self.dates                          = np.asarray(h5f.root.mdate[:])
         self.latitude                       = np.asarray(h5f.root.lat[:])
         self.longitude                      = np.asarray(h5f.root.lon[:])
-        self.instAltitudes                  = np.asarray(h5f.root.Zb[end]) / 1000.0  # Convert [m] -> [km]
-        self.surfPressures                  = np.asarray(h5f.root.P_surface[:])
-        self.surfTemperatures               = np.asarray(h5f.root.T_surface[:])
+        self.instAltitudes                  = np.asarray(h5f.root.alt[:])
+        self.surfPressures                  = np.asarray(h5f.root.P_s[:])
+        self.surfTemperatures               = np.asarray(h5f.root.T_s[:])
         self.altitudes                      = np.asarray(h5f.root.Z[:])
-        self.altitudeBoundaries             = np.rot90(h5f.root.Zb[:]) / 1000.0
+        self.altitudeBoundaries             = np.rot90(h5f.root.Zb[:]) / 1000.0   # Convert [m] -> [km]
         self.pressures                      = np.asarray(h5f.root.P[:])
         self.temperatures                   = np.asarray(h5f.root.T[:])
         self.gasMxRatAbsSolar               = np.asarray(h5f.root.vmr_rt[:])
@@ -153,44 +154,45 @@ class HDFinitData(object):
         self.gasColAbsSolarUncRand          = np.asarray(h5f.root.col_ran[:])
         self.gasColAbsSolarUncSys           = np.asarray(h5f.root.col_sys[:])
         self.angleZastr                     = np.asarray(h5f.root.sza[:])
-        self.angleSolAz                     = np.asarray(h5f.root.azi[:])
+        self.angleSolAz                     = np.asarray(h5f.root.azimuth[:])
         self.h2oMxRatAbsSolar               = np.asarray(h5f.root.h2o_vmr_setup[:])
-        self.h2oColAbsSol                   = np.asarray(h5f.root.col_h2o_setup[:])
+        self.h2oColAbsSol                   = np.asarray(h5f.root.h2o_col_setup[:])
 
         self.filter_for_date(iyear,imonth,iday,fyear,fmonth,fday)
 
                      
-    def filter_for_date(self,iyear,imonth,iday,fyear,fmonth,fday) 
+    def filter_for_date(self,iyear,imonth,iday,fyear,fmonth,fday):
 
         #------------------------------------------
         # Find indicies of dates in specified range
         #------------------------------------------
         idate = dt.datetime(iyear,imonth,iday)
+        sdate = mdt.date2num(idate)
         fdate = dt.datetime(fyear,fmonth,fday)
-        inds  = np.where((self.dates >= idate) & (self.dates <= fdate))[0]
+        edate = mdt.date2num(fdate)
+        inds  = np.where((self.dates >= sdate) & (self.dates <= edate))[0]
 
-        self.dates                          = self.dates[inds]
-        self.datesJD2K                      = self.datesJD2K[inds]
+        self.datesJD2K                      = self.dates[inds] - mdt.date2num(dt.datetime(2000,1,1))
         self.surfPressures                  = self.surfPressures[inds]
         self.surfTemperatures               = self.surfTemperatures[inds]
-        self.pressures                      = self.pressures[inds,:]
-        self.temperatures                   = self.temperatures[inds,:]
-        self.gasMxRatAbsSolar               = self.gasMxRatAbsSolar[inds,:]
-        self.gasMxRatAbsSolarApriori        = self.gasMxRatAbsSolarApriori[inds,:]
-        self.gasMxRatAbsSolarAVK            = self.gasMxRatAbsSolarAVK[inds,:,:]
+        self.pressures                      = self.pressures[:,inds]
+        self.temperatures                   = self.temperatures[:,inds]
+        self.gasMxRatAbsSolar               = self.gasMxRatAbsSolar[:,inds]
+        self.gasMxRatAbsSolarApriori        = self.gasMxRatAbsSolarApriori[:,inds]
+        self.gasMxRatAbsSolarAVK            = self.gasMxRatAbsSolarAVK[:,:,inds]
         self.integrationTimes               = self.integrationTimes[inds]
-        self.gasMxRatAbsSolarUncRand        = self.gasMxRatAbsSolarUncRand[inds,:,:]
-        self.gasMxRatAbsSolarUncSys         = self.gasMxRatAbsSolarUncSys[inds,:,:]
-        self.gasColPartAbsSolar             = self.gasColPartAbsSolar[inds,:]
-        self.gasColPartAbsApriori           = self.gasColPartAbsApriori[inds,:]
+        self.gasMxRatAbsSolarUncRand        = self.gasMxRatAbsSolarUncRand[:,:,inds]
+        self.gasMxRatAbsSolarUncSys         = self.gasMxRatAbsSolarUncSys[:,:,inds]
+        self.gasColPartAbsSolar             = self.gasColPartAbsSolar[:,inds]
+        self.gasColPartAbsApriori           = self.gasColPartAbsApriori[:,inds]
         self.gasColAbsSolar                 = self.gasColAbsSolar[inds]
         self.gasColAbsSolarApriori          = self.gasColAbsSolarApriori[inds]
-        self.gasColAbsSolarAVK              = self.gasColAbsSolarAVK[inds,:]
+        self.gasColAbsSolarAVK              = np.sum(self.gasColAbsSolarAVK[:,:,inds],0)
         self.gasColAbsSolarUncRand          = self.gasColAbsSolarUncRand[inds]
         self.gasColAbsSolarUncSys           = self.gasColAbsSolarUncSys[inds]
         self.angleZastr                     = self.angleZastr[inds]
         self.angleSolAz                     = self.angleSolAz[inds]
-        self.h2oMxRatAbsSolar               = self.h2oMxRatAbsSolar[inds,:]
+        self.h2oMxRatAbsSolar               = self.h2oMxRatAbsSolar[:,inds]
         self.h2oColAbsSol                   = self.h2oColAbsSol[inds]
         
 
