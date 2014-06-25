@@ -91,8 +91,6 @@ class show_results:
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             ax.plot(self.avk.avk('frac').T, z)
             ax = self.winavk.add_subplot(132)
-            import ipdb
-            ipdb.set_trace()
             ax.plot(self.avk.avk('vmr').T, z)
             ax = self.winavk.add_subplot(133)
             ax.plot(self.avk.avk('col').T, z)

@@ -24,5 +24,5 @@ INTEGRATION.TIME:Approximate integration time of the ozone profiles (in s).::DAT
 [GAS].COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC.STANDARD:total systematic uncertainty on the retrieved total vertical columns.::DATETIME:REAL:molec cm-2:0.0;1.66054E-20;mol m-2:-90000:0:100000000000000000000:
 ANGLE.SOLAR_ZENITH.ASTRONOMICAL:Mean Viewing Zenith angle (deg)::DATETIME:REAL:deg:0;1.74533E-2;rad:-90000:0:90:
 ANGLE.SOLAR_AZIMUTH:Viewing Azimuth angle (deg)::DATETIME:REAL:deg:0;1.74533E-2;rad:-90000:0:360:
-H2O.COLUMN_ABSORPTION.SOLAR:Column of interfering gas H2O if retrieved::DATETIME:REAL:molec cm-2:0.0;1.66054E-20;mol m-2:-90000:0:10000000000000000000000000:
-H2O.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR:Mixing ratio of interfering gas H2O if retrieved:H2O profile often strongly affected by incorrect spectroscopy:ALTITUDE;DATETIME:REAL:ppmv:0.0;1.0;1:-9.00E+004:-2.00E+002:1.00E+006:
+H2O.COLUMN_ABSORPTION.SOLAR:Column of H2O in atmospheric setup::DATETIME:REAL:molec cm-2:0.0;1.66054E-20;mol m-2:-90000:0:10000000000000000000000000:
+H2O.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR:Mixing ratio of H2O in atmospheric setup::ALTITUDE;DATETIME:REAL:ppmv:0.0;1.0;1:-9.00E+004:-2.00E+002:1.00E+006:

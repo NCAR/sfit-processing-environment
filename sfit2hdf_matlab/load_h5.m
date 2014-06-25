@@ -23,9 +23,18 @@ t = hdf5read(h5file, '/T');
 for nr = 1:length(ind)
     p{nr}.T = t(ind(nr),:)';
 end
+t = hdf5read(h5file, '/T_s');
+for nr = 1:length(ind)
+    p{nr}.T_s = t(ind(nr));
+end
+t = hdf5read(h5file, '/Z');
 t = hdf5read(h5file, '/P');
 for nr = 1:length(ind)
     p{nr}.P = t(ind(nr),:)';
+end
+t = hdf5read(h5file, '/P_s');
+for nr = 1:length(ind)
+    p{nr}.P_s = t(ind(nr))';
 end
 t = hdf5read(h5file, '/Z');
 for nr = 1:length(ind)
@@ -57,7 +66,7 @@ for nr = 1:length(ind)
 end
 t = hdf5read(h5file, '/avk_col');
 for nr = 1:length(ind)
-    p{nr}.avk_col = sum(squeeze(t(ind(nr),:,:)),1);
+    p{nr}.avk_col = sum(squeeze(t(ind(nr),:,:)),2);
 end
 t = hdf5read(h5file, '/pcol_rt');
 for nr = 1:length(ind)
@@ -71,7 +80,7 @@ t = hdf5read(h5file, '/sza');
 for nr = 1:length(ind)
     p{nr}.sza = t(ind(nr));
 end
-t = hdf5read(h5file, '/zenith');
+t = hdf5read(h5file, '/azimuth');
 for nr = 1:length(ind)
     p{nr}.azi = t(ind(nr));
 end
@@ -122,6 +131,14 @@ end
 t = hdf5read(h5file, '/col_ran');
 for nr = 1:length(ind)
     p{nr}.col_ran = t(ind(nr));
+end
+t = hdf5read(h5file, '/h2o_vmr_setup');
+for nr = 1:length(ind)
+    p{nr}.h2o_vmr_setup = t(ind(nr),:);
+end
+t = hdf5read(h5file, '/h2o_col_setup');
+for nr = 1:length(ind)
+    p{nr}.h2o_col_setup = t(ind(nr));
 end
 t = hdf5read(h5file, '/gasnames');
 for nr = 1:length(ind)

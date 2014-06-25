@@ -130,35 +130,37 @@ end
 function write_SURFACE_PRESSURE_INDEPENDENT(p,species,fid03) 
     fprintf(fid03,'SURFACE.PRESSURE_INDEPENDENT\n');
     for n=1:length(p)
-        fprintf(fid03, '%f\n', -90000);
+        if p{n}.P_s < 0 
+           fprintf(fid03, '%f\n', -90000);
+        else
+           fprintf(fid03, '%f\n', p{n}.P_s);
+        end
     end
 end 
 
 function write_TEMPERATURE_INDEPENDENT(p,species,fid03) 
     fprintf(fid03,'TEMPERATURE_INDEPENDENT\n');
     for n=1:length(p)
-        fprintf(fid03, '%f\n', p{n}.T);
+           fprintf(fid03, '%f\n', p{n}.T);
     end
 end 
 
 function write_SURFACE_TEMPERATURE_INDEPENDENT(p,species,fid03) 
     fprintf(fid03,'SURFACE.TEMPERATURE_INDEPENDENT\n');
     for n=1:length(p)
-        fprintf(fid03, '%f\n', -90000);
+        if p{n}.T_s < 0 
+           fprintf(fid03, '%f\n', -90000);
+        else
+           fprintf(fid03, '%f\n', p{n}.T_s);
+        end
     end
 end 
 
-% H2O profiles are often unrealitstic -> not saved
 function write_MIXING_RATIO_VOLUME_ABSORPTION_SOLAR(p,species,fid03)
     if strcmp(species, 'H2O_i')
         species = 'H2O';
         for n=1:length(p)            
-            ind = find(strcmp(p{n}.interfering.gases, 'H2O'));
-            if 1 || isempty(ind)
-                vmr(n,:) = -90000*ones(size(p{n}.vmr));
-            else
-                vmr(n,:) = p{n}.interfering.vmr(:,ind)*1e6;
-            end
+                vmr(n,:) = p{n}.h2o_vmr_setup*1e6;
         end
     else
         for n=1:length(p)
@@ -217,12 +219,7 @@ function write_COLUMN_ABSORPTION_SOLAR(p,species,fid03)
     if strcmp(species, 'H2O_i')
         species = 'H2O';
         for n=1:length(p)
-            ind = find(strcmp(p{n}.interfering.gases, 'H2O'));
-            if isempty(ind)
-                col(n) = -90000;
-            else
-                col(n) = p{n}.interfering.col(ind);
-            end
+                col(n) = p{n}.h2o_col_setup;
         end
     else
         for n=1:length(p)

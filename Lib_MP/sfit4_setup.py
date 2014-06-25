@@ -1,5 +1,5 @@
 import numpy as np
-import read_statevec as stv
+#import read_statevec as stv
 import read_from_file as rn
 import pdb
 import os
@@ -99,13 +99,13 @@ class reference_prf:
         self.gasname[gas_nr-1]=gas_name
         self.notes[gas_nr-1] = note
 
-    def insert_statevec(self, stvfile):
-        x = stv.stv(stvfile)
+#     def insert_statevec(self, stvfile):
+#         x = stv.stv(stvfile)
         
-        for n in range(0,len(x.gas)):
-            ind = self.gasname.index(x.gas[n])
-            vmr = np.interp(self.z[::-1],np.array(x.Z[::-1]), np.array(x.rt_vmr[n][::-1]))
-            self.vmr[ind,:] = vmr[::-1]
+#         for n in range(0,len(x.gas)):
+#             ind = self.gasname.index(x.gas[n])
+#             vmr = np.interp(self.z[::-1],np.array(x.Z[::-1]), np.array(x.rt_vmr[n][::-1]))
+#             self.vmr[ind,:] = vmr[::-1]
 
     def read_reference_prf(self, reffile):
         reff = rn.read_from_file(reffile)
