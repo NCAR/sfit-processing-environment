@@ -130,8 +130,8 @@ class HDFinitData(object):
         #---------------------------------------------------
         # Assign IDL data to attributes to be written to HDF
         #---------------------------------------------------
-        self.dates                          = np.asarray(h5f.root.mdate[:])
-        self.latitude                       = np.asarray(h5f.root.lat[:])
+        self.dates                          = np.asarray(h5f.root.mdate[:].T)
+        self.latitude                       = np.asarray(h5f.root.lat[:].T)
         self.longitude                      = np.asarray(h5f.root.lon[:])
         self.instAltitudes                  = np.asarray(h5f.root.alt[:])
         self.surfPressures                  = np.asarray(h5f.root.P_s[:])

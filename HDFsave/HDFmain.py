@@ -30,7 +30,7 @@ def main():
     
     gasName        = 'C2H6'                                        # This is the target gas for retrieval
     idlFname       = ''   # This is path and name of the IDL save file we use to store the data
-    h5Fname        = '/ftirrd03/mathias/ndacc_v3.94/brem_sun_c2h6_insb_v1/tmp.h5'   # This is path and name of the IDL save file we use to store the data
+    h5Fname        = '/ftirrd03/mathias/ndacc_v3.94/spit_sun_c2h6_insb_v1/tmp.h5'   # This is path and name of the IDL save file we use to store the data
     outDir         = '/home/mathias/hdf/'                   # This is the directory where the HDF file will be written to
     loc            = 'BREMEN'                                      # This is the location of the instrument
     sfitVer        = '0.9.4.3'                                    # This is the version of sfit4 used for the retrievals
@@ -66,8 +66,8 @@ def main():
     # Here we are actually creating the HDF file.
     # We can create either and HDF4 or HDF5 file
     #--------------------------------------------
-    #myhdf.createHDF4()
-    myhdf.createHDF5()
+    myhdf.createHDF4()
+    #myhdf.createHDF5()
     
 if __name__ == "__main__":
     main()

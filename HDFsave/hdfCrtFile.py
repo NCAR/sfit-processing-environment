@@ -118,7 +118,7 @@ class HDF4File(object):
 
       #-------------------
       # Store data in file
-      #------------------- 
+      #-------------------
       if not np.size(data):
          print 'Variable: {} is empty. Unable to write empty variable. Terminating program'.format(dataSetName)
          sys.exit()      
