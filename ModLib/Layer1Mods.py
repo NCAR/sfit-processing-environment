@@ -497,7 +497,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Check for succesful retrieval
     if not sc.ckFile(wrkingDir + ctlFileVars.inputs['file.out.summary'][0], exitFlg=False): return False
     sumVars = sc.RetOutput(wrkingDir,logFile)
-    sumVars.readSum(ctlFileVars.inputs['file.out.summary'][0])                                 # Read Summary file parameters
+    rtn = sumVars.readSum(ctlFileVars.inputs['file.out.summary'][0])                           # Read Summary file parameters
+    if not rtn: return False                                                                   # Bail if not able to read summary
     sumVars.readPbp(ctlFileVars.inputs['file.out.pbpfile'][0])                                 # Read pbpfile (to get sza)
     sumVars.readPrf(ctlFileVars.inputs['file.out.retprofiles'][0], primgas)                    # Read retreived profile file
     sumVars.readPrf(ctlFileVars.inputs['file.out.aprprofiles'][0], primgas, retapFlg=0)        # Read a priori profile file
