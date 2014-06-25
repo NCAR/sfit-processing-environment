@@ -85,6 +85,7 @@ class load_ALLGEOMS:
         
         self.h4 = []
         for hf in hdffiles:
+            print hf
             self.h4.append(load_H4(direc+'/'+hf))
             
         self.f1 = plt.figure(1)
