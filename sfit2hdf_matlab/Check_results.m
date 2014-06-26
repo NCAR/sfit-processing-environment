@@ -1,7 +1,7 @@
 function fail1 = Check_results(p)
 
 
-    vmr_min = -1.0
+  vmr_min = -1.0;
     vmr_max = -1.0;
     snr_the_min = -1.0;
     snr_clc_min = -1.0;
@@ -10,9 +10,10 @@ function fail1 = Check_results(p)
     snr_rat_max = -1;
     sza_max = -1;
     max_iter = -1;
-    species = p{1}.target
+    species = p{1}.target;
     if strcmp(species, 'C2H6')
-        dofs_min = 0.8
+      dofs_min = 0.8;
+      vmr_min = -0.01e-6;
     end
     if strcmp(species, 'HCN')
         snr_the_min = 0;
@@ -36,7 +37,7 @@ function fail1 = Check_results(p)
         snr_rat_min = 0.05 % 0.75;
         snr_rat_max = 0.0 % 1.5;
         vmr_min = -1;
-        vmr_max = -1 %8e-6;
+        vmr_max = -1; %8e-6;
     end
     if strcmp(species, 'CO')
         snr_the_min = 100;
@@ -78,8 +79,8 @@ function fail1 = Check_results(p)
         if trace(p{n}.avk) < dofs_min
             fail1 = [fail1 n];
         end
-        % VMR min anywhere?
-        if vmr_min >= 0 && ~isempty(find(p{n}.vmr < vmr_min))
+        % smaller than VMR min anywhere?
+        if ~isempty(find(p{n}.vmr < vmr_min))
             fail1 = [fail1 n];
         end
         % VMR max anywhere?

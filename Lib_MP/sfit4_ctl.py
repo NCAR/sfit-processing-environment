@@ -38,6 +38,7 @@ class sfit4_ctl:
             return self.value[tag].strip()
         else:
             print 'key ' + tag.strip() + ' not found'
+            return(-1)
 
     def get_keys(self, level=''):
         # gets all keys under key level

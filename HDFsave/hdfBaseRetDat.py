@@ -24,6 +24,7 @@
 #
 #----------------------------------------------------------------------------------------
 import datetime as dt
+import matplotlib.dates as mdt
 import numpy as np
 import abc
 import hdfCrtFile
@@ -298,8 +299,8 @@ class HDFbaseRetDat(object):
         #--------------------------
         # Open hdf file for writing
         #--------------------------
-        idate          = np.min(self.dates)
-        fdate          = np.max(self.dates)
+        idate          = mdt.num2date(np.min(self.dates))
+        fdate          = mdt.num2date(np.max(self.dates))
         fDOI           = dt.datetime.now()
         hdfHdr         = self.glblAttrbs(fDOI,idate,fdate)
         hdfFname       = hdfHdr['FILE_NAME']

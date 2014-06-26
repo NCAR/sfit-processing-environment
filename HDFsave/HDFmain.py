@@ -28,15 +28,16 @@ import hdfsave
                             
 def main():
     
-    gasName        = 'CO'                                        # This is the target gas for retrieval
-    idlFname       = '/Users/ebaumer/Data/IDLsav/1999_2012_TAB_CO.sav'   # This is path and name of the IDL save file we use to store the data
-    outDir         = '/Users/ebaumer/Data/HDF/'                   # This is the directory where the HDF file will be written to
-    loc            = 'THULE'                                      # This is the location of the instrument
+    gasName        = 'C2H6'                                        # This is the target gas for retrieval
+    idlFname       = ''   # This is path and name of the IDL save file we use to store the data
+    h5Fname        = '/ftirrd03/mathias/ndacc_v3.94/brem_sun_c2h6_insb_v1/tmp.h5'   # This is path and name of the IDL save file we use to store the data
+    outDir         = '/home/mathias/hdf/'                   # This is the directory where the HDF file will be written to
+    loc            = 'BREMEN'                                      # This is the location of the instrument
     sfitVer        = '0.9.4.3'                                    # This is the version of sfit4 used for the retrievals
     iyear          = 1999
     imonth         = 1
     iday           = 1
-    fyear          = 1999
+    fyear          = 2015
     fmonth         = 12
     fday           = 31
    
@@ -56,14 +57,17 @@ def main():
     # using our pre-defined interface
     #------------------------------------------------
     #myhdf.initDummy()
-    myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
+    if len(idlFname) > 0:
+        myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
+    elif len(h5Fname) > 0:
+        myhdf.init_tmphdf5(h5Fname,iyear,imonth,iday,fyear,fmonth,fday)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.
     # We can create either and HDF4 or HDF5 file
     #--------------------------------------------
-    myhdf.createHDF4()
-    #myhdf.createHDF5()
+    #myhdf.createHDF4()
+    myhdf.createHDF5()
     
 if __name__ == "__main__":
     main()
