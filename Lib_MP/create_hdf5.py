@@ -125,13 +125,18 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    srvmr, ssvmr = err.read_total_vmr()
 	    srpcol, sspcol = err.read_total_pcol()
 
+	    err_flag = err.flag
 	    if not err.flag:
 		 print 'No Error matrices'
-		 continue
 
-	    cov_srvmr = err.S_vmr_ran;
-	    cov_ssvmr = err.S_vmr_sys;
-	
+	    if err_flag:
+		    cov_srvmr = err.S_vmr_ran;
+		    cov_ssvmr = err.S_vmr_sys;
+	    else:
+		    cov_srvmr = ones((len_vmr, len_vmr))*-1
+		    cov_ssvmr = ones((len_vmr, len_vmr))*-1
+		    srpcol = ones((len_vmr))*-1
+		    sspcol = ones((len_vmr))*-1
 
 	    if akt_entry == 0:
 	        col_rt = np.zeros((nr_gas, nr_entries)) *np.nan
