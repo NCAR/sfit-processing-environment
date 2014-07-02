@@ -133,10 +133,10 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 		    cov_srvmr = err.S_vmr_ran;
 		    cov_ssvmr = err.S_vmr_sys;
 	    else:
-		    cov_srvmr = ones((len_vmr, len_vmr))*-1
-		    cov_ssvmr = ones((len_vmr, len_vmr))*-1
-		    srpcol = ones((len_vmr))*-1
-		    sspcol = ones((len_vmr))*-1
+		    cov_srvmr = np.ones((len_vmr, len_vmr))*-1
+		    cov_ssvmr = np.ones((len_vmr, len_vmr))*-1
+		    srpcol = np.ones((len_vmr))*-1
+		    sspcol = np.ones((len_vmr))*-1
 
 	    if akt_entry == 0:
 	        col_rt = np.zeros((nr_gas, nr_entries)) *np.nan
@@ -190,11 +190,17 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    akfile =  string.join([direc, '/', dd, '/', 'ak.out'], '')
 	    if not os.path.isfile(akfile):
 		print 'no avk'
-	        continue
-	    ak = sfit4.avk(akfile,aprfsfile)
-	    avk = ak.avk()
-	    avk_col = ak.avk(type='column')
-	    avk_vmr = ak.avk(type='vmr')
+	        ak_flag = False
+		avk = np.zeros((len_vmr,len_vmr))
+		avk_vmr = avk
+		avk_col = avk
+	    else:
+                ak_flag = True
+
+		ak = sfit4.avk(akfile,aprfsfile)
+		avk = ak.avk()
+		avk_col = ak.avk(type='column')
+		avk_vmr = ak.avk(type='vmr')
 
 	    try:
 	        chi_2_y[nr_res] = summary.chi_y_2
