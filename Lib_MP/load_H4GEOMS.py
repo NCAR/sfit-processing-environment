@@ -1,7 +1,7 @@
 from pyhdf import SD
 import sys, re, os
 import matplotlib
-matplotlib.use('Qt4Agg')
+#matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates
 import numpy as np
@@ -10,6 +10,7 @@ class load_H4:
     def __init__(self, h4file):
         self.h4 = SD.SD(h4file)
         self.keys = self.h4.datasets().keys()
+        self.h4file = file
         # in hdf file datenum since 2000-1-1-0-0-0
         self.dates = dates.num2date(self.h4.select('DATETIME').get()+730120.0)
 #        import pdb
@@ -103,10 +104,15 @@ class load_ALLGEOMS:
             f3 = plt.figure(3)
             f3.clf()
             a1 = f3.add_subplot(321)
+            a1.set_title('VMR')
             a3 = f3.add_subplot(323)
+            a3.set_title('AVK [VMR]')
             a4 = f3.add_subplot(324)
+            a4.set_title('AVK [total column]')
             a5 = f3.add_subplot(325)
+            a5.set_title('COV Systematic')
             a6 = f3.add_subplot(326)
+            a6.set_title('COV Random')
             dnum = event.artist.get_xdata()
             mdnum = event.mouseevent.xdata
             ind = np.argmin(np.abs(dnum-mdnum))
@@ -130,7 +136,7 @@ class load_ALLGEOMS:
                     h = a6.pcolor(z,z,ran_vmr[ind,:,:])
                     f3.colorbar(h, ax=a6, orientation='horizontal')
                     pt = True
-                    f3.suptitle('Date %d'%dnum)
+                    f3.suptitle('Date %s'%(dates.num2date(dnum).strftime('%Y%m%d %H:%M:%S')))
             if not pt:
                 f3.clf()
             f3.show()
@@ -161,6 +167,7 @@ class load_ALLGEOMS:
         dd_min = 9e99
         dd_max = 0
         for hf in self.h4:
+            print hf
             rt,ap,z = hf.get_profile(gas)
             dd = dates.date2num(hf.dates)
             dd_min = np.min(np.hstack((dd_min, dd)))
@@ -223,7 +230,7 @@ class load_ALLGEOMS:
         ax21.plot_date(dd,im,'bx')
         ax21.set_ylabel('integration time (blue)')
         ax22.plot_date(dd,asza,'rx')
-        ax22.set_ylabel('integration time (red)')
+        ax22.set_ylabel('SZA (red)')
 
 
 
@@ -244,6 +251,6 @@ class load_ALLGEOMS:
         self.f2.show()
 
 if __name__ == '__main__':
-    load_H4GEOMS(sys.argv[1])
-    
+#    load_H4GEOMS(sys.argv[1])
+    load_ALLGEOMS (sys.argv[1])
     
