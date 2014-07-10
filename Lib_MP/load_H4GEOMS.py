@@ -1,7 +1,5 @@
 from pyhdf import SD
 import sys, re, os
-import matplotlib
-#matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates
 import numpy as np
