@@ -19,15 +19,16 @@ function make_bunch_hdf(p, location)
     headerfile = sprintf('data.meta');
     datafile   = 'data.data';
     defaultmeta = sprintf('default.meta.%s', lower(location));
-    tablefile  = 'tableattrvalue_04R010_idl.dat'; 
+%    tablefile  = 'tableattrvalue_04R010_idl.dat'; 
+    tablefile  = 'tableattrvalue_04R007_idl.dat';
     if hdf_v5
-        hdf_dir = 'hdf_v5';
+        hdf_dir = '/home/christof_p/workspace/HDF_V5/';
         cstring = sprintf(['%s <<EOF \n idlcr8hdf, ''%s'', ''%s'', ''%s'', ' ...
                            '''%s'', %s, %s, %s\nEOF'], IDL, headerfile, datafile, tablefile, ...
                           hdf_dir, '/H5', '/AVK', '/LOG');
     
     else
-        hdf_dir = 'hdf_v4';
+        hdf_dir = '/home/christof_p/workspace/HDF_V4/';
         cstring = sprintf(['%s <<EOF \n idlcr8hdf, ''%s'', ''%s'', ''%s'', ' ...
                            '''%s'', %s, %s\nEOF'], IDL, headerfile, datafile, tablefile, ...
                           hdf_dir, '/AVK', '/LOG');
