@@ -42,17 +42,17 @@ function fail1 = Check_results(p)
     if strcmp(species, 'CO')
         snr_the_min = 100;
         sza_max = 85;
-        dofs_min = 2.0;
+        dofs_min = 1.0;
         snr_rat_min = 0.2;
         snr_clc_min = 10;
         vmr_min = -1;
-%        vmr_max = 20e-6
+%        vmr_max = 300e-6
     end
     if strcmp(species, 'CH4')
         snr_the_min = 100;
         snr_clc_min = 150;
         sza_max = 85;
-        dofs_min = 4.5;
+        dofs_min = 1.0;
         snr_rat_min = 0.15;
         vmr_min = -1;
         max_iter = 8;
