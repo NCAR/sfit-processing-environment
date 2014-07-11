@@ -804,7 +804,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                 errmsg = sys.exc_info()[1]
                 print 'Problem calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType 
                 #print errmsg
-                if logFile: logFile.error('Problem calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType+'\n'+errmsg)	
+                if logFile: logFile.error('Problem calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType+'\n')	
 
 
             #----------------------------------------------------------------------
