@@ -407,10 +407,11 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         ''' Calculate covariance matricies in various units'''
 
         Sm   = np.dot(  np.dot( A, coVar ), A.T )                                # Uncertainty covariance matrix [Fractional]
-        #Sm_1 = np.sqrt( np.dot( np.dot( aprDensPrf, Sm ), aprDensPrf.T )     )   # Whole column uncertainty [molecules cm^-2]
         Sm_1 = np.dot(  np.dot( np.diag(retPrfVMR), Sm ), np.diag(retPrfVMR) )   # Uncertainty covariance matrix [(VMR)^2]
         Sm_2 = np.dot(  np.dot( np.diag(airMass), Sm_1 ), np.diag(airMass)   )   # Uncertainty covariance matrix [(molecules cm^-2)^2]
-        Sm_3 = np.sqrt( np.sum( np.diagonal( Sm_2 ) ) )                          # Whole column uncertainty [molecules cm^-2]
+        densPrf = retPrfVMR * airMass
+        Sm_3 = np.sqrt( np.dot( np.dot( densPrf, Sm ), densPrf.T )     )         # Whole column uncertainty [molecules cm^-2]
+        #Sm_3 = np.sqrt( np.sum( np.diagonal( Sm_2 ) ) )                          # Whole column uncertainty [molecules cm^-2]
 
         return (Sm_1, Sm_2, Sm_3)     # (Variance, Variance, STD)
 
