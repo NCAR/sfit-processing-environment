@@ -69,7 +69,15 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DS_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       dataStr['DS_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
       dataStr['DS_EMAIL']                = 'jamesw@ucar.edu'
-      dataStr['DATA_DESCRIPTION']        = 'FTIR vmr vertical profile data of '+self.gasNameUpper+' using sfit version] '+self.sfitVer
+      dataStr['DATA_DESCRIPTION']        = 'FTIR vmr vertical profile data of '+self.gasNameUpper+'. Data were taken from a 0.0035cm-1 resolution Bruker 120HR '  + \
+                                           'FTIR spectrometer stationed at 3396masl at Mauna Loa, Hawaii (19.54N, 155.57W).  Data acquisition ' + \
+                                           'is automated. Small wavenumber regions around features for a gas to be retrieved are used in the retrieval analysis.' + \
+                                           'Retrievals take into account the SNR of the spectra region used in the fitting process as well as reasonable estimations of a priori VMR variability. ' + \
+                                           'A priori profiles are taken from WACCM 75y run monthly means for the site. The profile retrieval on each measurement is done using ' + \
+                                           'the SFIT4 version: ' + self.sfitVer + ' code that employs the Optimal Estimation retrieval algorithm and is publically available. ' + \ 
+                                           'HITRAN 2008 line list with additional pseudo-line parameters are used in the forward calculation. ' + \
+                                           'Temperature profiles are derived from NCEP analyses for each day to approx. 1.0 mbar and WACCM monthly mean above. ' + \
+                                           'Daily water profiles are averaged from 6 hourly ERA-Interim re-analysis data. Further information can be found at www://acd.ucar.edu/irwg/index/html'
       dataStr['DATA_DISCIPLINE']         = 'ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED'
       dataStr['DATA_GROUP']              = 'EXPERIMENTAL;PROFILE.STATIONARY'
       dataStr['DATA_LOCATION']           = self.loc.upper()
@@ -201,7 +209,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       
       dataStr['VAR_NAME']             = self.getSurfacePressureIndependentName()
       dataStr['VAR_DESCRIPTION']      = 'Daily average surface pressure measured at the observation site'
-      dataStr['VAR_NOTES']            = 'None'
+      dataStr['VAR_NOTES']            = 'Values are operational data recorded by weather station near instrument'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -223,7 +231,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       
       dataStr['VAR_NAME']             = self.getSurfaceTemperatureIndependentName()
       dataStr['VAR_DESCRIPTION']      = 'Daily average temperature at ground level measured at the observation site'
-      dataStr['VAR_NOTES']            = 'None'
+      dataStr['VAR_NOTES']            = 'Values are operational data recorded by weather station near instrument'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -333,7 +341,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarName()
       dataStr['VAR_DESCRIPTION']      = 'Retrieved mixing ratio profile of {} '.format(self.gasNameUpper)
-      dataStr['VAR_NOTES']            = 'None'
+      dataStr['VAR_NOTES']            = 'Retrieval algorithm sfit4 version: ' + self.sfitVer + ' NDACC IRWG retrieval strategy. HITRAN2008 spectroscopy'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -377,7 +385,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarAvkName()
       dataStr['VAR_DESCRIPTION']      = 'Averaging kernel matrix (AVK) of the retrieved vertical profile of {} in VMR/VMR units'.format(self.gasNameUpper)
-      dataStr['VAR_NOTES']            = 'Dimension 2 = AVK rows; Dimension 3 = AVK columns'
+      dataStr['VAR_NOTES']            = 'Columns of AVK are the fastest running index (see https://wiki.ucar.edu/display/sfit4/Post-Processing)'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr

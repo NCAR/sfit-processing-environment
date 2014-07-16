@@ -39,6 +39,7 @@ import datetime as dt
 import numpy as np
 import scipy.io as si
 from itertools import izip
+import dataOutClass as dc
 
 class HDFinitData(object):
     
@@ -150,8 +151,18 @@ class HDFinitData(object):
         self.h2oColAbsSol                   = self.h2oColAbsSol[inds]
         
 
-    def initPy(self):
+    def initPy(self,fname,iyear,imonth,iday,fyear,fmonth,fday):
         ''' Interface for initializing data with python set of routines'''
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         
         #---------------------------------------
         # Convert dates to Julian Day since 2000
