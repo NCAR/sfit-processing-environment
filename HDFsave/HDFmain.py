@@ -23,20 +23,22 @@
 #    You should have received a copy of the GNU General Public License
 #    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #----------------------------------------------------------------------------------------                              
-import hdfsave
-                            
+#import hdfsaveTAB as hdfsave
+import hdfsaveMLO as hdfsave                            
                             
 def main():
     
-    gasName        = 'CO'                                        # This is the target gas for retrieval
-    idlFname       = '/Users/ebaumer/Data/IDLsav/1999_2012_TAB_CO.sav'   # This is path and name of the IDL save file we use to store the data
-    outDir         = '/Users/ebaumer/Data/HDF/'                   # This is the directory where the HDF file will be written to
-    loc            = 'THULE'                                      # This is the location of the instrument
-    sfitVer        = '0.9.4.3'                                    # This is the version of sfit4 used for the retrievals
-    iyear          = 1999
+    gasName        = 'C2H6'                                            # This is the target gas for retrieval
+    idlFname       = '/Volumes/data1/ebaumer/mlo/c2h6/1995_2012.sav'   # This is path and name of the IDL save file we use to store the data
+    outDir         = '/Volumes/data1/ebaumer/mlo/c2h6/HDFfiles/'       # This is the directory where the HDF file will be written to
+    #loc            = 'THULE'
+    loc            = 'MAUNA.LOA.HI'                                    # This is the location of the instrument  (MAUNA.LOA.HI) ()
+    sfitVer        = '0.9.4.4'                                         # This is the version of sfit4 used for the retrievals
+    year           = 2002
+    iyear          = year
     imonth         = 1
     iday           = 1
-    fyear          = 1999
+    fyear          = year
     fmonth         = 12
     fday           = 31
    
@@ -64,6 +66,9 @@ def main():
     #--------------------------------------------
     myhdf.createHDF4()
     #myhdf.createHDF5()
+    
+    print 'Finished creating HDF file'
+    
     
 if __name__ == "__main__":
     main()

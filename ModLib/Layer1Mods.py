@@ -202,7 +202,7 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
         # For level 1 options
         if lvl == 1:
             # Determine the number of lines in each profile = ceil(nlyrs/5)
-            nlines = int(nlyrs//5)
+            nlines = int(np.ceil(nlyrs/5.0))
 
             #---------------------------------------------------------
             # Determine if database values of Temperature and Pressure

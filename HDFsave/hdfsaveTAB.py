@@ -69,8 +69,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DS_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       dataStr['DS_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
       dataStr['DS_EMAIL']                = 'jamesw@ucar.edu'
-      dataStr['DATA_DESCRIPTION']        = 'FTIR vmr vertical profile data of '+self.gasNameUpper+'. Data were taken from a 0.0035cm-1 resolution Bruker 120HR '  + \
-                                           'FTIR spectrometer stationed at 3396masl at Mauna Loa, Hawaii (19.54N, 155.57W).  Data acquisition ' + \
+      dataStr['DATA_DESCRIPTION']        = 'FTIR vmr vertical profile data of '+self.gasNameUpper+'. Data were taken from a 0.0035cm-1 resolution Bruker 120M '  + \
+                                           'FTIR spectrometer stationed at 225masl at Thule, Greenland (76.52N, 291.2E).  Data acquisition ' + \
                                            'is automated. Small wavenumber regions around features for a gas to be retrieved are used in the retrieval analysis.' + \
                                            'Retrievals take into account the SNR of the spectra region used in the fitting process as well as reasonable estimations of a priori VMR variability. ' + \
                                            'A priori profiles are taken from WACCM 75y run monthly means for the site. The profile retrieval on each measurement is done using ' + \
@@ -99,8 +99,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DATA_STOP_DATE']          = fdateStr
       dataStr['DATA_FILE_VERSION']       = '001'
       dataStr['DATA_MODIFICATIONS']      = 'None'
-      dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-002'
-      dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper Hannigan, J.W., Coffey, M.T., Goldman, A. Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
+      dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-001'
+      dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A.: Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
       dataStr['DATA_CAVEATS']            = 'None'
       dataStr['DATA_RULES_OF_USE']       = 'Contact Hannigan;James'
       dataStr['DATA_ACKNOWLEDGEMENT']    = 'NCAR is sponsored by the National Science Foundation. This work is supported under contract by the National Aeronautics and Space Administration.'
@@ -120,7 +120,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr = cl.OrderedDict()
 
       dataStr['VAR_NAME']             = self.getDatetimeName()
-      dataStr['VAR_DESCRIPTION']      = 'Griddatetime (UT) defined relative to reference datetime of Jan. 1 2000 at 0]00]00 UT which is equal to 0.00'
+      dataStr['VAR_DESCRIPTION']      = 'Griddatetime (UT) defined relative to reference datetime of Jan. 1 2000 at 0:00:00 UT which is equal to 0.00'
       dataStr['VAR_NOTES']            = 'None'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()

@@ -100,12 +100,12 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DATA_FILE_VERSION']       = '001'
       dataStr['DATA_MODIFICATIONS']      = 'None'
       dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-002'
-      dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper Hannigan, J.W., Coffey, M.T., Goldman, A. Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
+      dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A. Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
       dataStr['DATA_CAVEATS']            = 'None'
       dataStr['DATA_RULES_OF_USE']       = 'Contact Hannigan;James'
       dataStr['DATA_ACKNOWLEDGEMENT']    = 'NCAR is sponsored by the National Science Foundation. This work is supported under contract by the National Aeronautics and Space Administration.'
       dataStr['FILE_DOI']                = ' '
-      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.upper()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_001.hdf'
+      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.upper()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_002.hdf'
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
       dataStr['FILE_ACCESS']             = 'NDACC'
       dataStr['FILE_PROJECT_ID']         = 'NSA007'
@@ -120,7 +120,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr = cl.OrderedDict()
 
       dataStr['VAR_NAME']             = self.getDatetimeName()
-      dataStr['VAR_DESCRIPTION']      = 'Griddatetime (UT) defined relative to reference datetime of Jan. 1 2000 at 0]00]00 UT which is equal to 0.00'
+      dataStr['VAR_DESCRIPTION']      = 'Griddatetime (UT) defined relative to reference datetime of Jan. 1 2000 at 0:00:00 UT which is equal to 0.00'
       dataStr['VAR_NOTES']            = 'None'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
@@ -209,7 +209,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       
       dataStr['VAR_NAME']             = self.getSurfacePressureIndependentName()
       dataStr['VAR_DESCRIPTION']      = 'Daily average surface pressure measured at the observation site'
-      dataStr['VAR_NOTES']            = 'Values are operational data recorded by weather station near instrument. If not available, ' +\
+      dataStr['VAR_NOTES']            = 'Values are operational data recorded NOAA ESRL. If not available, ' +\
                                         'NCEP daily pressure interpolated to instrument alitude used.'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
@@ -232,7 +232,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       
       dataStr['VAR_NAME']             = self.getSurfaceTemperatureIndependentName()
       dataStr['VAR_DESCRIPTION']      = 'Daily average temperature at ground level measured at the observation site'
-      dataStr['VAR_NOTES']            = 'Values are operational data recorded by weather station near instrument. If not available, ' +\
+      dataStr['VAR_NOTES']            = 'Values are operational data recorded by NOAA ERSL. If not available, ' +\
                                         'NCEP daily temperature interpolated to instrument alitude used.'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
