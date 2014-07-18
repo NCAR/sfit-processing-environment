@@ -202,7 +202,7 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
         # For level 1 options
         if lvl == 1:
             # Determine the number of lines in each profile = ceil(nlyrs/5)
-            nlines = int(nlyrs//5)
+            nlines = int(np.ceil(nlyrs/5.0))
 
             #---------------------------------------------------------
             # Determine if database values of Temperature and Pressure
@@ -403,19 +403,17 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     using output from sfit4 and sb values from ctl file
     """
 
-    def calcCoVar(coVar,A,aprDensPrf,retPrfVMR,VMRoutFlg, MolsoutFlg, airMass):
+    def calcCoVar(coVar,A,retPrfVMR,airMass):
         ''' Calculate covariance matricies in various units'''
 
-        Sm   = np.dot(  np.dot( A, coVar ), A.T )                                                      # Uncertainty covariance matrix [Fractional]
-        Sm_1 = np.sqrt( np.dot( np.dot( aprDensPrf, Sm ), aprDensPrf.T )     )                         # Whole column uncertainty [molecules cm^-2]
+        Sm   = np.dot(  np.dot( A, coVar ), A.T )                                # Uncertainty covariance matrix [Fractional]
+        Sm_1 = np.dot(  np.dot( np.diag(retPrfVMR), Sm ), np.diag(retPrfVMR) )   # Uncertainty covariance matrix [(VMR)^2]
+        Sm_2 = np.dot(  np.dot( np.diag(airMass), Sm_1 ), np.diag(airMass)   )   # Uncertainty covariance matrix [(molecules cm^-2)^2]
+        densPrf = retPrfVMR * airMass
+        Sm_3 = np.sqrt( np.dot( np.dot( densPrf, Sm ), densPrf.T )     )         # Whole column uncertainty [molecules cm^-2]
+        #Sm_3 = np.sqrt( np.sum( np.diagonal( Sm_2 ) ) )                          # Whole column uncertainty [molecules cm^-2]
 
-        if VMRoutFlg[0].upper()== 'T': Sm_2 = np.dot(  np.dot( np.diag(retPrfVMR), Sm ), np.diag(retPrfVMR) )     # Uncertainty covariance matrix [(VMR)^2]
-        else:               Sm_2 = 0
-
-        if MolsoutFlg[0].upper() == 'T': Sm_3 = np.dot(  np.dot( np.diag(airMass), Sm_2 ), np.diag(airMass)   )   # Uncertainty covariance matrix [(molecules cm^-2)^2]
-        else:                 Sm_3 = 0
-
-        return (Sm_2, Sm_3, Sm_1)     # (Variance, Variance, STD)
+        return (Sm_1, Sm_2, Sm_3)     # (Variance, Variance, STD)
 
     def writeCoVar(fname,header,var,ind):
         ''' Write covariance matricies to files'''
@@ -649,12 +647,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #----------------------------------
     retdenscol = sumVars.rprfs[primgas.upper()+'_TC']  
 
-    #------------------------------------
-    # Calculate A priori density profile:
-    # molec/cm**2
-    #------------------------------------
-    aprdensprf =  sumVars.aprfs[primgas.upper()] * sumVars.aprfs['AIRMASS'] 
-
     #---------------------------
     # Determine DOFS for column:
     #
@@ -680,7 +672,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #---------------------------------
     mat1               = sa[x_start:x_stop,x_start:x_stop]
     mat2               = AKx - np.identity( AKx.shape[0] )
-    S_sys['Smoothing'] = calcCoVar(mat1,mat2,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+    S_sys['Smoothing'] = calcCoVar(mat1,mat2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
 
     #----------------------------------
     # Calculate Measurement error using 
@@ -688,7 +680,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #                    T
     #  Sm = Dx * Se * Dx
     #----------------------------------
-    S_ran['Measurement'] = calcCoVar(se,Dx,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+    S_ran['Measurement'] = calcCoVar(se,Dx,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
 
     #---------------------
     # Interference Errors:
@@ -698,7 +690,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #------------------------
     AK_int1                   = AK[x_start:x_stop,0:x_start]  
     Sa_int1                   = sa[0:x_start,0:x_start]
-    S_ran['Retrieval_Parameters'] = calcCoVar(Sa_int1,AK_int1,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+    S_ran['Retrieval_Parameters'] = calcCoVar(Sa_int1,AK_int1,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
 
     #-----------------------
     # 2) Interfering species
@@ -707,7 +699,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     n_int2_column              = ( n_profile - 1 ) * n_layer + n_column
     AK_int2                    = AK[x_start:x_stop, x_stop:x_stop + n_int2_column] 
     Sa_int2                    = sa[x_stop:x_stop + n_int2_column, x_stop:x_stop + n_int2_column]
-    S_ran['Interfering_Species'] = calcCoVar(Sa_int2,AK_int2,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+    S_ran['Interfering_Species'] = calcCoVar(Sa_int2,AK_int2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
 
     #----------------------------------------------
     # Errors from parameters not retrieved by sfit4
@@ -825,8 +817,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             # Calculate
             #----------------------------
             else:
-                if ErrType == 'random': S_ran[Kbl] = calcCoVar(Sb,DK,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
-                else:                   S_sys[Kbl] = calcCoVar(Sb,DK,aprdensprf,sumVars.aprfs[primgas.upper()],SbctlFileVars.inputs['VMRoutFlg'],SbctlFileVars.inputs['MolsoutFlg'],sumVars.aprfs['AIRMASS'])
+                if ErrType == 'random': S_ran[Kbl] = calcCoVar(Sb,DK,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
+                else:                   S_sys[Kbl] = calcCoVar(Sb,DK,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
 
     #---------------------------------------------
     # Calculate total systematic and random errors
