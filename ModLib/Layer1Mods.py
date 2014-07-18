@@ -900,26 +900,26 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         if SbctlFileVars.inputs['MolsoutFlg'][0].upper() == 'T':
             # molecules cm^-2
             fname  = wrkingDir+SbctlFileVars.inputs['file.out.total'][0]
-            header = 'TOTAL RANDOM ERROR COVARIANCE MATRIX IN MOL CM^-2'
+            header = 'TOTAL RANDOM ERROR COVARIANCE MATRIX IN (MOL CM^-2)^2'
             writeCoVar(fname,header,S_tot,1) 
 
         if SbctlFileVars.inputs['VMRoutFlg'][0].upper() == 'T':
             # vmr
             fname  = wrkingDir+SbctlFileVars.inputs['file.out.total.vmr'][0]
-            header = 'TOTAL RANDOM ERROR COVARIANCE MATRICES IN VMR UNITS'
+            header = 'TOTAL RANDOM ERROR COVARIANCE MATRICES IN (VMR)^2 UNITS'
             writeCoVar(fname,header,S_tot,0) 	
 
     if SbctlFileVars.inputs['out.srandom'][0].upper() == 'T':
         if SbctlFileVars.inputs['MolsoutFlg'][0].upper() == 'T':
             # molecules cm^-2
             fname  = wrkingDir+SbctlFileVars.inputs['file.out.srandom'][0]
-            header = 'RANDOM ERROR COVARIANCE MATRIX IN MOL CM^-2'
+            header = 'RANDOM ERROR COVARIANCE MATRIX IN (MOL CM^-2)^2'
             writeCoVar(fname,header,S_ran,1)
 
         if SbctlFileVars.inputs['VMRoutFlg'][0].upper() == 'T':
             # vmr
             fname  = wrkingDir+SbctlFileVars.inputs['file.out.srandom.vmr'][0]
-            header = 'RANDOM ERROR COVARIANCE MATRICES IN VMR UNITS'
+            header = 'RANDOM ERROR COVARIANCE MATRICES IN (VMR)^2 UNITS'
             writeCoVar(fname,header,S_ran,0)	
 
     if SbctlFileVars.inputs['out.ssystematic'][0].upper() == 'T':
@@ -927,13 +927,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         if SbctlFileVars.inputs['MolsoutFlg'][0].upper() == 'T':
             # molecules cm^-2
             fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic'][0]
-            header = 'SYSTEMATIC ERROR COVARIANCE MATRIX IN MOL CM^-2'
+            header = 'SYSTEMATIC ERROR COVARIANCE MATRIX IN (MOL CM^-2)^2'
             writeCoVar(fname,header,S_sys,1)
 
         if SbctlFileVars.inputs['VMRoutFlg'][0].upper() == 'T':
             # vmr
             fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic.vmr'][0]
-            header = 'SYSTEMATIC ERROR COVARIANCE MATRICES IN VMR UNITS'
+            header = 'SYSTEMATIC ERROR COVARIANCE MATRICES IN (VMR)^2 UNITS'
             writeCoVar(fname,header,S_sys,0)	
 
     #-----------------------
