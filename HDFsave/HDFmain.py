@@ -58,7 +58,9 @@ def main():
     # using our pre-defined interface
     #------------------------------------------------
     #myhdf.initDummy()
-    myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
+    #myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
+    myhdf.initPy(dataDir, ctlF,  spcDBfile, iyear, imonth, iday,   fyear, fmonth, fday,
+                 mxRMS,   mxSZA, rmsFlg,    tcFlg, pcFlg,  cnvFlg, szaFlg )
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.

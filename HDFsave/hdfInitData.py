@@ -151,26 +151,52 @@ class HDFinitData(object):
         self.h2oColAbsSol                   = self.h2oColAbsSol[inds]
         
 
-    def initPy(self,fname,iyear,imonth,iday,fyear,fmonth,fday):
+    def initPy(self,dataDir,ctlF,spcDBfile,iyear,imonth,iday,fyear,fmonth,fday,
+               mxRMS,mxSZA,rmsFlg,tcFlg,pcFlg,cnvFlg,szaFlg):
         ''' Interface for initializing data with python set of routines'''
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
         #---------------------------------------
-        # Convert dates to Julian Day since 2000
-        #---------------------------------------        
-        self.datesJD2K = np.array([(x - dt.datetime(2000,1,1)).total_seconds()/dt.timedelta(1).total_seconds() for x in self.dates])   
+        # Gather data using python read routines
+        #---------------------------------------
+        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, iyear, imnth, iday, fyear, fmnth, fday)
         
+        #------------
+        # Filter data
+        #------------
+        pyData.fltrHDFdata(maxRMS=mxRMS, maxSZA=mxSZA, rmsF=rmsFlg, tcF=tcFlg, pcF=pcFlg, cnvF=cnvFlg, szaF=szaFlg)
         
+        #------------
+        # Assign data
+        #------------
+        self.datesJD2K                      = self.HDFdatesJD2K
+        self.latitude                       = self.HDFlat
+        self.longitude                      = self.HDFlon
+        self.instAltitudes                  = self.HDFinstAlt
+        self.surfPressures                  = self.HDFsurfP
+        self.surfTemperatures               = self.HDFsurfT
+        self.altitudes                      = self.HDFz
+        self.altitudeBoundaries             = 
+        self.pressures                      = self.HDFpressPrf
+        self.temperatures                   = self.HDFtempPrf
+        self.gasMxRatAbsSolar               = self.HDFrGasPrfVMR
+        self.gasMxRatAbsSolarApriori        = self.HDFaGasPrfVMR
+        self.gasMxRatAbsSolarAVK            = self.HDFak
+        self.integrationTimes               = self.HDFintT
+        self.gasMxRatAbsSolarUncRand        = self.HDFrandErr
+        self.gasMxRatAbsSolarUncSys         = self.HDFsysErr
+        self.gasColPartAbsSolar             = self.HDFrGasPrfMol
+        self.gasColPartAbsApriori           = self.HDFaGasPrfMol
+        self.gasColAbsSolar                 = self.HDFretTC
+        self.gasColAbsSolarApriori          = self.HDFaprTC
+        self.gasColAbsSolarAVK              = self.HDFavkTC
+        self.gasColAbsSolarUncRand          = self.HDFtcRanErr
+        self.gasColAbsSolarUncSys           = self.HDFtcSysErr
+        self.angleZastr                     = self.HDFsza
+        self.angleSolAz                     = self.HDFazi
+        self.h2oMxRatAbsSolar               = self.HDFh2oVMR
+        self.h2oColAbsSol                   = self.HDFh2oTC
         
+
         
     def initDummy(self):
         ''' Interface for initalizing with dummy data. For testing!!!'''
