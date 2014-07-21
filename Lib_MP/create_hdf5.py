@@ -124,6 +124,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    err = sfit4.error(sb_ctl,direc+'/'+dd)
 	    srvmr, ssvmr = err.read_total_vmr()
 	    srpcol, sspcol = err.read_total_pcol()
+	    srcol, sscol = err.read_total_col()
 
 	    err_flag = err.flag
 	    if not err.flag:
@@ -252,8 +253,8 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	        vmr_sys.append(np.reshape(cov_ssvmr,(len_vmr, len_vmr, 1)))
 	        pcol_ran.append(np.reshape(srpcol,(len_vmr, -1)))
 	        pcol_sys.append(np.reshape(sspcol,(len_vmr, -1)))
-	        col_ran[nr_res] = np.linalg.norm(srpcol)
-	        col_sys[nr_res] = np.linalg.norm(sspcol)
+	        col_ran[nr_res] = srcol
+	        col_sys[nr_res] = sscol
 	    pcol_rt.append(np.reshape(rcol[0],(len_vmr, -1)))
 	    pcol_ap.append(np.reshape(acol[0],(len_vmr, -1)))
 	    P.append(np.reshape(p,(len_vmr, -1)))
