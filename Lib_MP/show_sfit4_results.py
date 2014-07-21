@@ -2,6 +2,7 @@ import sys
 sys.path.append('/data/sfit-processing-environment/Lib_MP/')
 import read_result_sfit4 as sfit4
 from sfit4_ctl import *
+from Tkinter import *
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import matplotlib.gridspec as gridspec
@@ -13,15 +14,92 @@ class show_results:
 
     def __init__(self,direc='.', ctlfile='sfit4.ctl'):
 
+        self.direc = direc
+        self.ctlfile = ctlfile
+
+
+        # out.level = 1
+        plt.rcParams['font.size'] = 18
+#        plt.rc('text', usetex=True)
+
+
+        self.load_result()
+
+        # Find a free figure for profile
+        self.winprf = plt.figure()#figsize=(24,12))
+        # Find a free figure for microwindow
+        self.winmw = plt.figure()#figsize=(24,12))
+        # Find a free figure for AVK
+        self.winavk = plt.figure()#figsize=(24,12))
+
+
+        self.tkroot = Tk()
+        self.tkroot.wm_title('sfit4 result viewer')
+
+        self.entry = Entry(self.tkroot)
+        self.entry.grid(row=0, column=0, sticky=E+W)
+        self.entry.delete(0, END)
+        self.entry.insert(0, self.direc)
+#        self.update_dirlist()
+
+        button_update = Button(self.tkroot, text = 'Reload', command = self.load_result)
+        button_update.pack()
+
+        button_spec = Button(self.tkroot, text = 'Spectrum', command = self.show_spectra)
+        button_spec.pack()
+
+        button_profile = Button(self.tkroot, text = 'Profile', command = self.show)
+        button_profile.pack()
+
+        button_summary = Button(self.tkroot, text = 'Summary', command = self.show)
+        button_summary.pack()
+
+        button_quit = Button(self.tkroot, text = 'Quit', command = self.quit)
+        button_quit.pack()
+
+#        self.SummaryText()
+#        self.mkOptionMenu1()
+
+        self.tkroot.mainloop()
+
+    def quit(self):
+        self.tkroot.destroy()
+
+
+    def SummaryText(self):
+        tt1 = Text(self.tkroot)
+        nr_mw = self.sp.nr_mw
+        tt1.insert('end', 'Nr. of microwindows %i'%nr_mw)
+        tt1.pack()
+
+    def mkOptionMenu1(self):
+        nr_mw = self.sp.nr_mw
+        opt = []
+        for n in range(0,nr_mw):
+            opt.append('Spectrum MW %i'%(n+1))
+        opt.append('Profile')
+        opt.append('AVK')
+        opt.append('Summary')
+
+        try:
+            self.menu1.destroy
+        except:
+            pass
+        var = StringVar()
+        var.set(opt[0])
+        self.menu1 = OptionMenu(self.tkroot,var, *opt,command=self.menu1)
+        self.menu1.pack()
+
+        
+
+    def load_result(self):
+        direc = self.direc
+        ctlfile = self.ctlfile
         ctl = sfit4_ctl()
         ctl.read_ctl_file(ctlfile)
         ak_m = ctl.get_value('file.out.ak_matrix')
         if ak_m == -1:
             ak_m = 'ak.out' # Default name of ak_matrix
-
-        # out.level = 1
-        plt.rcParams['font.size'] = 18
-#        plt.rc('text', usetex=True)
         self.retprf = sfit4.read_table(direc+'/rprfs.table')
         self.aprprf = sfit4.read_table(direc+'/aprfs.table')
         self.gases = self.aprprf.get_retrieval_gasnames()
@@ -41,13 +119,16 @@ class show_results:
         self.gas = sfit4.gasspectra(direc)
 
 
-        # Find a free figure for profile
-        self.winprf = plt.figure()#figsize=(24,12))
-        # Find a free figure for microwindow
-        self.winmw = plt.figure()#figsize=(24,12))
-        # Find a free figure for AVK
-        self.winavk = plt.figure()#figsize=(24,12))
-
+    def menu1(self,arg):
+        print arg
+        a = arg.split()
+        if a[0] == 'Spectrum':
+            self.show_spectra(int(a[2]))
+        if a[0] == 'Profile':
+            self.show()
+        if a[0] == 'AVK':
+            self.show(type='AVK')
+            
 
 
     def __del__(self):
@@ -200,3 +281,6 @@ class show_results:
             self.winmw.show()
 #            self.winmw.savefig('/home/christof_p/res_win_'+str(band_nr)+'.png')
 												
+
+if __name__ == '__main__':
+    show_results()

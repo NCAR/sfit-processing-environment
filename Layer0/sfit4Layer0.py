@@ -72,7 +72,8 @@
 # Import modules
 #---------------
 import sys
-import os
+sys.path.append('/home/mathias/sfit-processing-environment/ModLib/')
+import os, re
 import getopt
 import sfitClasses as sc
 from Layer1Mods import errAnalysis
@@ -103,7 +104,7 @@ def main(argv):
          # Directories
          #------------
         wrkDir    = os.getcwd()                              # Set current directory as the data directory
-        binDir    = '/data/bin'                              # Default binary directory. Used of nothing is specified on command line
+        binDir    = '../../src'                              # Default binary directory. Used of nothing is specified on command line. This is the binary directory if using test cases
         binDirVer = {
         'v1':   '/data/ebaumer/Code/sfit-core-code/src/',    # Version 1 for binary directory (Eric)
         'v2':   '/data/tools/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
@@ -231,6 +232,18 @@ def main(argv):
         # Run sfit4
         #----------
         if sfitFlg:
+		# Replace hbin file name with the one newer than sfit4.ctl or hbin.input
+		time_hbin = os.path.getmtime('hbin.input')
+		time_sfitctl = os.path.getmtime('sfit4.ctl')
+		time_ctl = max(time_hbin,time_sfitctl)
+		m = re.compile(".*\.hbin",re.I)
+		lhbin = ctlFile.inputs['file.in.linelist']
+		hbins = filter(m.search,os.listdir('.'))
+		for hb in hbins:
+			time_hb = os.path.getmtime(hb)
+			if time_hb > time_ctl:
+				lhbin = hb
+		ctlFile.replVar('file.in.linelist', lhbin)
                 print '************'
                 print 'Running sfit'
                 print '************'
