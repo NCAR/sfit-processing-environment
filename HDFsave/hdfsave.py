@@ -561,7 +561,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       return dataStr
 
    def tcAvkAttrbs(self,nlyrs,nsize):
-      ''' Attributes for total column from averaging kernel profile '''
+      ''' Attributes for total column averaging kernel '''
 
       dataStr = cl.OrderedDict()
 
