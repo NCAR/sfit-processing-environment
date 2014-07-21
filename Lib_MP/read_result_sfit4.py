@@ -213,6 +213,7 @@ class pbp:
         pbpf = rn.read_from_file(filename)
         self.header = pbpf.get_line()
         nr_mw = int(pbpf.next(1).pop(0))
+        self.nr_mw = nr_mw
         pbpf.next(1)
         self.sza = []
         self.mw_res = []
