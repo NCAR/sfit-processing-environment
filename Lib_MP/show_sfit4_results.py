@@ -34,34 +34,67 @@ class show_results:
 
     
 
-#         self.tkroot = Tk()
-#         self.tkroot.wm_title('sfit4 result viewer')
+        self.tkroot = Tk()
+        self.tkroot.wm_title('sfit4 result viewer')
 
-#         self.entry = Entry(self.tkroot)
-#         self.entry.grid(row=0, column=0, sticky=E+W)
-#         self.entry.delete(0, END)
-#         self.entry.insert(0, self.direc)
-# #        self.update_dirlist()
+        self.entry = Entry(self.tkroot)
+        self.entry.grid(row=0, column=1, sticky=E+W)
+        self.entry.delete(0, END)
+        self.entry.insert(0, self.direc)
+#        self.update_dirlist()
 
-#         button_update = Button(self.tkroot, text = 'Reload', command = self.load_result)
-#         button_update.pack()
+        button_update = Button(self.tkroot, text = 'Reload', command = self.load_result)
+        button_update.grid(row=0, column=0, sticky=E+W)
 
-#         button_spec = Button(self.tkroot, text = 'Spectrum', command = self.show_spectra)
-#         button_spec.pack()
+        options = []
+        for n in range(0,self.sp.nr_mw):
+            options.append('%i'%(n+1))
+        self.spec_nr = StringVar()
+        self.spec_nr.set(options[0])
+        self.menu1 = OptionMenu(self.tkroot,self.spec_nr, *options)
+        self.menu1.grid(row=1,column=1,stick=E+W)
 
-#         button_profile = Button(self.tkroot, text = 'Profile', command = self.show)
-#         button_profile.pack()
+        def spectrum_show():
+            print self.spec_nr.get()
+            nr = int(self.spec_nr.get())
+            self.show_spectra(nr)
 
-#         button_summary = Button(self.tkroot, text = 'Summary', command = self.show)
-#         button_summary.pack()
+        button_spec = Button(self.tkroot, text = 'Spectrum', command = lambda: spectrum_show())
+        button_spec.grid(row=1, column=0, sticky=E+W)
 
-#         button_quit = Button(self.tkroot, text = 'Quit', command = self.quit)
-#         button_quit.pack()
+        def spectrum_by_gas_show():
+            nr = int(self.spec_nr.get())
+            self.show_spectra_by_gas(1,-1,nr) 
+
+        button_spec = Button(self.tkroot, text = 'Spectrum by gas', command = lambda: spectrum_by_gas_show())
+        button_spec.grid(row=2, column=0, sticky=E+W)
+
+        options =  ('Profile', 'AVK')
+        self.show_var = StringVar()
+        self.show_var.set(options[0])
+        self.menu1 = OptionMenu(self.tkroot,self.show_var, *options)
+        self.menu1.grid(row=3,column=1,stick=E+W)
+
+        def profile_show():
+            print self.show_var.get()
+            if self.show_var.get() == 'Profile':
+                self.show()
+            if self.show_var.get() == 'AVK':
+                self.show(type='AVK')
+
+        button_profile = Button(self.tkroot, text = 'Profile', command = lambda: profile_show())
+        button_profile.grid(row=3, column=0, sticky=E+W)
+
+        button_summary = Button(self.tkroot, text = 'Summary')
+        button_summary.grid(row=4, column=0, sticky=E+W)
+
+        button_quit = Button(self.tkroot, text = 'Quit', command = self.tkroot.quit)
+        button_quit.grid(row=5, column=0, sticky=E+W)
 
 # #        self.SummaryText()
 # #        self.mkOptionMenu1()
 
-#         self.tkroot.mainloop()
+        self.tkroot.mainloop()
 
     def quit(self):
         self.tkroot.destroy()
