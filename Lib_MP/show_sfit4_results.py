@@ -32,35 +32,36 @@ class show_results:
         # Find a free figure for AVK
         self.winavk = plt.figure()#figsize=(24,12))
 
+    
 
-        self.tkroot = Tk()
-        self.tkroot.wm_title('sfit4 result viewer')
+#         self.tkroot = Tk()
+#         self.tkroot.wm_title('sfit4 result viewer')
 
-        self.entry = Entry(self.tkroot)
-        self.entry.grid(row=0, column=0, sticky=E+W)
-        self.entry.delete(0, END)
-        self.entry.insert(0, self.direc)
-#        self.update_dirlist()
+#         self.entry = Entry(self.tkroot)
+#         self.entry.grid(row=0, column=0, sticky=E+W)
+#         self.entry.delete(0, END)
+#         self.entry.insert(0, self.direc)
+# #        self.update_dirlist()
 
-        button_update = Button(self.tkroot, text = 'Reload', command = self.load_result)
-        button_update.pack()
+#         button_update = Button(self.tkroot, text = 'Reload', command = self.load_result)
+#         button_update.pack()
 
-        button_spec = Button(self.tkroot, text = 'Spectrum', command = self.show_spectra)
-        button_spec.pack()
+#         button_spec = Button(self.tkroot, text = 'Spectrum', command = self.show_spectra)
+#         button_spec.pack()
 
-        button_profile = Button(self.tkroot, text = 'Profile', command = self.show)
-        button_profile.pack()
+#         button_profile = Button(self.tkroot, text = 'Profile', command = self.show)
+#         button_profile.pack()
 
-        button_summary = Button(self.tkroot, text = 'Summary', command = self.show)
-        button_summary.pack()
+#         button_summary = Button(self.tkroot, text = 'Summary', command = self.show)
+#         button_summary.pack()
 
-        button_quit = Button(self.tkroot, text = 'Quit', command = self.quit)
-        button_quit.pack()
+#         button_quit = Button(self.tkroot, text = 'Quit', command = self.quit)
+#         button_quit.pack()
 
-#        self.SummaryText()
-#        self.mkOptionMenu1()
+# #        self.SummaryText()
+# #        self.mkOptionMenu1()
 
-        self.tkroot.mainloop()
+#         self.tkroot.mainloop()
 
     def quit(self):
         self.tkroot.destroy()

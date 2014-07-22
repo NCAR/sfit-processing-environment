@@ -169,7 +169,7 @@ class error:
         # check if sd.ctl and direc are formally consistent
         self.total_vmr = direc+'/'+sbctl.get_value('file.out.total.vmr')
         self.total_col = direc+'/'+sbctl.get_value('file.out.total')
-        self.shat = direc+'/'+sbctl.get_value('file.out.shat_matrix')
+#        self.shat = direc+'/'+sbctl.get_value('file.out.shat_matrix')
         self.flag = True
         if not os.path.isfile(self.total_vmr):
             self.flag = False
