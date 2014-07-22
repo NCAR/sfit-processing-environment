@@ -61,10 +61,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['PI_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       dataStr['PI_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
       dataStr['PI_EMAIL']                = 'jamesw@ucar.edu'
-      dataStr['DO_NAME']                 = 'Hannigan;James'
+      dataStr['DO_NAME']                 = 'Nussbaumer;Eric'
       dataStr['DO_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       dataStr['DO_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
-      dataStr['DO_EMAIL']                = 'jamesw@ucar.edu'
+      dataStr['DO_EMAIL']                = 'ebaumer@ucar.edu'
       dataStr['DS_NAME']                 = 'Hannigan;James'
       dataStr['DS_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       dataStr['DS_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
@@ -74,10 +74,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
                                            'is automated. Small wavenumber regions around features for a gas to be retrieved are used in the retrieval analysis.' + \
                                            'Retrievals take into account the SNR of the spectra region used in the fitting process as well as reasonable estimations of a priori VMR variability. ' + \
                                            'A priori profiles are taken from WACCM 75y run monthly means for the site. The profile retrieval on each measurement is done using ' + \
-                                           'the SFIT4 version: ' + self.sfitVer + ' code that employs the Optimal Estimation retrieval algorithm and is publically available. ' + \
+                                           'the SFIT4 version: ' + self.sfitVer + ' code that employs the Optimal Estimation retrieval algorithm and is publically available (see https://wiki.ucar.edu/display/sfit4/Infrared+Working+Group+Retrieval+Code%2C+SFIT). ' + \
                                            'HITRAN 2008 line list with additional pseudo-line parameters are used in the forward calculation. ' + \
                                            'Temperature profiles are derived from NCEP analyses for each day to approx. 1.0 mbar and WACCM monthly mean above. ' + \
-                                           'Daily water profiles are averaged from 6 hourly ERA-Interim re-analysis data. Further information can be found at www://acd.ucar.edu/irwg/index/html'
+                                           'Daily water profiles are averaged from 6 hourly ERA-Interim re-analysis data. Further information can be found at http://www.acd.ucar.edu/irwg/'
       dataStr['DATA_DISCIPLINE']         = 'ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED'
       dataStr['DATA_GROUP']              = 'EXPERIMENTAL;PROFILE.STATIONARY'
       dataStr['DATA_LOCATION']           = self.loc.upper()
@@ -97,7 +97,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
                                            self.getH2oMixingRatioAbsorptionSolarName()+';'+self.getH2oColumnAbsorptionSolarName(),
       dataStr['DATA_START_DATE']         = idateStr
       dataStr['DATA_STOP_DATE']          = fdateStr
-      dataStr['DATA_FILE_VERSION']       = '001'
+      dataStr['DATA_FILE_VERSION']       = '003'
       dataStr['DATA_MODIFICATIONS']      = 'None'
       dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-002'
       dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A. Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
@@ -108,7 +108,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.upper()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_002.hdf'
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
       dataStr['FILE_ACCESS']             = 'NDACC'
-      dataStr['FILE_PROJECT_ID']         = 'NSA007'
+      dataStr['FILE_PROJECT_ID']         = ''
       dataStr['FILE_ASSOCIATION']        = 'NDACC'
       dataStr['FILE_META_VERSION']       = '04R010;CUSTOM'
       
