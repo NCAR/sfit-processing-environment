@@ -75,6 +75,10 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    if not os.path.isfile(aprfsfile):
 	        print 'aprfs.table'
 	        continue
+	    statefile =  string.join([direc, '/', dd, '/', 'statevec'], '')
+	    if not os.path.isfile(statefile):
+	        print 'statevecfile'
+	        continue
 	    miscfile =  string.join([direc, '/', dd, '/', 'misc.out'], '')
 	    if not os.path.isfile(miscfile):
 	        sz = -1
@@ -108,6 +112,13 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    rcol = rprf.get_gas_col(gasnames[0])
 	    acol = aprf.get_gas_col(gasnames[0])
 	    len_vmr = len(z)
+
+	    stv = sfit4.statevec(statefile)
+	    aux_names =  stv.aux
+	    aux_apriori = stv.ap_aux
+	    aux_ret = stv.rt_aux
+	    nr_aux = len(aux_apriori)
+
 	
 	    nr_gas = len(gasnames)
 	    i_rvmr=np.zeros((len_vmr,0))
@@ -160,6 +171,11 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	        icol_rt = h5file.createEArray("/", 'icol_rt', hdf5.Float32Atom(), 
 	                                     (nr_gas-1,0), title="Retrieved total column of interfering gases", 
 	                                      expectedrows=nr_entries)
+	        aux_ap = h5file.createEArray("/", 'aux_ap', hdf5.Float32Atom(), 
+	                                     (nr_aux-1,0), title="Apriori of auxilliary entries in state vector", 
+	                                      expectedrows=nr_entries)
+	        aux_rt = h5file.createEArray("/", 'aux_rt', hdf5.Float32Atom(), 
+	                                     (nr_aux-1,0), title="Retrievals of auxilliary entries in state vector", expectedrows=nr_entries)
 	        vmr_ap = h5file.createEArray("/", 'vmr_ap', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="Apriori VMR", expectedrows=nr_entries)
 	        vmr_ran = h5file.createEArray("/", 'cov_vmr_ran', hdf5.Float32Atom(), 
@@ -246,6 +262,8 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    vmr_rt.append(np.reshape(rvmr,(len_vmr,-1)))
 	    ivmr_rt.append(np.reshape(i_rvmr, (len_vmr, nr_gas-1, 1)))
 	    icol_rt.append(np.reshape(i_col, (nr_gas-1, 1)))
+	    aux_ap.append(np.reshape(aux_ap, (nr_aux-1, 1)))
+	    aux_rt.append(np.reshape(aux_rt, (nr_aux-1, 1)))
 	    vmr_ap.append(np.reshape(avmr[0],(len_vmr, -1)))
 	    if np.isfinite(srvmr).all() and np.isfinite(srpcol).all():
 	        vmr_ran.append(np.reshape(cov_srvmr,(len_vmr, len_vmr, 1)))
@@ -314,6 +332,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	h5file.createArray("/", 'col_sys', col_sys, "Column error systematic")
 	h5file.createArray("/", 'air_col', air_col, "Retrieved AIRMASS")
 	h5file.createArray("/", 'gasnames', gasnames, "Names of retrieved gases")
+	h5file.createArray("/", 'auxnames', gasnames, "Names of auxilliary state entries")
 	h5file.createArray("/", 'h2o_col_setup', col_h2o_ap, "Columns of H2O in setup")
 
 	h5file.close()
