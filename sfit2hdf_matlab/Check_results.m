@@ -10,6 +10,7 @@ function fail1 = Check_results(p)
     snr_rat_max = -1;
     sza_max = -1;
     max_iter = -1;
+    chi_2_y = -1
     species = p{1}.target;
     if strcmp(species, 'C2H6')
       dofs_min = 0.8;
@@ -38,6 +39,7 @@ function fail1 = Check_results(p)
         snr_rat_max = 0.0 % 1.5;
         vmr_min = -1;
         vmr_max = -1; %8e-6;
+	chi_2_y = 10;
     end
     if strcmp(species, 'CO')
         snr_the_min = 100;

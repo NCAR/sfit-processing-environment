@@ -120,6 +120,10 @@ t = hdf5read(h5file, '/col_rt');
 for nr = 1:length(ind)
     p{nr}.col_rt = t(ind(nr));
 end
+t = hdf5read(h5file, '/chi_2_y');
+for nr = 1:length(ind)
+    p{nr}.chi_2_y = t(ind(nr));
+end
 t = hdf5read(h5file, '/col_ap');
 for nr = 1:length(ind)
     p{nr}.col_ap = t(ind(nr));
