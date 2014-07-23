@@ -102,7 +102,7 @@ class spectrum:
             tmp = '%.2f %.2f %.2f %.2f %.2f' % (self.sza[nr], self.earth_rad[nr], self.latitude[nr], self.longitude[nr], self.snr[nr])
             fid.write(tmp+'\n')
         
-            fid.write(dt.num2date(self.meas_date[nr]).strftime('%Y %d %d %H %M %S')+'\n')
+            fid.write(dt.num2date(self.meas_date[nr]).strftime('%Y %m %d %H %M %S')+'\n')
             fid.write(self.comment[nr]+'\n')
 
             fid.write('%.10f %.10f %.10f %d \n'% 
