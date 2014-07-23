@@ -39,11 +39,12 @@ class show_results:
         self.entry = Entry(self.tkroot)
         self.entry.grid(row=0, column=1, sticky=E+W)
         self.entry.delete(0, END)
-        self.entry.insert(0, self.direc)
+        self.entry.insert(0, os.path.abspath(self.direc))
 #        self.update_dirlist()
 
         button_update = Button(self.tkroot, text = 'Reload', command = self.load_result)
         button_update.grid(row=0, column=0, sticky=E+W)
+        button_update.config(state=DISABLED)
 #        button_update.pack()
 
         options = []
@@ -52,7 +53,6 @@ class show_results:
 
 
         def spectrum_show():
-            print self.spec_nr.get()
             nr = int(self.spec_nr.get())
             self.show_spectra(nr)
 
@@ -109,7 +109,6 @@ class show_results:
 #        self.menu1.grid(row=3,column=1,stick=E+W)
 
         def profile_show():
-            print self.show_var.get()
             if self.show_var.get() == 'Profile':
                 self.show()
             if self.show_var.get() == 'AVK':
@@ -189,16 +188,6 @@ class show_results:
         self.gas = sfit4.gasspectra(direc)
 
 
-    def menu1(self,arg):
-        print arg
-        a = arg.split()
-        if a[0] == 'Spectrum':
-            self.show_spectra(int(a[2]))
-        if a[0] == 'Profile':
-            self.show()
-        if a[0] == 'AVK':
-            self.show(type='AVK')
-            
 
 
     def __del__(self):
@@ -326,7 +315,6 @@ class show_results:
                    and self.gas.iteration[x] == itera,\
                    range(0,len(self.gas.band)))
             
-            print inds
             for ind in inds:
                 ax1.plot(self.gas.nu[ind],self.gas.clc[ind],label=self.gas.gas[ind])
 
