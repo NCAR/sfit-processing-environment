@@ -48,16 +48,26 @@ class show_results:
 
         options = []
         for n in range(0,self.sp.nr_mw):
-            options.append('%i'%(n+1))
-        self.spec_nr = StringVar()
-        self.spec_nr.set(options[0])
-        self.menu1 = OptionMenu(self.tkroot,self.spec_nr, *options)
-        self.menu1.grid(row=1,column=1,stick=E+W)
+            options.append(int('%i'%(n+1)))
+
 
         def spectrum_show():
             print self.spec_nr.get()
             nr = int(self.spec_nr.get())
             self.show_spectra(nr)
+
+        frame1 = Frame(self.tkroot)
+        frame1.grid(row=1,column=1)
+        self.spec_nr = IntVar(self.tkroot)
+        self.spec_nr.set(options[0])
+        for n in options:
+            m=Radiobutton(frame1,
+                          text=str(n),
+                          variable=self.spec_nr,
+                          value=int(n),
+                          indicatoron=1)
+            m.grid(row=0,column=n-1,stick=E+W)
+
 
         button_spec = Button(self.tkroot, text = 'Spectrum', command = lambda: spectrum_show())
         button_spec.grid(row=1, column=0, sticky=E+W)
@@ -65,23 +75,45 @@ class show_results:
 
         def spectrum_by_gas_show():
             nr = int(self.spec_nr.get())
-            self.show_spectra_by_gas(1,-1,nr) 
+            gas = self.spec_gas.get()
+            self.show_spectra_by_gas(1,-1,nr,gas=gas) 
+
+        
+        options = list(set(self.gas.gas[:]))
+
+        self.spec_gas = StringVar(self.tkroot)
+        self.spec_gas.set(options[0])
+
+        self.menu1 = OptionMenu(self.tkroot,self.spec_gas, *options)
+        self.menu1.grid(row=2,column=1,stick=E+W)
+
 
         button_spec = Button(self.tkroot, text = 'Spectrum by gas', command = lambda: spectrum_by_gas_show())
         button_spec.grid(row=2, column=0, sticky=E+W)
 
         options =  ('Profile', 'AVK')
-        self.show_var = StringVar()
+        self.show_var = StringVar(self.tkroot)
         self.show_var.set(options[0])
-        self.menu1 = OptionMenu(self.tkroot,self.show_var, *options)
-        self.menu1.grid(row=3,column=1,stick=E+W)
+        frame2 = Frame(self.tkroot)
+        frame2.grid(row=3,column=1)
+        num = 0
+        for n in options:
+            m=Radiobutton(frame2,
+                          text=str(n),
+                          variable=self.show_var,
+                          value=n,
+                          indicatoron=0)
+            m.grid(row=0,column=num,stick=E+W)
+            num = num+1
+#        self.menu1 = OptionMenu(self.tkroot,self.show_var, *options)
+#        self.menu1.grid(row=3,column=1,stick=E+W)
 
         def profile_show():
             print self.show_var.get()
             if self.show_var.get() == 'Profile':
                 self.show()
             if self.show_var.get() == 'AVK':
-                self.show(type='AVK')
+                self.show(type='avk')
 
         button_profile = Button(self.tkroot, text = 'Profile', command = lambda: profile_show())
         button_profile.grid(row=3, column=0, sticky=E+W)
