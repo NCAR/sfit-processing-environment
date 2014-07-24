@@ -74,7 +74,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
                                            'is automated. Small wavenumber regions around features for a gas to be retrieved are used in the retrieval analysis.' + \
                                            'Retrievals take into account the SNR of the spectra region used in the fitting process as well as reasonable estimations of a priori VMR variability. ' + \
                                            'A priori profiles are taken from WACCM 75y run monthly means for the site. The profile retrieval on each measurement is done using ' + \
-                                           'the SFIT4 version: ' + self.sfitVer + ' code that employs the Optimal Estimation retrieval algorithm and is publically available (see https://wiki.ucar.edu/display/sfit4/Infrared+Working+Group+Retrieval+Code%2C+SFIT). ' + \
+                                           'the SFIT4 version: ' + self.sfitVer + ' code that employs the Optimal Estimation retrieval algorithm and is publically available (see https://wiki.ucar.edu/display/sfit4/). ' + \
                                            'HITRAN 2008 line list with additional pseudo-line parameters are used in the forward calculation. ' + \
                                            'Temperature profiles are derived from NCEP analyses for each day to approx. 1.0 mbar and WACCM monthly mean above. ' + \
                                            'Daily water profiles are averaged from 6 hourly ERA-Interim re-analysis data. Further information can be found at http://www.acd.ucar.edu/irwg/'
@@ -108,7 +108,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.upper()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_001.hdf'
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
       dataStr['FILE_ACCESS']             = 'NDACC'
-      dataStr['FILE_PROJECT_ID']         = ''
+      dataStr['FILE_PROJECT_ID']         = ' '
       dataStr['FILE_ASSOCIATION']        = 'NDACC'
       dataStr['FILE_META_VERSION']       = '04R010;CUSTOM'
       

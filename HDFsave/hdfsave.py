@@ -22,6 +22,9 @@
 #    You should have received a copy of the GNU General Public License
 #    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #
+#    Note!!!! You can not have empty strings. HDF will fail to write if there are 
+#             empty strings. Must at least contain a space character (i.e. ' ')
+#
 #----------------------------------------------------------------------------------------
 import hdfBaseRetDat
 import numpy as np
