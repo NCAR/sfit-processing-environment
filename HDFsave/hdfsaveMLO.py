@@ -97,7 +97,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
                                            self.getH2oMixingRatioAbsorptionSolarName()+';'+self.getH2oColumnAbsorptionSolarName(),
       dataStr['DATA_START_DATE']         = idateStr
       dataStr['DATA_STOP_DATE']          = fdateStr
-      dataStr['DATA_FILE_VERSION']       = '003'
+      dataStr['DATA_FILE_VERSION']       = '002'
       dataStr['DATA_MODIFICATIONS']      = 'None'
       dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-002'
       dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A. Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
