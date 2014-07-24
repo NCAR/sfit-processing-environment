@@ -69,7 +69,8 @@ class show_results:
             m.grid(row=0,column=n-1,stick=E+W)
 
 
-        button_spec = Button(self.tkroot, text = 'Spectrum', command = lambda: spectrum_show())
+            button_spec = Button(self.tkroot, text = 'Spectrum', 
+                                 command = lambda: spectrum_show())
         button_spec.grid(row=1, column=0, sticky=E+W)
 
         def spectrum_by_gas_show():
@@ -80,15 +81,21 @@ class show_results:
         
         options = list(set(self.gas.gas[:]))
 
-        self.spec_gas = StringVar(self.tkroot)
-        self.spec_gas.set(options[0])
+        if len(options) > 0:
+            self.spec_gas = StringVar(self.tkroot)
+            self.spec_gas.set(options[0])
 
-        self.menu1 = OptionMenu(self.tkroot,self.spec_gas, *options)
-        self.menu1.grid(row=2,column=1,stick=E+W)
+            self.menu1 = OptionMenu(self.tkroot,self.spec_gas, *options)
+            self.menu1.grid(row=2,column=1,stick=E+W)
 
 
-        button_spec = Button(self.tkroot, text = 'Spectrum by gas', command = lambda: spectrum_by_gas_show())
+        button_spec = Button(self.tkroot, 
+                             text = 'Spectrum by gas', 
+                             command = lambda: spectrum_by_gas_show())
         button_spec.grid(row=2, column=0, sticky=E+W)
+        if len(options) == 0:
+            button_spec.config(state=DISABLED)
+
 
         options =  ('Profile', 'AVK')
         self.show_var = StringVar(self.tkroot)
