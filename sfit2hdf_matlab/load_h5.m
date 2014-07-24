@@ -10,8 +10,8 @@ for nr = 1:length(dates)
     % python seems to have different numbering scheme, year - 1 and
     % day - 1  
     dvec = datevec(dates(nr));
-    dvec(1) = dvec(1) + 1;
-    ddates(nr) = datenum(dvec) + 1;
+    dvec(1) = dvec(1);
+    ddates(nr) = datenum(dvec);
 end 
 
 ind = find(ddates > datestart & ddates < datestop);

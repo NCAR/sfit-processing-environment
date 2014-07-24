@@ -236,7 +236,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    itmx.append(summary.iter_max)
 	    dir.append(dd)
 	
-	    mdate.append(df(dd))
+	    mdate.append(df(dd) + 366)
 	    sza = np.hstack((sza,sz))
 	    azi = np.hstack((azi,az))
 	    lat = np.hstack((lat, lati))
