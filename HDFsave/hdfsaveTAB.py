@@ -61,14 +61,14 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['PI_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       dataStr['PI_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
       dataStr['PI_EMAIL']                = 'jamesw@ucar.edu'
-      dataStr['DO_NAME']                 = 'Nussbaumer;Eric'
+      dataStr['DO_NAME']                 = 'Hannigan;James'
       dataStr['DO_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       dataStr['DO_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
-      dataStr['DO_EMAIL']                = 'ebaumer@ucar.edu'
-      dataStr['DS_NAME']                 = 'Hannigan;James'
+      dataStr['DO_EMAIL']                = 'jamesw@ucar.edu'
+      dataStr['DS_NAME']                 = 'Nussbaumer;Eric'
       dataStr['DS_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       dataStr['DS_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
-      dataStr['DS_EMAIL']                = 'jamesw@ucar.edu'
+      dataStr['DS_EMAIL']                = 'ebaumer@ucar.edu'
       dataStr['DATA_DESCRIPTION']        = 'FTIR vmr vertical profile data of '+self.gasNameUpper+'. Data were taken from a 0.0035cm-1 resolution Bruker 120M '  + \
                                            'FTIR spectrometer stationed at 225masl at Thule, Greenland (76.52N, 291.2E).  Data acquisition ' + \
                                            'is automated. Small wavenumber regions around features for a gas to be retrieved are used in the retrieval analysis.' + \
@@ -99,13 +99,13 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DATA_STOP_DATE']          = fdateStr
       dataStr['DATA_FILE_VERSION']       = '002'
       dataStr['DATA_MODIFICATIONS']      = 'None'
-      dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-001'
+      dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-002'
       dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A.: Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
       dataStr['DATA_CAVEATS']            = 'None'
       dataStr['DATA_RULES_OF_USE']       = 'Contact Hannigan;James'
       dataStr['DATA_ACKNOWLEDGEMENT']    = 'NCAR is sponsored by the National Science Foundation. This work is supported under contract by the National Aeronautics and Space Administration.'
       dataStr['FILE_DOI']                = ' '
-      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.upper()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_001.hdf'
+      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_002.hdf'
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
       dataStr['FILE_ACCESS']             = 'NDACC'
       dataStr['FILE_PROJECT_ID']         = ' '
@@ -330,7 +330,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 500.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,maxval)
+      dataStr['VALID_RANGE']          = (0.0,500.0)
       dataStr['units']                = 'K'
       dataStr['_FillValue']           = self.getFillValue()
       

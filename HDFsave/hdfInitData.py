@@ -105,12 +105,12 @@ class HDFinitData(object):
         self.altitudeBoundaries             = np.rot90(dataStrc['ds']['ALT_BOUNDARIES'][0])
         self.pressures                      = np.vstack(dataStrc['ds']['P']).reshape(nobs,nlyrs)
         self.temperatures                   = np.vstack(dataStrc['ds']['T']).reshape(nobs,nlyrs)
-        self.gasMxRatAbsSolar               = np.vstack(dataStrc['ds']['RETVMR']).reshape(nobs,nlyrs)
-        self.gasMxRatAbsSolarApriori        = np.vstack(dataStrc['ds']['APRVMR']).reshape(nobs,nlyrs)
+        self.gasMxRatAbsSolar               = np.vstack(dataStrc['ds']['RETVMR']).reshape(nobs,nlyrs)              * self.mxSclFctVal
+        self.gasMxRatAbsSolarApriori        = np.vstack(dataStrc['ds']['APRVMR']).reshape(nobs,nlyrs)              * self.mxSclFctVal
         self.gasMxRatAbsSolarAVK            = np.vstack(dataStrc['ds']['AK']).reshape(nobs,nlyrs,nlyrs) 
         self.integrationTimes               = np.asarray(dataStrc['ds']['INT_TIME'])  
-        self.gasMxRatAbsSolarUncRand        = np.vstack(dataStrc['ds']['RAND_COVAR']).reshape(nobs,nlyrs,nlyrs)  
-        self.gasMxRatAbsSolarUncSys         = np.vstack(dataStrc['ds']['SYS_COVAR']).reshape(nobs,nlyrs,nlyrs)  
+        self.gasMxRatAbsSolarUncRand        = np.vstack(dataStrc['ds']['RAND_COVAR']).reshape(nobs,nlyrs,nlyrs)    * self.mxSclFct2Val
+        self.gasMxRatAbsSolarUncSys         = np.vstack(dataStrc['ds']['SYS_COVAR']).reshape(nobs,nlyrs,nlyrs)     * self.mxSclFct2Val
         self.gasColPartAbsSolar             = np.vstack(dataStrc['ds']['RETLAYCOL']).reshape(nobs,nlyrs)
         self.gasColPartAbsApriori           = np.vstack(dataStrc['ds']['APRLAYCOL']).reshape(nobs,nlyrs)
         self.gasColAbsSolar                 = np.asarray(dataStrc['ds']['RETTC']) 
@@ -120,7 +120,7 @@ class HDFinitData(object):
         self.gasColAbsSolarUncSys           = np.asarray(dataStrc['ds']['TOT_SYS_ERR'])  
         self.angleZastr                     = np.asarray(dataStrc['ds']['SZA']) 
         self.angleSolAz                     = np.asarray(dataStrc['ds']['AZI']) 
-        self.h2oMxRatAbsSolar               = np.vstack(dataStrc['ds']['H2O_VMR']).reshape(nobs,nlyrs) 
+        self.h2oMxRatAbsSolar               = np.vstack(dataStrc['ds']['H2O_VMR']).reshape(nobs,nlyrs)             * self.mxSclFctVal
         self.h2oColAbsSol                   = np.asarray(dataStrc['ds']['H2O_TC'])  
 
         #----------------------------------------------
@@ -179,12 +179,12 @@ class HDFinitData(object):
         self.altitudeBoundaries             = pyData.HDFaltBnds
         self.pressures                      = pyData.HDFpressPrf
         self.temperatures                   = pyData.HDFtempPrf
-        self.gasMxRatAbsSolar               = pyData.HDFrGasPrfVMR
-        self.gasMxRatAbsSolarApriori        = pyData.HDFaGasPrfVMR
+        self.gasMxRatAbsSolar               = pyData.HDFrGasPrfVMR   * self.mxSclFctVal
+        self.gasMxRatAbsSolarApriori        = pyData.HDFaGasPrfVMR   * self.mxSclFctVal
         self.gasMxRatAbsSolarAVK            = pyData.HDFak
         self.integrationTimes               = pyData.HDFintT
-        self.gasMxRatAbsSolarUncRand        = pyData.HDFrandErr
-        self.gasMxRatAbsSolarUncSys         = pyData.HDFsysErr
+        self.gasMxRatAbsSolarUncRand        = pyData.HDFrandErr      * self.mxSclFct2Val
+        self.gasMxRatAbsSolarUncSys         = pyData.HDFsysErr       * self.mxSclFct2Val
         self.gasColPartAbsSolar             = pyData.HDFrGasPrfMol
         self.gasColPartAbsApriori           = pyData.HDFaGasPrfMol
         self.gasColAbsSolar                 = pyData.HDFretTC
@@ -194,7 +194,7 @@ class HDFinitData(object):
         self.gasColAbsSolarUncSys           = pyData.HDFtcSysErr
         self.angleZastr                     = pyData.HDFsza
         self.angleSolAz                     = pyData.HDFazi
-        self.h2oMxRatAbsSolar               = pyData.HDFh2oVMR
+        self.h2oMxRatAbsSolar               = pyData.HDFh2oVMR      * self.mxSclFctVal
         self.h2oColAbsSol                   = pyData.HDFh2oTC
         
         

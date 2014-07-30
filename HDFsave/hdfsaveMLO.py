@@ -42,9 +42,9 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.sfitVer             = processingSfitVer
       self.loc                 = location
       self.mxSclFctName        = 'ppmv'               
-      self.mxSclFctVal         = 1E-6                   
+      self.mxSclFctVal         = 1E6                   
       self.mxSclFct2Name       = 'ppmv2'
-      self.mxSclFct2Val        = 1E-12
+      self.mxSclFct2Val        = 1E12
       if location.lower() == 'thule': self.locID = 'NCAR001'
       else:                           self.locID = 'NCAR002'
 
@@ -61,14 +61,14 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['PI_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       dataStr['PI_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
       dataStr['PI_EMAIL']                = 'jamesw@ucar.edu'
-      dataStr['DO_NAME']                 = 'Nussbaumer;Eric'
+      dataStr['DO_NAME']                 = 'Hannigan;James'
       dataStr['DO_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       dataStr['DO_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
-      dataStr['DO_EMAIL']                = 'ebaumer@ucar.edu'
-      dataStr['DS_NAME']                 = 'Hannigan;James'
+      dataStr['DO_EMAIL']                = 'jamesw@ucar.edu'
+      dataStr['DS_NAME']                 = 'Nussbaumer;Eric'
       dataStr['DS_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       dataStr['DS_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
-      dataStr['DS_EMAIL']                = 'jamesw@ucar.edu'
+      dataStr['DS_EMAIL']                = 'ebaumer@ucar.edu'
       dataStr['DATA_DESCRIPTION']        = 'FTIR vmr vertical profile data of '+self.gasNameUpper+'. Data were taken from a 0.0035cm-1 resolution Bruker 120HR '  + \
                                            'FTIR spectrometer stationed at 3396masl at Mauna Loa, Hawaii (19.54N, 155.57W).  Data acquisition ' + \
                                            'is automated. Small wavenumber regions around features for a gas to be retrieved are used in the retrieval analysis.' + \
@@ -105,7 +105,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DATA_RULES_OF_USE']       = 'Contact Hannigan;James'
       dataStr['DATA_ACKNOWLEDGEMENT']    = 'NCAR is sponsored by the National Science Foundation. This work is supported under contract by the National Aeronautics and Space Administration.'
       dataStr['FILE_DOI']                = ' '
-      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.upper()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_002.hdf'
+      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_002.hdf'
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
       dataStr['FILE_ACCESS']             = 'NDACC'
       dataStr['FILE_PROJECT_ID']         = ' '
@@ -330,7 +330,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 500.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,maxval)
+      dataStr['VALID_RANGE']          = (0.0,500.0)
       dataStr['units']                = 'K'
       dataStr['_FillValue']           = self.getFillValue()
       
