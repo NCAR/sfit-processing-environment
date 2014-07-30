@@ -39,7 +39,7 @@ DO_EMAIL = mathias@iup.physik.uni-bremen.de
 DS_NAME = Petri; Christof
 DS_AFFILIATION = Institut fuer Umweltphysik, Universitaet Bremen; IUP
 DS_ADDRESS = Postfach 33 04 40; D-28334 Bremen; GERMANY
-DS_EMAIL = christof-petri@iup.physik.uni-bremen.de
+DS_EMAIL = christof.petri@iup.physik.uni-bremen.de
 !
 ! Dataset Attributes
 DATA_DESCRIPTION = FTIR XXX vmr vertical profiles from solar absorption spectra obtained at Bremen, Germany with a Bruker IFS125HR instrument

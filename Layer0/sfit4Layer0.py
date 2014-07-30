@@ -72,7 +72,7 @@
 # Import modules
 #---------------
 import sys
-sys.path.append('/home/mathias/sfit-processing-environment/ModLib/')
+sys.path.append('/data/sfit-processing-environment/ModLib/')
 import os, re
 import getopt
 import sfitClasses as sc
@@ -184,7 +184,7 @@ def main(argv):
         if sc.ckFile(wrkDir+'sfit4.ctl'): ctlFileName = wrkDir + 'sfit4.ctl'
         else:
                 Tk().withdraw()
-                ctlFileName = askopenfilename(initialdir=wrkDir,message='Please select sfit ctl file')
+                ctlFileName = askopenfilename(initialdir=wrkDir,title='Please select sfit ctl file')
 
         ctlFile = sc.CtlInputFile(ctlFileName)
         ctlFile.getInputs()
@@ -195,7 +195,7 @@ def main(argv):
         if errFlg:
                 if sc.ckFile(wrkDir+'sb.ctl'): sbCtlFileName = wrkDir + 'sb.ctl'
                 else:
-                        TK().withdraw()
+                        Tk().withdraw()
                         sbCtlFileName = askopenfilename(initialdir=wrkDir,message='Please select sb ctl file')
 
                 sbCtlFile = sc.CtlInputFile(sbCtlFileName)

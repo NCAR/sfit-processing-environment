@@ -124,7 +124,7 @@ class load_ALLGEOMS:
                     a1.plot(rvmr[ind,:],z,'b')
                     a1.plot(avmr[ind,:],z,'r')
                     avk_vmr,z = hf.get_avk_vmr(gas)
-                    a3.plot(avk_vmr[ind,:,:], z)
+                    a3.plot(avk_vmr[ind,:,:].T, z)
                     avk_col,z = hf.get_avk_column(gas)
                     a4.plot(avk_col[ind,:], z)
                     sys_vmr,z = hf.get_sys_vmr(gas)
