@@ -27,17 +27,17 @@
 import hdfsaveMLO as hdfsave                            
                             
 def main():
-    loc1           = 'mlo'
-    gasName        = 'C2H6'                                                        # This is the target gas for retrieval
-    idlFname       = '/Volumes/data1/ebaumer/'+loc1.lower()+'/c2h6/1995_2012.sav'  # This is path and name of the IDL save file we use to store the data
-    #outDir         = '/Volumes/data1/ebaumer/'+loc1.lower()+'/c2h6/HDFfiles/'      # This is the directory where the HDF file will be written to
-    outDir         = '/Users/ebaumer/Data/HDF/'                                   # This is the directory where the HDF file will be written to
+    loc1           = 'tab'
+    gasName        = 'hf'                                                                         # This is the target gas for retrieval
+    idlFname       = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/1999_2012.sav'  # This is path and name of the IDL save file we use to store the data
+    outDir         = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/HDFfiles/'      # This is the directory where the HDF file will be written to
+    #outDir         = '/Users/ebaumer/Data/HDF/'                                                  # This is the directory where the HDF file will be written to
     if loc1.lower() == 'tab':
         loc            = 'THULE'
     else:    
         loc            = 'MAUNA.LOA.HI'                                               
     sfitVer        = '0.9.4.4'                                                     # This is the version of sfit4 used for the retrievals
-    year           = 1995
+    year           = 2012
     iyear          = year
     imonth         = 1
     iday           = 1
