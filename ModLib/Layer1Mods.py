@@ -794,9 +794,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 
             except: 
                 errmsg = sys.exc_info()[1]
-                print 'Problem calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType 
-                #print errmsg
-                if logFile: logFile.error('Problem calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType+'\n')	
+                print 'Error calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType 
+                print errmsg
+                if logFile: logFile.error('Error calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType+'\n')	
 
 
             #----------------------------------------------------------------------
@@ -804,13 +804,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             #----------------------------------------------------------------------
             if np.sum(Sb) == 0:
                 if Kbl.lower() == 'zshift': 
-                    print 'sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated\n\n'
+                    #print 'sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated\n\n'
                     if logFile: logFile.info('sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated')
                 elif Kbl.upper() in [x.upper() for x in kb_profile_gas]:
-                    print 'sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated\n\n'
+                    #print 'sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated\n\n'
                     if logFile: logFile.info('sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')		    
                 else:               
-                    print 'sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated\n\n'
+                    #print 'sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated\n\n'
                     if logFile: logFile.info('sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')
 
             #----------------------------
