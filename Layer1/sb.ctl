@@ -213,7 +213,21 @@ sb.linePAir_CH4.systematic              = 0.1
 #sb.dwshift_H2O.systematic           = 0.1
 
 
-
+#---------------------------------------------------------
+# These flags indicate which errors are included in the 
+# total random and systematic error budget. If the flag is
+# set as F or if it is missing than it is NOT included in
+# total error
+#---------------------------------------------------------
+sb.total.lineInt                     = T
+sb.total.lineTAir                    = T
+sb.total.linePAir                    = T
+sb.total.temperature                 = T
+sb.total.sza                         = T
+sb.total.measurement                 = T
+sb.total.smoothing                   = T
+sb.total.interfering_species         = T
+sb.total.retrieval_parameters        = T
 
 
 

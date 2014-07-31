@@ -102,6 +102,14 @@ def ckDir(dirName,logFlg=False,exitFlg=False,quietFlg=False):
                                                 #----------------#
                                                 # Define classes #
                                                 #----------------#
+#-----------------------------------------------------------------------------------------------                                                
+class ExitError(Exception):
+    ''' Exception class for terminating program  '''
+    def __init__(self,msg):
+        self.msg = msg
+    def terminate(self):
+        print 'Terminating program.....'
+        sys.exit()
 
 #-----------------------------------------------------------------------------------------------                                                
 class DateRange:
@@ -231,16 +239,17 @@ class CtlInputFile():
                 #-------------------
                 if len(line) == 0: continue
 
-                #--------------------------
+                #------------------------------------
                 # Populate input dictionary
-                #--------------------------
+                # Make sure all keys are LOWER case!!
+                #------------------------------------
                 if '=' in line:
                     lhs,_,rhs = line.partition('=')
                     lhs       = lhs.strip()
                     rhs       = rhs.strip().split()
 
 
-                    self.inputs[lhs] = [self.__convrtD(val) for val in rhs]
+                    self.inputs[lhs.lower()] = [self.__convrtD(val) for val in rhs]
                     #for rhs_part in rhs:                          
                         #if 'd' in rhs_part.lower():                               # Test and handle strings containing D (ie 1.0D0)
                             #mant,trsh,expo = rhs_part.lower().partition('d')
@@ -263,7 +272,7 @@ class CtlInputFile():
                     except ValueError:
                         pass
 
-                    self.inputs[lhs] += rhs          
+                    self.inputs[lhs.lower()] += rhs          
 
                 #----------------------    
                 # Primary Retrieval Gas
@@ -273,7 +282,7 @@ class CtlInputFile():
                 if gas_flg:
                     match = re.match(r'\s*gas\.\w+\.list\s*=\s*(\w+)', line)
                     if match:
-                        self.primGas = match.group(1)
+                        self.primGas = match.group(1).lower()
                         gas_flg = False
 
                 #----------------   
