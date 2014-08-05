@@ -376,6 +376,22 @@ class DbInputFile():
         return dbFltInputs
 
 
+    def dbFilterScn(self,scnFlg,fltDict=False):#=self.dbInputs):
+        ''' Filter spectral db dicitonary based only forward or only backward scans'''
+        inds = []
+
+        if not fltDict:
+            fltDict = self.dbInputs
+
+        for ind,(gfs,gbs) in enumerate(itertools.izip(fltDict['GFW'],fltDict['GBW'])):
+            if   ( scnFlg == 1) and (int(gbs) == 0): inds.append(ind)              # If only foward scan flag (1) and number of backscans == 0
+            elif ( scnFlg == 2) and (int(gfs) == 0): inds.append(ind)              # If only backward scan flag (2) and number of forward scans == 0
+
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
+        #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
+        return dbFltInputs
+
+
     def dbFindDate(self,singlDate,fltDict=False):
         ''' Grab a specific date and time from dictionary '''
 

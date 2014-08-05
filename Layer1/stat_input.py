@@ -101,6 +101,11 @@ coaddFlg    = 0                                                # Flag to indicat
 ilsFlg      = 1                                                # ILS file flag: 1 = Use ils file/directory specified in ilsDir string
                                                                #                0 = No ils is specified in input file. What is specified in ctl file is used
 
+scnFlg      = 0                                                # Flag to use measurement files with only forward or only backward scans
+                                                               # 0 = Flag off - does not distinguish between forward and backward scans
+                                                               # 1 = Only use files with FOWARD scans
+                                                               # 2 = Only use files with BACKWARD scans
+                                                               
 pspecFlg    = 1                                                # 1 = run pspec,    0 = do not run pspec
 refmkrFlg   = 1                                                # 1 = run refmaker, 0 = do not run refmaker
 sfitFlg     = 1                                                # 1 = run sfit,     0 = do not run sfit

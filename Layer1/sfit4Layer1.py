@@ -374,7 +374,10 @@ def main(argv):
                 lstFile.info('# End List File Meta-Data')
                 lstFile.info('')
                 lstFile.info('Date         TimeStamp    Directory ')            
-                                               
+                   
+            #----------------------
+            # Filtering spectral DB
+            #----------------------
             #-------------------------
             # Filter spectral db based
             # on wavenumber bounds in
@@ -405,6 +408,12 @@ def main(argv):
                 dbFltData_2 = dbData.dbFilterFltrID(mainInF.inputs['ctlList'][ctl_ind][1], dbFltData_2)                
                 if not(dbFltData_2): continue                # Test for empty dicitonary (i.e. no data)
                          
+            #--------------------------------------------------------
+            # Filter database based on forward and backward scan flag
+            #--------------------------------------------------------
+            if mainInF.inputs['scnFlg'] > 0:
+                dbFltData_2 = dbData.dbFilterScn(mainInF.inputs['scnFlg'], dbFltData_2 )
+            
             #---------------------------------------------------------------------             
             # Check for the existance of Output folder <Version> and create if DNE
             #---------------------------------------------------------------------
