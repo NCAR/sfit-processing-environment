@@ -219,9 +219,9 @@ sb.linePAir_CH4.systematic              = 0.1
 # set as F or if it is missing than it is NOT included in
 # total error
 #---------------------------------------------------------
-sb.total.lineInt                     = T
-sb.total.lineTAir                    = T
-sb.total.linePAir                    = T
+sb.total.lineInt_CH4                 = T
+sb.total.lineTAir_CH4                = T
+sb.total.linePAir_CH4                = T
 sb.total.temperature                 = T
 sb.total.sza                         = T
 sb.total.measurement                 = T
