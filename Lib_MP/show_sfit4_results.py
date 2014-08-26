@@ -32,6 +32,7 @@ class show_results:
         # Find a free figure for AVK
         self.winavk = plt.figure()#figsize=(24,12))
 
+    
 
         self.tkroot = Tk()
         self.tkroot.wm_title('sfit4 result viewer')
@@ -69,9 +70,9 @@ class show_results:
             m.grid(row=0,column=n-1,stick=E+W)
 
 
-        button_spec = Button(self.tkroot, text = 'Spectrum', command = lambda: spectrum_show())
+            button_spec = Button(self.tkroot, text = 'Spectrum', 
+                                 command = lambda: spectrum_show())
         button_spec.grid(row=1, column=0, sticky=E+W)
-#        button_spec.pack()
 
         def spectrum_by_gas_show():
             nr = int(self.spec_nr.get())
@@ -81,15 +82,21 @@ class show_results:
         
         options = list(set(self.gas.gas[:]))
 
-        self.spec_gas = StringVar(self.tkroot)
-        self.spec_gas.set(options[0])
+        if len(options) > 0:
+            self.spec_gas = StringVar(self.tkroot)
+            self.spec_gas.set(options[0])
 
-        self.menu1 = OptionMenu(self.tkroot,self.spec_gas, *options)
-        self.menu1.grid(row=2,column=1,stick=E+W)
+            self.menu1 = OptionMenu(self.tkroot,self.spec_gas, *options)
+            self.menu1.grid(row=2,column=1,stick=E+W)
 
 
-        button_spec = Button(self.tkroot, text = 'Spectrum by gas', command = lambda: spectrum_by_gas_show())
+        button_spec = Button(self.tkroot, 
+                             text = 'Spectrum by gas', 
+                             command = lambda: spectrum_by_gas_show())
         button_spec.grid(row=2, column=0, sticky=E+W)
+        if len(options) == 0:
+            button_spec.config(state=DISABLED)
+
 
         options =  ('Profile', 'AVK')
         self.show_var = StringVar(self.tkroot)
@@ -116,18 +123,15 @@ class show_results:
 
         button_profile = Button(self.tkroot, text = 'Profile', command = lambda: profile_show())
         button_profile.grid(row=3, column=0, sticky=E+W)
-#        button_profile.pack()
 
         button_summary = Button(self.tkroot, text = 'Summary')
         button_summary.grid(row=4, column=0, sticky=E+W)
-#        button_summary.pack()
 
         button_quit = Button(self.tkroot, text = 'Quit', command = self.tkroot.quit)
         button_quit.grid(row=5, column=0, sticky=E+W)
-#        button_quit.pack()
 
-#        self.SummaryText()
-#        self.mkOptionMenu1()
+# #        self.SummaryText()
+# #        self.mkOptionMenu1()
 
         self.tkroot.mainloop()
 

@@ -49,6 +49,7 @@ class Kout:
     def __init__(self, filename):
     
         self.K_frac = np.genfromtxt(filename,skiprows=4)
+        
 
 class Kbout:
     def __init__(self, filename):
@@ -168,6 +169,7 @@ class error:
         # check if sd.ctl and direc are formally consistent
         self.total_vmr = direc+'/'+sbctl.get_value('file.out.total.vmr')
         self.total_col = direc+'/'+sbctl.get_value('file.out.total')
+#        self.shat = direc+'/'+sbctl.get_value('file.out.shat_matrix')
         self.flag = True
         if not os.path.isfile(self.total_vmr):
             self.flag = False
@@ -194,6 +196,21 @@ class error:
             return(self.col_ran, self.col_sys)
         else:
             return(np.nan,np.nan)
+
+    def read_total_col(self):
+        if self.flag:
+            label, matrix = self.read_error_matrix(self.total_col)
+            self.S_col_ran = matrix[0]
+            self.S_col_sys = matrix[1]
+            ll = np.ones((matrix[0].shape[0],1))
+            self.col_ran = np.sqrt(np.dot(ll.T,np.dot(self.S_col_ran,ll)))
+            self.col_sys = np.sqrt(np.dot(ll.T,np.dot(self.S_col_sys,ll)))
+            return(self.col_ran, self.col_sys)
+        else:
+            return(np.nan,np.nan)
+
+
+
     def read_error_matrix(self, filename):
         em = rn.read_from_file(filename)
         label = em.get_line().strip('# ')
