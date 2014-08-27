@@ -539,8 +539,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         snrList[:] = [val**-2 for val in snrList]
     else:
         lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
-        snrList    = lines[2].strip().split()
-        snrList[:] = [1.0/float(val) for val in snrList]
+        snrList    = np.array([float(x) for line in lines[2:] for x in line.strip().split()])
+        snrList[:] = 1.0/snrList
 
     np.fill_diagonal(se,snrList)    
 
