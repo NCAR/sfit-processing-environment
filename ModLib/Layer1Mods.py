@@ -538,6 +538,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(sumVars.summary['SNR'],sumVars.summary['nptsb'])]))
         snrList[:] = [val**-2 for val in snrList]
     else:
+        if not sc.ckFile(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], exitFlg=False,quietFlg=False): return False
         lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
         snrList    = np.array([float(x) for line in lines[2:] for x in line.strip().split()])
         snrList[:] = 1.0/snrList

@@ -172,12 +172,12 @@ def main(argv):
     #--------------------------------
     # Check the existance of ctl file
     #--------------------------------
-    ckFile(inVars.inputs['ctlList'][0][0],exit=True)
+    ckFile('/Volumes'+inVars.inputs['ctlList'][0][0],exit=True)
 
     #------------------
     # Get ctl file data
     #------------------
-    ctlData = sc.CtlInputFile(inVars.inputs['ctlList'][0][0])
+    ctlData = sc.CtlInputFile('/Volumes'+inVars.inputs['ctlList'][0][0])
     ctlData.getInputs()
     
     #------------------------
@@ -205,6 +205,7 @@ def main(argv):
     lstFile.info('zptFlg         = ' + str(inVars.inputs['zptFlg'])            )
     lstFile.info('refMkrLvl      = ' + str(inVars.inputs['refMkrLvl'])         )
     lstFile.info('wVer           = ' + str(inVars.inputs['wVer'])              )
+    lstFile.info('nbands         = ' + str(len(ctlData.inputs['band']))        )
     lstFile.info('# End List File Meta-Data')
     lstFile.info('')
     lstFile.info('Date         TimeStamp    Directory ')        
