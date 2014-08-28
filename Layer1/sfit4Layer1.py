@@ -371,7 +371,7 @@ def main(argv):
                 lstFile.info('zptFlg         = ' + str(mainInF.inputs['zptFlg'])            )
                 lstFile.info('refMkrLvl      = ' + str(mainInF.inputs['refMkrLvl'])         )
                 lstFile.info('wVer           = ' + str(mainInF.inputs['wVer'])              )
-                lstFile.info('nbands         = ' + str(len(ctlData.inputs['band']))        )
+                lstFile.info('nbands         = ' + str(len(ctlFileGlb.inputs['band']))      )
                 lstFile.info('# End List File Meta-Data')
                 lstFile.info('')
                 lstFile.info('Date         TimeStamp    Directory ')            
