@@ -17,15 +17,10 @@ plt.rc('text', usetex=True)
 
 h5f = h5.File(h5_file)
 dnum = h5f.root.mdate[:]
-col = h5f.root.col_rt[0,:]
-apc = h5f.root.col_ap[0,:]
+col = h5f.root.col_rt[:]
+apc = h5f.root.col_ap[:]
 gases = h5f.root.gasnames[:]
-h2oc = -1
-try:
-    ind = gases.index('H2O')
-    h2oc =  h5f.root.col_rt[ind,:]
-except:
-    pass
+h2oc = h5f.root.h2o_col_setup[:]
 
 ecol_sys = h5f.root.col_sys[:]
 ecol_ran = h5f.root.col_ran[:]
@@ -49,6 +44,7 @@ ind = range(0,len(snr))
 ind = filter (lambda x: nr_iter[x] < max_iter[x] and c2y[x] > 0 and c2y[x]<3.0, range(0,len(snr)))
 #ind = filter (lambda x: c2y[x] > 0 and c2y[x]<3.0 and snr[x] > 50.0, range(0,len(snr)))
 
+h2oc = np.array(h2oc)
 f1 = plt.figure(1)
 f1.clf()
 ax = plt.subplot(221)
