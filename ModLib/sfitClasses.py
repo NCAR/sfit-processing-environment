@@ -316,7 +316,7 @@ class CtlInputFile():
             for singStr,singVal in zip(teststr,repVal):        # Loop through a list of strings to replace
                 m = re.search(singStr, line)
                 if m and not line.lstrip().startswith('#'):    # Determine if line contains string and is not a comment
-                    lines[i] = re.sub(r'=.*', r'= ' + singVal + '\n', line)
+                    lines[i] = re.sub(r'=.*', r'= ' + singVal, line)
 
         with open(self.fname, 'w') as fopen:
             fopen.writelines(lines)
