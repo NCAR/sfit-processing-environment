@@ -53,7 +53,7 @@ def main(argv):
     # Retrieve command line arguments
     #--------------------------------
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i?')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:?')
 
     except getopt.GetoptError as err:
         print str(err)
@@ -66,13 +66,15 @@ def main(argv):
     for opt, arg in opts:
         # Check input file flag and path
         if opt == '-i':
-
+            
+            pltInputs = {}
+            
             ckFile(arg,exit=True)
 
             try:
                 execfile(arg, pltInputs)
             except IOError as errmsg:
-                print errmsg
+                print errmsg + ' : ' + arg
                 sys.exit()
     
             if '__builtins__' in pltInputs:
@@ -100,7 +102,7 @@ def main(argv):
     #-------------------------
     # Create Instance of Class
     #-------------------------
-    gas = dc.PlotData(pltInputs['retDir'],pltInputs['ctlFile'],iyear=pltInputs['iyear'],imnth=pltInputs['imnth'],iday=pltInputs['idat'],
+    gas = dc.PlotData(pltInputs['retDir'],pltInputs['ctlFile'],iyear=pltInputs['iyear'],imnth=pltInputs['imnth'],iday=pltInputs['iday'],
                       fyear=pltInputs['fyear'],fmnth=pltInputs['fmnth'],fday=pltInputs['fday'],outFname=pltInputs['pltFile'])
     
     #----------------------
@@ -124,7 +126,7 @@ def main(argv):
     #--------------------
     # Create yearly plots
     #--------------------
-    if byYrFlg:
+    if pltInputs['byYrFlg']:
             for year in gas.yearList():
                     if pltInputs['saveFlg']: fname = pltInputs['pltFile'][:-4]+'_'+str(year)+'.pdf'
                     else:                    fname = ''
