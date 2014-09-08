@@ -2221,7 +2221,7 @@ class PlotData(ReadOutputData):
             #------------------------------
             # Plot Errors On (mean) Profile
             #------------------------------
-            if errFlg:   
+            if errFlg and (gas.lower() == self.PrimaryGas.lower()):   
                 if len(self.dirLst) > 1:
                     #-------------------
                     # Plot on total mean

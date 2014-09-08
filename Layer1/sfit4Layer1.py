@@ -749,45 +749,48 @@ def main(argv):
                                 except ValueError:
                                     print 'Please enter -1, 0, 1, 2, or 3'
                                     
-                            if   user_input == 0:  sys.exit()           # Exit program
-                            elif user_input == 1:  brkFlg = True        # Exit while loop (Do not repeat)
-                            elif user_input == 2:                       # Stop pause and exit while loop
-                                pauseFlg = False
-                                brkFlg   = True
-                            elif user_input == 3:                       # Plot retrieval results
-                                #----------------------
-                                # Initialize Plot Class
-                                #----------------------                                
-                                gas = dc.PlotData(wrkOutputDir3,wrkOutputDir3+'sfit4.ctl')
-                                #--------------------------
-                                # Call to plot spectral fit
-                                #--------------------------
-                                gas.pltSpectra()                                
-                                #----------------------
-                                # Call to plot profiles
-                                #----------------------
-                                try:
-                                    gas.pltPrf(allGas=True,errFlg=True)
-                                except:
-                                    gas.pltPrf(allGas=True)
-                                #-----------------
-                                # Call to plot AVK
-                                #-----------------
-                                if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  gas.pltAvk()                                
-                                #-----------------------------
-                                # Print summary file to screen
-                                #-----------------------------
-                                if ckFile(wrkOutputDir3+'summary'):
-                                    with open(wrkOutputDir3+'summary','r') as fopen: info = fopen.read()
+                                if   user_input == 0:  sys.exit()           # Exit program
+                                elif user_input == 1:                       # Exit while loop (Do not repeat)
+                                    brkFlg = True        
+                                    break
+                                elif user_input == 2:                       # Stop pause and exit while loop
+                                    pauseFlg = False
+                                    brkFlg   = True
+                                    break
+                                elif user_input == 3:                       # Plot retrieval results
+                                    #----------------------
+                                    # Initialize Plot Class
+                                    #----------------------                                
+                                    gas = dc.PlotData(wrkOutputDir3,wrkOutputDir3+'sfit4.ctl')
+                                    #--------------------------
+                                    # Call to plot spectral fit
+                                    #--------------------------
+                                    gas.pltSpectra()                                
+                                    #----------------------
+                                    # Call to plot profiles
+                                    #----------------------
+                                    try:
+                                        gas.pltPrf(allGas=True,errFlg=True)
+                                    except:
+                                        gas.pltPrf(allGas=True)
+                                    #-----------------
+                                    # Call to plot AVK
+                                    #-----------------
+                                    if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  gas.pltAvk()                                
+                                    #-----------------------------
+                                    # Print summary file to screen
+                                    #-----------------------------
+                                    if ckFile(wrkOutputDir3+'summary'):
+                                        with open(wrkOutputDir3+'summary','r') as fopen: info = fopen.read()
+                                        
+                                        print '****************SUMMARY FILE****************'
+                                        print (info)
+                                        print '****************END OF SUMMARY FILE****************' 
+                               
+                                elif user_input == -1:                      # Repeat loop
+                                    brkFlg = False 
+                                    break
                                     
-                                    print '****************SUMMARY FILE****************'
-                                    print (info)
-                                    print '****************END OF SUMMARY FILE****************' 
-                                print 'Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 plot retrieval results\n >>> '
-                            elif user_input == -1:                      # Repeat loop
-                                brkFlg = False 
-                                # Need to implement functionality to recopy ctl file, bnr file, etc
-                                
                         #-----------------------
                         # Exit out of while loop
                         #-----------------------
