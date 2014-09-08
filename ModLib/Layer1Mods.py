@@ -168,7 +168,10 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
             waterInd = waterVer.index(max(waterVer))
 
     waterFile = waterFiles[waterInd] 
-
+    
+    print '\n'
+    print 'Using water file: {}'.format(waterFile)
+    print '\n'
 
     #----------------------------------
     # Concate ZPT, water, and WACCM  
@@ -326,13 +329,17 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
 
     bnrFname = "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + bnrExt
 
-    if not os.path.isfile(wrkOutputDir5+bnrFname):
-        try:
-            shutil.copy( wrkInputDir2 + bnrFname, wrkOutputDir5 )
-        except IOError as errmsg:
-            print errmsg
-            if logFile: logFile.error(errmsg)
-            return False                    
+    if not os.path.isfile(wrkInputDir2 + bnrFname):
+        print 'Unable to find bnr file: {}'.format(wrkInputDir2 + bnrFname)
+        return False
+
+    #if not os.path.isfile(wrkOutputDir5+bnrFname):
+        #try:
+            #shutil.copy( wrkInputDir2 + bnrFname, wrkOutputDir5 )
+        #except IOError as errmsg:
+            #print errmsg
+            #if logFile: logFile.error(errmsg)
+            #return False                    
 
     #--------------------------------------
     # Create pspec.input file for pspec.f90
@@ -355,7 +362,7 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
         fname.writelines(pWrtStr[24:26])
         fname.write( str(mainInF.inputs['nBNRfiles']) + '\n')
         fname.writelines(pWrtStr[26:])
-        fname.write( bnrFname + '\n') 
+        fname.write( wrkInputDir2 + bnrFname + '\n') 
         fname.write( '{0:<10.1f}{1:<5d}{2:<5d}{3:<5d}{4:<5d}'.format(dbFltData_2['ROE'][spcDBind] ,          # ROE
                                                                      mainInF.inputs['nterpFlg']   ,          # nterp
                                                                      mainInF.inputs['ratioFlg']   ,          # rflag

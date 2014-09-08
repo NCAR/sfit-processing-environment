@@ -76,6 +76,7 @@ import datetime as dt
 import glob
 import re
 import sfitClasses as sc
+import dataOutClass as dc
 import shutil
 from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis
 
@@ -459,6 +460,9 @@ def main(argv):
                 
                 brkFlg = True    # Flag to break out of while statement
                 while True:      # While statement is for the repeat function 
+                    print '*************************************************'
+                    print '*************Begin New Retrieval*****************'
+                    print '*************************************************'                    
                     #-------------------------------------------------------------
                     # If pause after skip flag is initialized, do several things:
                     # 1) Check if number of skips exceeds total number of filtered
@@ -736,7 +740,7 @@ def main(argv):
                         #---------------------------
                         if pauseFlg:
                             while True:
-                                user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all\n >>> ')
+                                user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 plot retrieval results\n >>> ')
                                 try:
                                     user_input = int(user_input)
                                     if not any(user_input == val for val in [-1,0,1,2]): raise ValueError
@@ -749,6 +753,36 @@ def main(argv):
                             elif user_input == 2:                       # Stop pause and exit while loop
                                 pauseFlg = False
                                 brkFlg   = True
+                            elif user_input == 3:                       # Plot retrieval results
+                                #----------------------
+                                # Initialize Plot Class
+                                #----------------------                                
+                                gas = dc.PlotData(wrkOutputDir3,wrkOutputDir3+'sfit4.ctl')
+                                #--------------------------
+                                # Call to plot spectral fit
+                                #--------------------------
+                                gas.pltSpectra()                                
+                                #----------------------
+                                # Call to plot profiles
+                                #----------------------
+                                try:
+                                    gas.pltPrf(allGas=True,errFlg=True)
+                                except:
+                                    gas.pltPrf(allGas=True)
+                                #-----------------
+                                # Call to plot AVK
+                                #-----------------
+                                if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  gas.pltAvk()                                
+                                #-----------------------------
+                                # Print summary file to screen
+                                #-----------------------------
+                                if ckFile(wrkOutputDir3+'summary'):
+                                    with open(wrkOutputDir3+'summary','r') as fopen: info = fopen.read()
+                                    
+                                    print '****************SUMMARY FILE****************'
+                                    print (info)
+                                    print '****************END OF SUMMARY FILE****************' 
+                                print 'Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 plot retrieval results\n >>> '
                             elif user_input == -1:                      # Repeat loop
                                 brkFlg = False 
                                 # Need to implement functionality to recopy ctl file, bnr file, etc

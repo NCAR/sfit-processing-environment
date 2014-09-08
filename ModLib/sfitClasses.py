@@ -60,7 +60,7 @@ def subProcRun( fname, logFlg=False ):
     rtn = subprocess.Popen( fname, stderr=subprocess.PIPE )
     outstr = ''
     for line in iter(rtn.stderr.readline, b''):
-        print 'STDERR from {}: '.format(fname) + line.rstrip()
+        print line.rstrip()
         if logFlg: outstr += line
 
     if logFlg: logFlg.info(outstr)

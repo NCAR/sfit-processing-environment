@@ -51,6 +51,6 @@ retDir = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/'+ver+'/'
 # Files
 #------
 ctlFile  = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/'+'x.'+gasName.lower()+'/sfit4.ctl'
-pltFile  = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/' + ver + '/Plots/' + loc + '_' + gasName + '_' + ver + '.pdf'
+pltFile  = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/' + '/Plots/' + loc + '_' + gasName + '_' + ver + '.pdf'
 
        
