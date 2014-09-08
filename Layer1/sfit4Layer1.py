@@ -743,9 +743,9 @@ def main(argv):
                         if pauseFlg:
                             while True:
                                 user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 plot retrieval results\n >>> ')
+                                plt.close()
                                 try:
                                     user_input = int(user_input)
-                                    plt.close()
                                     if not any(user_input == val for val in [-1,0,1,2,3]): raise ValueError
                                 except ValueError: print 'Please enter -1, 0, 1, 2, or 3'
                                     
