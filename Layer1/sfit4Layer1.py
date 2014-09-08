@@ -79,6 +79,7 @@ import sfitClasses as sc
 import dataOutClass as dc
 import shutil
 from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis
+import matplotlib.pyplot as plt
 
 
 
@@ -744,6 +745,7 @@ def main(argv):
                                 user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 plot retrieval results\n >>> ')
                                 try:
                                     user_input = int(user_input)
+                                    plt.close()
                                     if not any(user_input == val for val in [-1,0,1,2,3]): raise ValueError
                                 except ValueError: print 'Please enter -1, 0, 1, 2, or 3'
                                     
