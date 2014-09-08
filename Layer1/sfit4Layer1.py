@@ -745,9 +745,7 @@ def main(argv):
                                 try:
                                     user_input = int(user_input)
                                     if not any(user_input == val for val in [-1,0,1,2,3]): raise ValueError
-                                    break
-                                except ValueError:
-                                    print 'Please enter -1, 0, 1, 2, or 3'
+                                except ValueError: print 'Please enter -1, 0, 1, 2, or 3'
                                     
                                 if   user_input == 0:  sys.exit()           # Exit program
                                 elif user_input == 1:                       # Exit while loop (Do not repeat)
