@@ -460,6 +460,7 @@ def main(argv):
                 
                 brkFlg = True    # Flag to break out of while statement
                 while True:      # While statement is for the repeat function 
+                    print '\n\n\n'
                     print '*************************************************'
                     print '*************Begin New Retrieval*****************'
                     print '*************************************************'                    
@@ -743,10 +744,10 @@ def main(argv):
                                 user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 plot retrieval results\n >>> ')
                                 try:
                                     user_input = int(user_input)
-                                    if not any(user_input == val for val in [-1,0,1,2]): raise ValueError
+                                    if not any(user_input == val for val in [-1,0,1,2,3]): raise ValueError
                                     break
                                 except ValueError:
-                                    print 'Please enter -1, 0, 1, or 2'
+                                    print 'Please enter -1, 0, 1, 2, or 3'
                                     
                             if   user_input == 0:  sys.exit()           # Exit program
                             elif user_input == 1:  brkFlg = True        # Exit while loop (Do not repeat)
