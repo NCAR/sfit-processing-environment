@@ -2248,9 +2248,9 @@ class PlotData(ReadOutputData):
                     ax1.fill_betweenx(alt,mnthMean-rand_max,mnthMean+rand_max,alpha=0.5,color='0.75')  
                     ax1.set_title('Random Error')
                 else:
-                    ax1.plot(rPrf[gas][0],alt,color='k',label=gas+' Retrieved Profile')
-                    ax1.errorbar(rPrf[gas][0],alt,fmt=None,xerr=rand_err[0],ecolor='r',label='Total Random Error')
-                    ax1.fill_betweenx(alt,rPrf[gas][0]-tot_err[0],rPrf[gas][0]+tot_err[0],alpha=0.5,color='0.75')
+                    ax1.plot(rPrfMol[0],alt,color='k',label=gas+' Retrieved Profile')
+                    ax1.errorbar(rPrfMol[0],alt,fmt=None,xerr=rand_err[0],ecolor='r',label='Total Random Error')
+                    ax1.fill_betweenx(alt,rPrfMol[0]-tot_err[0],rPrfMol[0]+tot_err[0],alpha=0.5,color='0.75')
                     ax1.set_title('Errorbars = Random Error\nShadded Region = Total Error',multialignment='center',fontsize=10)
                     
                 ax1.set_ylabel('Altitude [km]')
@@ -2263,9 +2263,9 @@ class PlotData(ReadOutputData):
                     ax2.fill_betweenx(alt,mnthMean-sys_max,mnthMean+sys_max,alpha=0.5,color='0.75')      
                     ax2.set_title('Systematic Error')
                 else:
-                    ax2.plot(rPrf[gas][0],alt,color='k',label=gas+' Retrieved Profile')
-                    ax2.errorbar(rPrf[gas][0],alt,fmt=None,xerr=sys_err[0],ecolor='r',label='Total Systematic Error')
-                    ax2.fill_betweenx(alt,rPrf[gas][0]-tot_err[0],rPrf[gas][0]+tot_err[0],alpha=0.5,color='0.75')       
+                    ax2.plot(rPrfMol[0],alt,color='k',label=gas+' Retrieved Profile')
+                    ax2.errorbar(rPrfMol[0],alt,fmt=None,xerr=sys_err[0],ecolor='r',label='Total Systematic Error')
+                    ax2.fill_betweenx(alt,rPrfMol[0]-tot_err[0],rPrfMol[0]+tot_err[0],alpha=0.5,color='0.75')       
                     ax2.set_title('Errorbars = Systematic Error\nShadded Region = Total Error',multialignment='center',fontsize=10)
                 
                 ax2.set_xlabel('molecules cm$^{-2}$')                                         
