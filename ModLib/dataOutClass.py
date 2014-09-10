@@ -2641,6 +2641,38 @@ class PlotData(ReadOutputData):
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
         else:           plt.show(block=False)  
         
+        #-------------------------------------
+        # Plot time series of Monthly Averages
+        #-------------------------------------
+        mnthVals = mnthlyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
+    
+        fig1,ax1 = plt.subplots()
+        ax1.plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'k.',markersize=4)
+        ax1.errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],yerr=mnthVals['std'],fmt='k.',markersize=4,ecolor='grey')
+        ax1.grid(True)
+        ax1.set_ylabel('Monthly Averaged Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+        ax1.set_xlabel('Date [MM]')
+        ax1.set_title('Monthly Averaged Time Series of Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+        
+        if yrsFlg:
+            #plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(yearsLc)
+            ax1.xaxis.set_minor_locator(months)
+            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+            ax1.xaxis.set_major_formatter(DateFmt) 
+            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            ax1.xaxis.set_tick_params(which='major',labelsize=8)
+            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+        else:
+            ax1.xaxis.set_major_locator(monthsAll)
+            ax1.xaxis.set_major_formatter(DateFmt)
+            ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+            ax1.xaxis.set_minor_locator(AutoMinorLocator())
+            fig1.autofmt_xdate()
+        
+        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+        else:           plt.show(block=False)          
+        
         #----------------------------------
         # Plot time series with Total Error
         #----------------------------------
@@ -2671,7 +2703,7 @@ class PlotData(ReadOutputData):
             
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)        
-                   
+                           
             #-----------------------------------------------
             # Plot total error as a fraction of total column
             #-----------------------------------------------
@@ -2701,7 +2733,6 @@ class PlotData(ReadOutputData):
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)          
-
 
         #--------------------------------------------
         # Plot Histograms (SZA,FITRMS, DOFS, Chi_2_Y)
