@@ -40,6 +40,7 @@ import numpy as np
 import os
 import csv
 import itertools
+from collections import OrderedDict
 from os import listdir
 from os.path import isfile, join
 import re
@@ -1737,8 +1738,8 @@ class PlotData(ReadOutputData):
         #------------
         # Get spectra
         #------------
-        dataSpec = {}
-        gasSpec  = {}
+        dataSpec = OrderedDict()
+        gasSpec  = OrderedDict()
         for x in mw:  # Loop through micro-windows
             dataSpec['Obs_'+x]        = np.delete(self.pbp['Obs_'+x],self.inds,axis=0)
             dataSpec['Fitted_'+x]     = np.delete(self.pbp['Fitted_'+x],self.inds,axis=0)
@@ -1753,7 +1754,9 @@ class PlotData(ReadOutputData):
         # Determine which gasses belong to which
         # micro-window
         #----------------------------------------
-        mwList  = {x:self.ctl['band.'+x+'.gasb'] for x in mw}
+        mwList = OrderedDict()        # Use ordered dictionary so that micro-window plots print in order
+        for x in mw: mwList[x] = self.ctl['band.'+x+'.gasb']
+        #mwList  = {x:self.ctl['band.'+x+'.gasb'] for x in mw}
         gasSpec = {gas.upper()+'_'+m:np.delete(self.spc[gas.upper()+'_'+m],self.inds,axis=0) for m in mwList for gas in mwList[m]}    
     
         #---------------------
