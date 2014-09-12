@@ -141,7 +141,7 @@ def main(argv):
                     gas.pltTotClmn(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],errFlg=pltInputs['errorFlg'])
                     if pltInputs['saveFlg']: gasYr.closeFig()
     
-    print('******************')
+    print('\nFinished Plots.......\n')
 
     #--------------------------------
     # Pause so user can look at plots

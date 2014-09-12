@@ -612,7 +612,25 @@ class ReadOutputData(_DateRange):
         self.PrimaryGas = primGas            
         self.dirLst     = []
         self.fltrFlg    = False
-    
+        
+        #------------------------------
+        # Set flags to indicate whether 
+        # data has been read
+        #------------------------------
+        self.readPbpFlg     = False
+        self.readSpectraFlg = False
+        self.readsummaryFlg = False
+        self.readRefPrfFlg  = False
+        self.readErrorFlg             = {}
+        self.readErrorFlg['totFlg']   = False
+        self.readErrorFlg['sysFlg']   = False
+        self.readErrorFlg['randFlg']  = False
+        self.readErrorFlg['vmrFlg']   = False
+        self.readErrorFlg['avkFlg']   = False
+        self.readErrorFlg['KbFlg']    = False
+        self.readPrfFlgApr            = {}
+        self.readPrfFlgRet            = {}
+
         #---------------------------------
         # Test if date range given. If so 
         # create a list of directories to 
@@ -672,7 +690,28 @@ class ReadOutputData(_DateRange):
         #-----------------------
         # Read ctl File if given
         #-----------------------
-        if ctlF: (self.PrimaryGas,self.ctl) = readCtlF(ctlF)           
+        if ctlF: 
+            (self.PrimaryGas,self.ctl) = readCtlF(ctlF)     
+            #-------------------
+            # Construct Gas list
+            #-------------------
+            self.gasList = []
+            if 'gas.profile.list' in self.ctl: self.gasList += self.ctl['gas.profile.list'] 
+            if 'gas.column.list' in self.ctl:  self.gasList += self.ctl['gas.column.list']
+            if not self.gasList: 
+                print 'No gases listed in column or profile list....exiting'
+                sys.exit()
+                
+            self.gasList = filter(None,self.gasList)  # Filter out all empty strings
+            self.ngas    = len(self.gasList)   
+            
+            for gas in self.gasList:
+                self.readPrfFlgApr[gas.upper()] = False
+                self.readPrfFlgRet[gas.upper()] = False
+                
+        else:
+            self.readPrfFlgApr[self.PrimaryGas] = False
+            self.readPrfFlgRet[self.PrimaryGas] = False
 
 
     def fltrData(self,gasName,mxrms=1.0,mxsza=80.0,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,szaFlg=False):
@@ -680,7 +719,7 @@ class ReadOutputData(_DateRange):
         #------------------------------------------
         # If filtering has already been done return
         #------------------------------------------
-        if self.fltrFlg: return true
+        if self.fltrFlg: return True
 
         #--------------------------------
         # Filtering has not yet been done
@@ -757,13 +796,14 @@ class ReadOutputData(_DateRange):
         self.inds = np.array(self.inds)
         print 'Total number of observations filtered = {}'.format(len(self.inds))
         
+        self.fltrFlg = True
+        
         if nobs == len(self.inds):
             print '!!!! All observations have been filtered....'
             self.empty = True
             return False
         else: self.empty = False
-            
-            
+                
             
     def readStatLyrs(self,fname):
         ''' Reads the station layers file '''
@@ -825,6 +865,8 @@ class ReadOutputData(_DateRange):
                     print errmsg
                     continue
     
+            self.readRefPrfFlg = True
+            
             #------------------------
             # Convert to numpy arrays
             # and sort based on date
@@ -900,6 +942,7 @@ class ReadOutputData(_DateRange):
                     print errmsg
                     continue
     
+            self.readsummaryFlg = True
             #------------------------
             # Convert to numpy arrays
             # and sort based on date
@@ -988,8 +1031,13 @@ class ReadOutputData(_DateRange):
         #-------------------------------------------
         # Assign to aprfs or rprfs according to flag
         #-------------------------------------------
-        if   retapFlg == 1: self.rprfs = self.deflt
-        elif retapFlg == 0: self.aprfs = self.deflt
+        if retapFlg == 1: 
+            self.rprfs                    = self.deflt
+            for gas in retrvdAll: self.readPrfFlgRet[gas.upper()] = True
+        elif retapFlg == 0: 
+            self.aprfs                  = self.deflt
+            for gas in retrvdAll: self.readPrfFlgApr[gas.upper()] = True
+            
         if self.dirFlg: del self.deflt
         else:           return self.deflt        
              
@@ -1002,7 +1050,7 @@ class ReadOutputData(_DateRange):
         self.randErr = {}
         self.sysErrDiag  = {}
         self.randErrDiag = {}
-        
+            
         #-----------------------------------
         # Loop through collected directories
         #-----------------------------------
@@ -1245,6 +1293,16 @@ class ReadOutputData(_DateRange):
                         print errmsg
                         continue                 
 
+        #----------
+        # Set flags
+        #----------
+        if totFlg:  self.readErrorFlg['totFlg']   = True
+        if sysFlg:  self.readErrorFlg['sysFlg']   = True
+        if randFlg: self.readErrorFlg['randFlg']  = True
+        if vmrFlg:  self.readErrorFlg['vmrFlg']   = True
+        if avkFlg:  self.readErrorFlg['avkFlg']   = True
+        if KbFlg:   self.readErrorFlg['KbFlg']    = True        
+
         #-----------------------------------
         # Convert date values to numpy array 
         #-----------------------------------
@@ -1327,6 +1385,8 @@ class ReadOutputData(_DateRange):
         for k in self.pbp:
             self.pbp[k] = np.asarray(self.pbp[k])    
             
+        self.readPbpFlg = True
+        
         if not self.dirFlg: return self.pbp
     
     def readSpectra(self,rtrvGasList):
@@ -1418,6 +1478,8 @@ class ReadOutputData(_DateRange):
         for k in self.spc:
             self.spc[k] = np.asarray(self.spc[k])    
             
+        self.readSpectraFlg = True
+        
         if not self.dirFlg: return self.spc        
 
 #------------------------------------------------------------------------------------------------------------------------------    
@@ -1697,18 +1759,7 @@ class PlotData(ReadOutputData):
     def pltSpectra(self,fltr=False,maxRMS=1.0):
         ''' Plot spectra and fit and Jacobian matrix '''
     
-        #-------------------
-        # Construct Gas list
-        #-------------------
-        gasList = []
-        if 'gas.profile.list' in self.ctl: gasList += self.ctl['gas.profile.list'] 
-        if 'gas.column.list' in self.ctl:  gasList += self.ctl['gas.column.list']
-        if not gasList: 
-            print 'No gases listed in column or profile list....exiting'
-            sys.exit()
-            
-        gasList = filter(None,gasList)  # Filter out all empty strings
-        ngas    = len(gasList)
+        print '\nPlotting Spectral Data...........\n'
         
         #------------------------
         # Determine Micro-windows
@@ -1719,11 +1770,11 @@ class PlotData(ReadOutputData):
         #---------------------------------------
         # Get profile, summary and spectral data
         #---------------------------------------
-        self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
+        if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
         if self.empty: return False
-        self.readsummary()                            # Summary File info
-        self.readPbp()                                # observed, fitted, and difference spectra
-        self.readSpectra(gasList)                     # Spectra for each gas
+        if not self.readsummaryFlg: self.readsummary()                                      # Summary File info
+        if not self.readPbpFlg:     self.readPbp()                                          # observed, fitted, and difference spectra
+        if not self.readSpectraFlg: self.readSpectra(self.gasList)                          # Spectra for each gas
         
         Z = np.asarray(self.rprfs['Z'][0,:])          # get altitude
         
@@ -1862,32 +1913,38 @@ class PlotData(ReadOutputData):
     def pltPrf(self,fltr=False,maxRMS=1.0,allGas=True,sclfct=1.0,sclname='ppv',pltStats=True,errFlg=False):
         ''' Plot retrieved profiles '''
         
-        aprPrf = {}
-        rPrf   = {}
+        
+        print '\nPrinting Profile Plots.......\n'
+        
+        aprPrf       = {}
+        rPrf         = {}
+        localGasList = [self.PrimaryGas]
         
         #-------------------------------------------------------
         # Get profile, summary for Primary gas.... for filtering
         #-------------------------------------------------------
-        self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
+        if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
         if self.empty: return False
-        self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
+        if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
         aprPrf[self.PrimaryGas] = np.asarray(self.aprfs[self.PrimaryGas][0,:]) * sclfct
         rPrf[self.PrimaryGas]   = np.asarray(self.rprfs[self.PrimaryGas]) * sclfct
         rPrfMol                 = np.asarray(self.rprfs[self.PrimaryGas]) * np.asarray(self.rprfs['AIRMASS'])
         if len(self.dirLst) > 1: dates                   = self.rprfs['date'] 
-        del(self.aprfs)
+
         alt = np.asarray(self.rprfs['Z'][0,:])
         
-        self.readsummary()                            # Summary File info
+        if not self.readsummaryFlg: self.readsummary()                                      # Summary File info
         rms     = np.asarray(self.summary[self.PrimaryGas+'_FITRMS'])
         dofs    = np.asarray(self.summary[self.PrimaryGas+'_DOFS_TRG'])
         totClmn = np.asarray(self.summary[self.PrimaryGas.upper()+'_RetColmn'])
         
-        self.readPbp()                                # Pbp file info
+        if not self.readPbpFlg: self.readPbp()                                              # Pbp file info
         sza   = self.pbp['sza']
                  
         if errFlg:                                    # Error info
-            self.readError(totFlg=True,sysFlg=True,randFlg=True,vmrFlg=False,avkFlg=False,KbFlg=False) 
+            
+            if not all((self.readErrorFlg['totFlg'],self.readErrorFlg['sysFlg'],self.readErrorFlg['randFlg'])):
+                self.readError(totFlg=True,sysFlg=True,randFlg=True,vmrFlg=False,avkFlg=False,KbFlg=False) 
             
             npnts    = np.shape(self.error['Total_Random_Error'])[0]
             nlvls    = np.shape(alt)[0]
@@ -1917,22 +1974,13 @@ class PlotData(ReadOutputData):
         # Get profile data for other gases if allGas flag is True
         #--------------------------------------------------------
         if allGas:
-            gasList = []
-            if 'gas.profile.list' in self.ctl: gasList += self.ctl['gas.profile.list'] 
-            if 'gas.column.list' in self.ctl:  gasList += self.ctl['gas.column.list']
-            if not gasList: 
-                print 'No gases listed in column or profile list....exiting'
-                sys.exit()
-                
-            gasList = filter(None,gasList)  # Filter out all empty strings
-            nonPgas = (gas for gas in gasList if gas != self.PrimaryGas)
+            nonPgas = (gas for gas in self.gasList if gas != self.PrimaryGas)
             for gas in nonPgas:
-                self.readprfs([gas.upper()],retapFlg=1)   # Retrieved Profiles
-                self.readprfs([gas.upper()],retapFlg=0)   # Apriori Profiles
+                if not self.readPrfFlgRet[gas.upper]: self.readprfs([gas.upper()],retapFlg=1)   # Retrieved Profiles
+                if not self.readPrfFlgApr[gas.upper]: self.readprfs([gas.upper()],retapFlg=0)   # Apriori Profiles
                 aprPrf[gas.upper()] = np.asarray(self.aprfs[gas.upper()][0,:]) * sclfct
                 rPrf[gas.upper()]   = np.asarray(self.rprfs[gas.upper()]) * sclfct
-                del(self.aprfs)      
-        else: gasList = [self.PrimaryGas]
+                localGasList.append(gas)
                 
         #----------------------------
         # Remove inds based on filter
@@ -1977,7 +2025,7 @@ class PlotData(ReadOutputData):
         #---------------------------
         # Plot Profiles for each gas
         #---------------------------       
-        for gas in gasList:
+        for gas in localGasList:
             #-------------------------------
             # Single Profile or Mean Profile
             #-------------------------------
@@ -2389,9 +2437,8 @@ class PlotData(ReadOutputData):
 
     def pltAvk(self,fltr=False,maxRMS=1.0,errFlg=False):
         ''' Plot Averaging Kernel. Only for single retrieval '''
-        #if len(self.dirLst) > 1:
-        #    print 'pltAvk function can only be used for single retrieval'
-        #    sys.exit()
+        
+        print '\nPlotting Averaging Kernel........\n'
         
         if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
         else:    self.inds = np.array([]) 
@@ -2401,9 +2448,10 @@ class PlotData(ReadOutputData):
         #-------------------------------------------------
         # Determine if AVK has been created via sfit4 core
         # code or via python error analysis
-        #-------------------------------------------------
+        #-------------------------------------------------     
         if errFlg:   # Read AVK from error output
-            self.readError(totFlg=False,sysFlg=False,randFlg=False,vmrFlg=True,avkFlg=True,KbFlg=False)
+            if not any((self.readErrorFlg['vmrFlg'],self.readErrorFlg['avkFlg'])):
+                self.readError(totFlg=False,sysFlg=False,randFlg=False,vmrFlg=True,avkFlg=True,KbFlg=False)
             
             if not self.error: 
                 print 'No Error output files found for AVK plot...exiting..'
@@ -2430,7 +2478,7 @@ class PlotData(ReadOutputData):
                 lines  = tryopen( d + self.ctl['file.out.ak_matrix'][0])
                 avkSCF.append(np.array( [ [ float(x) for x in line.strip().split() ] for line in lines[2:] ] ))
                 
-            self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
+            if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
             
             if len(avkSCF) == 1: 
                 avkSCF      = avkSCF[0]
@@ -2465,9 +2513,8 @@ class PlotData(ReadOutputData):
         #-------------
         # Get Altitude
         #-------------
-        self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
+        if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
         alt = np.asarray(self.rprfs['Z'][0,:])
-        del(self.rprfs)
         
         #--------
         # Ploting
@@ -2478,7 +2525,7 @@ class PlotData(ReadOutputData):
         levels1 = np.arange(np.round(np.min(avkSCF),decimals=3),np.round(np.max(avkSCF),decimals=3),0.001)
         levels2 = np.arange(np.round(np.min(avkVMR),decimals=3),np.round(np.max(avkVMR),decimals=3),0.001)
         
-        fig,(ax1,ax2) = plt.subplots(1,2)
+        fig,(ax1,ax2) = plt.subplots(1,2,sharey=True)
         cax1          = ax1.contourf(alt,alt,avkSCF,levels1,cmap=mplcm.jet)
         cax2          = ax2.contourf(alt,alt,avkVMR,levels2,cmap=mplcm.jet)
         
@@ -2488,6 +2535,8 @@ class PlotData(ReadOutputData):
         cb2           = divider2.append_axes("right",size="10%",pad=0.05)
         cbar1         = plt.colorbar(cax1,cax=cb1)
         cbar2         = plt.colorbar(cax2,cax=cb2)
+        cbar1.ax.tick_params(labelsize=8)
+        cbar2.ax.tick_params(labelsize=8)
         
         ax1.grid(True)
         ax2.grid(True)
@@ -2495,10 +2544,13 @@ class PlotData(ReadOutputData):
         ax1.set_xlabel('Altitude [km]')
         ax1.set_ylabel('Altitude [km]')        
         ax2.set_xlabel('Altitude [km]')
-        #ax2.set_ylabel('Altitude [km]')  
+        ax1.yaxis.set_tick_params(which='major',labelsize=8)
+        ax2.yaxis.set_tick_params(which='major',labelsize=8)
+        ax1.xaxis.set_tick_params(which='major',labelsize=8)
+        ax2.xaxis.set_tick_params(which='major',labelsize=8)         
         
-        ax1.set_title('Averaging Kernel Matrix (Scale Factor)')
-        ax2.set_title('Averaging Kernel Matrix (VMR)')
+        ax1.set_title('Averaging Kernel Matrix (Scale Factor)',fontsize=9)
+        ax2.set_title('Averaging Kernel Matrix (VMR)',fontsize=9)
         
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
         else:           plt.show(block=False)         
@@ -2568,6 +2620,9 @@ class PlotData(ReadOutputData):
 
     def pltTotClmn(self,fltr=False,maxRMS=1.0,errFlg=False):
         ''' Plot Time Series of Total Column '''
+        
+        print '\nPrinting Total Column Plots.....\n'
+        
         aprPrf = {}
         rPrf   = {}
         
@@ -2575,16 +2630,15 @@ class PlotData(ReadOutputData):
         # Get Profile and Summary information. Need
         # profile info for filtering
         #------------------------------------------
-        self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
+        if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
         if self.empty: return False
-        self.readsummary()                            # Summary File info
-        
-        self.readPbp()                                # Pbp file info
+        if not self.readsummaryFlg:                 self.readsummary()                            # Summary File info
+        if not self.readPbpFlg:                     self.readPbp()                                # Pbp file info
         sza = self.pbp['sza']
-        del(self.pbp)
         
         if errFlg:
-            self.readError(totFlg=True,sysFlg=False,randFlg=False,vmrFlg=False,avkFlg=False,KbFlg=False)
+            if not self.readErrorFlg['totFlg']:
+                self.readError(totFlg=True,sysFlg=False,randFlg=False,vmrFlg=False,avkFlg=False,KbFlg=False)
             totMeasErr = np.array(self.error['Total random uncertainty measurement'])
             
         #--------------------
@@ -2594,11 +2648,6 @@ class PlotData(ReadOutputData):
         else:    self.inds = np.array([]) 
         
         if self.empty: return False          
-        
-        #-----------------------------------------------
-        # Now that filtering is done delete profile info
-        #-----------------------------------------------
-        del(self.rprfs)
         
         #--------------------------
         # Get total column and date
@@ -2911,12 +2960,12 @@ class PlotData(ReadOutputData):
                 tcks = range(np.min(years),np.max(years)+2)
                 norm = colors.BoundaryNorm(tcks,cm.N)                        
                 sc1  = ax1.scatter(sza,totErr_frac,c=years,cmap=cm,norm=norm)
-                ax2.scatter(rms,tot_rnd,c=years,cmap=cm,norm=norm)
+                ax2.scatter(sza,tot_rnd,c=years,cmap=cm,norm=norm)
             else:
                 #tcks = range(np.min(doy),np.max(doy)+2)
                 #norm = colors.BoundaryNorm(tcks,cm.N)                                
                 sc1 = ax1.scatter(sza,totErr_frac,c=doy,cmap=cm)
-                ax2.scatter(rms,tot_rnd,c=doy,cmap=cm)      
+                ax2.scatter(sza,tot_rnd,c=doy,cmap=cm)      
                 
             ax1.grid(True,which='both')
             ax2.grid(True,which='both')   
