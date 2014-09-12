@@ -100,9 +100,9 @@ def main(argv):
         #-----------------------------
         with open(wrkDir+'summary','r') as fopen: info = fopen.read()
         
-        print '****************SUMMARY FILE****************'
+        print '\n****************SUMMARY FILE****************\n'
         print (info)
-        print '****************END OF SUMMARY FILE****************'
+        print '\n****************END OF SUMMARY FILE****************\n'
 
         #--------------------------------
         # Pause so user can look at plots
