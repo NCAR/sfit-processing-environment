@@ -2046,9 +2046,10 @@ class PlotData(ReadOutputData):
             ax2.grid(True,which='both')
             
             ax1.legend(prop={'size':9})
-            ax2.legend(prop={'size':9})            
-            ax1.text(-0.1,1.1,'Number of Obs = '+str(ntot), ha='left',va='center',transform=ax1.transAxes,fontsize=8)
-            ax1.text(-0.1,1.05,'Number of Obs Filtered = '+str(nfltr), ha='left',va='center',transform=ax1.transAxes,fontsize=8)
+            ax2.legend(prop={'size':9})     
+            ax1.text(-0.1,1.1, 'Number of Obs Filtered        = '+str(nfltr),ha='left',va='center',transform=ax1.transAxes,fontsize=8)
+            ax1.text(-0.1,1.05,'Number of Obs After Filtering = '+str(ntot), ha='left',va='center',transform=ax1.transAxes,fontsize=8)
+            
             
             ax1.set_ylabel('Altitude [km]')
             ax1.set_xlabel('VMR ['+sclname+']')
