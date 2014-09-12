@@ -2403,7 +2403,7 @@ class PlotData(ReadOutputData):
         # code or via python error analysis
         #-------------------------------------------------
         if errFlg:   # Read AVK from error output
-            self.readError(totFlg=False,sysFlg=False,randFlg=False,vmrFlg=False,avkFlg=True,KbFlg=False)
+            self.readError(totFlg=False,sysFlg=False,randFlg=False,vmrFlg=True,avkFlg=True,KbFlg=False)
             
             if not self.error: 
                 print 'No Error output files found for AVK plot...exiting..'
@@ -2414,12 +2414,12 @@ class PlotData(ReadOutputData):
             #---------------------   
             if len(self.dirLst) > 1:
                 avkSCF  = np.delete(np.asarray(self.error['AVK_scale_factor']),self.inds,axis=0)
-                avkVMR  = np.delete(np.asarray(self.error['AVK_VMR']),self.inds,axis=0)                    
+                avkVMR  = np.delete(np.asarray(self.error['AVK_vmr']),self.inds,axis=0)                    
                 avkSCF  = np.mean(avkSCF,axis=0)    
                 avkVMR  = np.mean(avkVMR,axis=0)              
             else:
                 avkSCF  = self.error['AVK_scale_factor'][0][:,:]
-                avkVMR  = self.error['AVK_VMR'],axis=0[0][:,:]        
+                avkVMR  = self.error['AVK_vmr'],axis=0[0][:,:]        
                 
             dofs    = np.trace(avkSCF)
             dofs_cs = np.cumsum(np.diag(avkSCF)[::-1])[::-1]            
@@ -2754,7 +2754,7 @@ class PlotData(ReadOutputData):
             # Plot total error as a fraction of total column
             #-----------------------------------------------
             totErr_frac = tot_std / totClmn * 100.0
-            ranErr_frac = / totClmn * 100.0
+            ranErr_frac = tot_rnd / totClmn * 100.0
             fig, ax = plt.subplots()           
             ax.plot(dates,totErr_frac,'k.',markersize=4)
             ax.grid(True)
@@ -2780,45 +2780,6 @@ class PlotData(ReadOutputData):
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)          
-
-            #-------------------------------------
-            # Plot % total and random error vs SZA
-            #-------------------------------------            
-            fig,(ax1,ax2)  = plt.subplots(2,1,sharex=True)
-            if yrsFlg:
-                tcks = range(np.min(years),np.max(years)+2)
-                norm = colors.BoundaryNorm(tcks,cm.N)                        
-                sc1  = ax1.scatter(sza,totErr_frac,c=years,cmap=cm,norm=norm)
-                ax2.scatter(rms,tot_rnd,c=years,cmap=cm,norm=norm)
-            else:
-                #tcks = range(np.min(doy),np.max(doy)+2)
-                #norm = colors.BoundaryNorm(tcks,cm.N)                                
-                sc1 = ax1.scatter(sza,totErr_frac,c=doy,cmap=cm)
-                ax2.scatter(rms,tot_rnd,c=doy,cmap=cm)      
-                
-            ax1.grid(True,which='both')
-            ax2.grid(True,which='both')   
-            ax2.set_xlabel('SZA')
-            ax1.set_ylabel('Percent Total Column Error',fontsize=9)
-            ax2.set_ylabel('Percent Random Error',fontsize=9)
-                    
-            ax1.tick_params(axis='x',which='both',labelsize=8)
-            ax2.tick_params(axis='x',which='both',labelsize=8)  
-            
-            fig.subplots_adjust(right=0.82)
-            cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
-            
-            if yrsFlg:
-                cbar = fig.colorbar(sc1, cax=cax, ticks=tcks, norm=norm, format='%4i')                           
-                cbar.set_label('Year')
-                plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
-            else:      
-                cbar = fig.colorbar(sc1, cax=cax, format='%3i')
-                cbar.set_label('DOY')    
-                #plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
-            
-            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-            else:           plt.show(block=False)   
 
         #--------------------------------------------
         # Plot Histograms (SZA,FITRMS, DOFS, Chi_2_Y)
@@ -2886,8 +2847,7 @@ class PlotData(ReadOutputData):
             ax1.set_title('SNR Histogram for Band = '+str(i), fontsize=10)
             
             #plt.tight_layout()
-            
-            
+                        
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)  
         #----------------------------
@@ -2943,6 +2903,45 @@ class PlotData(ReadOutputData):
         else:           plt.show(block=False)    
         
         if errFlg:      
+            #-------------------------------------
+            # Plot % total and random error vs SZA
+            #-------------------------------------            
+            fig,(ax1,ax2)  = plt.subplots(2,1,sharex=True)
+            if yrsFlg:
+                tcks = range(np.min(years),np.max(years)+2)
+                norm = colors.BoundaryNorm(tcks,cm.N)                        
+                sc1  = ax1.scatter(sza,totErr_frac,c=years,cmap=cm,norm=norm)
+                ax2.scatter(rms,tot_rnd,c=years,cmap=cm,norm=norm)
+            else:
+                #tcks = range(np.min(doy),np.max(doy)+2)
+                #norm = colors.BoundaryNorm(tcks,cm.N)                                
+                sc1 = ax1.scatter(sza,totErr_frac,c=doy,cmap=cm)
+                ax2.scatter(rms,tot_rnd,c=doy,cmap=cm)      
+                
+            ax1.grid(True,which='both')
+            ax2.grid(True,which='both')   
+            ax2.set_xlabel('SZA')
+            ax1.set_ylabel('Percent Total Column Error',fontsize=9)
+            ax2.set_ylabel('Percent Random Error',fontsize=9)
+                    
+            ax1.tick_params(axis='x',which='both',labelsize=8)
+            ax2.tick_params(axis='x',which='both',labelsize=8)  
+            
+            fig.subplots_adjust(right=0.82)
+            cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+            
+            if yrsFlg:
+                cbar = fig.colorbar(sc1, cax=cax, ticks=tcks, norm=norm, format='%4i')                           
+                cbar.set_label('Year')
+                plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
+            else:      
+                cbar = fig.colorbar(sc1, cax=cax, format='%3i')
+                cbar.set_label('DOY')    
+                #plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
+            
+            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False)   
+            
             #--------------------------------------
             # Plot Measurement error vs SZA and RMS
             #--------------------------------------            
