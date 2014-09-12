@@ -611,6 +611,7 @@ class ReadOutputData(_DateRange):
         
         self.PrimaryGas = primGas            
         self.dirLst     = []
+        self.fltrFlg    = False
     
         #---------------------------------
         # Test if date range given. If so 
@@ -675,6 +676,15 @@ class ReadOutputData(_DateRange):
 
 
     def fltrData(self,gasName,mxrms=1.0,mxsza=80.0,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,szaFlg=False):
+        
+        #------------------------------------------
+        # If filtering has already been done return
+        #------------------------------------------
+        if self.fltrFlg: return true
+
+        #--------------------------------
+        # Filtering has not yet been done
+        #--------------------------------
         self.inds = []
 
         #------------
@@ -1733,7 +1743,6 @@ class PlotData(ReadOutputData):
         else: self.inds = np.array([]) 
         
         if self.empty: return False
-        #else   : self.fltrData(self.PrimaryGas,mxrms=maxRMS,rmsFlg=False,tcFlg=False,pcFlg=False,cnvrgFlg=False)
         
         #------------
         # Get spectra
@@ -2378,11 +2387,16 @@ class PlotData(ReadOutputData):
                 else:           plt.show(block=False)                 
                                    
 
-    def pltAvk(self,errFlg=False):
+    def pltAvk(self,fltr=False,maxRMS=1.0,errFlg=False):
         ''' Plot Averaging Kernel. Only for single retrieval '''
-        if len(self.dirLst) > 1:
-            print 'pltAvk function can only be used for single retrieval'
-            sys.exit()
+        #if len(self.dirLst) > 1:
+        #    print 'pltAvk function can only be used for single retrieval'
+        #    sys.exit()
+        
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
+        else:    self.inds = np.array([]) 
+        
+        if self.empty: return False    
             
         #-------------------------------------------------
         # Determine if AVK has been created via sfit4 core
@@ -2397,28 +2411,56 @@ class PlotData(ReadOutputData):
                 
             #---------------------
             # Get averaging kernel
-            #---------------------    
-            avkSCF  = self.error['AVK_scale_factor'][0][:,:]
-            avkVMR  = self.error['AVK_VMR'][0][:,:]
+            #---------------------   
+            if len(self.dirLst) > 1:
+                avkSCF  = np.delete(np.asarray(self.error['AVK_scale_factor']),self.inds,axis=0)
+                avkVMR  = np.delete(np.asarray(self.error['AVK_VMR']),self.inds,axis=0)                    
+                avkSCF  = np.mean(avkSCF,axis=0)    
+                avkVMR  = np.mean(avkVMR,axis=0)              
+            else:
+                avkSCF  = self.error['AVK_scale_factor'][0][:,:]
+                avkVMR  = self.error['AVK_VMR'],axis=0[0][:,:]        
+                
             dofs    = np.trace(avkSCF)
             dofs_cs = np.cumsum(np.diag(avkSCF)[::-1])[::-1]            
             
         else:        # Read AVK from sfit4 output (only contains scaled AVK)
-            lines  = tryopen(self.dirLst[0]+self.ctl['file.out.ak_matrix'][0])
-            avkSCF = np.array( [ [ float(x) for x in line.strip().split() ] for line in lines[2:] ] )
-            
-            #---------------------
-            # Get averaging kernel
-            #---------------------    
-            n_layer = np.shape(avkSCF)[0]
+            avkSCF = []
+            for d in self.dirLst:
+                lines  = tryopen( d + self.ctl['file.out.ak_matrix'][0])
+                avkSCF.append(np.array( [ [ float(x) for x in line.strip().split() ] for line in lines[2:] ] ))
+                
             self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
-            Iapriori    = np.zeros((n_layer,n_layer))
-            IaprioriInv = np.zeros((n_layer,n_layer))
-            np.fill_diagonal(Iapriori,self.aprfs[self.PrimaryGas.upper()])
-            np.fill_diagonal(IaprioriInv, 1.0 / (self.aprfs[self.PrimaryGas.upper()]))
-            avkVMR  = np.dot(np.dot(Iapriori,avkSCF),IaprioriInv)            
-            dofs    = np.trace(avkSCF)
-            dofs_cs = np.cumsum(np.diag(avkSCF)[::-1])[::-1]   
+            
+            if len(avkSCF) == 1: 
+                avkSCF      = avkSCF[0]
+                n_layer     = np.shape(avkSCF)[0]
+                Iapriori    = np.zeros((n_layer,n_layer))
+                IaprioriInv = np.zeros((n_layer,n_layer))
+                np.fill_diagonal(Iapriori,self.aprfs[self.PrimaryGas.upper()])
+                np.fill_diagonal(IaprioriInv, 1.0 / (self.aprfs[self.PrimaryGas.upper()]))
+                avkVMR      = np.dot(np.dot(Iapriori,avkSCF),IaprioriInv)            
+                dofs        = np.trace(avkSCF)
+                dofs_cs     = np.cumsum(np.diag(avkSCF)[::-1])[::-1]   
+                
+            else:                
+                avkSCF  = np.asarray(avkSCF)
+                nobs    = np.shape(avkSCF)[0]
+                n_layer = np.shape(avkSCF)[1]
+                avkVMR  = np.zeros(nobs,n_layer,n_layer)
+                for obs in range(0,nobs):
+                    Iapriori        = np.zeros((n_layer,n_layer))
+                    IaprioriInv     = np.zeros((n_layer,n_layer))
+                    np.fill_diagonal(Iapriori,self.aprfs[self.PrimaryGas.upper()][obs])
+                    np.fill_diagonal(IaprioriInv, 1.0 / (self.aprfs[self.PrimaryGas.upper()][obs]))
+                    avkVMR[obs,:,:] = np.dot(np.dot(Iapriori,avkSCF),IaprioriInv)          
+                
+                avkSCF  = np.delete(avkSCF,self.inds,axis=0)
+                avkVMR  = np.delete(avkVMR,self.inds,axis=0)
+                avkSCF  = np.mean(avkSCF,axis=0)
+                avkVMR  = np.mean(avkVMR,axis=0)
+                dofs    = np.trace(avkSCF)
+                dofs_cs = np.cumsum(np.diag(avkSCF)[::-1])[::-1]                    
 
         #-------------
         # Get Altitude
@@ -2597,6 +2639,7 @@ class PlotData(ReadOutputData):
         
         if errFlg: 
             tot_std    = np.delete(tot_std,self.inds)
+            tot_rnd    = np.delete(tot_rnd,self.inds)
             totMeasErr = np.delete(totMeasErr,self.inds)
             totMeasErr = totMeasErr / totClmn             # Convert total measurement error to fractional amount
             
@@ -2711,6 +2754,7 @@ class PlotData(ReadOutputData):
             # Plot total error as a fraction of total column
             #-----------------------------------------------
             totErr_frac = tot_std / totClmn * 100.0
+            ranErr_frac = / totClmn * 100.0
             fig, ax = plt.subplots()           
             ax.plot(dates,totErr_frac,'k.',markersize=4)
             ax.grid(True)
@@ -2736,6 +2780,45 @@ class PlotData(ReadOutputData):
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)          
+
+            #-------------------------------------
+            # Plot % total and random error vs SZA
+            #-------------------------------------            
+            fig,(ax1,ax2)  = plt.subplots(2,1,sharex=True)
+            if yrsFlg:
+                tcks = range(np.min(years),np.max(years)+2)
+                norm = colors.BoundaryNorm(tcks,cm.N)                        
+                sc1  = ax1.scatter(sza,totErr_frac,c=years,cmap=cm,norm=norm)
+                ax2.scatter(rms,tot_rnd,c=years,cmap=cm,norm=norm)
+            else:
+                #tcks = range(np.min(doy),np.max(doy)+2)
+                #norm = colors.BoundaryNorm(tcks,cm.N)                                
+                sc1 = ax1.scatter(sza,totErr_frac,c=doy,cmap=cm)
+                ax2.scatter(rms,tot_rnd,c=doy,cmap=cm)      
+                
+            ax1.grid(True,which='both')
+            ax2.grid(True,which='both')   
+            ax2.set_xlabel('SZA')
+            ax1.set_ylabel('Percent Total Column Error',fontsize=9)
+            ax2.set_ylabel('Percent Random Error',fontsize=9)
+                    
+            ax1.tick_params(axis='x',which='both',labelsize=8)
+            ax2.tick_params(axis='x',which='both',labelsize=8)  
+            
+            fig.subplots_adjust(right=0.82)
+            cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+            
+            if yrsFlg:
+                cbar = fig.colorbar(sc1, cax=cax, ticks=tcks, norm=norm, format='%4i')                           
+                cbar.set_label('Year')
+                plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
+            else:      
+                cbar = fig.colorbar(sc1, cax=cax, format='%3i')
+                cbar.set_label('DOY')    
+                #plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
+            
+            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False)   
 
         #--------------------------------------------
         # Plot Histograms (SZA,FITRMS, DOFS, Chi_2_Y)
@@ -2859,10 +2942,10 @@ class PlotData(ReadOutputData):
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
         else:           plt.show(block=False)    
         
-        #--------------------------------------
-        # Plot Measurement error vs SZA and RMS
-        #--------------------------------------
-        if errFlg:          
+        if errFlg:      
+            #--------------------------------------
+            # Plot Measurement error vs SZA and RMS
+            #--------------------------------------            
             fig,(ax1,ax2)  = plt.subplots(1,2,sharey=True)
             if yrsFlg:
                 tcks = range(np.min(years),np.max(years)+2)
@@ -2897,5 +2980,5 @@ class PlotData(ReadOutputData):
                 #plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-            else:           plt.show(block=False)             
-                  
+            else:           plt.show(block=False)         
+                     

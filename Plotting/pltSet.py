@@ -111,6 +111,11 @@ def main(argv):
     gas.pltPrf(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],allGas=False,sclfct=pltInputs['sclfct'],
                sclname=pltInputs['sclfctName'],errFlg=pltInputs['errorFlg'])
     
+    #-----------------
+    # Call to plot AVK
+    #-----------------
+    gas.pltAvk(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],errFlg=pltInputs['errorFlg'])
+    
     #-------------------
     # Plot total columns
     #-------------------
