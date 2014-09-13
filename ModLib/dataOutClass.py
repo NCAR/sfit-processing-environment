@@ -2961,12 +2961,12 @@ class PlotData(ReadOutputData):
                 tcks = range(np.min(years),np.max(years)+2)
                 norm = colors.BoundaryNorm(tcks,cm.N)                        
                 sc1  = ax1.scatter(sza,totErr_frac,c=years,cmap=cm,norm=norm)
-                ax2.scatter(sza,tot_rnd,c=years,cmap=cm,norm=norm)
+                ax2.scatter(sza,ranErr_frac,c=years,cmap=cm,norm=norm)
             else:
                 #tcks = range(np.min(doy),np.max(doy)+2)
                 #norm = colors.BoundaryNorm(tcks,cm.N)                                
                 sc1 = ax1.scatter(sza,totErr_frac,c=doy,cmap=cm)
-                ax2.scatter(sza,tot_rnd,c=doy,cmap=cm)      
+                ax2.scatter(sza,ranErr_frac,c=doy,cmap=cm)      
                 
             ax1.grid(True,which='both')
             ax2.grid(True,which='both')   
