@@ -1032,10 +1032,21 @@ class ReadOutputData(_DateRange):
         # Assign to aprfs or rprfs according to flag
         #-------------------------------------------
         if retapFlg == 1: 
-            self.rprfs                    = self.deflt
+            try:
+                self.rprfs
+                gen = (g for g in retrvdAll if g not in self.rprfs)
+                for g in gen: self.rprfs[g] = self.deflt[g]
+                
+            except: self.rprfs = self.deflt
             for gas in retrvdAll: self.readPrfFlgRet[gas.upper()] = True
+            
         elif retapFlg == 0: 
-            self.aprfs                  = self.deflt
+            try:
+                self.aprfs
+                gen = (g for g in retrvdAll if g not in self.aprfs)
+                for g in gen: self.aprfs[g] = self.deflt[g]
+                
+            except: self.aprfs = self.deflt
             for gas in retrvdAll: self.readPrfFlgApr[gas.upper()] = True
             
         if self.dirFlg: del self.deflt
@@ -1976,8 +1987,8 @@ class PlotData(ReadOutputData):
         if allGas:
             nonPgas = (gas for gas in self.gasList if gas != self.PrimaryGas)
             for gas in nonPgas:
-                if not self.readPrfFlgRet[gas.upper]: self.readprfs([gas.upper()],retapFlg=1)   # Retrieved Profiles
-                if not self.readPrfFlgApr[gas.upper]: self.readprfs([gas.upper()],retapFlg=0)   # Apriori Profiles
+                if not self.readPrfFlgRet[gas.upper()]: self.readprfs([gas.upper()],retapFlg=1)   # Retrieved Profiles
+                if not self.readPrfFlgApr[gas.upper()]: self.readprfs([gas.upper()],retapFlg=0)   # Apriori Profiles
                 aprPrf[gas.upper()] = np.asarray(self.aprfs[gas.upper()][0,:]) * sclfct
                 rPrf[gas.upper()]   = np.asarray(self.rprfs[gas.upper()]) * sclfct
                 localGasList.append(gas)
