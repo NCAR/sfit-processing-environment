@@ -2994,40 +2994,43 @@ class PlotData(ReadOutputData):
             
             #--------------------------------------
             # Plot Measurement error vs SZA and RMS
-            #--------------------------------------            
-            fig,(ax1,ax2)  = plt.subplots(1,2,sharey=True)
-            if yrsFlg:
-                tcks = range(np.min(years),np.max(years)+2)
-                norm = colors.BoundaryNorm(tcks,cm.N)                        
-                sc1  = ax1.scatter(sza,totMeasErr,c=years,cmap=cm,norm=norm)
-                ax2.scatter(rms,totMeasErr,c=years,cmap=cm,norm=norm)
-            else:
-                #tcks = range(np.min(doy),np.max(doy)+2)
-                #norm = colors.BoundaryNorm(tcks,cm.N)                                
-                sc1 = ax1.scatter(sza,totMeasErr,c=doy,cmap=cm)
-                ax2.scatter(rms,totMeasErr,c=doy,cmap=cm)      
+            #--------------------------------------           
+            # These plots do not seem to tell interesting
+            # story
+            #----------------------------------------------
+            #fig,(ax1,ax2)  = plt.subplots(1,2,sharey=True)
+            #if yrsFlg:
+                #tcks = range(np.min(years),np.max(years)+2)
+                #norm = colors.BoundaryNorm(tcks,cm.N)                        
+                #sc1  = ax1.scatter(sza,totMeasErr,c=years,cmap=cm,norm=norm)
+                #ax2.scatter(rms,totMeasErr,c=years,cmap=cm,norm=norm)
+            #else:
+                ##tcks = range(np.min(doy),np.max(doy)+2)
+                ##norm = colors.BoundaryNorm(tcks,cm.N)                                
+                #sc1 = ax1.scatter(sza,totMeasErr,c=doy,cmap=cm)
+                #ax2.scatter(rms,totMeasErr,c=doy,cmap=cm)      
                 
-            ax1.grid(True,which='both')
-            ax2.grid(True,which='both')   
-            ax2.set_xlabel('SZA')
-            ax1.set_xlabel('RMS')
-            ax1.set_ylabel('Measurement Uncertainty [Fraction of Total Column]')
+            #ax1.grid(True,which='both')
+            #ax2.grid(True,which='both')   
+            #ax2.set_xlabel('SZA')
+            #ax1.set_xlabel('RMS')
+            #ax1.set_ylabel('Measurement Uncertainty [Fraction of Total Column]')
         
-            ax1.tick_params(axis='x',which='both',labelsize=8)
-            ax2.tick_params(axis='x',which='both',labelsize=8)  
+            #ax1.tick_params(axis='x',which='both',labelsize=8)
+            #ax2.tick_params(axis='x',which='both',labelsize=8)  
             
-            fig.subplots_adjust(right=0.82)
-            cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+            #fig.subplots_adjust(right=0.82)
+            #cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
             
-            if yrsFlg:
-                cbar = fig.colorbar(sc1, cax=cax, ticks=tcks, norm=norm, format='%4i')                           
-                cbar.set_label('Year')
-                plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
-            else:      
-                cbar = fig.colorbar(sc1, cax=cax, format='%3i')
-                cbar.set_label('DOY')    
+            #if yrsFlg:
+                #cbar = fig.colorbar(sc1, cax=cax, ticks=tcks, norm=norm, format='%4i')                           
+                #cbar.set_label('Year')
                 #plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
+            #else:      
+                #cbar = fig.colorbar(sc1, cax=cax, format='%3i')
+                #cbar.set_label('DOY')    
+                ##plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
             
-            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-            else:           plt.show(block=False)         
+            #if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+            #else:           plt.show(block=False)         
                      
