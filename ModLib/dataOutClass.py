@@ -2488,6 +2488,7 @@ class PlotData(ReadOutputData):
             avkSCF = []
             for d in self.dirLst:
                 lines  = tryopen( d + self.ctl['file.out.ak_matrix'][0])
+                if not lines: continue
                 avkSCF.append(np.array( [ [ float(x) for x in line.strip().split() ] for line in lines[2:] ] ))
                 
             if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
