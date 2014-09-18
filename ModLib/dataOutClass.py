@@ -2508,7 +2508,7 @@ class PlotData(ReadOutputData):
                 avkSCF  = np.asarray(avkSCF)
                 nobs    = np.shape(avkSCF)[0]
                 n_layer = np.shape(avkSCF)[1]
-                avkVMR  = np.zeros(nobs,n_layer,n_layer)
+                avkVMR  = np.zeros((nobs,n_layer,n_layer))
                 for obs in range(0,nobs):
                     Iapriori        = np.zeros((n_layer,n_layer))
                     IaprioriInv     = np.zeros((n_layer,n_layer))
