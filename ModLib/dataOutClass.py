@@ -2514,7 +2514,7 @@ class PlotData(ReadOutputData):
                     IaprioriInv     = np.zeros((n_layer,n_layer))
                     np.fill_diagonal(Iapriori,self.aprfs[self.PrimaryGas.upper()][obs])
                     np.fill_diagonal(IaprioriInv, 1.0 / (self.aprfs[self.PrimaryGas.upper()][obs]))
-                    avkVMR[obs,:,:] = np.dot(np.dot(Iapriori,avkSCF),IaprioriInv)          
+                    avkVMR[obs,:,:] = np.dot(np.dot(Iapriori,np.squeeze(avkSCF[obs,:,:])),IaprioriInv)          
                 
                 avkSCF  = np.delete(avkSCF,self.inds,axis=0)
                 avkVMR  = np.delete(avkVMR,self.inds,axis=0)
