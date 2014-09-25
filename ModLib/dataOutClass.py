@@ -2639,16 +2639,18 @@ class PlotData(ReadOutputData):
         xval = range(0,int(np.ceil(max(dofs_cs)))+2)
         if partialCols:
             for pcol in partialCols: 
-                ax1.fill_betweenx(xval,pcol[0],pcol[1],alpha=0.5,color='0.75')  
-                ind1     = nearestind(pcol[0], alt)
-                ind2     = nearestind(pcol[1], alt)
+                ind1 = nearestind(pcol[0], alt)
+                ind2 = nearestind(pcol[1], alt)                
+                ax1.fill_between(xval,alt[ind1],alt[ind2],alpha=0.5,color='0.75')  
+                ax1.axhline(alt[ind2],color='k',linestyle='--')
                 dofsPcol = dofs_cs[ind2] - dofs_cs[ind1]
-                ax1.text(0.15,(pcol[0]+pcol[1])/2.0, 
-                         'Approximate DOFs for layer {1:}-{2:}[km] = {3:}'.format(pcol[0],pcol[1],dofsPcol),
+                ax1.text(0.15,(alt[ind1]+alt[ind2])/2.0, 
+                         'DOFs for layer {0:.2f}-{1:.2f}[km] = {2:.3f}'.format(alt[ind1],alt[ind2],dofsPcol),
                          fontsize=9)
         ax1.set_title('DOFs Profile')
         ax1.set_ylabel('Altitude [km]')
         ax1.set_xlabel('Cumulative Sum of DOFS')    
+        ax1.set_ylim((0,60))
         ax1.grid(True,which='both')
         ax1.legend(prop={'size':9})
         
@@ -2656,13 +2658,10 @@ class PlotData(ReadOutputData):
         else:           plt.show(block=False)                         
         
         
-    def pltTotClmn(self,fltr=False,maxRMS=1.0,errFlg=False):
+    def pltTotClmn(self,fltr=False,maxRMS=1.0,errFlg=False,sclfct=1.0,sclname='ppv',partialCols=False):
         ''' Plot Time Series of Total Column '''
         
         print '\nPrinting Total Column Plots.....\n'
-        
-        aprPrf = {}
-        rPrf   = {}
         
         #------------------------------------------
         # Get Profile and Summary information. Need
@@ -2680,10 +2679,10 @@ class PlotData(ReadOutputData):
                 # Grab total random error components
                 #-----------------------------------
                 self.readError(totFlg=True,sysFlg=False,randFlg=False,vmrFlg=False,avkFlg=False,KbFlg=False)
-                tempKeys = self.error.keys()
-                randErrs = {}
-                for k in tempKeys:
-                    if 'Total random uncertainty' in k: randErrs[k] = np.array(self.error[k])
+            tempKeys = self.error.keys()
+            randErrs = {}
+            for k in tempKeys:
+                if 'Total random uncertainty' in k: randErrs[k] = np.array(self.error[k])
             
         #--------------------
         # Call to filter data
@@ -2702,6 +2701,10 @@ class PlotData(ReadOutputData):
         dofs    = np.asarray(self.summary[self.PrimaryGas.upper()+'_DOFS_TRG'])
         chi2y   = np.asarray(self.summary[self.PrimaryGas.upper()+'_CHI_2_Y'])
         nbands  = self.nbands
+        Airmass = np.asarray(self.rprfs['AIRMASS'])
+        rPrf    = np.asarray(self.rprfs[self.PrimaryGas]) * sclfct
+        rPrfMol = np.asarray(self.rprfs[self.PrimaryGas]) * Airmass
+        alt     = np.asarray(self.rprfs['Z'][0,:])
         
         snr    = {}
         fitsnr = {}
@@ -2726,6 +2729,10 @@ class PlotData(ReadOutputData):
         sza     = np.delete(sza,self.inds)
         dofs    = np.delete(dofs,self.inds)
         chi2y   = np.delete(chi2y,self.inds)
+        rPrf    = np.delete(rPrf,self.inds,axis=0)
+        rPrfMol = np.delete(rPrfMol,self.inds,axis=0)
+        Airmass = np.delete(Airmass,self.inds,axis=0)
+        
         for i in range(1,nbands+1):
             snr[i]     = np.delete(snr[i],self.inds)
             fitsnr[i]  = np.delete(fitsnr[i],self.inds)
@@ -2780,6 +2787,42 @@ class PlotData(ReadOutputData):
         
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
         else:           plt.show(block=False)  
+        
+        #------------------------------------
+        # Plot time series of partial columns
+        #------------------------------------
+        if partialCols:
+            for pcol in partialCols:
+                ind1 = nearestind(pcol[0], alt)
+                ind2 = nearestind(pcol[1], alt)               
+                vmrP = np.average(rPrf[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1])
+                sumP = np.sum(rPrfMol[:,ind2:ind1],axis=1)
+                fig,(ax1,ax2)  = plt.subplots(2,1,sharex=True)
+                ax1.plot(dates,vmrP,'k.',markersize=4)
+                ax2.plot(dates,sumP,'k.',markersize=4)
+                ax1.grid(True)
+                ax2.grid(True)
+                ax1.set_ylabel('VMR ['+sclname+']')
+                ax2.set_ylabel('Retrieved Partial Column\n[molecules cm$^{-2}$]',multialignment='center')
+                ax1.set_title('Partial Column Weighted VMR and molecules cm$^{-2}$\nAltitude Layer '+str(alt[ind1])+'[km] - '+str(alt[ind2])+'[km]',
+                              multialignment='center',fontsize=12)
+                
+                if yrsFlg:
+                    ax2.xaxis.set_major_locator(yearsLc)
+                    ax2.xaxis.set_minor_locator(months)
+                    ax2.xaxis.set_major_formatter(DateFmt) 
+                    ax2.xaxis.set_tick_params(which='major',labelsize=8)
+                    ax2.xaxis.set_tick_params(which='minor',labelbottom='off')
+                else:
+                    ax2.xaxis.set_major_locator(monthsAll)
+                    ax2.xaxis.set_major_formatter(DateFmt)
+                    ax2.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                    ax2.xaxis.set_minor_locator(AutoMinorLocator())
+                    fig.autofmt_xdate()
+                
+                if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                else:           plt.show(block=False)            
+        
         
         #-------------------------------------
         # Plot time series of Monthly Averages
