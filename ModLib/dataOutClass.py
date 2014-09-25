@@ -2301,7 +2301,7 @@ class PlotData(ReadOutputData):
                     mnthMean = np.mean(rPrfMol,axis=0)
                     
                     #----------------------------------
-                    # Find STD and max error components
+                    # Find mean and max error components
                     #----------------------------------
                     rand_std = np.mean(rand_err,axis=0)
                     sys_std  = np.mean(sys_err,axis=0)
@@ -2447,7 +2447,7 @@ class PlotData(ReadOutputData):
                 else:           plt.show(block=False)                 
                                    
 
-    def pltAvk(self,fltr=False,maxRMS=1.0,errFlg=False):
+    def pltAvk(self,fltr=False,maxRMS=1.0,errFlg=False,partialCols=False):
         ''' Plot Averaging Kernel. Only for single retrieval '''
         
         print '\nPlotting Averaging Kernel........\n'
@@ -2630,7 +2630,32 @@ class PlotData(ReadOutputData):
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
         else:           plt.show(block=False)    
 
-
+        #--------------------------------------
+        # Plot cumulative sum of DOFs with user 
+        # selected partial column area
+        #--------------------------------------
+        fig,ax1  = plt.subplots()
+        ax1.plot(dofs_cs,alt,color='k',label='Cumulative Sum of DOFS (starting at surface)')
+        xval = range(0,int(np.ceil(max(dofs_cs)))+2)
+        if partialCols:
+            for pcol in partialCols: 
+                ax1.fill_betweenx(xval,pcol[0],pcol[1],alpha=0.5,color='0.75')  
+                ind1     = nearestind(pcol[0], alt)
+                ind2     = nearestind(pcol[1], alt)
+                dofsPcol = dofs_cs[ind2] - dofs_cs[ind1]
+                ax1.text(0.15,(pcol[0]+pcol[1])/2.0, 
+                         'Approximate DOFs for layer {1:}-{2:}[km] = {3:}'.format(pcol[0],pcol[1],dofsPcol),
+                         fontsize=9)
+        ax1.set_title('DOFs Profile')
+        ax1.set_ylabel('Altitude [km]')
+        ax1.set_xlabel('Cumulative Sum of DOFS')    
+        ax1.grid(True,which='both')
+        ax1.legend(prop={'size':9})
+        
+        if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+        else:           plt.show(block=False)                         
+        
+        
     def pltTotClmn(self,fltr=False,maxRMS=1.0,errFlg=False):
         ''' Plot Time Series of Total Column '''
         
@@ -2651,8 +2676,14 @@ class PlotData(ReadOutputData):
         
         if errFlg:
             if not self.readErrorFlg['totFlg']:
+                #-----------------------------------
+                # Grab total random error components
+                #-----------------------------------
                 self.readError(totFlg=True,sysFlg=False,randFlg=False,vmrFlg=False,avkFlg=False,KbFlg=False)
-            totMeasErr = np.array(self.error['Total random uncertainty measurement'])
+                tempKeys = self.error.keys()
+                randErrs = {}
+                for k in tempKeys:
+                    if 'Total random uncertainty' in k: randErrs[k] = np.array(self.error[k])
             
         #--------------------
         # Call to filter data
@@ -2702,8 +2733,9 @@ class PlotData(ReadOutputData):
         if errFlg: 
             tot_std    = np.delete(tot_std,self.inds)
             tot_rnd    = np.delete(tot_rnd,self.inds)
-            totMeasErr = np.delete(totMeasErr,self.inds)
-            totMeasErr = totMeasErr / totClmn             # Convert total measurement error to fractional amount
+            for k in randErrs:
+                randErrs[k] = np.delete(randErrs[k],self.inds)
+                randErrs[k] = randErrs[k] / totClmn * 100.00  # Convert total random error components to 
             
         #----------------------------
         # Determine if multiple years
@@ -2791,7 +2823,7 @@ class PlotData(ReadOutputData):
             ax1.grid(True)
             ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
             ax1.set_xlabel('Date [MM]')
-            ax1.set_title('Time Series of Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_title('Time Series of Retrieved Total Column with Total Error\n[molecules cm$^{-2}$]',multialignment='center')
             
             if yrsFlg:
                 #plt.xticks(rotation=45)
@@ -2811,6 +2843,36 @@ class PlotData(ReadOutputData):
             
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)        
+            
+            #-----------------------------------
+            # Plot time series with Random Error
+            #-----------------------------------            
+            fig1,ax1 = plt.subplots()
+            ax1.plot(dates,totClmn,'k.',markersize=4)
+            ax1.errorbar(dates,totClmn,yerr=tot_rnd,fmt='k.',markersize=4,ecolor='red')
+            ax1.grid(True)
+            ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel('Date [MM]')
+            ax1.set_title('Time Series of Retrieved Total Column with Random Error\n[molecules cm$^{-2}$]',multialignment='center')
+            
+            if yrsFlg:
+                #plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(yearsLc)
+                ax1.xaxis.set_minor_locator(months)
+                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                ax1.xaxis.set_major_formatter(DateFmt) 
+                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(monthsAll)
+                ax1.xaxis.set_major_formatter(DateFmt)
+                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                fig1.autofmt_xdate()
+            
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)              
                            
             #-----------------------------------------------
             # Plot total error as a fraction of total column
@@ -2841,8 +2903,37 @@ class PlotData(ReadOutputData):
                 fig.autofmt_xdate()
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-            else:           plt.show(block=False)          
-
+            else:           plt.show(block=False)     
+            
+            #------------------------------------------------
+            # Plot random error as a fraction of total column
+            #------------------------------------------------
+            fig, ax = plt.subplots()           
+            ax.plot(dates,ranErr_frac,'k.',markersize=4)
+            ax.grid(True)
+            ax.set_ylabel('Random Error as Precentage of Total Column [%]')
+            ax.set_xlabel('Date [MM]')
+            ax.set_title('Random Error as % of Retrieved Total Column')
+            
+            if yrsFlg:
+                #plt.xticks(rotation=45)
+                ax.xaxis.set_major_locator(yearsLc)
+                ax.xaxis.set_minor_locator(months)
+                #ax.xaxis.set_minor_formatter(DateFormatter('%m'))
+                ax.xaxis.set_major_formatter(DateFmt) 
+                #ax.xaxis.set_tick_params(which='major', pad=15)  
+                ax.xaxis.set_tick_params(which='major',labelsize=8)
+                ax.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax.xaxis.set_major_locator(monthsAll)
+                ax.xaxis.set_major_formatter(DateFmt)
+                ax.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                fig.autofmt_xdate()
+            
+            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False)               
+            
         #--------------------------------------------
         # Plot Histograms (SZA,FITRMS, DOFS, Chi_2_Y)
         #--------------------------------------------
@@ -3003,6 +3094,40 @@ class PlotData(ReadOutputData):
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)   
+            
+            #------------------------------------------------
+            # Plot fraction of random error components vs SZA
+            #------------------------------------------------
+            for k in randErrs:
+                errLabel = k.strip().split()[-1]
+                fig,ax1  = plt.subplots()
+                if yrsFlg:
+                    tcks = range(np.min(years),np.max(years)+2)
+                    norm = colors.BoundaryNorm(tcks,cm.N)                        
+                    sc1  = ax1.scatter(sza,randErrs[k],c=years,cmap=cm,norm=norm)
+                else:                             
+                    sc1 = ax1.scatter(sza,randErrs[k],c=doy,cmap=cm)   
+                    
+                ax1.grid(True,which='both')
+                ax1.set_ylabel('Percent Error of Total Column',fontsize=9)
+                ax1.set_xlabel('SZA',fontsize=9)
+                ax1.set_title(k)
+                ax1.tick_params(axis='x',which='both',labelsize=8)
+                
+                fig.subplots_adjust(right=0.82)
+                cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+                
+                if yrsFlg:
+                    cbar = fig.colorbar(sc1, cax=cax, ticks=tcks, norm=norm, format='%4i')                           
+                    cbar.set_label('Year')
+                    plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
+                else:      
+                    cbar = fig.colorbar(sc1, cax=cax, format='%3i')
+                    cbar.set_label('DOY')    
+                
+                if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                else:           plt.show(block=False)              
+            
             
             #--------------------------------------
             # Plot Measurement error vs SZA and RMS

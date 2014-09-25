@@ -41,6 +41,13 @@ fyear      = 2013
 fmnth      = 12
 fday       = 31
 
+#----------------------------
+# Partial Columns Bounds [km] 
+# [lower bound, upper bound]
+# To turn off set to False
+#----------------------------
+pCols = [[0.0,8.0],[8.0,16.0],[16.0,25.0]]
+
 #------------
 # Directories
 #------------

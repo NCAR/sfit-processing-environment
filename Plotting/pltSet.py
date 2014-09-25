@@ -119,7 +119,8 @@ def main(argv):
     #-------------------
     # Plot total columns
     #-------------------
-    gas.pltTotClmn(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],errFlg=pltInputs['errorFlg'])
+    gas.pltTotClmn(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],errFlg=pltInputs['errorFlg'],
+                   partialCols=pltInputs['pCols'])
     
     #------------------
     # Plot Spectral fit
