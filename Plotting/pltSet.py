@@ -114,13 +114,13 @@ def main(argv):
     #-----------------
     # Call to plot AVK
     #-----------------
-    gas.pltAvk(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],errFlg=pltInputs['errorFlg'])
+    gas.pltAvk(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],errFlg=pltInputs['errorFlg'],
+               partialCols=pltInputs['pCols'])
     
     #-------------------
     # Plot total columns
     #-------------------
-    gas.pltTotClmn(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],errFlg=pltInputs['errorFlg'],
-                   partialCols=pltInputs['pCols'])
+    gas.pltTotClmn(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],errFlg=pltInputs['errorFlg'])
     
     #------------------
     # Plot Spectral fit
