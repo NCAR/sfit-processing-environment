@@ -65,12 +65,26 @@ class Kbout:
 class avk:
     def __init__(self, filename, prfsfile):
     
-        self.AK_frac = np.genfromtxt(filename,skiprows=2)
+        avk = rn.read_from_file(filename)
+        l1 = avk.get_line()
+#        import ipdb
+#        ipdb.set_trace()
+        if l1.find('SFIT4') > -1:
+            self.AK_frac = np.genfromtxt(filename,skiprows=2)
+        else:
+            nmat = int(avk.get_line().split('=')[1])
+            nrow = int(avk.get_line().split('=')[1])
+            ncol = int(avk.get_line().split('=')[1])
+            avk.skipline(1)
+            self.AK_frac = np.array(avk.next(nrow*ncol))
+            self.AK_frac = np.reshape(self.AK_frac,(nrow,ncol))
         self.direc = os.path.dirname(filename)
         self.prfsfile = prfsfile
 
     def renormalize(self):
         
+#        import ipdb
+#        ipdb.set_trace()
         ap = read_table(self.prfsfile)
         prf,z = ap.get_gas_vmr(ap.get_retrieval_gasnames()[0])
         self.AK_vmr = np.dot(np.dot(np.diag(prf),self.AK_frac),np.diag(1/prf))
