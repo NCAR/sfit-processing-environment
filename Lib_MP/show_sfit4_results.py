@@ -86,7 +86,8 @@ class show_results:
             self.spec_gas = StringVar(self.tkroot)
             self.spec_gas.set(options[0])
 
-            self.menu1 = OptionMenu(self.tkroot,self.spec_gas, *options)
+            self.menu1 = OptionMenu(self.tkroot,self.spec_gas, 
+                                    *options)
             self.menu1.grid(row=2,column=1,stick=E+W)
 
 

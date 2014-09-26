@@ -1,8 +1,30 @@
 from pyhdf import SD
+import tables as h5
 import sys, re, os
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates
 import numpy as np
+
+class load_h5:
+    def __init__(self, h5_file):
+        self.h5 = h5.File(h5_file)
+        self.h5file = h5_file
+        self.dates = dates.num2date(self.h5.root.mdate[:])
+
+    def get_columns(self,gas):
+        rt = self.h5.root.col_rt[:]
+        er=es=ap = []
+        try:
+            ap = self.h5.root.col_ap[:]
+        except:
+            pass
+        try:
+            er = self.h5.root.col_ran[:]
+            es = self.h5.root.col_sys[:]
+        except:
+            pass
+        return(rt,ap,er,es)
+
 
 class load_H4:
     def __init__(self, h4file):
@@ -77,8 +99,19 @@ class load_H4:
         return(p_s, t_s, dnum, asza)
 
 
-class load_ALLGEOMS:
-    def __init__(self,direc):
+class load_hdf:
+
+    def __init__(self):
+        self.f1 = plt.figure(1)
+        self.f1.clf()
+        self.f2 = plt.figure(2)
+        self.f2.clf()
+
+    def load_tmph5(self,tmph5):
+        self.h5 = [load_h5(tmph5)]
+        
+
+    def load_AllGeoms(self,direc):
         m = re.compile(".*\.hdf",re.I)
         hdffiles = filter(m.search,os.listdir(direc))
         
@@ -87,16 +120,16 @@ class load_ALLGEOMS:
             print hf
             self.h4.append(load_H4(direc+'/'+hf))
             
-        self.f1 = plt.figure(1)
-        self.f1.clf()
-        self.f2 = plt.figure(2)
-        self.f2.clf()
 
     def __del__(self):
-        for hf in self.h4:
-            del hf
+        pass 
 
-    def plot_columns(self, gas, ax):
+    def plot_columns(self, gas, ax, src='GEOMS'):
+
+        if src=='TMPH5':
+            src_hdf = self.h5
+        else:
+            src_hdf = self.h4
 
         def oncall(event):
             f3 = plt.figure(3)
@@ -117,7 +150,8 @@ class load_ALLGEOMS:
             pt = False
             print mdnum, dnum[ind]
             dnum = dnum[ind]
-            for hf in self.h4:
+
+            for hf in src_hdf:
                 ind = hf.get_ind_from_date(dnum)
                 if ind > -1:
                     rvmr,avmr,z = hf.get_profile(gas)
@@ -142,7 +176,7 @@ class load_ALLGEOMS:
         dd_min = 9e99
         dd_max = 0
 #        ax2 = ax.twinx()
-        for hf in self.h4:
+        for hf in src_hdf:
             dd = dates.date2num(hf.dates)
             rt2,ap,er,es = hf.get_columns('H2O')
  #           ax2.plot(dd, rt2,'go',)
@@ -232,11 +266,11 @@ class load_ALLGEOMS:
 
 
 
-    def plot_results(self,gas):
+    def plot_results(self,gas,src='GEOMS'):
         self.f1.clf()
         self.f2.clf()
         ax1 = self.f1.add_subplot(311)
-        self.plot_columns(gas, ax1)
+        self.plot_columns(gas, ax1, src)
         ax2 = self.f1.add_subplot(312)
         self.plot_profiles(gas, ax2)
         ax3 = self.f1.add_subplot(313)
