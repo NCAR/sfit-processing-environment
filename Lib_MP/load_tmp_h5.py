@@ -41,4 +41,4 @@ class load_tmph5:
         self.sza    = self.sza[ind]        
         self.P_surface = self.P_surface[ind]     
         self.col_co2   = self.col_co2[ind]
-        self.spectra = h5f.root.spectra[ind]
+        self.spectra = self.spectra[ind]
