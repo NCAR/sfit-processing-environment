@@ -30,6 +30,7 @@ class show_results:
         self.spcfig = Figure(figsize=(5,3))
         self.spc_canvas = FigureCanvasTkAgg(self.spcfig, master=self.tkroot)
         self.spc_canvas.get_tk_widget().grid(row=0, column=0, columnspan=3)
+        self.spc_canvas.mpl_connect('pick_event', self.pick_result)
         self.update_plot('None')
         self.spc_canvas.show()
 
@@ -39,10 +40,10 @@ class show_results:
         self.update_auxplot('c2y')
         self.aux_canvas.show()
 
-        spctoolbar_frame = Frame(self.tkroot)
-        spctoolbar_frame.grid(row=2,column=0, columnspan=3, sticky=W)
-        spctoolbar = NavigationToolbar2TkAgg(self.spc_canvas, spctoolbar_frame)
-        spctoolbar.pan()
+        # spctoolbar_frame = Frame(self.tkroot)
+        # spctoolbar_frame.grid(row=2,column=0, columnspan=3, sticky=W)
+        # spctoolbar = NavigationToolbar2TkAgg(self.spc_canvas, spctoolbar_frame)
+        # spctoolbar.pan()
 
         frame2 = Frame(self.tkroot)
         frame2.grid(row=0,column=5)
@@ -109,6 +110,13 @@ class show_results:
     def quit(self):
         self.tkroot.destroy()
 
+    def pick_result(self, event):
+        dnum = event.artist.get_xdata()
+        mdnum = event.mouseevent.xdata
+        ind = np.argmin(np.abs(dnum-mdnum))
+        print mdnum, dnum[ind]
+        print self.h5.spectra[ind]
+
     def filter(self):
         self.h5 = load_tmph5(self.h5file)
         h5 = self.h5
@@ -142,7 +150,7 @@ class show_results:
         else:
             norm = 1.0
 
-        ax.plot_date(h5.dnum, h5.col_rt/norm)
+        ax.plot_date(h5.dnum, h5.col_rt/norm, picker=5)
 
         ax.set_title(h5.gasname)
 
