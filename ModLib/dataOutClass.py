@@ -41,6 +41,7 @@ import os
 import csv
 import itertools
 from collections import OrderedDict
+import os
 from os import listdir
 from os.path import isfile, join
 import re
@@ -883,7 +884,7 @@ class ReadOutputData(_DateRange):
             #-----------------------------------
             # Loop through collected directories
             #-----------------------------------
-            for indMain,sngDir in enumerate(self.dirLst):
+            for sngDir in self.dirLst:
     
                 try:
                     with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
@@ -936,7 +937,10 @@ class ReadOutputData(_DateRange):
                     self.summary.setdefault(self.PrimaryGas.upper()+'_CHI_2_Y'  ,[]).append( float( lines[ind2+1].strip().split()[indCHIY2]   ) )
                     self.summary.setdefault(self.PrimaryGas.upper()+'_DOFS_TRG' ,[]).append( float( lines[ind2+1].strip().split()[indDOFtrgt] ) )
                     self.summary.setdefault(self.PrimaryGas.upper()+'_CONVERGED',[]).append(        lines[ind2+1].strip().split()[indCNVRG]     )                        
-                    if self.dirFlg: self.summary.setdefault('date',              []).append( self.dirDateTime[indMain] )
+                    if self.dirFlg: 
+                        dirname = os.path.basename(os.path.normpath(sngDir)) 
+                        self.summary.setdefault('date',[]).append( dt.datetime(int(dirname[0:4]), int(dirname[4:6]), int(dirname[6:8]), 
+                                                                               int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))
 
                 except Exception as errmsg:
                     print errmsg
@@ -977,7 +981,7 @@ class ReadOutputData(_DateRange):
         #-----------------------------------
         # Loop through collected directories
         #-----------------------------------
-        for indMain,sngDir in enumerate(self.dirLst):       
+        for sngDir in self.dirLst:       
             
             try:
                 with open(sngDir + fname,'r') as fopen:
@@ -998,7 +1002,10 @@ class ReadOutputData(_DateRange):
                     #-------------------------------
                     # Get date and time of retrieval
                     #-------------------------------
-                    if self.dirFlg: self.deflt.setdefault('date',     []).append( self.dirDateTime[indMain] )
+                    if self.dirFlg: 
+                        dirname = os.path.basename(os.path.normpath(sngDir)) 
+                        self.deflt.setdefault('date',[]).append( dt.datetime(int(dirname[0:4]), int(dirname[4:6]), int(dirname[6:8]), 
+                                                                             int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))
 
             except Exception as errmsg:
                 print errmsg
@@ -1065,7 +1072,7 @@ class ReadOutputData(_DateRange):
         #-----------------------------------
         # Loop through collected directories
         #-----------------------------------
-        for indMain,sngDir in enumerate(self.dirLst):          
+        for sngDir in self.dirLst:          
             #-------------------------------
             # Read error summary information
             #-------------------------------
@@ -1084,7 +1091,10 @@ class ReadOutputData(_DateRange):
                 #-------------------------------
                 # Get date and time of retrieval
                 #-------------------------------
-                if self.dirFlg: self.error.setdefault('date',     []).append( self.dirDateTime[indMain] )
+                if self.dirFlg: 
+                    dirname = os.path.basename(os.path.normpath(sngDir)) 
+                    self.error.setdefault('date',[]).append( dt.datetime(int(dirname[0:4]), int(dirname[4:6]), int(dirname[6:8]), 
+                                                                         int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))
 
             except Exception as errmsg:
                 print errmsg
@@ -1330,7 +1340,7 @@ class ReadOutputData(_DateRange):
         #-----------------------------------
         # Loop through collected directories
         #-----------------------------------
-        for indMain,sngDir in enumerate(self.dirLst):      
+        for sngDir in self.dirLst:      
             
             #-------------------------------------
             # Catch error for opening/reading file
@@ -1385,7 +1395,10 @@ class ReadOutputData(_DateRange):
             #-------------------------------
             # Get date and time of retrieval
             #-------------------------------
-            if self.dirFlg: self.pbp.setdefault('date', []).append( self.dirDateTime[indMain] )                            
+            if self.dirFlg: 
+                dirname = os.path.basename(os.path.normpath(sngDir)) 
+                self.pbp.setdefault('date',[]).append( dt.datetime(int(dirname[0:4]), int(dirname[4:6]), int(dirname[6:8]), 
+                                                                   int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))                        
     
        # if self.dirFlg: self.pbp = sortDict(self.pbp, 'date')
         
@@ -1477,7 +1490,10 @@ class ReadOutputData(_DateRange):
             #-------------------------------
             # Get date and time of retrieval
             #-------------------------------
-            if self.dirFlg: self.spc.setdefault('date',     []).append( self.dirDateTime[indMain] )           
+            if self.dirFlg: 
+                dirname = os.path.basename(os.path.normpath(sngDir)) 
+                self.spc.setdefault('date',[]).append( dt.datetime(int(dirname[0:4]), int(dirname[4:6]), int(dirname[6:8]), 
+                                                                  int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))          
                 
                 
         #if self.dirFlg: self.spc = sortDict(self.spc, 'date',excld=['nMW'])
