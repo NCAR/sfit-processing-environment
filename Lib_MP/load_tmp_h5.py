@@ -16,11 +16,13 @@ class load_tmph5:
         self.snr_clc = h5f.root.snr_clc[:]
         self.snr_the = h5f.root.snr_the[:]
         self.aircol = h5f.root.air_col[:]
+        self.sza = h5f.root.sza[:]
         self.P_surface = h5f.root.P_s[:]
         igasnames = h5f.root.gasnames[:]
         self.gasname = igasnames[0]
         if 'CO2' in igasnames:
             self.col_co2 = h5f.root.icol_rt[igasnames.index('CO2')-1,:]
+        self.spectra = h5f.root.spectra[:]
         h5f.close()
 
 
@@ -36,5 +38,7 @@ class load_tmph5:
         self.snr_clc   = self.snr_clc[ind]       
         self.snr_the   = self.snr_the[ind]       
         self.aircol    = self.aircol[ind]        
+        self.sza    = self.sza[ind]        
         self.P_surface = self.P_surface[ind]     
         self.col_co2   = self.col_co2[ind]
+        self.spectra = h5f.root.spectra[ind]
