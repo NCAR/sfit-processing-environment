@@ -23,21 +23,19 @@
 #    You should have received a copy of the GNU General Public License
 #    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #----------------------------------------------------------------------------------------                              
-#import hdfsaveTAB as hdfsave
-import hdfsaveMLO as hdfsave                            
+import hdfsaveTAB as hdfsave
+#import hdfsaveMLO as hdfsave                            
                             
 def main():
     loc1           = 'tab'
-    gasName        = 'hf'                                                                         # This is the target gas for retrieval
-    idlFname       = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/1999_2012.sav'  # This is path and name of the IDL save file we use to store the data
-    outDir         = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/HDFfiles/'      # This is the directory where the HDF file will be written to
-    #outDir         = '/Users/ebaumer/Data/HDF/'                                                  # This is the directory where the HDF file will be written to
+    gasName        = 'c2h6'                         # This is the target gas for retrieval
+    version        = 'Current'
     if loc1.lower() == 'tab':
         loc            = 'THULE'
     else:    
         loc            = 'MAUNA.LOA.HI'                                               
-    sfitVer        = '0.9.4.4'                                                     # This is the version of sfit4 used for the retrievals
-    year           = 2012
+    sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
+    year           = 2001
     iyear          = year
     imonth         = 1
     iday           = 1
@@ -45,19 +43,27 @@ def main():
     fmonth         = 12
     fday           = 31
    
+    #------------------
+    # For IDL interface
+    #------------------
+    #idlFname       = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/1999_2012.sav'  # This is path and name of the IDL save file we use to store the data
+    #outDir         = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/HDFfiles/'      # This is the directory where the HDF file will be written to
+    #outDir         = '/Users/ebaumer/Data/HDF/'                                                  # This is the directory where the HDF file will be written to
+   
     #---------------------
     # For python interface
     #---------------------
-    #dataDir        = '/Volumes/data1/ebaumer/mlo/c2h6/1995_2012/'
-    #ctlF           = '/Volumes/data1/ebaumer/mlo/c2h6/x.c2h6/sfit4.ctl'
-    #spcDBfile      = '/Volumes/data/Campaign/MLO/Spectral_DB/HRspDB_mlo_1995_2012.dat'
-    #statLyrFile    = '/Volumes/data/Campaign/MLO/local/station.layers'
-    #maxRMS         = 0.6
-    #rmsFlag        = True
-    #tcFlag         = True
-    #pcFlag         = True
-    #cnvFlag        = True
-    #szaFlag        = False
+    dataDir        = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/'+version+'/'
+    ctlF           = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/x.'+gasName.lower()+'/sfit4.ctl'
+    outDir         = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/HDFfiles/'
+    spcDBfile      = '/Volumes/data/Campaign/'+loc1.upper()+'/Spectral_DB/CoaddspDB_tab_1999_2014.dat'
+    statLyrFile    = '/Volumes/data/Campaign/'+loc1.upper()+'/local/station.layers'
+    maxRMS         = 0.8
+    rmsFlag        = True
+    tcFlag         = True
+    pcFlag         = True
+    cnvFlag        = True
+    szaFlag        = False
    
    
     print("Creating HDF file")
@@ -76,9 +82,9 @@ def main():
     # using our pre-defined interface
     #------------------------------------------------
     #myhdf.initDummy()
-    myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
-    #myhdf.initPy(dataDir, ctlF,  spcDBfile, statLyrFile,iyear, imonth, iday,   fyear, fmonth, fday,
-    #             mxRMS=maxRMS, rmsFlg=rmsFlag,tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,szaFlg=szaFlag)
+    #myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
+    myhdf.initPy(dataDir, ctlF,  spcDBfile, statLyrFile,iyear, imonth, iday,   fyear, fmonth, fday,
+                 mxRMS=maxRMS, rmsFlg=rmsFlag,tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,szaFlg=szaFlag)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.

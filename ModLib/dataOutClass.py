@@ -846,6 +846,13 @@ class ReadOutputData(_DateRange):
             # self.dirLst has already been sorted
             #------------------------------------
             for indMain,sngDir in enumerate(self.dirLst):
+                
+                #-----------------------------------------
+                # Check for the existance of summary file
+                # If does not exist then retrieval was not
+                # completed...skip 
+                #-----------------------------------------
+                if not os.path.isfile(sngDir + 'summary'): continue 
     
                 try:
                     with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
@@ -1668,8 +1675,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFaGasPrfVMR = np.asarray(self.aprfs[self.PrimaryGas])                                    # A priori primary gas profile [VMR]
         self.HDFrGasPrfMol = self.HDFrGasPrfVMR * self.HDFairMass                                       # Retrieved primary gas profile [mol cm^-2]
         self.HDFaGasPrfMol = self.HDFaGasPrfVMR * self.HDFairMass                                       # A priori primary gas profile [mol cm^-2]
-        self.HDFsurfP      = np.squeeze(self.refPrf['PRESSURE'][:,-1])                                         # Surface Pressure from Pressure profile
-        self.HDFsurfT      = np.squeeze(self.refPrf['TEMPERATURE'][:,-1])                                          # Surface Temperature from temperature profile
+        self.HDFsurfP      = np.squeeze(self.refPrf['PRESSURE'][:,-1])                                  # Surface Pressure from Pressure profile
+        self.HDFsurfT      = np.squeeze(self.refPrf['TEMPERATURE'][:,-1])                               # Surface Temperature from temperature profile
         self.HDFh2oVMR     = np.asarray(self.rprfs['H2O'])                                              # Retrieved H2O profile [VMR]
         self.HDFaltBnds    = np.vstack((self.alt[:-1],self.alt[1:]))        
 
