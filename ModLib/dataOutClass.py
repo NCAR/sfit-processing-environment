@@ -1770,8 +1770,22 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFazi         = np.delete(self.HDFazi,self.inds)
         self.HDFdatesJD2K   = np.delete(self.HDFdatesJD2K,self.inds)
         self.HDFsza         = np.delete(self.HDFsza,self.inds)
+   
+        print 'Number of observations after filtering = {}'.format(len(self.HDFdates))   
         
-        print 'Number of observations after filtering = {}'.format(len(self.HDFdates))
+        #-------------------------------------------
+        # Determine if there are any negative TC H2O
+        #-------------------------------------------
+        ind = np.where(self.HDFh2oTC < 0.0)[0]
+        if len(ind) > 0: 
+            print '\n\n***********************************'
+            print 'Retrievals found with negative H2O total column values!!!'
+            print 'Number of retrievals found = {}'.format(len(ind))
+            print 'Dates: '
+            for i in ind:
+                print self.HDFdates[i]
+            print '***********************************\n\n'
+
         
 #------------------------------------------------------------------------------------------------------------------------------        
 class PlotData(ReadOutputData):
