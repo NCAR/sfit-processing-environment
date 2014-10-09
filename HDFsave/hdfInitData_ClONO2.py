@@ -168,6 +168,8 @@ class HDFinitData(object):
         #------------
         # Assign data
         #------------
+        nobs                                = np.shape(pyData.HDFdates)[0]            # Del
+        nlyrs                               = np.shape(pyData.HDFaGasPrfMol)[1]       # Del
         self.dates                          = pyData.HDFdates
         self.datesJD2K                      = pyData.HDFdatesJD2K
         self.latitude                       = pyData.HDFlat
@@ -179,24 +181,48 @@ class HDFinitData(object):
         self.altitudeBoundaries             = pyData.HDFaltBnds
         self.pressures                      = pyData.HDFpressPrf
         self.temperatures                   = pyData.HDFtempPrf
-        self.gasMxRatAbsSolar               = pyData.HDFrGasPrfVMR   / self.mxSclFctVal
+        self.gasMxRatAbsSolar               = np.empty([nobs,nlyrs])            #pyData.HDFrGasPrfVMR   / self.mxSclFctVal
+        self.gasMxRatAbsSolar.fill(-9.0E4)
         self.gasMxRatAbsSolarApriori        = pyData.HDFaGasPrfVMR   / self.mxSclFctVal
-        self.gasMxRatAbsSolarAVK            = pyData.HDFak
+        self.gasMxRatAbsSolarAVK            = np.empty([nobs,nlyrs,nlyrs])  #pyData.HDFak
+        self.gasMxRatAbsSolarAVK.fill(-9.0E4)
         self.integrationTimes               = pyData.HDFintT
-        self.gasMxRatAbsSolarUncRand        = pyData.HDFrandErr      / self.mxSclFct2Val
-        self.gasMxRatAbsSolarUncSys         = pyData.HDFsysErr       / self.mxSclFct2Val
-        self.gasColPartAbsSolar             = pyData.HDFrGasPrfMol
+        self.gasMxRatAbsSolarUncRand        = np.empty([nobs,nlyrs,nlyrs])  #pyData.HDFrandErr      / self.mxSclFct2Val
+        self.gasMxRatAbsSolarUncRand.fill(-9.0E4)
+        self.gasMxRatAbsSolarUncSys         = np.empty([nobs,nlyrs,nlyrs])  #pyData.HDFsysErr       / self.mxSclFct2Val
+        self.gasMxRatAbsSolarUncSys.fill(-9.0E4)
+        self.gasColPartAbsSolar             = np.empty([nobs,nlyrs])  #pyData.HDFrGasPrfMol
+        self.gasColPartAbsSolar.fill(-9.0E4)
         self.gasColPartAbsApriori           = pyData.HDFaGasPrfMol
         self.gasColAbsSolar                 = pyData.HDFretTC
         self.gasColAbsSolarApriori          = pyData.HDFaprTC
-        self.gasColAbsSolarAVK              = pyData.HDFavkTC
+        self.gasColAbsSolarAVK              = np.empty([nobs,nlyrs])  #pyData.HDFavkTC
+        self.gasColAbsSolarAVK.fill(-9.0E4)
         self.gasColAbsSolarUncRand          = pyData.HDFtcRanErr
         self.gasColAbsSolarUncSys           = pyData.HDFtcSysErr
         self.angleZastr                     = pyData.HDFsza
         self.angleSolAz                     = pyData.HDFazi
         self.h2oMxRatAbsSolar               = pyData.HDFh2oVMR       / self.mxSclFctVal
         self.h2oColAbsSol                   = pyData.HDFh2oTC
-
+        
+        
+        #self.gasMxRatAbsSolar               = np.empty([nobs,nlyrs])  #np.vstack(dataStrc['ds']['RETVMR']).reshape(nobs,nlyrs)              / self.mxSclFctVal
+        #self.gasMxRatAbsSolar.fill(-9.0E4)
+        #self.gasMxRatAbsSolarApriori        = np.vstack(dataStrc['ds']['APRVMR']).reshape(nobs,nlyrs)              / self.mxSclFctVal
+        #self.gasMxRatAbsSolarAVK            = np.empty([nobs,nlyrs,nlyrs])  #np.vstack(dataStrc['ds']['AK']).reshape(nobs,nlyrs,nlyrs) 
+        #self.gasMxRatAbsSolarAVK.fill(-9.0E4)
+        #self.integrationTimes               = np.asarray(dataStrc['ds']['INT_TIME'])  
+        #self.gasMxRatAbsSolarUncRand        = np.empty([nobs,nlyrs,nlyrs])  #np.vstack(dataStrc['ds']['RAND_COVAR']).reshape(nobs,nlyrs,nlyrs)    / self.mxSclFct2Val
+        #self.gasMxRatAbsSolarUncRand.fill(-9.0E4)
+        #self.gasMxRatAbsSolarUncSys         = np.empty([nobs,nlyrs,nlyrs])  #np.vstack(dataStrc['ds']['SYS_COVAR']).reshape(nobs,nlyrs,nlyrs)     / self.mxSclFct2Val
+        #self.gasMxRatAbsSolarUncSys.fill(-9.0E4)
+        #self.gasColPartAbsSolar             = np.empty([nobs,nlyrs])  #np.vstack(dataStrc['ds']['RETLAYCOL']).reshape(nobs,nlyrs)
+        #self.gasColPartAbsSolar.fill(-9.0E4)
+        #self.gasColPartAbsApriori           = np.vstack(dataStrc['ds']['APRLAYCOL']).reshape(nobs,nlyrs)
+        #self.gasColAbsSolar                 = np.asarray(dataStrc['ds']['RETTC']) 
+        #self.gasColAbsSolarApriori          = np.asarray(dataStrc['ds']['APRTC'])  
+        #self.gasColAbsSolarAVK              = np.empty([nobs,nlyrs])  #np.vstack(dataStrc['ds']['AKTC']).reshape(nobs,nlyrs) 
+        #self.gasColAbsSolarAVK.fill(-9.0E4)
         
         
     def initDummy(self):
