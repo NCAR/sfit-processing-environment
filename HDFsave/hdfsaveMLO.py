@@ -45,6 +45,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.mxSclFctVal         = 1E-6                   
       self.mxSclFct2Name       = 'ppmv2'
       self.mxSclFct2Val        = 1E-12
+      self.fver                = '003'
       if location.lower() == 'thule': self.locID = 'NCAR001'
       else:                           self.locID = 'NCAR002'
 
@@ -97,7 +98,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
                                            self.getH2oMixingRatioAbsorptionSolarName()+';'+self.getH2oColumnAbsorptionSolarName(),
       dataStr['DATA_START_DATE']         = idateStr
       dataStr['DATA_STOP_DATE']          = fdateStr
-      dataStr['DATA_FILE_VERSION']       = '002'
+      dataStr['DATA_FILE_VERSION']       = self.fver
       dataStr['DATA_MODIFICATIONS']      = 'None'
       dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-002'
       dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A. Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
@@ -105,7 +106,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DATA_RULES_OF_USE']       = 'Contact Hannigan;James'
       dataStr['DATA_ACKNOWLEDGEMENT']    = 'NCAR is sponsored by the National Science Foundation. This work is supported under contract by the National Aeronautics and Space Administration.'
       dataStr['FILE_DOI']                = ' '
-      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_002.hdf'
+      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_'+self.fver+'.hdf'
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
       dataStr['FILE_ACCESS']             = 'NDACC'
       dataStr['FILE_PROJECT_ID']         = ' '
@@ -456,8 +457,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()
       dataStr['VAR_DESCRIPTION']      = 'Total systematic error covariance matrix associated with the retrieved vertical profiles of {} in VMR units'.format(self.gasNameUpper)
       dataStr['VAR_NOTES']            = 'Systematic error includes: Temperature, and Line Parameters. Temperature errors are determined by comparing ' +\
-                                        'radiosonde data with NCEP temperature profiles. Line parameter errors are set to 1% for line intensity, 5% for air-broadened half width, ' +\
-                                        'and 1% for tmeperature dependence coefficient. These errors come from HITRAN. Smoothing error is not included.'
+                                        'radiosonde data with NCEP temperature profiles. All line parameter errors are set at 4% as given in Harrison et al., 2010 (JQRST). These errors come from HITRAN. Smoothing error is not included.'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -573,10 +573,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = '1'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.0;1'
-      dataStr['VAR_VALID_MIN']        = -3.0
-      dataStr['VAR_VALID_MAX']        =  3.0
+      dataStr['VAR_VALID_MIN']        = -10.0
+      dataStr['VAR_VALID_MAX']        =  10.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (-3.0,3.0)
+      dataStr['VALID_RANGE']          = (-10.0,10.0)
       dataStr['units']                = '1'
       dataStr['_FillValue']           = self.getFillValue()
       

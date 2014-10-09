@@ -351,9 +351,9 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_UNITS']            = self.mxSclFctName
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.0E{};1'.format(int(math.log10(self.mxSclFctVal)))
       dataStr['VAR_VALID_MIN']        = 0.0
-      dataStr['VAR_VALID_MAX']        = maxval
+      dataStr['VAR_VALID_MAX']        = 0.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,maxval)
+      dataStr['VALID_RANGE']          = (0.0,0.0)
       dataStr['units']                = self.mxSclFctName
       dataStr['_FillValue']           = self.getFillValue()
       
