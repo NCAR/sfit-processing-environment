@@ -35,7 +35,7 @@ def main():
     else:    
         loc            = 'MAUNA.LOA.HI'                                               
     sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
-    year           = 1999
+    year           = 2013
     iyear          = year
     imonth         = 1
     iday           = 1
@@ -53,12 +53,12 @@ def main():
     #---------------------
     # For python interface
     #---------------------
-    dataDir        = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/'+version+'/'
-    ctlF           = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/x.'+gasName.lower()+'/sfit4.ctl'
-    outDir         = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/HDFfiles/'
-    spcDBfile      = '/Volumes/data/Campaign/'+loc1.upper()+'/Spectral_DB/CoaddspDB_tab_1999_2014.dat'
-    #spcDBfile      = '/Volumes/data/Campaign/'+loc1.upper()+'/Spectral_DB/HRspDB_mlo_1995_2014.dat'
-    statLyrFile    = '/Volumes/data/Campaign/'+loc1.upper()+'/local/station.layers'
+    dataDir        = '/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/'+version+'/'
+    ctlF           = '/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/x.'+gasName.lower()+'/sfit4.ctl'
+    outDir         = '/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/HDFfiles/'
+    spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/CoaddspDB_tab_1999_2014.dat'
+    #spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/HRspDB_mlo_1995_2014.dat'
+    statLyrFile    = '/data/Campaign/'+loc1.upper()+'/local/station.layers'
     maxRMS         = 0.8
     rmsFlag        = True
     tcFlag         = True
