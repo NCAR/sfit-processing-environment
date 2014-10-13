@@ -121,7 +121,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr = cl.OrderedDict()
 
       dataStr['VAR_NAME']             = self.getDatetimeName()
-      dataStr['VAR_DESCRIPTION']      = 'Griddatetime (UT) defined relative to reference datetime of Jan. 1 2000 at 0:00:00 UT which is equal to 0.00'
+      dataStr['VAR_DESCRIPTION']      = 'MJD2K (Modified Julian Date 2K) is defined as days since Jan. 1 2000 at 0:00:00 UT'
       dataStr['VAR_NOTES']            = 'None'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
@@ -365,7 +365,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr = cl.OrderedDict()
 
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarAprioriName()
-      dataStr['VAR_DESCRIPTION']      = 'A priori mixing raito profile of {}'.format(self.gasNameUpper)
+      dataStr['VAR_DESCRIPTION']      = 'A priori mixing ratio profile of {}'.format(self.gasNameUpper)
       dataStr['VAR_NOTES']            = 'The same a priori vertical profile is used for all days in the present datafile and is based on WACCM 1980-2020 output'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()

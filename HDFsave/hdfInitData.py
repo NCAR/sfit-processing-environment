@@ -97,7 +97,7 @@ class HDFinitData(object):
         #---------------------------------------------------
         self.datesJD2K                      = np.asarray(dataStrc['ds']['DATETIME'])
         self.latitude                       = dataStrc['ds']['LATITUDE'][0]
-        self.longitude                      = dataStrc['ds']['LONGITUDE'][0]
+        self.longitude                      = 360.0 - dataStrc['ds']['LONGITUDE'][0]                                # Convert [West Long] -> [East Long]
         self.instAltitudes                  = dataStrc['ds']['ALT_INSTRUMENT'][0] / 1000.0                          # Convert [m] -> [km]
         self.surfPressures                  = np.asarray(dataStrc['ds']['SURFACE_PRESSURE'])
         self.surfTemperatures               = np.asarray(dataStrc['ds']['SURFACE_TEMPERATURE'])
