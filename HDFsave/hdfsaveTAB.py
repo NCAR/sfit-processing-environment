@@ -38,7 +38,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       elif dType.lower() == 'float64': self.dTypeStr = 'DOUBLE'       
       self.outDir              = outputDir
       self.gasName             = gasNameStr
-      self.gasNameUpper        = 'ClONO2' #gasNameStr.upper()
+      self.gasNameUpper        = gasNameStr.upper()
       self.sfitVer             = processingSfitVer
       self.loc                 = location
       self.mxSclFctName        = 'ppmv'               
@@ -457,8 +457,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()
       dataStr['VAR_DESCRIPTION']      = 'Total systematic error covariance matrix associated with the retrieved vertical profiles of {} in VMR units'.format(self.gasNameUpper)
       dataStr['VAR_NOTES']            = 'Systematic error includes: Temperature, and Line Parameters. Temperature errors are determined by comparing ' +\
-                                        'radiosonde data with NCEP temperature profiles. Line parameter errors are set to 10% for line intensity, 10% for air-broadened half width, ' +\
-                                        'and 10% for temperature dependence coefficient. Smoothing error is not included.'
+                                        'radiosonde data with NCEP temperature profiles. Line parameter errors are set to 2% for line intensity, 1% for air-broadened half width, ' +\
+                                        'and 2% for temperature dependence coefficient. Smoothing error is not included.'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
