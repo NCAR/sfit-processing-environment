@@ -28,14 +28,14 @@ import hdfsaveTAB as hdfsave
                             
 def main():
     loc1           = 'tab'
-    gasName        = 'c2h6'                         # This is the target gas for retrieval
+    gasName        = 'clono2'                         # This is the target gas for retrieval
     version        = 'Current'
     if loc1.lower() == 'tab':
         loc            = 'THULE'
     else:    
         loc            = 'MAUNA.LOA.HI'                                               
     sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
-    year           = 2013
+    year           = 2011
     iyear          = year
     imonth         = 1
     iday           = 1
@@ -59,7 +59,7 @@ def main():
     spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/CoaddspDB_tab_1999_2014.dat'
     #spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/HRspDB_mlo_1995_2014.dat'
     statLyrFile    = '/data/Campaign/'+loc1.upper()+'/local/station.layers'
-    maxRMS         = 0.8
+    maxRMS         = 0.6
     rmsFlag        = True
     tcFlag         = True
     pcFlag         = True
