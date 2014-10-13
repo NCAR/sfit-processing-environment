@@ -172,10 +172,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = 'deg'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.74533E-2;rad'
-      dataStr['VAR_VALID_MIN']        = -180.0
-      dataStr['VAR_VALID_MAX']        =  180.0
+      dataStr['VAR_VALID_MIN']        = 0.0
+      dataStr['VAR_VALID_MAX']        = 360.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (-180.0,180.0)
+      dataStr['VALID_RANGE']          = (0.0,360.0)
       dataStr['units']                = 'deg'
       dataStr['_FillValue']           = self.getFillValue()
 
