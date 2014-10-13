@@ -28,7 +28,7 @@ import hdfsaveTAB as hdfsave
                             
 def main():
     loc1           = 'tab'
-    gasName        = 'co'                         # This is the target gas for retrieval
+    gasName        = 'c2h6'                         # This is the target gas for retrieval
     version        = 'Current'
     if loc1.lower() == 'tab':
         loc            = 'THULE'
@@ -59,7 +59,7 @@ def main():
     spcDBfile      = '/Volumes/data/Campaign/'+loc1.upper()+'/Spectral_DB/CoaddspDB_tab_1999_2014.dat'
     #spcDBfile      = '/Volumes/data/Campaign/'+loc1.upper()+'/Spectral_DB/HRspDB_mlo_1995_2014.dat'
     statLyrFile    = '/Volumes/data/Campaign/'+loc1.upper()+'/local/station.layers'
-    maxRMS         = 0.6
+    maxRMS         = 0.8
     rmsFlag        = True
     tcFlag         = True
     pcFlag         = True
