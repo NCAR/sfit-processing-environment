@@ -23,7 +23,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #----------------------------------------------------------------------------------------                              
-import hdfsaveTAB as hdfsave
+import hdfsaveTAB_2 as hdfsave
 #import hdfsaveMLO as hdfsave                            
                             
 def main():
@@ -35,7 +35,7 @@ def main():
     else:    
         loc            = 'MAUNA.LOA.HI'                                               
     sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
-    year           = 2011
+    year           = 2001
     iyear          = year
     imonth         = 1
     iday           = 1

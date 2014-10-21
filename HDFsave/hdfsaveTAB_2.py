@@ -27,7 +27,7 @@ import hdfBaseRetDat
 import numpy as np
 import math
 import collections as cl
-import hdfInitData
+import hdfInitData_ClONO2 as hdfInitData
 
 class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
