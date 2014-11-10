@@ -74,7 +74,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    rprfsfile =  string.join([direc, '/', dd, '/', 'rprfs.table'], '')
 	    if not os.path.isfile(rprfsfile):
 	        print 'rprfs.table'
-	        continue
+	        continue	    
 	    aprfsfile =  string.join([direc, '/', dd, '/', 'aprfs.table'], '')
 	    if not os.path.isfile(aprfsfile):
 	        print 'aprfs.table'
