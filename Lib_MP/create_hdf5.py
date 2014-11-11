@@ -352,6 +352,12 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 
 	h5file.close()
 
+	# Create spectral database
+	fid = open('spectral_database.dat', 'w')
+	for nr in range(0,len(mdate)):
+		fid.write('%s %f %f %f %f\n'%(spectra[nr], mdate[nr], dur[nr], sza[nr], azi[nr]))
+	fid.close()
+
 
 if __name__ == '__main__':
 	
