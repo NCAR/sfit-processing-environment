@@ -72,6 +72,11 @@ def nearestDate(daysList, year, month, day=1):
     testDate = datetime.date(year, month, day)
     return min( daysList, key=lambda x:abs(x-testDate) )
 
+def nearestTime(daysList, year, month, day, hour, minute, second):
+    ''' Finds the nearest Time from a list of days based on a given year, month, and day'''
+    testDate = datetime.datetime(year, month, day, hour, minute, second)
+    return min( daysList, key=lambda x:abs(x-testDate) )
+
 def sortDict(DataDict,keyval):
     ''' Sort all values of dictionary based on values of one key'''
     base = DataDict[keyval]

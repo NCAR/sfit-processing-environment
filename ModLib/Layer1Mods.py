@@ -55,11 +55,12 @@ import glob
 import logging
 import shutil
 import re
-import sfitClasses as sc
 from sfitClasses import ExitError
-import numpy as np
-import itertools as it
-import printStatmnts as ps
+import sfitClasses       as sc
+import numpy             as np
+import itertools         as it
+import printStatmnts     as ps
+import datetime          as dt
 
 
                                 #--------------------------#
@@ -154,19 +155,42 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
     r = re.compile(r"([0-9]+)")
     waterVer = [int(r.search(os.path.splitext(wfile)[1]).group(1)) for wfile in waterFiles]
 
+    #-------------------------------------------
     # For wVer < 0 get latest water version file
+    #-------------------------------------------
     if wVer < 0:
         waterInd  = waterVer.index(max(waterVer))
 
+    #----------------------------------------------------
     # For wVer >= 0 get user specified water version file   
+    #----------------------------------------------------
     else:
-        try:
-            waterInd = waterVer.index(wVer)
-        except ValueError:
-            print 'Water version %d not found, using latest version' % wVer
+        waterInd = [i for i, ver in enumerate(waterVer) if ver == wVer]
+        #waterInd = waterVer.index(wVer)
+        
+        #------------------------------------------------
+        # If water version == 99 find the closest water
+        # to retrieval
+        #------------------------------------------------
+        if waterInd and wVer == 99:
+            waterNames = [os.path.basename(waterFiles[i]) for i in waterInd]
+            waterDates = [dt.datetime(int(x.strip().split('.')[1][0:4]),int(x.strip().split('.')[1][4:6]),int(x.strip().split('.')[1][6:]),
+                                      int(x.strip().split('.')[2][0:2]),int(x.strip().split('.')[2][2:4]),int(x.strip().split('.')[2][4:])) for x in waterNames]
+            
+            obsDate = dt.datetime(int(str(int(specDB['Date'][spcDBind]))[0:4]),int(str(int(specDB['Date'][spcDBind]))[4:6]),int(str(int(specDB['Date'][spcDBind]))[6:]),
+                                  int(specDB['Time'][spcDBind].split(':')[0]),int(specDB['Time'][spcDBind].split(':')[1]),int(specDB['Time'][spcDBind].split(':')[2]))
+            
+            nearstD  = sc.nearestTime(waterDates,obsDate.year,obsDate.month,obsDate.day,obsDate.hour,obsDate.minute,obsDate.second)    
+            indTemp  = waterDates.index(nearstD) 
+            waterInd = waterFiles.index(zptwPath+waterNames[indTemp]) 
+
+        elif not waterInd:
+            print 'Water version {0:d} not found, using latest version: {1:d} '.format(wVer,max(waterVer))
             if logFile: logFile.error('Water version %d not found, using latest version'% wVer)
             waterInd = waterVer.index(max(waterVer))
-
+            
+        else: waterInd = waterInd[0]
+              
     waterFile = waterFiles[waterInd] 
     
     print '\n'
