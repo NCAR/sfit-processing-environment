@@ -157,9 +157,10 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
 
     #-------------------------------------------
     # For wVer < 0 get latest water version file
+    # that is not 99
     #-------------------------------------------
     if wVer < 0:
-        waterInd  = waterVer.index(max(waterVer))
+        waterInd  = waterVer.index(max([val for val in waterVer if val != 99]))
 
     #----------------------------------------------------
     # For wVer >= 0 get user specified water version file   
