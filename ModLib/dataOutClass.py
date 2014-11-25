@@ -715,7 +715,8 @@ class ReadOutputData(_DateRange):
             self.readPrfFlgRet[self.PrimaryGas] = False
 
 
-    def fltrData(self,gasName,mxrms=1.0,mxsza=80.0,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,szaFlg=False):
+    def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,szaFlg=False,valFlg=False):
+        
         
         #------------------------------------------
         # If filtering has already been done return
@@ -837,7 +838,8 @@ class ReadOutputData(_DateRange):
             ''' Reads in reference profile, an input file for sfit4 (raytrace) '''
             self.refPrf = {}
                 
-            parms = ['ALTITUDE','PRESSURE','TEMPERATURE']
+            # names not standardized, should probably changed to position of block
+            parms = ['ALTITUDE','PRESSURE','TEMPERATURE','Standard fascod altitudes','NCEP model pressure','NCEP model temperature']
             
             if not fname: fname = 'reference.prf'
             
@@ -863,11 +865,21 @@ class ReadOutputData(_DateRange):
                     #----------------------------------------
                     nlyrs  = int(lines[0].strip().split()[1])
                     nlines = int(np.ceil(nlyrs/5.0))
+
+                    # NAMES are not standard, but position is!!!
+
+                    ind = 1
+                    self.refPrf.setdefault('ALTITUDE',[]).append(lines[ind+1:ind+nlines+1])
+                    ind = ind+nlines+1
+                    self.refPrf.setdefault('PRESSURE',[]).append(lines[ind+1:ind+nlines+1])
+                    ind = ind+nlines+1
+                    self.refPrf.setdefault('TEMPERATURE',[]).append(lines[ind+1:ind+nlines+1])
                     
-                    for ind,line in enumerate(lines):
-                        if any(p in line for p in parms):
-                            val = [x for x in parms if x in line][0]
-                            self.refPrf.setdefault(val,[]).append([float(x[:-1]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
+                    
+                    # for ind,line in enumerate(lines):
+                    #     if any(p in line for p in parms):
+                    #         val = [x for x in parms if x in line][0]
+                    #         self.refPrf.setdefault(val,[]).append([float(x[:-1]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
 
                 except Exception as errmsg:
                     print errmsg
@@ -892,6 +904,7 @@ class ReadOutputData(_DateRange):
             # Loop through collected directories
             #-----------------------------------
             for sngDir in self.dirLst:
+    
     
                 try:
                     with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
@@ -921,7 +934,8 @@ class ReadOutputData(_DateRange):
                     indNPTSB = lines[ind2].strip().split().index('NPTSB')
                     indFOV   = lines[ind2].strip().split().index('FOVDIA')
                     indSNR   = lines[ind2].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
-                    indFitSNR= lines[ind2].strip().split().index('FIT_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
+                    # --- DIFFERENTLY NAMED IN MY SFIT4 ----
+                    indFitSNR= lines[ind2].strip().split().index('CALC_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
                     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
             
                     for lnum in range(ind2+1,lend,2):
@@ -960,7 +974,7 @@ class ReadOutputData(_DateRange):
             #------------------------
             for k in self.summary:
                 self.summary[k] = np.asarray(self.summary[k])
-    
+
             if self.dirFlg: self.summary = sortDict(self.summary, 'date')
             else:           return self.summary    
             
@@ -1542,6 +1556,7 @@ class DbInputFile(_DateRange):
                 #------------------------------------------------------
                 if None in row: del row[None]                    
 
+                
                 for col,val in row.iteritems():
                     try:
                         val = float(val)                                                         # Convert string to float
@@ -1655,6 +1670,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # Gather Retrieval output data, filter set, and then find corresponding specDB
         # entries for specDB data
         #-----------------------------------------------------------------------------
+
         self.readprfs([self.PrimaryGas,'H2O'],retapFlg=1)          # Retrieved Profiles
         self.readprfs([self.PrimaryGas],retapFlg=0)                # A priori Profiles
         self.readsummary()                                         # Summary file information
@@ -1675,8 +1691,6 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFaGasPrfVMR = np.asarray(self.aprfs[self.PrimaryGas])                                    # A priori primary gas profile [VMR]
         self.HDFrGasPrfMol = self.HDFrGasPrfVMR * self.HDFairMass                                       # Retrieved primary gas profile [mol cm^-2]
         self.HDFaGasPrfMol = self.HDFaGasPrfVMR * self.HDFairMass                                       # A priori primary gas profile [mol cm^-2]
-        self.HDFsurfP      = np.squeeze(self.refPrf['PRESSURE'][:,-1])                                  # Surface Pressure from Pressure profile
-        self.HDFsurfT      = np.squeeze(self.refPrf['TEMPERATURE'][:,-1])                               # Surface Temperature from temperature profile
         self.HDFh2oVMR     = np.asarray(self.rprfs['H2O'])                                              # Retrieved H2O profile [VMR]
         self.HDFaltBnds    = np.vstack((self.alt[:-1],self.alt[1:]))        
 
@@ -1724,14 +1738,27 @@ class GatherHDF(ReadOutputData,DbInputFile):
             tempSpecDB = self.dbFindDate(self.HDFdates[i])
             if i == 0:
                 self.HDFlat     = np.array(tempSpecDB['N_Lat'])
-                self.HDFlon     = np.array(tempSpecDB['W_Lon'])
+                if tempSpecDB.has_key('W_Lon'):
+                    self.HDFlon     = np.array(tempSpecDB['W_Lon'])
+                else:
+                    self.HDFlon     = -np.array(tempSpecDB['E_Lon'])
                 self.HDFinstAlt = np.array(tempSpecDB['Alt'] / 1000.0)
             self.HDFintT[i] = tempSpecDB['Dur']
             self.HDFazi[i]  = tempSpecDB['SAzm']
+            if tempSpecDB.has_key('S_PRES'):
+                self.HDFsurfP      = np.array(tempSpecDB['S_PRES'])    # Surface Pressure
+            else:
+                self.HDFsurfP      = np.array(-99999)
+            if tempSpecDB.has_key('S_TEMP'):
+                self.HDFsurfT      = np.array(tempSpecDB['S_TEMP'])    # Surface Temperature
+            else:
+                self.HDFsurfT      = np.array(-99999) 
+            if tempSpecDB.has_key('VALID'):
+                self.HDFsurfT      = np.array(tempSpecDB['VALID'])    # Surface Temperature
+            else:
+                self.HDFsurfT      = np.array(-1) 
             
-                
-            
-    def fltrHDFdata(self,maxRMS,maxSZA,rmsF,tcF,pcF,cnvF,szaF):
+    def fltrHDFdata(self,maxRMS,maxSZA,rmsF,tcF,pcF,cnvF,szaF,valF):
 
         #----------------------------------------------------
         # Print total number of observations before filtering
@@ -1741,7 +1768,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         #--------------------
         # Call to filter data
         #--------------------
-        self.fltrData(self.PrimaryGas, mxrms=maxRMS, mxsza=maxSZA, rmsFlg=rmsF, tcFlg=tcF,pcFlg=pcF,cnvrgFlg=cnvF,szaFlg=szaF)
+        self.fltrData(self.PrimaryGas, mxrms=maxRMS, mxsza=maxSZA, rmsFlg=rmsF, tcFlg=tcF,pcFlg=pcF,cnvrgFlg=cnvF,szaFlg=szaF,valFlg=valF)
         
         #------------
         # Remove data
@@ -1838,7 +1865,7 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,valFlg=True)
         else: self.inds = np.array([]) 
         
         if self.empty: return False
