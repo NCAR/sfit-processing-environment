@@ -971,7 +971,7 @@ class ReadOutputData(_DateRange):
                 to an altitude layer [nLayers,nObservations]
                 retapFlg determines whether retrieved profiles (=1) or a priori profiles (=0) are read'''
         self.deflt = {}
-        retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be retrieved
+        retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS','H2O']   # These profiles will always be retrieved
 
 
         if not fname: 
@@ -2704,7 +2704,8 @@ class PlotData(ReadOutputData):
         # Get Profile and Summary information. Need
         # profile info for filtering
         #------------------------------------------
-        if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas,'H2O'],retapFlg=1)   # Retrieved Profiles
+        if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
+        if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
         if self.empty: return False
         if not self.readsummaryFlg:                 self.readsummary()                            # Summary File info
         if not self.readPbpFlg:                     self.readPbp()                                # Pbp file info
