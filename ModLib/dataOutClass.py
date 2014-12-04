@@ -2741,7 +2741,7 @@ class PlotData(ReadOutputData):
         nbands  = self.nbands
         Airmass = np.asarray(self.rprfs['AIRMASS'])
         rPrf    = np.asarray(self.rprfs[self.PrimaryGas]) * sclfct
-        rPrfDry = np.asarray(self.rprfs[self.PrimaryGas]) / (1.0 - np.asarray(self.rprfs['H2O']))* sclfct
+        rPrfDry = np.asarray(self.rprfs[self.PrimaryGas]) / (1.0 - np.asarray(self.aprfs['H2O']))* sclfct
         rPrfMol = np.asarray(self.rprfs[self.PrimaryGas]) * Airmass
         alt     = np.asarray(self.rprfs['Z'][0,:])
         
@@ -2836,7 +2836,7 @@ class PlotData(ReadOutputData):
                 ind1 = nearestind(pcol[0], alt)
                 ind2 = nearestind(pcol[1], alt)               
                 vmrP = np.average(rPrf[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
-                vmrPDry = np.average(rPrfDr[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
+                vmrPDry = np.average(rPrfDry[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
                 sumP = np.sum(rPrfMol[:,ind2:ind1],axis=1)
                 fig,(ax1,ax2)  = plt.subplots(2,1,sharex=True)
                 ax1.plot(dates,vmrPDry,'k.',markersize=4)
