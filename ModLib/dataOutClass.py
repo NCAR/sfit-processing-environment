@@ -2704,7 +2704,7 @@ class PlotData(ReadOutputData):
         # Get Profile and Summary information. Need
         # profile info for filtering
         #------------------------------------------
-        if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
+        if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas,'H2O'],retapFlg=1)   # Retrieved Profiles
         if self.empty: return False
         if not self.readsummaryFlg:                 self.readsummary()                            # Summary File info
         if not self.readPbpFlg:                     self.readPbp()                                # Pbp file info
@@ -2740,6 +2740,7 @@ class PlotData(ReadOutputData):
         nbands  = self.nbands
         Airmass = np.asarray(self.rprfs['AIRMASS'])
         rPrf    = np.asarray(self.rprfs[self.PrimaryGas]) * sclfct
+        rPrfDry = np.asarray(self.rprfs[self.PrimaryGas]) / (1.0 - np.asarray(self.rprfs['H2O']))* sclfct
         rPrfMol = np.asarray(self.rprfs[self.PrimaryGas]) * Airmass
         alt     = np.asarray(self.rprfs['Z'][0,:])
         
@@ -2767,6 +2768,7 @@ class PlotData(ReadOutputData):
         dofs    = np.delete(dofs,self.inds)
         chi2y   = np.delete(chi2y,self.inds)
         rPrf    = np.delete(rPrf,self.inds,axis=0)
+        rPrfDry = np.delete(rPrfDry,self.inds,axis=0)
         rPrfMol = np.delete(rPrfMol,self.inds,axis=0)
         Airmass = np.delete(Airmass,self.inds,axis=0)
         
@@ -2832,14 +2834,15 @@ class PlotData(ReadOutputData):
             for pcol in partialCols:
                 ind1 = nearestind(pcol[0], alt)
                 ind2 = nearestind(pcol[1], alt)               
-                vmrP = np.average(rPrf[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1])
+                vmrP = np.average(rPrf[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
+                vmrPDry = np.average(rPrfDr[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
                 sumP = np.sum(rPrfMol[:,ind2:ind1],axis=1)
                 fig,(ax1,ax2)  = plt.subplots(2,1,sharex=True)
-                ax1.plot(dates,vmrP,'k.',markersize=4)
+                ax1.plot(dates,vmrPDry,'k.',markersize=4)
                 ax2.plot(dates,sumP,'k.',markersize=4)
                 ax1.grid(True)
                 ax2.grid(True)
-                ax1.set_ylabel('VMR ['+sclname+']')
+                ax1.set_ylabel('VMR ['+sclname+'] Dry Air')
                 ax2.set_ylabel('Retrieved Partial Column\n[molecules cm$^{-2}$]',multialignment='center')
                 ax1.set_title('Partial Column Weighted VMR and molecules cm$^{-2}$\nAltitude Layer '+str(alt[ind1])+'[km] - '+str(alt[ind2])+'[km]',
                               multialignment='center',fontsize=12)
