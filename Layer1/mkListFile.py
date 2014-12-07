@@ -27,7 +27,22 @@
 #       Version history stored in git repository
 #
 #
-# References:
+# License:
+#    Copyright (c) 2013-2014 NDACC/IRWG
+#    This file is part of sfit4.
+#
+#    sfit4 is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    any later version.
+#
+#    sfit4 is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #
 #----------------------------------------------------------------------------------------
 
@@ -168,20 +183,33 @@ def main(argv):
     #------------------------
     # Write data to list file
     #------------------------
-    lstFile.info('# Begin List File Meta-Data')
-    lstFile.info('Database_File  = ' + inVars.inputs['spcdbFile'])
-    lstFile.info('WACCM_File     = ' + inVars.inputs['WACCMfile'])
-    lstFile.info('ctl_File       = ' + inVars.inputs['ctlList'][0][0])
-    lstFile.info('FilterID       = ' + inVars.inputs['ctlList'][0][5])
-    lstFile.info('VersionName    = ' + inVars.inputs['ctlList'][0][6])
-    lstFile.info('Site           = ' + inVars.inputs['loc'])
+    lstFile.info('# Begin List File Meta-Data'                                 )
+    lstFile.info('Start Date     = '                                           )
+    lstFile.info('End Date       = '                                           )
+    lstFile.info('WACCM_File     = ' + inVars.inputs['WACCMfile']              )
+    lstFile.info('ctl_File       = ' + inVars.inputs['ctlList'][0][0]    )
+    lstFile.info('FilterID       = ' + inVars.inputs['ctlList'][0][1]    )
+    lstFile.info('VersionName    = ' + inVars.inputs['ctlList'][0][2]    )
+    lstFile.info('Site           = ' + inVars.inputs['loc']                 )
     lstFile.info('statnLyrs_file = ' + ctlData.inputs['file.in.stalayers'][0])
-    lstFile.info('primGas        = ' + ctlData.primGas)
-    lstFile.info('specDBfile     = ' + inVars.inputs['spcdbFile'])
+    lstFile.info('primGas        = ' + ctlData.primGas                       )
+    lstFile.info('specDBfile     = ' + inVars.inputs['spcdbFile']              )
+    lstFile.info('Coadd flag     = ' + str(inVars.inputs['coaddFlg'])          )
+    lstFile.info('nBNRfiles      = ' + str(inVars.inputs['nBNRfiles'])         )
+    lstFile.info('ilsFlg         = ' + str(inVars.inputs['ilsFlg'])            )
+    lstFile.info('pspecFlg       = ' + str(inVars.inputs['pspecFlg'])          )
+    lstFile.info('refmkrFlg      = ' + str(inVars.inputs['refmkrFlg'])         )
+    lstFile.info('sfitFlg        = ' + str(inVars.inputs['sfitFlg'])           )
+    lstFile.info('lstFlg         = ' + str(inVars.inputs['lstFlg'])            )
+    lstFile.info('errFlg         = ' + str(inVars.inputs['errFlg'])            )
+    lstFile.info('zptFlg         = ' + str(inVars.inputs['zptFlg'])            )
+    lstFile.info('refMkrLvl      = ' + str(inVars.inputs['refMkrLvl'])         )
+    lstFile.info('wVer           = ' + str(inVars.inputs['wVer'])              )
+    lstFile.info('nbands         = ' + str(len(ctlData.inputs['band']))        )
     lstFile.info('# End List File Meta-Data')
     lstFile.info('')
-    lstFile.info('Date         TimeStamp    Directory ')      
-
+    lstFile.info('Date         TimeStamp    Directory ')        
+   
     #-----------------------------------------------------
     # Loop through directory to find all valid retreivals.
     # Retrieval is valid when summary file exists.

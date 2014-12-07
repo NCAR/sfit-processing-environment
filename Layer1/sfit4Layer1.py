@@ -19,7 +19,8 @@
 # Notes:
 #       1) Command line arguments tell the program where the Layer 1
 #          input file resides and where to write the log file
-#       2) Options include:
+#       2) The hbin file must be created prior to running Layer1
+#       23 Options include:
 #            -i <file> : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file
 #            -l        : Flag to create log files of processing. Path to write log files is specified in input file 
 #            -L <0/1>  : Flag to create output list file. Path to write list files is specified in input file. 
@@ -30,7 +31,7 @@
 #
 #
 # Usage:
-#      ./sfit4Layer1 -i <filename> -l -L -P4
+#      ./sfit4Layer1 -i <filename> -l -L<0/1> -P<int>
 #
 # Examples:
 #      Runs sfit4Layer1 with input file Layer1input.py and writes log files 
@@ -43,7 +44,22 @@
 #       Version history stored in git repository
 #
 #
-# References:
+# License:
+#    Copyright (c) 2013-2014 NDACC/IRWG
+#    This file is part of sfit4.
+#
+#    sfit4 is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    any later version.
+#
+#    sfit4 is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #
 #----------------------------------------------------------------------------------------
 
@@ -60,8 +76,10 @@ import datetime as dt
 import glob
 import re
 import sfitClasses as sc
+import dataOutClass as dc
 import shutil
-from Layer1Mods import refMkrNCAR, t15ascPrep#, errAnalysis
+from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis
+import matplotlib.pyplot as plt
 
 
 
@@ -155,6 +173,9 @@ def main(argv):
             
         # Pause after skip option
         elif opt == '-P':
+            if not arg or arg.startswith('-'):
+                usage()
+                sys.exit()            
             pauseFlg = True
             try:
                 nskips = int(arg) - 1
@@ -174,6 +195,9 @@ def main(argv):
             
         # Option for List file
         elif opt == '-L':
+            if not arg or arg.startswith('-'):
+                usage()
+                sys.exit()
             lstFlg      = True
             lstFnameFlg = int(arg)
                                            
@@ -203,8 +227,7 @@ def main(argv):
         
         logFile = logging.getLogger('1')
         logFile.setLevel(logging.INFO)
-        if lstFnameFlg:    hdlr1   = logging.FileHandler(log_fpath + dt.datetime.now().strftime('%Y%m%d_%H%M%S') + '.log',mode='w')
-        else:              hdlr1   = logging.FileHandler(log_fpath + 'testing.log',mode='w')
+        hdlr1   = logging.FileHandler(log_fpath + mainInF.inputs['ctlList'][0][2] + '.log',mode='w')
         fmt1    = logging.Formatter('%(asctime)s %(levelname)-8s %(message)s','%a, %d %b %Y %H:%M:%S')
         hdlr1.setFormatter(fmt1)
         logFile.addHandler(hdlr1)  
@@ -228,7 +251,7 @@ def main(argv):
         ckDir(lst_fpath)       
         lstFile = logging.getLogger('2')
         lstFile.setLevel(logging.INFO)
-        if lstFnameFlg: hdlr2   = logging.FileHandler(lst_fpath + dt.datetime.now().strftime('%Y%m%d_%H%M%S') + '.lst',mode='w')
+        if lstFnameFlg: hdlr2   = logging.FileHandler(lst_fpath + mainInF.inputs['ctlList'][0][2] + '.lst',mode='w')
         else:           hdlr2   = logging.FileHandler(lst_fpath + 'testing.lst',mode='w')
         fmt2    = logging.Formatter('')
         hdlr2.setFormatter(fmt2)
@@ -263,7 +286,7 @@ def main(argv):
     #--------------------
     # Level 1 -- LOC
     #--------------------
-    if not( isinstance(mainInF.inputs['loc'], list) ): mainInF.inputs['loc'] =[mainInF.inputs['loc']]
+    if not( isinstance(mainInF.inputs['loc'], list) ): mainInF.inputs['loc'] = [mainInF.inputs['loc']]
         
     for loc in mainInF.inputs['loc']:
         
@@ -329,20 +352,35 @@ def main(argv):
             #-----------------------------
             if lstFlg:
                 lstFile.info('# Begin List File Meta-Data')
-                lstFile.info('Database_File  = ' + mainInF.inputs['spcdbFile'])
-                lstFile.info('WACCM_File     = ' + mainInF.inputs['WACCMfile'])
-                lstFile.info('ctl_File       = ' + mainInF.inputs['ctlList'][ctl_ind][0])
-                lstFile.info('FilterID       = ' + mainInF.inputs['ctlList'][ctl_ind][5])
-                lstFile.info('VersionName    = ' + mainInF.inputs['ctlList'][ctl_ind][6])
-                lstFile.info('Site           = ' + mainInF.inputs['loc'][0])
+                lstFile.info('Start Date     = ' + str(inDateRange.dateList[0])             )
+                lstFile.info('End Date       = ' + str(inDateRange.dateList[-1])            )
+                lstFile.info('WACCM_File     = ' + mainInF.inputs['WACCMfile']              )
+                lstFile.info('ctl_File       = ' + mainInF.inputs['ctlList'][ctl_ind][0]    )
+                lstFile.info('FilterID       = ' + mainInF.inputs['ctlList'][ctl_ind][1]    )
+                lstFile.info('VersionName    = ' + mainInF.inputs['ctlList'][ctl_ind][2]    )
+                lstFile.info('Site           = ' + mainInF.inputs['loc'][0]                 )
                 lstFile.info('statnLyrs_file = ' + ctlFileGlb.inputs['file.in.stalayers'][0])
-                lstFile.info('primGas        = ' + ctlFileGlb.primGas)
-                lstFile.info('specDBfile     = ' + mainInF.inputs['spcdbFile'])
+                lstFile.info('primGas        = ' + ctlFileGlb.primGas                       )
+                lstFile.info('specDBfile     = ' + mainInF.inputs['spcdbFile']              )
+                lstFile.info('Coadd flag     = ' + str(mainInF.inputs['coaddFlg'])          )
+                lstFile.info('nBNRfiles      = ' + str(mainInF.inputs['nBNRfiles'])         )
+                lstFile.info('ilsFlg         = ' + str(mainInF.inputs['ilsFlg'])            )
+                lstFile.info('pspecFlg       = ' + str(mainInF.inputs['pspecFlg'])          )
+                lstFile.info('refmkrFlg      = ' + str(mainInF.inputs['refmkrFlg'])         )
+                lstFile.info('sfitFlg        = ' + str(mainInF.inputs['sfitFlg'])           )
+                lstFile.info('lstFlg         = ' + str(mainInF.inputs['lstFlg'])            )
+                lstFile.info('errFlg         = ' + str(mainInF.inputs['errFlg'])            )
+                lstFile.info('zptFlg         = ' + str(mainInF.inputs['zptFlg'])            )
+                lstFile.info('refMkrLvl      = ' + str(mainInF.inputs['refMkrLvl'])         )
+                lstFile.info('wVer           = ' + str(mainInF.inputs['wVer'])              )
+                lstFile.info('nbands         = ' + str(len(ctlFileGlb.inputs['band']))      )
                 lstFile.info('# End List File Meta-Data')
                 lstFile.info('')
                 lstFile.info('Date         TimeStamp    Directory ')            
-                
-                                
+                   
+            #----------------------
+            # Filtering spectral DB
+            #----------------------
             #-------------------------
             # Filter spectral db based
             # on wavenumber bounds in
@@ -369,9 +407,42 @@ def main(argv):
             # on filter ID. Using this can help avoid the bug when pspec tries to apply a filter band outside
             # spectral region of a bnr file.
             #------------------------------------------------------------------------------------------------
-            if mainInF.inputs['ctlList'][ctl_ind][5]:
-                dbFltData_2 = dbData.dbFilterFltrID(mainInF.inputs['ctlList'][ctl_ind][5], dbFltData_2)                
+            if mainInF.inputs['ctlList'][ctl_ind][1]:
+                dbFltData_2 = dbData.dbFilterFltrID(mainInF.inputs['ctlList'][ctl_ind][1], dbFltData_2)                
                 if not(dbFltData_2): continue                # Test for empty dicitonary (i.e. no data)
+                         
+            #--------------------------------------------------------
+            # Filter database based on forward and backward scan flag
+            #--------------------------------------------------------
+            if mainInF.inputs['scnFlg'] > 0:
+                dbFltData_2 = dbData.dbFilterScn(mainInF.inputs['scnFlg'], dbFltData_2 )
+            
+            #---------------------------------------------------------------------             
+            # Check for the existance of Output folder <Version> and create if DNE
+            #---------------------------------------------------------------------
+            if mainInF.inputs['ctlList'][ctl_ind][2]:
+                wrkOutputDir2 = wrkOutputDir1 + mainInF.inputs['ctlList'][ctl_ind][2] + '/' 
+                ckDirMk( wrkOutputDir2, logFile )             
+            else:
+                wrkOutputDir2 = wrkOutputDir1   
+                      
+            #-----------------------------------------------
+            # Create a folder within the output directory to 
+            # store various input files: ctl, hbin, isotope
+            #-----------------------------------------------
+            ctlPath,ctlFname = os.path.split(mainInF.inputs['ctlList'][ctl_ind][0])                    
+            archDir          = wrkOutputDir2 + 'inputFiles' + '/'
+            
+            if ckDirMk(archDir, logFile):
+                for f in glob.glob(archDir + '*'): os.remove(f)
+            
+            shutil.copy(mainInF.inputs['ctlList'][ctl_ind][0], archDir)       # Copy ctl file
+            
+            for file in glob.glob(ctlPath + '/*hbin*'):                       # Copy hbin files
+                shutil.copy(file, archDir)
+            
+            for file in glob.glob(ctlPath + '/isotope*'):                     # Copy isotope file
+                shutil.copy(file,archDir)            
                          
             #------------------------------------------
             # Level 3 -- Loop through spectral db lines
@@ -379,8 +450,21 @@ def main(argv):
             nobs = len(dbFltData_2['Date'])
             for spcDBind in range(0, nobs):  
                 
+                #-----------------------------------------------------------
+                # Grab spectral data base information for specific retrieval
+                #-----------------------------------------------------------
+                # Get current date and time of spectral database entry
+                currntDayStr = str(int(dbFltData_2['Date'][spcDBind]))
+                currntDay    = dt.datetime(int(currntDayStr[0:4]),int(currntDayStr[4:6]),int(currntDayStr[6:]),int(dbFltData_2['Time'][spcDBind][0:2]),int(dbFltData_2['Time'][spcDBind][3:5]),int(dbFltData_2['Time'][spcDBind][6:]) )
+                # Get dictionary with specific date
+                specDBone    = dbData.dbFindDate(currntDay,fltDict=dbFltData_2)                
+                
                 brkFlg = True    # Flag to break out of while statement
                 while True:      # While statement is for the repeat function 
+                    print '\n\n\n'
+                    print '*************************************************'
+                    print '*************Begin New Retrieval*****************'
+                    print '*************************************************'                    
                     #-------------------------------------------------------------
                     # If pause after skip flag is initialized, do several things:
                     # 1) Check if number of skips exceeds total number of filtered
@@ -415,18 +499,15 @@ def main(argv):
                     wrkInputDir2 = wrkInputDir1 + yrstr + mnthstr + daystr + '/'               
                     ckDir( wrkInputDir2, logFlg=logFile, exit=True )                       
                     
-                    # Check for the existance of Output folder <Version> and create if DNE
-                    if mainInF.inputs['ctlList'][ctl_ind][6]:
-                        wrkOutputDir2 = wrkOutputDir1 + mainInF.inputs['ctlList'][ctl_ind][6] + '/' 
-                        ckDirMk( wrkOutputDir2, logFile )             
-                    else:
-                        wrkOutputDir2 = wrkOutputDir1
-            
-                    # Check for the existance of Output folder <Date>.<TimeStamp> and create if DNE
+                    #-----------------------------------------
+                    # Check for the existance of Output folder 
+                    # <Date>.<TimeStamp> and create if DNE
+                    #-----------------------------------------
                     wrkOutputDir3 = wrkOutputDir2 + datestr + '.' + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '/' 
-                    if not ckDirMk( wrkOutputDir3, logFile ):
+                    
+                    if ckDirMk( wrkOutputDir3, logFile ):
                         # Remove all files in Output directory if previously exists!!
-                        for f in glob.glob(wrkOutputDir3+'*'): os.remove(f)   
+                        for f in glob.glob(wrkOutputDir3 + '*'): os.remove(f)   
                     
                     #-------------------------------
                     # Copy relavent files from input
@@ -436,8 +517,7 @@ def main(argv):
                     # Copy control file to Output folder
                     # First check if location to copy ctl is 
                     # the same location as original ctl file
-                    #-----------------------------------
-                    ctlPath,ctlFname = os.path.split(mainInF.inputs['ctlList'][ctl_ind][0])
+                    #----------------------------------- 
                     try:
                         shutil.copyfile(mainInF.inputs['ctlList'][ctl_ind][0], wrkOutputDir3 + 'sfit4.ctl')
                     except IOError:
@@ -522,9 +602,12 @@ def main(argv):
                         if logFile: logFile.info('Using ils file: ' + ilsFname)
                         
                         # Replace ils file name in local ctl file (within working directory)
-                        teststr = ['file.in.modulation_fcn', 'file.in.phase_fcn']
+                        teststr = [r'file.in.modulation_fcn', r'file.in.phase_fcn']
                         repVal  = [ilsFname        , ilsFname   ]
                         ctlFileLcl.replVar(teststr,repVal)
+                    
+                    # Write FOV from spectral database file to ctl file (within working directory)
+                    ctlFileLcl.replVar([r'band\.\d+\.omega'],[str(specDBone['FOV'])])
                     
                     #---------------------------
                     # Message strings for output
@@ -636,7 +719,7 @@ def main(argv):
                                         if r'RDRV: DONE.' in line: cmpltFlg = True
                                     else: break
                             
-                            if cmpltFlg:
+                            if cmpltFlg and lstFile:
                                 lstFile.info("{0:<13}".format(int(dbFltData_2['Date'][spcDBind])) + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '       ' + wrkOutputDir3)
                                 
                                   
@@ -648,7 +731,10 @@ def main(argv):
                         if mainInF.inputs['errFlg']:
                             if logFile: 
                                 logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)                            
-                                
+                            
+                            #-----------------------------------
+                            # Enter into Error Analysis function
+                            #-----------------------------------
                             rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, logFile )  
                                 
                         #---------------------------
@@ -656,23 +742,55 @@ def main(argv):
                         #---------------------------
                         if pauseFlg:
                             while True:
-                                user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all\n >>> ')
+                                user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 plot retrieval results\n >>> ')
+                                plt.close('all')
                                 try:
                                     user_input = int(user_input)
-                                    if not any(user_input == val for val in [-1,0,1,2]): raise ValueError
-                                    break
-                                except ValueError:
-                                    print 'Please enter -1, 0, 1, or 2'
+                                    if not any(user_input == val for val in [-1,0,1,2,3]): raise ValueError
+                                except ValueError: print 'Please enter -1, 0, 1, 2, or 3'
                                     
-                            if   user_input == 0:  sys.exit()           # Exit program
-                            elif user_input == 1:  brkFlg = True        # Exit while loop (Do not repeat)
-                            elif user_input == 2:                       # Stop pause and exit while loop
-                                pauseFlg = False
-                                brkFlg   = True
-                            elif user_input == -1:                      # Repeat loop
-                                brkFlg = False 
-                                # Need to implement functionality to recopy ctl file, bnr file, etc
-                                
+                                if   user_input == 0:  sys.exit()           # Exit program
+                                elif user_input == 1:                       # Exit while loop (Do not repeat)
+                                    brkFlg = True        
+                                    break
+                                elif user_input == 2:                       # Stop pause and exit while loop
+                                    pauseFlg = False
+                                    brkFlg   = True
+                                    break
+                                elif user_input == 3:                       # Plot retrieval results
+                                    #----------------------
+                                    # Initialize Plot Class
+                                    #----------------------                                
+                                    gas = dc.PlotData(wrkOutputDir3,wrkOutputDir3+'sfit4.ctl')
+                                    #--------------------------
+                                    # Call to plot spectral fit
+                                    #--------------------------
+                                    gas.pltSpectra()                                
+                                    #----------------------
+                                    # Call to plot profiles
+                                    #----------------------
+                                    try:
+                                        gas.pltPrf(allGas=True,errFlg=True)
+                                    except:
+                                        gas.pltPrf(allGas=True)
+                                    #-----------------
+                                    # Call to plot AVK
+                                    #-----------------
+                                    if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  gas.pltAvk()                                
+                                    #-----------------------------
+                                    # Print summary file to screen
+                                    #-----------------------------
+                                    if ckFile(wrkOutputDir3+'summary'):
+                                        with open(wrkOutputDir3+'summary','r') as fopen: info = fopen.read()
+                                        
+                                        print '****************SUMMARY FILE****************'
+                                        print (info)
+                                        print '****************END OF SUMMARY FILE****************' 
+                               
+                                elif user_input == -1:                      # Repeat loop
+                                    brkFlg = False 
+                                    break
+                                    
                         #-----------------------
                         # Exit out of while loop
                         #-----------------------
