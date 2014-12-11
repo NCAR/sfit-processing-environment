@@ -983,6 +983,7 @@ class ReadOutputData(_DateRange):
         # Add user specified retrieved gas list 
         # to standard retrievals
         #--------------------------------------
+        rtrvGasList = [g.upper() for g in rtrvGasList if g.upper() != 'H2O']   # Remove water from gas list since this is retrieved by default
         retrvdAll.extend(rtrvGasList)
         
         #-----------------------------------
