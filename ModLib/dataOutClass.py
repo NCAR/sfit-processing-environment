@@ -1567,6 +1567,7 @@ class DbInputFile(_DateRange):
                     self.dbInputs.setdefault(col,[]).append(val)                                 # Construct input dictionary                  
                     if '' in self.dbInputs: del self.dbInputs['']                                # Sometimes empty key is created (not sure why). This removes it.
 
+                    
     def dbFilterDate(self,fltDict=False):#=self.dbInputs):
         ''' Filter spectral db dicitonary based on date range class previously established'''
         inds = []
@@ -1734,6 +1735,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
         specDB        = self.getInputs()        
         self.HDFintT  = np.zeros(nobs)
         self.HDFazi   = np.zeros(nobs)
+        self.HDFsurfP   = np.zeros(nobs)
+        self.HDFsurfT   = np.zeros(nobs)
         
         for i,val in enumerate(self.HDFdates):
             tempSpecDB = self.dbFindDate(self.HDFdates[i])
@@ -1747,17 +1750,13 @@ class GatherHDF(ReadOutputData,DbInputFile):
             self.HDFintT[i] = tempSpecDB['Dur']
             self.HDFazi[i]  = tempSpecDB['SAzm']
             if tempSpecDB.has_key('S_PRES'):
-                self.HDFsurfP      = np.array(tempSpecDB['S_PRES'])    # Surface Pressure
+                self.HDFsurfP[i]      = np.array(tempSpecDB['S_PRES'])    # Surface Pressure
             else:
-                self.HDFsurfP      = np.array(-99999)
+                self.HDFsurfP[i]      = np.array(-99999)
             if tempSpecDB.has_key('S_TEMP'):
-                self.HDFsurfT      = np.array(tempSpecDB['S_TEMP'])    # Surface Temperature
+                self.HDFsurfT[i]      = np.array(tempSpecDB['S_TEMP'])    # Surface Temperature
             else:
-                self.HDFsurfT      = np.array(-99999) 
-            if tempSpecDB.has_key('VALID'):
-                self.HDFsurfT      = np.array(tempSpecDB['VALID'])    # Surface Temperature
-            else:
-                self.HDFsurfT      = np.array(-1) 
+                self.HDFsurfT[i]      = np.array(-99999) 
             
     def fltrHDFdata(self,maxRMS,maxSZA,rmsF,tcF,pcF,cnvF,szaF,valF):
 
