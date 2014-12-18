@@ -985,7 +985,7 @@ class ReadOutputData(_DateRange):
                 to an altitude layer [nLayers,nObservations]
                 retapFlg determines whether retrieved profiles (=1) or a priori profiles (=0) are read'''
         self.deflt = {}
-        retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS','H2O']   # These profiles will always be retrieved
+        retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be retrieved
 
 
         if not fname: 
@@ -1003,7 +1003,7 @@ class ReadOutputData(_DateRange):
         # Loop through collected directories
         #-----------------------------------
         for sngDir in self.dirLst:       
-            
+            print sngDir
             try:
                 with open(sngDir + fname,'r') as fopen:
                     
@@ -1012,6 +1012,7 @@ class ReadOutputData(_DateRange):
                     #--------------------------------
                     # Get Names of profiles retrieved
                     #--------------------------------
+
                     defltParm = defltLines[3].strip().split()
     
                     #----------------------------------------
