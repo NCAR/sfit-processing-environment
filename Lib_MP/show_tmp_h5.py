@@ -25,27 +25,31 @@ class show_results:
         self.tkroot = Tk()
         self.tkroot.wm_title('sfit4 tmp.h5 viewer')
 
-        self.entry = Entry(self.tkroot)
+        title_f = Label(self.tkroot, text='Data from: '+h5file)
+        title_f.grid(row=0, column=0,columnspan=5)   
 
+#        self.entry = Entry(self.tkroot)
         self.spcfig = Figure(figsize=(5,3))
         self.spc_canvas = FigureCanvasTkAgg(self.spcfig, master=self.tkroot)
-        self.spc_canvas.get_tk_widget().grid(row=0, column=0, columnspan=3)
+        self.spc_canvas.get_tk_widget().grid(row=1, column=0, columnspan=3)
+        self.spc_canvas.mpl_connect('pick_event', self.pick_result)
         self.update_plot('None')
         self.spc_canvas.show()
 
         self.auxfig = Figure(figsize=(5,3))
         self.aux_canvas = FigureCanvasTkAgg(self.auxfig, master=self.tkroot)
-        self.aux_canvas.get_tk_widget().grid(row=1, column=0, columnspan=3)
+        self.aux_canvas.get_tk_widget().grid(row=3, column=0, columnspan=3)
+        self.aux_canvas.mpl_connect('pick_event', self.pick_result)
         self.update_auxplot('c2y')
         self.aux_canvas.show()
 
         spctoolbar_frame = Frame(self.tkroot)
-        spctoolbar_frame.grid(row=2,column=0, columnspan=3, sticky=W)
+        spctoolbar_frame.grid(row=2,column=0, columnspan=5,sticky=W+N)
         spctoolbar = NavigationToolbar2TkAgg(self.spc_canvas, spctoolbar_frame)
         spctoolbar.pan()
 
         frame2 = Frame(self.tkroot)
-        frame2.grid(row=0,column=5)
+        frame2.grid(row=1,column=4)
 
 
         button_norm = Button(frame2, text = 'Normalize', command = self.normalize)
@@ -64,7 +68,7 @@ class show_results:
                      command= self.update_plot)
         m.grid(row=4,column=num,stick=E+W)
 
-        aux_value = ['c2y', 'RMS', 'AIRCOL']
+        aux_value = ['c2y', 'RMS', 'SNR', 'AIRCOL']
         self.show_var = StringVar(self.tkroot)
         self.show_var.set(aux_value[0])
         num = 0
@@ -73,7 +77,7 @@ class show_results:
         m.grid(row=5,column=num,stick=E+W)
 
         filter_f = Frame(self.tkroot)
-        filter_f.grid(row=1,column=5)
+        filter_f.grid(row=2,column=4)
 
         self.c2y_e1 = Entry(filter_f,width=6)
         self.c2y_e1.grid(row=0, column=0)
@@ -86,7 +90,7 @@ class show_results:
         self.c2y_e2 = Entry(filter_f,width=6)
         self.c2y_e2.grid(row=0, column=2, sticky=E+W)
         self.c2y_e2.delete(0, END)
-        self.c2y_e2.insert(0, np.max(h5.c2y))
+        self.c2y_e2.insert(0, '%.1f'%np.max(h5.c2y))
 
         self.rms_e1 = Entry(filter_f,width=6)
         self.rms_e1.grid(row=1, column=0)
@@ -99,7 +103,7 @@ class show_results:
         self.rms_e2 = Entry(filter_f,width=6)
         self.rms_e2.grid(row=1, column=2, sticky=E+W)
         self.rms_e2.delete(0, END)
-        self.rms_e2.insert(0, 100.0/np.min(h5.snr_clc))
+        self.rms_e2.insert(0, '%.1f'%(100.0/np.min(h5.snr_clc)))
 
         
 
@@ -108,6 +112,13 @@ class show_results:
 
     def quit(self):
         self.tkroot.destroy()
+
+    def pick_result(self, event):
+        dnum = event.artist.get_xdata()
+        mdnum = event.mouseevent.xdata
+        ind = np.argmin(np.abs(dnum-mdnum))
+        print 'Directory:     '+self.h5.directories[ind]
+        print 'Spectrums File:'+self.h5.spectra[ind]
 
     def filter(self):
         self.h5 = load_tmph5(self.h5file)
@@ -142,7 +153,7 @@ class show_results:
         else:
             norm = 1.0
 
-        ax.plot_date(h5.dnum, h5.col_rt/norm)
+        ax.plot_date(h5.dnum, h5.col_rt/norm, picker=1)
 
         ax.set_title(h5.gasname)
 
@@ -162,11 +173,13 @@ class show_results:
         self.aux_canvas.figure.clear()
         ax = self.aux_canvas.figure.add_subplot(111)
         if aux == 'c2y':
-            ax.plot_date(h5.dnum, h5.c2y)
+            ax.plot_date(h5.dnum, h5.c2y, picker=1)
         elif aux == 'RMS':
-            ax.plot_date(h5.dnum, 100.0/h5.snr_clc)
+            ax.plot_date(h5.dnum, 100.0/h5.snr_clc, picker=1)
+        elif aux == 'SNR':
+            ax.plot_date(h5.dnum, h5.snr_the, picker=1)
         elif aux == 'AIRCOL':
-            ax.plot_date(h5.dnum, h5.aircol)
+            ax.plot_date(h5.dnum, h5.aircol, picker=1)
         self.aux_canvas.draw()
 
 if __name__ == '__main__':
