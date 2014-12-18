@@ -253,6 +253,8 @@ class load_hdf:
             asza.extend(sz) # solar zenith angle
             
         ax12 = ax11.twinx()
+        import ipdb
+        ipdb.set_trace()
         ax11.plot_date(dd,ps,'bx')
         ax11.set_ylabel('Surface pressure (blue)')
         ax12.plot_date(dd,ts,'rx')
@@ -284,5 +286,8 @@ class load_hdf:
 
 if __name__ == '__main__':
 #    load_H4GEOMS(sys.argv[1])
-    load_ALLGEOMS (sys.argv[1])
-    
+    import sys, os
+    sys.path.append(os.path.dirname(sys.argv[0]))
+    h4 = load_hdf()
+    h4.load_AllGeoms (sys.argv[1])
+    h4.plot_results('NH3')
