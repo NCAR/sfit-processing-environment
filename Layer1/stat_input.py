@@ -101,6 +101,11 @@ coaddFlg    = 0                                                # Flag to indicat
 ilsFlg      = 1                                                # ILS file flag: 1 = Use ils file/directory specified in ilsDir string
                                                                #                0 = No ils is specified in input file. What is specified in ctl file is used
 
+scnFlg      = 0                                                # Flag to use measurement files with only forward or only backward scans
+                                                               # 0 = Flag off - does not distinguish between forward and backward scans
+                                                               # 1 = Only use files with FOWARD scans
+                                                               # 2 = Only use files with BACKWARD scans
+                                                               
 pspecFlg    = 1                                                # 1 = run pspec,    0 = do not run pspec
 refmkrFlg   = 1                                                # 1 = run refmaker, 0 = do not run refmaker
 sfitFlg     = 1                                                # 1 = run sfit,     0 = do not run sfit
@@ -158,9 +163,9 @@ zFlg      = 2                                                  # zflag - zero of
 # input file. Edit at your own risk
 #---------------------------------------------
 fltrBndInputs = "9 \n\
-f1  4038.727 4038.871 \n\
+f1  4037.100 4037.200 \n\
 f2  3381.155 3381.536 \n\
-f3  2924.866 2925.100 \n\
+f3  2924.866 2925.050 \n\
 f4  2526.228 2526.618 \n\
 f5  1985.260 1985.510 \n\
 f6  1139.075 1139.168 \n\
@@ -172,6 +177,8 @@ h6  1033.4  1033.6    \n"
 
 
 
-
-
-
+# MLO f2  3586.500 3587.000
+# TAB f2  3384.300 3384.500
+#     f3  3017.000 3017.500
+#     f6  1305.800 1306.000
+#     f8  751.300  751.370

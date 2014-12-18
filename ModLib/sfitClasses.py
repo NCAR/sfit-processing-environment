@@ -60,7 +60,7 @@ def subProcRun( fname, logFlg=False ):
     rtn = subprocess.Popen( fname, stderr=subprocess.PIPE )
     outstr = ''
     for line in iter(rtn.stderr.readline, b''):
-        print 'STDERR from {}: '.format(fname) + line.rstrip()
+        print line.rstrip()
         if logFlg: outstr += line
 
     if logFlg: logFlg.info(outstr)
@@ -70,6 +70,11 @@ def subProcRun( fname, logFlg=False ):
 def nearestDate(daysList, year, month, day=1):
     ''' Finds the nearest date from a list of days based on a given year, month, and day'''
     testDate = datetime.date(year, month, day)
+    return min( daysList, key=lambda x:abs(x-testDate) )
+
+def nearestTime(daysList, year, month, day, hour, minute, second):
+    ''' Finds the nearest Time from a list of days based on a given year, month, and day'''
+    testDate = datetime.datetime(year, month, day, hour, minute, second)
     return min( daysList, key=lambda x:abs(x-testDate) )
 
 def sortDict(DataDict,keyval):
@@ -84,7 +89,7 @@ def ckFile(fName,logFlg=False,exitFlg=False,quietFlg=False):
     if not os.path.isfile(fName):
         if not quietFlg: print 'File %s does not exist' % (fName)
         if logFlg:       logFlg.error('Unable to find file: %s' % fName)
-        if exit:         sys.exit()
+        if exitFlg:         sys.exit()
         return False
     else:
         return True  
@@ -102,6 +107,14 @@ def ckDir(dirName,logFlg=False,exitFlg=False,quietFlg=False):
                                                 #----------------#
                                                 # Define classes #
                                                 #----------------#
+#-----------------------------------------------------------------------------------------------                                                
+class ExitError(Exception):
+    ''' Exception class for terminating program  '''
+    def __init__(self,msg):
+        self.msg = msg
+    def terminate(self):
+        print 'Terminating program.....'
+        sys.exit()
 
 #-----------------------------------------------------------------------------------------------                                                
 class DateRange:
@@ -231,16 +244,17 @@ class CtlInputFile():
                 #-------------------
                 if len(line) == 0: continue
 
-                #--------------------------
+                #------------------------------------
                 # Populate input dictionary
-                #--------------------------
+                # Make sure all keys are LOWER case!!
+                #------------------------------------
                 if '=' in line:
                     lhs,_,rhs = line.partition('=')
                     lhs       = lhs.strip()
                     rhs       = rhs.strip().split()
 
 
-                    self.inputs[lhs] = [self.__convrtD(val) for val in rhs]
+                    self.inputs[lhs.lower()] = [self.__convrtD(val) for val in rhs]
                     #for rhs_part in rhs:                          
                         #if 'd' in rhs_part.lower():                               # Test and handle strings containing D (ie 1.0D0)
                             #mant,trsh,expo = rhs_part.lower().partition('d')
@@ -263,7 +277,7 @@ class CtlInputFile():
                     except ValueError:
                         pass
 
-                    self.inputs[lhs] += rhs          
+                    self.inputs[lhs.lower()] += rhs          
 
                 #----------------------    
                 # Primary Retrieval Gas
@@ -273,7 +287,7 @@ class CtlInputFile():
                 if gas_flg:
                     match = re.match(r'\s*gas\.\w+\.list\s*=\s*(\w+)', line)
                     if match:
-                        self.primGas = match.group(1)
+                        self.primGas = match.group(1).lower()
                         gas_flg = False
 
                 #----------------   
@@ -363,6 +377,22 @@ class DbInputFile():
             if DateRangeClass.inRange(datestmp[0], datestmp[1], datestmp[2]):                    # Check if date stamp in spectral db is within range
                 inds.append(ind)
         dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())  # Rebuild filtered dictionary. Syntax compatible with python 2.6   
+        #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
+        return dbFltInputs
+
+
+    def dbFilterScn(self,scnFlg,fltDict=False):#=self.dbInputs):
+        ''' Filter spectral db dicitonary based only forward or only backward scans'''
+        inds = []
+
+        if not fltDict:
+            fltDict = self.dbInputs
+
+        for ind,(gfs,gbs) in enumerate(itertools.izip(fltDict['GFW'],fltDict['GBW'])):
+            if   ( scnFlg == 1) and (int(gbs) == 0): inds.append(ind)              # If only foward scan flag (1) and number of backscans == 0
+            elif ( scnFlg == 2) and (int(gfs) == 0): inds.append(ind)              # If only backward scan flag (2) and number of forward scans == 0
+
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
         #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
         return dbFltInputs
 
@@ -494,59 +524,66 @@ class RetOutput():
         #--------------------------
         # Open and read summary file
         #--------------------------
-        with open(self.wrkDir + fName, 'r') as fopen:
-            lines = fopen.readlines()
+        try:
+            with open(self.wrkDir + fName, 'r') as fopen:
+                lines = fopen.readlines()
+    
+            #--------------------------------
+            # Get retrieved column amount for 
+            # each gas retrieved
+            #--------------------------------
+            ind1       = [ind for ind,line in enumerate(lines) if 'IRET' in line][0]
+            ngas       = int(lines[ind1-1].strip())
+            indGasName = lines[ind1].strip().split().index('GAS_NAME')
+            indRETCOL  = lines[ind1].strip().split().index('RET_COLUMN')
+    
+            for i in range(ind1+1,ind1+ngas+1):
+                gasname = lines[i].strip().split()[indGasName]
+                self.summary.setdefault(gasname.upper()+'_RetColmn',[]).append(float(lines[i].strip().split()[indRETCOL]))
+    
+            #---------------------------------------------------------
+            # Get NPTSB, FOVDIA, and INIT_SNR
+            # Currently set up to read SNR from summary file where the
+            # summary file format has INIT_SNR on the line below IBAND 
+            #---------------------------------------------------------
+            ind2     = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
+            indNPTSB = lines[ind2].strip().split().index('NPTSB')
+            indFOV   = lines[ind2].strip().split().index('FOVDIA')
+            indSNR   = lines[ind2].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
+            lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
+    
+            for lnum in range(ind2+1,lend,2):
+                self.summary.setdefault('nptsb',[]).append(  float( lines[lnum].strip().split()[indNPTSB] ) )
+                self.summary.setdefault('FOVDIA',[]).append( float( lines[lnum].strip().split()[indFOV]   ) )
+                self.summary.setdefault('SNR',[]).append(    float( lines[lnum+1].strip().split()[indSNR] ) )       # Add 1 to line number because INIT_SNR exists on next line
+    
+    
+            #----------------------------------------------------------------
+            # Get fit rms, chi_y^2, degrees of freedom target, converged flag
+            #----------------------------------------------------------------
+            ind3       = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0]
+            indRMS     = lines[ind3].strip().split().index('FITRMS')
+            indCHIY2   = lines[ind3].strip().split().index('CHI_2_Y')
+            indDOFtrgt = lines[ind3].strip().split().index('DOFS_TRG')
+            indCNVRG   = lines[ind3].strip().split().index('CONVERGED')
+    
+            self.summary.setdefault(gasname.upper()+'_FITRMS'   ,[]).append( float( lines[ind3+1].strip().split()[indRMS]     ) )
+            self.summary.setdefault(gasname.upper()+'_CHI_2_Y'  ,[]).append( float( lines[ind3+1].strip().split()[indCHIY2]   ) )
+            self.summary.setdefault(gasname.upper()+'_DOFS_TRG' ,[]).append( float( lines[ind3+1].strip().split()[indDOFtrgt] ) )
+            self.summary.setdefault(gasname.upper()+'_CONVERGED',[]).append(        lines[ind3+1].strip().split()[indCNVRG]     )   
 
-        #--------------------------------
-        # Get retrieved column amount for 
-        # each gas retrieved
-        #--------------------------------
-        ind1       = [ind for ind,line in enumerate(lines) if 'IRET' in line][0]
-        ngas       = int(lines[ind1-1].strip())
-        indGasName = lines[ind1].strip().split().index('GAS_NAME')
-        indRETCOL  = lines[ind1].strip().split().index('RET_COLUMN')
-
-        for i in range(ind1+1,ind1+ngas+1):
-            gasname = lines[i].strip().split()[indGasName]
-            self.summary.setdefault(gasname.upper()+'_RetColmn',[]).append(float(lines[i].strip().split()[indRETCOL]))
-
-        #---------------------------------------------------------
-        # Get NPTSB, FOVDIA, and INIT_SNR
-        # Currently set up to read SNR from summary file where the
-        # summary file format has INIT_SNR on the line below IBAND 
-        #---------------------------------------------------------
-        ind2     = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
-        indNPTSB = lines[ind2].strip().split().index('NPTSB')
-        indFOV   = lines[ind2].strip().split().index('FOVDIA')
-        indSNR   = lines[ind2].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
-        lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
-
-        for lnum in range(ind2+1,lend,2):
-            self.summary.setdefault('nptsb',[]).append(  float( lines[lnum].strip().split()[indNPTSB] ) )
-            self.summary.setdefault('FOVDIA',[]).append( float( lines[lnum].strip().split()[indFOV]   ) )
-            self.summary.setdefault('SNR',[]).append(    float( lines[lnum+1].strip().split()[indSNR] ) )       # Add 1 to line number because INIT_SNR exists on next line
-
-
-        #----------------------------------------------------------------
-        # Get fit rms, chi_y^2, degrees of freedom target, converged flag
-        #----------------------------------------------------------------
-        ind3       = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0]
-        indRMS     = lines[ind3].strip().split().index('FITRMS')
-        indCHIY2   = lines[ind3].strip().split().index('CHI_2_Y')
-        indDOFtrgt = lines[ind3].strip().split().index('DOFS_TRG')
-        indCNVRG   = lines[ind3].strip().split().index('CONVERGED')
-
-        self.summary.setdefault(gasname.upper()+'_FITRMS'   ,[]).append( float( lines[ind3+1].strip().split()[indRMS]     ) )
-        self.summary.setdefault(gasname.upper()+'_CHI_2_Y'  ,[]).append( float( lines[ind3+1].strip().split()[indCHIY2]   ) )
-        self.summary.setdefault(gasname.upper()+'_DOFS_TRG' ,[]).append( float( lines[ind3+1].strip().split()[indDOFtrgt] ) )
-        self.summary.setdefault(gasname.upper()+'_CONVERGED',[]).append(        lines[ind3+1].strip().split()[indCNVRG]     )   
+        except Exception as errmsg:
+            print 'Error occured while reading '+self.wrkDir + fName
+            print errmsg
+            return False
 
         #------------------------
         # Convert to numpy arrays
         #------------------------
         for k in self.summary:
             self.summary[k] = np.asarray(self.summary[k])
-
+        
+        return True
 
     def readPbp(self, fName):
         ''' Reads pbpfile to get SZA, observed, fitted, and difference spectra'''

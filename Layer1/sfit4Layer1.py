@@ -76,8 +76,10 @@ import datetime as dt
 import glob
 import re
 import sfitClasses as sc
+import dataOutClass as dc
 import shutil
 from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis
+import matplotlib.pyplot as plt
 
 
 
@@ -371,10 +373,14 @@ def main(argv):
                 lstFile.info('zptFlg         = ' + str(mainInF.inputs['zptFlg'])            )
                 lstFile.info('refMkrLvl      = ' + str(mainInF.inputs['refMkrLvl'])         )
                 lstFile.info('wVer           = ' + str(mainInF.inputs['wVer'])              )
+                lstFile.info('nbands         = ' + str(len(ctlFileGlb.inputs['band']))      )
                 lstFile.info('# End List File Meta-Data')
                 lstFile.info('')
                 lstFile.info('Date         TimeStamp    Directory ')            
-                                               
+                   
+            #----------------------
+            # Filtering spectral DB
+            #----------------------
             #-------------------------
             # Filter spectral db based
             # on wavenumber bounds in
@@ -405,6 +411,12 @@ def main(argv):
                 dbFltData_2 = dbData.dbFilterFltrID(mainInF.inputs['ctlList'][ctl_ind][1], dbFltData_2)                
                 if not(dbFltData_2): continue                # Test for empty dicitonary (i.e. no data)
                          
+            #--------------------------------------------------------
+            # Filter database based on forward and backward scan flag
+            #--------------------------------------------------------
+            if mainInF.inputs['scnFlg'] > 0:
+                dbFltData_2 = dbData.dbFilterScn(mainInF.inputs['scnFlg'], dbFltData_2 )
+            
             #---------------------------------------------------------------------             
             # Check for the existance of Output folder <Version> and create if DNE
             #---------------------------------------------------------------------
@@ -449,6 +461,10 @@ def main(argv):
                 
                 brkFlg = True    # Flag to break out of while statement
                 while True:      # While statement is for the repeat function 
+                    print '\n\n\n'
+                    print '*************************************************'
+                    print '*************Begin New Retrieval*****************'
+                    print '*************************************************'                    
                     #-------------------------------------------------------------
                     # If pause after skip flag is initialized, do several things:
                     # 1) Check if number of skips exceeds total number of filtered
@@ -726,23 +742,55 @@ def main(argv):
                         #---------------------------
                         if pauseFlg:
                             while True:
-                                user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all\n >>> ')
+                                user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 plot retrieval results\n >>> ')
+                                plt.close('all')
                                 try:
                                     user_input = int(user_input)
-                                    if not any(user_input == val for val in [-1,0,1,2]): raise ValueError
-                                    break
-                                except ValueError:
-                                    print 'Please enter -1, 0, 1, or 2'
+                                    if not any(user_input == val for val in [-1,0,1,2,3]): raise ValueError
+                                except ValueError: print 'Please enter -1, 0, 1, 2, or 3'
                                     
-                            if   user_input == 0:  sys.exit()           # Exit program
-                            elif user_input == 1:  brkFlg = True        # Exit while loop (Do not repeat)
-                            elif user_input == 2:                       # Stop pause and exit while loop
-                                pauseFlg = False
-                                brkFlg   = True
-                            elif user_input == -1:                      # Repeat loop
-                                brkFlg = False 
-                                # Need to implement functionality to recopy ctl file, bnr file, etc
-                                
+                                if   user_input == 0:  sys.exit()           # Exit program
+                                elif user_input == 1:                       # Exit while loop (Do not repeat)
+                                    brkFlg = True        
+                                    break
+                                elif user_input == 2:                       # Stop pause and exit while loop
+                                    pauseFlg = False
+                                    brkFlg   = True
+                                    break
+                                elif user_input == 3:                       # Plot retrieval results
+                                    #----------------------
+                                    # Initialize Plot Class
+                                    #----------------------                                
+                                    gas = dc.PlotData(wrkOutputDir3,wrkOutputDir3+'sfit4.ctl')
+                                    #--------------------------
+                                    # Call to plot spectral fit
+                                    #--------------------------
+                                    gas.pltSpectra()                                
+                                    #----------------------
+                                    # Call to plot profiles
+                                    #----------------------
+                                    try:
+                                        gas.pltPrf(allGas=True,errFlg=True)
+                                    except:
+                                        gas.pltPrf(allGas=True)
+                                    #-----------------
+                                    # Call to plot AVK
+                                    #-----------------
+                                    if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  gas.pltAvk()                                
+                                    #-----------------------------
+                                    # Print summary file to screen
+                                    #-----------------------------
+                                    if ckFile(wrkOutputDir3+'summary'):
+                                        with open(wrkOutputDir3+'summary','r') as fopen: info = fopen.read()
+                                        
+                                        print '****************SUMMARY FILE****************'
+                                        print (info)
+                                        print '****************END OF SUMMARY FILE****************' 
+                               
+                                elif user_input == -1:                      # Repeat loop
+                                    brkFlg = False 
+                                    break
+                                    
                         #-----------------------
                         # Exit out of while loop
                         #-----------------------
