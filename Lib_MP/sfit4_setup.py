@@ -1,9 +1,6 @@
 import numpy as np
-#import read_statevec as stv
 import read_from_file as rn
-import pdb
-import os
-import string
+import os, string
 
 def create_station_layer(z, st_file):
     # create the sfit4 station layer profile from altitudes Z
@@ -179,7 +176,7 @@ class reference_prf:
 
         fid.close()
 
-    def create_ref_from_WACCM(self, direc):
+    def create_ref_from_WACCM(self, direc,default=None):
         # inserts WACCM output in reference. gasnames musst be defined already
         # interpolates to the altitude grid already defined in the class
         gas_default = ['H2O',     'CO2',     'O3',     'N2O',     'CO',     
@@ -195,14 +192,21 @@ class reference_prf:
                        'NF3',     'OTHER',   'OTHER',  'OTHER',   'OTHER',   
                        'OTHER',   'OTHER',   'OCLO',   'F134A',   'C3H8',     
                        'F142B',   'CFC113',  'F141B',  'CH3OH',   'CH3CNPL', 
-                       'C2H6PL',  'PAN',     'CH3CHO ','CH3CN',   'OTHER',    
+                       'C2H6PL',  'PAN',     'CH3CHO' ,'CH3CN',   'OTHER',    
                        'CH3COOH', 'C5H8',    'MVK',    'MACR',    'C3H6',    
                        'C4H8',    'OTHER',   'OTHER',  'OTHER',   'OTHER',    
                        'OTHER',   'OTHER',   'OTHER',  'OTHER',   'OTHER',   
                        'OTHER',   'OTHER',   'OTHER',  'OTHER',   'OTHER',    
                        'OTHER',   'OTHER',   'OTHER',  'OTHER',   'OTHER',   
                        'OTHER',   'OTHER',   'OTHER',  'OTHER']
-        
+
+        if (default != None):
+            defref = reference_prf()
+            defref.read_reference_prf(default)
+        else:
+            defref = -1
+            
+            
         self.nr_gas = len(gas_default)
         self.gas_nr = np.zeros(self.nr_gas)
         self.gasname = []
@@ -223,7 +227,12 @@ class reference_prf:
                 alts, vmr, note = self.load_waccmfile(waccm_file)
                 self.vmr[nr,0:self.nr_layers] = vmr
                 self.notes[-1] = note
-                
+            else:
+                if (defref != -1):
+                    self.vmr[nr,0:self.nr_layers] = defref.get_gas_from_refprofile(gas_default[nr], z=self.z)
+                    self.notes[-1] = 'copied from default.ref'
+                else:
+                    self.notes[-1] = 'created by sfit4_setup'
 
     def load_waccmfile(self, filename):
         # loads the second block formatted for reference.prf from the respective file
