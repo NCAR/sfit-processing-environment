@@ -341,10 +341,7 @@ def main(argv):
                 else:
                     SBlockTemp = 'NONE'                 
                     
-#                paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-D'+SBlockTemp]   # Build initial parameter list for ckopus call
-                paramList = [DBinputs['Fckopus'],'-n'+Binputs['lat'],
-                             '-w'+Binputs[lon],'-a'+Binputs[alt],
-                             '-u'+Binputs[utc],'-D'+SBlockTemp]   # Build initial parameter list for ckopus call
+                paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-D'+SBlockTemp]   # Build initial parameter list for ckopus call
                 paramList.extend(DBinputs['ckopusFlgs'])                                 # Add flags from input file to parameter list
                 paramList.append(indvfile)                                               # Add OPUS filename to parameter list
                 

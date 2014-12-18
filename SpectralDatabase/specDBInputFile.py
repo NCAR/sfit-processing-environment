@@ -25,10 +25,7 @@
 # Three letter station
 # location
 #---------------------
-loc = 'bre'                                                                     lat = 53
-lon = -8
-alt = 27
-utc = +1
+loc = 'mlo'                                                                      
 
 #----------------------------------
 # Date Range of data to process
