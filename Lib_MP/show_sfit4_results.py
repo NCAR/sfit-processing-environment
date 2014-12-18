@@ -182,6 +182,8 @@ class show_results:
             self.avk = sfit4.avk(direc+'/'+ak_m, direc+'/aprfs.table')
         elif os.path.exists(direc+'/ak.target'):
             self.avk = sfit4.avk(direc+'/ak.target', direc+'/aprfs.table')
+        elif os.path.exists(direc+'/avk.output'):
+            self.avk = sfit4.avk(direc+'/avk.output', direc+'/aprfs.table')
         else:
             self.avk = -1
 #        self.error = sfit4.error(direc+'/smeas.target',direc+'/aprfs.table')
@@ -235,15 +237,19 @@ class show_results:
 
         if (type=='avk'):
             self.winavk.clf()
-            ax = self.winavk.add_subplot(141)
+            ax = self.winavk.add_subplot(151)
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             ax.plot(self.avk.avk('frac').T, z)
-            ax = self.winavk.add_subplot(142)
+            ax = self.winavk.add_subplot(152)
             ax.plot(self.avk.avk('vmr').T, z)
-            ax = self.winavk.add_subplot(143)
+            ax = self.winavk.add_subplot(153)
             ax.plot(self.avk.avk('col').T, z)
-            ax = self.winavk.add_subplot(144)
+            ax = self.winavk.add_subplot(154)
             ax.plot(np.sum(self.avk.avk('col'),0), z)
+            ax = self.winavk.add_subplot(155)
+            ax.plot(np.sum(self.avk.avk('col')[-10:,:],0), z)
+            ax.plot(np.sum(self.avk.avk('col')[-14:-11,:],0), z)
+            ax.plot(np.sum(self.avk.avk('col')[:-15,:],0), z)
             self.winavk.show()
 
 

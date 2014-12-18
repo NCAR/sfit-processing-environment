@@ -59,6 +59,15 @@ function fail1 = Check_results(p)
         vmr_min = -1;
         max_iter = 8;
     end
+    if strcmp(species, 'CLONO2')
+        snr_the_min = 100;
+        snr_clc_min = 150;
+        sza_max = 85;
+        dofs_min = 1.0;
+        snr_rat_min = 0.15;
+        vmr_min = -1;
+        max_iter = 8;
+    end
     
     fail1 = [];
     

@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.dates as mdt
 import datetime as dt
 import read_result_sfit4 as sfit4
+from sfit4_ctl import sfit4_ctl
 import read_misc
 
 def create_hdf5(sb_ctl, direc, start_date, end_date):
@@ -26,6 +27,9 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 		return
 	dirs.sort()
 	
+
+	sbctl = sfit4_ctl()
+	sbctl.read_ctl_file(sb_ctl)
 	h5file = hdf5.openFile(filename, mode = "w", title = "sfit4 results")
 	
 	df = mdt.strpdate2num('%Y%m%d.%H%M%S')
@@ -70,7 +74,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    rprfsfile =  string.join([direc, '/', dd, '/', 'rprfs.table'], '')
 	    if not os.path.isfile(rprfsfile):
 	        print 'rprfs.table'
-	        continue
+	        continue	    
 	    aprfsfile =  string.join([direc, '/', dd, '/', 'aprfs.table'], '')
 	    if not os.path.isfile(aprfsfile):
 	        print 'aprfs.table'
@@ -206,19 +210,29 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	
 	    akfile =  string.join([direc, '/', dd, '/', 'ak.out'], '')
 	    if not os.path.isfile(akfile):
-		print 'no avk'
+		print 'no sfit4 avk'
 	        ak_flag = False
 		avk = np.zeros((len_vmr,len_vmr))
 		avk_vmr = avk
 		avk_col = avk
 	    else:
+		print 'read sfit4 avk'
                 ak_flag = True
-
 		ak = sfit4.avk(akfile,aprfsfile)
 		avk = ak.avk()
 		avk_col = ak.avk(type='column')
 		avk_vmr = ak.avk(type='vmr')
 
+	    akfile =  string.join([direc, '/', dd, '/', sbctl.get_value('file.out.avk')], '')
+	    if not os.path.isfile(akfile):
+		print 'no error avk'
+	    else:
+		print 'read error avk'
+                ak_flag = True
+		ak = sfit4.avk(akfile,aprfsfile)    
+		avk = ak.avk()
+		avk_col = ak.avk(type='column')
+		avk_vmr = ak.avk(type='vmr')
 	    try:
 	        chi_2_y[nr_res] = summary.chi_y_2
 	    except:
@@ -244,18 +258,18 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    alt = np.hstack((alt,alti))
 	    dur = np.hstack((dur, du))
 	    spectra.extend(spectrum)
-	    p_surface.append(pth[0])
-	    if np.double(pth[0]) > 500.0:
+	    # fisrt argument is test of existence of PTH from misc.out
+	    if pth.size > 0 and np.double(pth[0]) > 500.0:
 		    p_surface.append(pth[0])
 	    else:
 		    p_surface.append(-90000)
 
-	    if pth[1] > 90:
+	    if  pth.size == 0 or pth[1] > 90:
 		    t_surface.append(-90000)
 	    else:
 		    t_surface.append(pth[1] + 273.15) 
 
-	    if np.double(pth[2]) > 0.0:
+	    if  pth.size > 0 and np.double(pth[2]) > 0.0:
 		    h_surface.append(pth[2])
 	    else:
 		    h_surface.append(np.double(-90000))
@@ -337,6 +351,14 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	h5file.createArray("/", 'h2o_col_setup', col_h2o_ap, "Columns of H2O in setup")
 
 	h5file.close()
+
+	# Create spectral database
+	fid = open('spectral_database.dat', 'w')
+	fid.write('FileName Date Time Dur SZA SAzm N_Lat E_Lon Alt S_PRES S_TEMP\n')
+	for nr in range(0,len(mdate)):
+		ddate = mdt.num2date(mdate[nr])
+		fid.write('%s %s %s %f %f %f %f %f %f %f %f\n'%(spectra[nr], ddate.strftime('%Y%m%d'), ddate.strftime('%H:%M:%S'), dur[nr], sza[nr], azi[nr], lat[nr], lon[nr], alt[nr], p_surface[nr], t_surface[nr]))
+	fid.close()
 
 
 if __name__ == '__main__':
