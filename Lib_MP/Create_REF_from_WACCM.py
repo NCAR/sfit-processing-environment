@@ -18,9 +18,7 @@ if __name__ == '__main__':
         
     waccm_dir = sys.argv[1]
     sr = sf4s.reference_prf()
-    sr.read_reference_prf(os.path.join(curdir,'default.ref'))
-    sr.create_ref_from_WACCM(waccm_dir)
-    sr.create_ref_from_WACCM(waccm_dir)
+    sr.create_ref_from_WACCM(waccm_dir, curdir+'/default.ref')
     sr.write_reference_prf(ref_file)
 
 else:
