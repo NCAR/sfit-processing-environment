@@ -73,6 +73,8 @@
                         # Import Standard modules #
                         #-------------------------#
 import sys
+sys.path.append('/data/sfit-processing-environment/SpectralDatabase')
+sys.path.append('/data/sfit-processing-environment/ModLib')
 import os
 from os import walk
 import getopt
@@ -341,7 +343,10 @@ def main(argv):
                 else:
                     SBlockTemp = 'NONE'                 
                     
-                paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-D'+SBlockTemp]   # Build initial parameter list for ckopus call
+#                paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-D'+SBlockTemp]   # Build initial parameter list for ckopus call
+                paramList = [DBinputs['Fckopus'],'-n'+str(DBinputs['lat']),
+                             '-w'+str(DBinputs['lon']),'-a'+str(DBinputs['alt']),
+                             '-u'+str(DBinputs['utc']),'-D'+SBlockTemp]   # Build initial parameter list for ckopus call
                 paramList.extend(DBinputs['ckopusFlgs'])                                 # Add flags from input file to parameter list
                 paramList.append(indvfile)                                               # Add OPUS filename to parameter list
                 
@@ -349,15 +354,17 @@ def main(argv):
                     #paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-U','-t-150',indvfile]
                 #else:    
                     #paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-D',indvfile]
-                    
+
                 rtn = sp.Popen( paramList, stdout=sp.PIPE, stderr=sp.PIPE )
                 stdoutParam, stderr = rtn.communicate()
-                
                 # Some OPUS files may not contain any data and therefore
                 # pass back an error
+                import ipdb
+                ipdb.set_trace()
                 if 'error' in stdoutParam or not(stdoutParam):
                     continue
-                                
+                
+                
                 #-----------------------------------------------------
                 # Determine if OPUS file is in correct date folder. If 
                 # not move to correct folder. This does not guarantee
@@ -367,6 +374,7 @@ def main(argv):
                 #-----------------------------------------------------
                 # Date from ckopus
                 opusFileDate = stdoutParam.strip().split()[5]
+                stdoutParam
                 
                 # Compare with current directory date
                 if opusFileDate == yyyymmddstr: 
