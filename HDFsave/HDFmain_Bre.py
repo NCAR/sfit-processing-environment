@@ -62,7 +62,7 @@ def main():
     outDir         = '/data/HDFfiles/'
     spcDBfile      = ddir+'/spectral_database.dat'
     statLyrFile    = ddir+'/station.layers'
-    attribute_file = '/data/sfit-processing-environment/HDFsave/bremen_attr.txt'
+    attribute_file = '/home/mathias/sfit-processing-environment/HDFsave/bremen_attr.txt'
     maxRMS         = 1.6
     rmsFlag        = False
     tcFlag         = False
