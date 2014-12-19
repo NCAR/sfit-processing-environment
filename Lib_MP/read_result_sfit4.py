@@ -49,16 +49,43 @@ class Kout:
     def __init__(self, filename):
     
         self.K_frac = np.genfromtxt(filename,skiprows=4)
+        
 
-class avk:
+class Kbout:
     def __init__(self, filename):
     
-        self.AK_frac = np.genfromtxt(filename,skiprows=2)
+        self.K_frac = np.genfromtxt(filename,skiprows=2,names=True)
+
+    def get_keys(self):
+        return(self.K_frac.dtype.names)
+
+    def get_data(self, key):
+        return(self.K_frac[key])
+
+class avk:
+    def __init__(self, filename, prfsfile):
+    
+        avk = rn.read_from_file(filename)
+        l1 = avk.get_line()
+#        import ipdb
+#        ipdb.set_trace()
+        if l1.find('SFIT4') > -1:
+            self.AK_frac = np.genfromtxt(filename,skiprows=2)
+        else:
+            nmat = int(avk.get_line().split('=')[1])
+            nrow = int(avk.get_line().split('=')[1])
+            ncol = int(avk.get_line().split('=')[1])
+            avk.skipline(1)
+            self.AK_frac = np.array(avk.next(nrow*ncol))
+            self.AK_frac = np.reshape(self.AK_frac,(nrow,ncol))
         self.direc = os.path.dirname(filename)
+        self.prfsfile = prfsfile
 
     def renormalize(self):
         
-        ap = read_table(os.path.join(self.direc, 'aprfs.table'))
+#        import ipdb
+#        ipdb.set_trace()
+        ap = read_table(self.prfsfile)
         prf,z = ap.get_gas_vmr(ap.get_retrieval_gasnames()[0])
         self.AK_vmr = np.dot(np.dot(np.diag(prf),self.AK_frac),np.diag(1/prf))
         prf,z = ap.get_gas_col(ap.get_retrieval_gasnames()[0])
@@ -156,6 +183,7 @@ class error:
         # check if sd.ctl and direc are formally consistent
         self.total_vmr = direc+'/'+sbctl.get_value('file.out.total.vmr')
         self.total_col = direc+'/'+sbctl.get_value('file.out.total')
+#        self.shat = direc+'/'+sbctl.get_value('file.out.shat_matrix')
         self.flag = True
         if not os.path.isfile(self.total_vmr):
             self.flag = False
@@ -182,6 +210,21 @@ class error:
             return(self.col_ran, self.col_sys)
         else:
             return(np.nan,np.nan)
+
+    def read_total_col(self):
+        if self.flag:
+            label, matrix = self.read_error_matrix(self.total_col)
+            self.S_col_ran = matrix[0]
+            self.S_col_sys = matrix[1]
+            ll = np.ones((matrix[0].shape[0],1))
+            self.col_ran = np.sqrt(np.dot(ll.T,np.dot(self.S_col_ran,ll)))
+            self.col_sys = np.sqrt(np.dot(ll.T,np.dot(self.S_col_sys,ll)))
+            return(self.col_ran, self.col_sys)
+        else:
+            return(np.nan,np.nan)
+
+
+
     def read_error_matrix(self, filename):
         em = rn.read_from_file(filename)
         label = em.get_line().strip('# ')
@@ -201,6 +244,7 @@ class pbp:
         pbpf = rn.read_from_file(filename)
         self.header = pbpf.get_line()
         nr_mw = int(pbpf.next(1).pop(0))
+        self.nr_mw = nr_mw
         pbpf.next(1)
         self.sza = []
         self.mw_res = []
@@ -274,3 +318,47 @@ class gasspectra:
 
             
             del ascf 
+
+
+class statevec:
+    def __init__(self, filename):
+
+        stvf = rn.read_from_file(filename)
+        
+        stvf.skipline()
+        self.nr_layer = stvf.next(1).pop(0)
+        stvf.skip_reminder_of_line()
+        stvf.skipline()
+        self.Z = stvf.next(self.nr_layer)
+        stvf.skipline()
+        self.P = stvf.next(self.nr_layer)
+        stvf.skipline()
+        self.T = stvf.next(self.nr_layer)
+        
+        nr_gas = stvf.next(1).pop(0)
+        self.ap_col = []
+        self.ap_vmr = []
+        self.rt_col = []
+        self.rt_vmr = []
+        self.gas = []
+        for gas in range(0,nr_gas):
+            stvf.skipline()
+            self.gas.append(stvf.next(1).pop(0))
+            self.ap_col.extend(stvf.next(1))
+            self.ap_vmr.append(stvf.next(self.nr_layer))
+            stvf.skipline()
+            stvf.skipline()
+            self.rt_col.extend(stvf.next(1))
+            self.rt_vmr.append(stvf.next(self.nr_layer))
+
+        nr_aux = stvf.next(1).pop(0)
+        self.aux = []
+        self.ap_aux = []
+        self.rt_aux = []
+        for aux in range(0,nr_aux):
+            self.aux.append(stvf.next(1).pop(0))
+        for aux in range(0,nr_aux):
+            self.ap_aux.append(stvf.next(1).pop(0))
+        for aux in range(0,nr_aux):
+            self.rt_aux.append(stvf.next(1).pop(0))
+        del stvf

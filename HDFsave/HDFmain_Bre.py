@@ -56,10 +56,10 @@ def main():
     #---------------------
     # For python interface
     #---------------------
-    ddir = '/home/mathias/test_hdf/'
+    ddir = os.path.abspath(os.path.curdir)
     dataDir        = ddir
     ctlF           = ddir+'/sfit4.ctl'
-    outDir         = '/data/HDFfiles/'
+    outDir         = '/export/user-data/mathias/'
     spcDBfile      = ddir+'/spectral_database.dat'
     statLyrFile    = ddir+'/station.layers'
     attribute_file = '/home/mathias/sfit-processing-environment/HDFsave/bremen_attr.txt'
