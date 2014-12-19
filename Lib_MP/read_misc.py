@@ -13,6 +13,8 @@ def read_misc(filename):
     lat = []
     alt = []
     lon = []
+    pth = []
+    p = []
     for f in miscf:
         ss = f.split('=')
         if ss[0].strip() == 'SPECTRUM':
@@ -33,6 +35,14 @@ def read_misc(filename):
             lon.append(ss[1].strip())
         if ss[0].strip() == 'ALTITUDE':
             alt.append(ss[1].strip())
-    return(meas_time, dur, sza, zen, lat, lon, alt, spectrum)
+        if ss[0].strip() == 'T_SURFACE':
+            t = ss[1].strip()
+        if ss[0].strip() == 'P_SURFACE':
+            p = ss[1].strip()
+        if ss[0].strip() == 'HUM_SURFACE':
+            h = ss[1].strip()
+    if len(p) > 0:
+        pth.extend([p,t,h])
+    return(meas_time, dur, sza, zen, lat, lon, alt, spectrum, pth)
             
 

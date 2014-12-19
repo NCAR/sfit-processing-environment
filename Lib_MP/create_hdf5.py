@@ -1,8 +1,5 @@
 #!/usr/bin/python
 
-import sys
-sys.path.append('/data/sfit-processing-environment/Lib_MP')
-
 import os, string, pdb, sys
 import tables as hdf5
 import numpy as np
@@ -31,12 +28,15 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	df = mdt.strpdate2num('%Y%m%d.%H%M%S')
 	dnum = []
 	sza = []
-	zen = []
+	azi = []
 	lat = []
 	lon = []
 	alt = []
 	dur = []
 	spectra = []
+	p_surface = []
+	t_surface = []
+	h_surface = []
 	dir = []
 	col_h2o_rt = []
 	col_h2o_ap = []
@@ -72,6 +72,10 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    if not os.path.isfile(aprfsfile):
 	        print 'aprfs.table'
 	        continue
+	    statefile =  string.join([direc, '/', dd, '/', 'statevec'], '')
+	    if not os.path.isfile(statefile):
+	        print 'statevecfile'
+	        continue
 	    miscfile =  string.join([direc, '/', dd, '/', 'misc.out'], '')
 	    if not os.path.isfile(miscfile):
 	        sz = -1
@@ -82,14 +86,14 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	        du = -1
 	        spectrum = 'NA'
 	    else:
-	        mt,du,sz,ze,lati,long,alti,spectrum = read_misc.read_misc(miscfile)
+	        mt,du,sz,az,lati,long,alti,spectrum,pth = read_misc.read_misc(miscfile)
 	        sz = np.double(sz)
-	        ze = np.double(ze)
+	        az = np.double(az)
 	        lati = np.double(lati)
 	        long = np.double(long)
 	        alti = np.double(alti)
 	        du = np.double(du)
-	
+		pth = np.array(np.double(pth))
 	    try:
 	        summary = sfit4.summary(sumfile)
 	    except:
@@ -105,6 +109,13 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    rcol = rprf.get_gas_col(gasnames[0])
 	    acol = aprf.get_gas_col(gasnames[0])
 	    len_vmr = len(z)
+
+	    stv = sfit4.statevec(statefile)
+	    auxnames =  stv.aux
+	    aux_apriori = stv.ap_aux
+	    aux_retrieved = stv.rt_aux
+	    nr_aux = len(aux_apriori)
+
 	
 	    nr_gas = len(gasnames)
 	    i_rvmr=np.zeros((len_vmr,0))
@@ -121,15 +132,21 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    err = sfit4.error(sb_ctl,direc+'/'+dd)
 	    srvmr, ssvmr = err.read_total_vmr()
 	    srpcol, sspcol = err.read_total_pcol()
+	    srcol, sscol = err.read_total_col()
 
+	    err_flag = err.flag
 	    if not err.flag:
 		 print 'No Error matrices'
-		 continue
 
-	    cov_srvmr = err.S_vmr_ran;
-	    cov_ssvmr = err.S_vmr_sys;
-	
-	
+	    if err_flag:
+		    cov_srvmr = err.S_vmr_ran;
+		    cov_ssvmr = err.S_vmr_sys;
+	    else:
+		    cov_srvmr = np.ones((len_vmr, len_vmr))*-1
+		    cov_ssvmr = np.ones((len_vmr, len_vmr))*-1
+		    srpcol = np.ones((len_vmr))*-1
+		    sspcol = np.ones((len_vmr))*-1
+
 	    if akt_entry == 0:
 	        col_rt = np.zeros((nr_gas, nr_entries)) *np.nan
 	        col_ap = np.zeros((nr_gas, nr_entries)) *np.nan
@@ -140,6 +157,8 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	        air_col=np.zeros(nr_entries) * np.nan
 	        P = np.zeros((len_vmr, nr_entries)) *np.nan
 	        T = np.zeros((len_vmr, nr_entries)) *np.nan
+		vmr_h2o_ap = np.zeros((len_vmr, nr_entries)) *np.nan
+
 	        h5file.createArray("/", 'Z', np.array(z), "Altitude levels (mid points)")
 	        h5file.createArray("/", 'Zb', np.array(zb), "Altitude levels (boundaries)")
 	        vmr_rt = h5file.createEArray("/", 'vmr_rt', hdf5.Float32Atom(), 
@@ -150,6 +169,11 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	        icol_rt = h5file.createEArray("/", 'icol_rt', hdf5.Float32Atom(), 
 	                                     (nr_gas-1,0), title="Retrieved total column of interfering gases", 
 	                                      expectedrows=nr_entries)
+	        aux_ap = h5file.createEArray("/", 'aux_ap', hdf5.Float32Atom(), 
+	                                     (nr_aux,0), title="Apriori of auxilliary entries in state vector", 
+	                                      expectedrows=nr_entries)
+	        aux_rt = h5file.createEArray("/", 'aux_rt', hdf5.Float32Atom(), 
+	                                     (nr_aux,0), title="Retrievals of auxilliary entries in state vector", expectedrows=nr_entries)
 	        vmr_ap = h5file.createEArray("/", 'vmr_ap', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="Apriori VMR", expectedrows=nr_entries)
 	        vmr_ran = h5file.createEArray("/", 'cov_vmr_ran', hdf5.Float32Atom(), 
@@ -164,6 +188,8 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	                                     (len_vmr,0), title="Total error random partial column", expectedrows=nr_entries)
 	        pcol_sys = h5file.createEArray("/", 'pcol_sys', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="Total error systematic partial column", expectedrows=nr_entries)
+	        h2o_setup = h5file.createEArray("/", 'h2o_vmr_setup', hdf5.Float32Atom(), 
+	                                     (len_vmr,0), title="H2O VMR profile of setup", expectedrows=nr_entries)
 	        
 	        P = h5file.createEArray("/", 'P', hdf5.Float32Atom(), 
 	                                (len_vmr,0), title="Pressure", expectedrows=nr_entries)
@@ -175,6 +201,21 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 		print 'not finite'
 	        continue
 	
+	    akfile =  string.join([direc, '/', dd, '/', 'ak.out'], '')
+	    if not os.path.isfile(akfile):
+		print 'no avk'
+	        ak_flag = False
+		avk = np.zeros((len_vmr,len_vmr))
+		avk_vmr = avk
+		avk_col = avk
+	    else:
+                ak_flag = True
+
+		ak = sfit4.avk(akfile,aprfsfile)
+		avk = ak.avk()
+		avk_col = ak.avk(type='column')
+		avk_vmr = ak.avk(type='vmr')
+
 	    try:
 	        chi_2_y[nr_res] = summary.chi_y_2
 	    except:
@@ -193,40 +234,53 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    dir.append(dd)
 	
 	    mdate.append(df(dd))
-	    sza.append(sz)
-	    zen.append(ze)
-	    lat.append(lati)
-	    lon.append(long)
-	    alt.append(alti)
-	    dur.append(du)
+	    sza = np.hstack((sza,sz))
+	    azi = np.hstack((azi,az))
+	    lat = np.hstack((lat, lati))
+	    lon = np.hstack((lon, long))
+	    alt = np.hstack((alt,alti))
+	    dur = np.hstack((dur, du))
 	    spectra.extend(spectrum)
+	    p_surface.append(pth[0])
+	    if np.double(pth[0]) > 500.0:
+		    p_surface.append(pth[0])
+	    else:
+		    p_surface.append(-90000)
+
+	    if pth[1] > 90:
+		    t_surface.append(-90000)
+	    else:
+		    t_surface.append(pth[1] + 273.15) 
+
+	    if np.double(pth[2]) > 0.0:
+		    h_surface.append(pth[2])
+	    else:
+		    h_surface.append(np.double(-90000))
 	
-	    vmr_rt.append(np.reshape(rvmr,(len_vmr, -1)))
+	    vmr_rt.append(np.reshape(rvmr,(len_vmr,-1)))
 	    ivmr_rt.append(np.reshape(i_rvmr, (len_vmr, nr_gas-1, 1)))
 	    icol_rt.append(np.reshape(i_col, (nr_gas-1, 1)))
+	    aux_ap.append(np.reshape(aux_apriori, (nr_aux, 1)))
+	    aux_rt.append(np.reshape(aux_retrieved, (nr_aux, 1)))
 	    vmr_ap.append(np.reshape(avmr[0],(len_vmr, -1)))
 	    if np.isfinite(srvmr).all() and np.isfinite(srpcol).all():
 	        vmr_ran.append(np.reshape(cov_srvmr,(len_vmr, len_vmr, 1)))
 	        vmr_sys.append(np.reshape(cov_ssvmr,(len_vmr, len_vmr, 1)))
 	        pcol_ran.append(np.reshape(srpcol,(len_vmr, -1)))
 	        pcol_sys.append(np.reshape(sspcol,(len_vmr, -1)))
-	        col_ran[nr_res] = np.linalg.norm(srpcol)
-	        col_sys[nr_res] = np.linalg.norm(sspcol)
+	        col_ran[nr_res] = srcol
+	        col_sys[nr_res] = sscol
 	    pcol_rt.append(np.reshape(rcol[0],(len_vmr, -1)))
 	    pcol_ap.append(np.reshape(acol[0],(len_vmr, -1)))
 	    P.append(np.reshape(p,(len_vmr, -1)))
 	    T.append(np.reshape(t,(len_vmr, -1)))
-	
+
+	    h2o, z = aprf.get_gas_vmr('H2O')
+	    h2o_setup.append(np.reshape(h2o,(len_vmr, -1)))
+	    h2o, z = aprf.get_gas_col('H2O')
+	    col_h2o_ap.append(np.sum(h2o))
 	
 	    nr_res = nr_res + 1
-	
-	    akfile =  string.join([direc, '/', dd, '/', 'ak.out'], '')
-	    if not os.path.isfile(akfile):
-	        continue
-	    ak = sfit4.avk(akfile)
-	    avk = ak.avk()
-	    avk_col = ak.avk(type='column')
-	    avk_vmr = ak.avk(type='vmr')
 	    if nr_res == 1:
 	        len_ak = avk.shape[0]
 	        AK = h5file.createEArray("/", 'avk', hdf5.Float32Atom(), 
@@ -243,23 +297,27 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    AKv.append(np.reshape(avk_vmr,(len_ak,len_ak,1)))
 	
 	
-	col_rt = col_rt[:,0:nr_res]
-	col_ap = col_ap[:,0:nr_res]
+	col_rt = col_rt[0,0:nr_res]
+	col_ap = col_ap[0,0:nr_res]
 	col_ran = col_ran[0:nr_res]
 	col_sys = col_sys[0:nr_res]
 	air_col = air_col[0:nr_res]
 	chi_2_y = chi_2_y[0:nr_res]
 	dofs = dofs[0:nr_res]
+
 	
 	h5file.createArray("/", 'directories', dir, "Directories")
 	h5file.createArray("/", 'spectra', spectra, "Filename of Spectrum")
 	h5file.createArray("/", 'mdate', np.array(mdate), "Measurement date and time")
 	h5file.createArray("/", 'sza', np.array(sza), "Solar zenith angle")
-	h5file.createArray("/", 'zenith', np.array(zen), "Solar azimuth angle")
+	h5file.createArray("/", 'azimuth', np.array(azi), "Solar azimuth angle")
 	h5file.createArray("/", 'lat', np.array(lat), "Latitude")
 	h5file.createArray("/", 'lon', np.array(lon), "Longitude")
 	h5file.createArray("/", 'alt', np.array(alt), "Altitude of Instrument")
 	h5file.createArray("/", 'dur', np.array(dur), "Duration of measurement")
+	h5file.createArray("/", 'P_s', np.array(p_surface), "Surface Pressure")
+	h5file.createArray("/", 'T_s', np.array(t_surface), "Surface temperature")
+	h5file.createArray("/", 'H_s', np.array(h_surface), "Surface Humidity")
 	h5file.createArray("/", 'snr_clc', np.array(snr_clc), "Calculated SNR")
 	h5file.createArray("/", 'snr_the', np.array(snr_the), "Theoretically possible SNR")
 	h5file.createArray("/", 'chi_2_y', np.array(chi_2_y), "CHI_2_Y")
@@ -272,13 +330,18 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	h5file.createArray("/", 'col_sys', col_sys, "Column error systematic")
 	h5file.createArray("/", 'air_col', air_col, "Retrieved AIRMASS")
 	h5file.createArray("/", 'gasnames', gasnames, "Names of retrieved gases")
+	h5file.createArray("/", 'auxnames', auxnames, "Names of auxilliary state entries")
+	h5file.createArray("/", 'h2o_col_setup', col_h2o_ap, "Columns of H2O in setup")
 
 	h5file.close()
 
 
 if __name__ == '__main__':
-	
-	print 'Arguments: path to sb.ctl-file (mandatory), directory containing results, start-date(yyyy-mm-dd), end-date(yyyy-mm-dd)'
+
+        import os,sys
+        sys.path.append(os.path.dirname(sys.argv[0]))
+        
+	print 'Arguments: path to sb.ctl-file (mandatory), directory containing results, start-date(yyyymmdd), end-date(yyyymmdd)'
 
 	if len(sys.argv)==1:
 		print 'path to sb.ctl is missing'
@@ -293,11 +356,11 @@ if __name__ == '__main__':
 	else:
 		direc = '.'
 	if len(sys.argv)>=4:
-		start_date = dt.date(int(sys.argv[3][0:4]),int(sys.argv[3][5:7]), int(sys.argv[3][8:10]))
+		start_date = dt.date(int(sys.argv[3][0:4]),int(sys.argv[3][4:6]), int(sys.argv[3][6:8]))
 	else:
 		start_date = dt.date(1970,01,01)
 	if len(sys.argv)>=5:
-		end_date = dt.date(int(sys.argv[4][0:4]),int(sys.argv[4][5:7]), int(sys.argv[4][8:10]))
+		end_date = dt.date(int(sys.argv[4][0:4]),int(sys.argv[4][4:6]), int(sys.argv[4][6:8]))
 	else:
 		end_date = dt.date.today ()
 

@@ -29,7 +29,7 @@ if __name__ != "__main__":
                             
 def main():
     loc1           = 'bre'
-    gasName        = 'c2h6'                         # This is the target gas for retrieval
+    gasName        = 'nh3'                         # This is the target gas for retrieval
     version        = 'Current'
     if loc1.lower() == 'bre':
         loc            = 'BREMEN'
@@ -38,13 +38,13 @@ def main():
         loc            = 'NYALESUND'
         source         = 'AWI001'
     sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
-    year           = 2010
+    year           = 2014
     iyear          = year
     imonth         = 1
     iday           = 1
     fyear          = year
-    fmonth         = 12
-    fday           = 31
+    fmonth         = 6
+    fday           = 1
    
     #------------------
     # For IDL interface
@@ -56,13 +56,13 @@ def main():
     #---------------------
     # For python interface
     #---------------------
-    ddir = '/ftirrd03/mathias/ndacc_v3.94/spit_sun_c2h6_insb_v1_Dev_Eric'
+    ddir = '/home/mathias/test_hdf/'
     dataDir        = ddir
     ctlF           = ddir+'/sfit4.ctl'
     outDir         = '/data/HDFfiles/'
     spcDBfile      = ddir+'/spectral_database.dat'
     statLyrFile    = ddir+'/station.layers'
-    attribute_file = '/data/sfit-processing-environment/HDFsave/bremen_attr.txt'
+    attribute_file = '/home/mathias/sfit-processing-environment/HDFsave/bremen_attr.txt'
     maxRMS         = 1.6
     rmsFlag        = False
     tcFlag         = False
