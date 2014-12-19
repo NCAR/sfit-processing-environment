@@ -38,11 +38,11 @@ def main():
         loc            = 'NYALESUND'
         source         = 'AWI001'
     sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
-    year           = 2014
+    year           = 2004
     iyear          = year
     imonth         = 1
     iday           = 1
-    fyear          = year
+    fyear          = 2014
     fmonth         = 6
     fday           = 1
    
@@ -56,13 +56,14 @@ def main():
     #---------------------
     # For python interface
     #---------------------
-    ddir = '/home/mathias/test_hdf/'
+    script_dir = os.path.dirname(sys.argv[0])
+    ddir = os.path.abspath(os.path.curdir)
     dataDir        = ddir
     ctlF           = ddir+'/sfit4.ctl'
     outDir         = '/data/HDFfiles/'
     spcDBfile      = ddir+'/spectral_database.dat'
     statLyrFile    = ddir+'/station.layers'
-    attribute_file = '/home/mathias/sfit-processing-environment/HDFsave/bremen_attr.txt'
+    attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
     maxRMS         = 1.6
     rmsFlag        = False
     tcFlag         = False
