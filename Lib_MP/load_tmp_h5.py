@@ -22,7 +22,8 @@ class load_tmph5:
                      'sza':'sza',
                      'P_surface':'P_s', 
                      'col_co2':'',   
-                     'col_h2o':'',   
+                     'col_h2o':'',
+                     'dofs':'dofs',
                      'spectra':'spectra',
                      'directories': 'directories'};
 
