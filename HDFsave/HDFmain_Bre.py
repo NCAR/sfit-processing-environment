@@ -44,6 +44,14 @@ def main(args):
     fyear          = edate.year
     fmonth         = edate.month
     fday           = edate.day
+    maxRMS         = 0.02
+    rmsFlag        = True
+    tcFlag         = False
+    pcFlag         = False
+    cnvFlag        = False
+    szaFlag        = True
+    validFlag      = True
+
     if loc1.lower() == 'bre':
         loc            = 'BREMEN'
         source         = 'IUP001'
@@ -51,7 +59,7 @@ def main(args):
     elif loc1.lower() == 'nya':    
         loc            = 'NYALESUND'
         source         = 'AWI001'
-        attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
+        attribute_file = os.path.join(script_dir, 'nyalesund_attr.txt')
     elif loc1.lower() == 'cruise':    
         loc            = 'POLARSTERN'
         source         = 'AWI027'
@@ -61,6 +69,17 @@ def main(args):
         source         = 'AWI019'
         # source         = 'AWI028'
 
+    if gasName.lower() == 'o3':
+        maxRMS         = 2.0 # in percent
+        maxSZA         = 80.0
+        rmsFlag        = True
+        tcFlag         = True
+        pcFlag         = True
+        cnvFlag        = True
+        szaFlag        = True
+        validFlag      = True
+        
+        
    
     #------------------
     # For IDL interface
@@ -78,13 +97,6 @@ def main(args):
     outDir         = '/data/HDFfiles/'
     spcDBfile      = dataDir+'/spectral_database.dat'
     statLyrFile    = dataDir+'/station.layers'
-    maxRMS         = 1.6
-    rmsFlag        = False
-    tcFlag         = False
-    pcFlag         = False
-    cnvFlag        = False
-    szaFlag        = False
-    validFlag      = True
    
    
     print("Creating HDF file")
@@ -104,8 +116,10 @@ def main(args):
     #------------------------------------------------
     #myhdf.initDummy()
     #myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
-    myhdf.initPy(dataDir, ctlF,  spcDBfile, statLyrFile,iyear, imonth, iday,   fyear, fmonth, fday,
-                 mxRMS=maxRMS, rmsFlg=rmsFlag,tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,szaFlg=szaFlag, validFlg=validFlag)
+    myhdf.initPy(dataDir, ctlF,  spcDBfile, statLyrFile,iyear, imonth,
+                 iday,   fyear, fmonth, fday, mxRMS=maxRMS, mxSZA=maxSZA,
+                 rmsFlg=rmsFlag, tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,
+                 szaFlg=szaFlag, validFlg=validFlag)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.
