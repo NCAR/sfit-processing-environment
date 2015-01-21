@@ -31,17 +31,18 @@ def load2160(name):
     ffi = ffi.split()
     ffi = int(ffi[1])
     if ffi != 2160:
-        V = -1
-        A = -1
-        ASTRING = -1
-        X2 = -1
-        DATE = -1
+        # V = -1
+        # A = -1
+        # ASTRING = -1
+        # X2 = -1
+        # DATE = -1
+        mdate = -1
+        vals = -1
+        vname = -1
         fid.close()
         print name + ' not valid'
-        return
+        return(vals, mdate, vname)
 
-    sys.stdout.write(name+'\r')
-    sys.stdout.flush()
 
     oname = fid.readline() # Supervisor
     org = fid.readline()   # Organsiation
@@ -53,7 +54,7 @@ def load2160(name):
     f = fid.readline()
     dd = f.split() # Measurement date
     mdate = dates.date2num(dates.datetime.date(int(dd[0]), int(dd[1]), int(dd[2])))
-    rdate = dates.date2num(dates.datetime.date(int(dd[3]), int(dd[4]), int(dd[5])))
+#    rdate = dates.date2num(dates.datetime.date(int(dd[3]), int(dd[4]), int(dd[5])))
     f = fid.readline()
     dx1 = int(f) # Spacing between values of
     # independent variable (0=varying)
@@ -135,13 +136,21 @@ def load2160(name):
         tmpNX.extend(fid.readline().split())
 
     nx1 = int(tmpNX[0]);
-
+    
     A = []
 
     for k in range(0,nauxv-nauxc-1):
         A.append(tmpNX[k])
 
-    tim = [A[4], A[5]]
+
+    # Depending o who did the conversion, this line is different
+    if x2.find('Ny Alesund') != -1:
+        tim = [A[4], A[5]]
+        mdate = mdate + int(tim[0])/24.0 + int(tim[1])/(24*60.0) 
+    elif x2.find('Paramaribo') != -1:
+        tim = A[1]
+        mdate = mdate + int(tim[0])/24.0
+
     ASTRING = []
     for a in range(nauxv-nauxc,nauxv):
         l = fid.readline();
@@ -155,5 +164,4 @@ def load2160(name):
 
     fid.close()
 
-    mdate = mdate + int(tim[0])/24.0 + int(tim[1])/(24*60.0) 
     return(vals, mdate, vname)

@@ -47,6 +47,11 @@ class load_H4:
             ind = -1
         return(ind)
 
+    def get_partial_columns(self,gas):
+        rt = self.h4.select(gas+'.COLUMN.PARTIAL_ABSORPTION.SOLAR').get()
+        z = self.h4.select('ALTITUDE').get()
+        return(rt,z)
+
     def get_columns(self,gas):
         rt = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR').get()
         er=es=ap = []
@@ -90,7 +95,11 @@ class load_H4:
     def get_zpt(self):
         P = self.h4.select('PRESSURE_INDEPENDENT').get()
         T = self.h4.select('PRESSURE_INDEPENDENT').get()
-    
+        Z = self.h4.select('ALTITUDE').get()
+        Zb = self.h4.select('ALTITUDE.BOUNDARIES').get()
+        return(Z,Zb,P,T)
+
+        
     def get_misc(self):
         p_s = self.h4.select('SURFACE.PRESSURE_INDEPENDENT').get()
         t_s = self.h4.select('SURFACE.TEMPERATURE_INDEPENDENT').get()
@@ -128,6 +137,78 @@ class load_hdf:
     def __del__(self):
         pass 
 
+    def get_vmr(self, gas, src='GEOMS'):
+        if src=='TMPH5':
+            src_hdf = self.h5
+        else:
+            src_hdf = self.h4
+        dd = np.array([])
+        for hf in src_hdf:
+            dd = np.hstack((dd,dates.date2num(hf.dates)))
+            rt,ap,z = hf.get_profile(gas)
+            try:
+                rvmr
+            except:
+                rvmr = np.ndarray((0,rt.shape[1]))
+            rvmr = np.vstack((rvmr,rt))
+
+            try:
+                avmr
+            except:
+                avmr = np.ndarray((0,ap.shape[1]))
+            avmr = np.vstack((avmr,ap))
+
+        return(rvmr,avmr,dd)
+        
+    
+    def get_avk_vmr(self, gas,src='GEOMS'):
+        if src=='TMPH5':
+            src_hdf = self.h5
+        else:
+            src_hdf = self.h4
+        dd = np.array([])
+        for hf in src_hdf:
+            dd = np.hstack((dd,dates.date2num(hf.dates)))
+            ak,z = hf.get_avk_vmr(gas)
+            try:
+                avk
+            except:
+                avk = np.ndarray((0,ak.shape[1],ak.shape[2]))
+            avk = np.vstack((avk,ak))
+            
+        return(avk,dd)
+
+            
+    def get_columns(self,gas,src='GEOMS'):
+        if src=='TMPH5':
+            src_hdf = self.h5
+        else:
+            src_hdf = self.h4
+        dd = np.array([])
+        colrt = np.array([])
+        for hf in src_hdf:
+            dd = np.hstack((dd,dates.date2num(hf.dates)))
+            rt,ap,er,es = hf.get_columns(gas)
+            colrt = np.hstack((colrt,rt))
+
+        return(dd, colrt)
+
+    def get_partial_columns(self,gas,zrange, src='GEOMS'):
+        if src=='TMPH5':
+            src_hdf = self.h5
+        else:
+            src_hdf = self.h4
+        dd = np.array([])
+        colrt = np.array([])
+        for hf in src_hdf:
+            dd = np.hstack((dd,dates.date2num(hf.dates)))
+            rt,z = hf.get_partial_columns(gas)
+            ind1 = np.where(np.all((z > zrange[0],z < zrange[1]),axis=0))[0]
+            colrt = np.hstack((colrt,np.sum(rt[:,ind1],axis=1)))
+
+        return(dd, colrt)
+
+    
     def plot_columns(self, gas, ax, src='GEOMS'):
 
         if src=='TMPH5':

@@ -27,24 +27,40 @@ if __name__ != "__main__":
     import hdfsave as hdfsave
 #import hdfsaveMLO as hdfsave                            
                             
-def main():
-    loc1           = 'bre'
-    gasName        = 'nh3'                         # This is the target gas for retrieval
+def main(args):
+    if len(args) != 5:
+        print 'call as HDFmain_Bre HDFdir location gas YYYYMMDD (start) YYYYMMDD (end)'
+    script_dir = os.path.dirname(sys.argv[0])
+    dataDir        = args[1]
+    loc1           = args[2]
+    gasName        = args[3]  # This is the target gas for retrieval
     version        = 'Current'
+    sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
+    sdate = datetime.datetime.strptime(args[4],'%Y%m%d')
+    edate = datetime.datetime.strptime(args[5],'%Y%m%d')
+    iyear          = sdate.year
+    imonth         = sdate.month
+    iday           = sdate.day
+    fyear          = edate.year
+    fmonth         = edate.month
+    fday           = edate.day
     if loc1.lower() == 'bre':
         loc            = 'BREMEN'
         source         = 'IUP001'
-    else:    
+        attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
+    elif loc1.lower() == 'nya':    
         loc            = 'NYALESUND'
         source         = 'AWI001'
-    sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
-    year           = 2004
-    iyear          = year
-    imonth         = 1
-    iday           = 1
-    fyear          = 2014
-    fmonth         = 6
-    fday           = 1
+        attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
+    elif loc1.lower() == 'cruise':    
+        loc            = 'POLARSTERN'
+        source         = 'AWI027'
+        attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
+    elif loc1.lower() == 'pmb':    
+        loc            = 'PARAMARIBO'
+        source         = 'AWI019'
+        # source         = 'AWI028'
+
    
     #------------------
     # For IDL interface
@@ -56,14 +72,12 @@ def main():
     #---------------------
     # For python interface
     #---------------------
-    script_dir = os.path.dirname(sys.argv[0])
+
     ddir = os.path.abspath(os.path.curdir)
-    dataDir        = ddir
-    ctlF           = ddir+'/sfit4.ctl'
+    ctlF           = dataDir+'/sfit4.ctl'
     outDir         = '/data/HDFfiles/'
-    spcDBfile      = ddir+'/spectral_database.dat'
-    statLyrFile    = ddir+'/station.layers'
-    attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
+    spcDBfile      = dataDir+'/spectral_database.dat'
+    statLyrFile    = dataDir+'/station.layers'
     maxRMS         = 1.6
     rmsFlag        = False
     tcFlag         = False
@@ -105,6 +119,7 @@ def main():
     
 if __name__ == "__main__":
     import sys, os
+    import datetime
     sys.path.append(os.path.join(os.path.dirname(sys.argv[0]),'..','ModLib'))
     import hdfsave as hdfsave
-    main()
+    main(sys.argv)
