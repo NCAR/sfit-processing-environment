@@ -475,13 +475,13 @@ class RetOutput():
         ckFile(self.wrkDir + fName , logFlg=self.logFile, exitFlg=True)
 
         self.deflt = {}
-        retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be retrieved        
+        retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS','H2O']   # These profiles will always be retrieved        
 
         #--------------------------------------
         # Add user specified retrieved gas list 
         # to standard retrievals
         #--------------------------------------
-        retrvdAll.append(gasName.upper())        
+        if gasName.upper() != 'H2O': retrvdAll.append(gasName.upper())        
 
         #--------------------------
         # Open and read output file
