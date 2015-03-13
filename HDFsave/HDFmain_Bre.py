@@ -28,23 +28,27 @@ if __name__ != "__main__":
 #import hdfsaveMLO as hdfsave                            
                             
 def main(args):
-    if len(args) != 5:
-        print 'call as HDFmain_Bre HDFdir location gas YYYYMMDD (start) YYYYMMDD (end)'
+    if len(args) != 7:
+        print 'call as HDFmain_Bre Datadir HDFDir location gas YYYYMMDD (start) YYYYMMDD (end)'
+        return()
+        
     script_dir = os.path.dirname(sys.argv[0])
     dataDir        = args[1]
-    loc1           = args[2]
-    gasName        = args[3]  # This is the target gas for retrieval
+    outDir         = args[2]
+    loc1           = args[3]
+    gasName        = args[4]  # This is the target gas for retrieval
     version        = 'Current'
     sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
-    sdate = datetime.datetime.strptime(args[4],'%Y%m%d')
-    edate = datetime.datetime.strptime(args[5],'%Y%m%d')
+    sdate = datetime.datetime.strptime(args[5],'%Y%m%d')
+    edate = datetime.datetime.strptime(args[6],'%Y%m%d')
     iyear          = sdate.year
     imonth         = sdate.month
     iday           = sdate.day
     fyear          = edate.year
     fmonth         = edate.month
     fday           = edate.day
-    maxRMS         = 0.02
+    maxRMS         = 1.0
+    maxSZA         = 90.0
     rmsFlag        = True
     tcFlag         = False
     pcFlag         = False
@@ -57,7 +61,7 @@ def main(args):
         source         = 'IUP001'
         attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
     elif loc1.lower() == 'nya':    
-        loc            = 'NYALESUND'
+        loc            = 'NY.ALESUND'
         source         = 'AWI001'
         attribute_file = os.path.join(script_dir, 'nyalesund_attr.txt')
     elif loc1.lower() == 'cruise':    
@@ -70,8 +74,8 @@ def main(args):
         # source         = 'AWI028'
 
     if gasName.lower() == 'o3':
-        maxRMS         = 2.0 # in percent
-        maxSZA         = 80.0
+        maxRMS         = 5.0 # in percent
+        maxSZA         = 90.0
         rmsFlag        = True
         tcFlag         = True
         pcFlag         = True
@@ -94,7 +98,6 @@ def main(args):
 
     ddir = os.path.abspath(os.path.curdir)
     ctlF           = dataDir+'/sfit4.ctl'
-    outDir         = '/data/HDFfiles/'
     spcDBfile      = dataDir+'/spectral_database.dat'
     statLyrFile    = dataDir+'/station.layers'
    

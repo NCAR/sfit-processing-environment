@@ -52,6 +52,15 @@ class load_H4:
         z = self.h4.select('ALTITUDE').get()
         return(rt,z)
 
+    def get_diff_partial_columns(self,gas):
+        # for old sfit4 data which have been saved wrongly
+
+        rt = self.h4.select(gas+'.COLUMN.PARTIAL_ABSORPTION.SOLAR').get()
+        rt = np.diff(rt)
+        rt = np.insert(rt,0,rt[:,0],axis=1)
+        z = self.h4.select('ALTITUDE').get()
+        return(rt,z)
+
     def get_columns(self,gas):
         rt = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR').get()
         er=es=ap = []
@@ -193,7 +202,7 @@ class load_hdf:
 
         return(dd, colrt)
 
-    def get_partial_columns(self,gas,zrange, src='GEOMS'):
+    def get_partial_columns(self,gas,zrange, src='GEOMS', diff=False):
         if src=='TMPH5':
             src_hdf = self.h5
         else:
@@ -202,8 +211,17 @@ class load_hdf:
         colrt = np.array([])
         for hf in src_hdf:
             dd = np.hstack((dd,dates.date2num(hf.dates)))
-            rt,z = hf.get_partial_columns(gas)
+            if diff:
+                rt,z = hf.get_diff_partial_columns(gas)
+            else:
+                rt,z = hf.get_partial_columns(gas)
             ind1 = np.where(np.all((z > zrange[0],z < zrange[1]),axis=0))[0]
+            # if diff:
+            #     min_ind = np.max(ind1)
+            #     max_ind = np.min(ind1)
+            #     print min_ind, max_ind
+            #     colrt = np.hstack((colrt,(rt[:,min_ind]-rt[:,max_ind])))
+            # else:
             colrt = np.hstack((colrt,np.sum(rt[:,ind1],axis=1)))
 
         return(dd, colrt)
@@ -338,8 +356,6 @@ class load_hdf:
             asza.extend(sz) # solar zenith angle
             
         ax12 = ax11.twinx()
-        import ipdb
-        ipdb.set_trace()
         ax11.plot_date(dd,ps,'bx')
         ax11.set_ylabel('Surface pressure (blue)')
         ax12.plot_date(dd,ts,'rx')

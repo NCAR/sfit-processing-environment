@@ -28,7 +28,12 @@ class load_tmph5:
                      'col_h2o':'',
                      'dofs':'dofs',
                      'spectra':'spectra',
-                     'directories': 'directories'};
+                     'directories': 'directories',
+                     'auxname':'auxnames',
+                     'aux_ap':'aux_ap',
+                     'aux_rt': 'aux_rt',
+                     'iter':'iter',
+                     'itmx':'itmx'}
 
         h5f = h5.File(filename)
         for i in self. vars.keys():
@@ -58,9 +63,21 @@ class load_tmph5:
 #            if len(self.vars[i]) > 0:
 #                val = self.vars[i]
 
-            str = 'self.'+i+' = self.'+i+'[ind]'
-            print str
-            #exec(str)
+            ind = np.array(ind)
+            str = 'a = type(self.'+i+')'
+            exec(str)
+            if i == 'Z':
+                continue
+            if a == type(np.ndarray([])):
+                str = 'l = len(self.'+i+'.shape)'
+                exec(str)
+                if l == 2:
+                    str = 'self.'+i+' = self.'+i+'[:,ind]'
+                else:
+                    str = 'self.'+i+' = self.'+i+'[ind]'
+#            else:
+#                    str = 'self.'+i+' = self.'+i+'[ind]'
+            exec(str)
 
     def average(self):
         dd_mean = list(set(self.dnum.round()))

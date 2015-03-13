@@ -6,11 +6,13 @@ if __name__ == '__main__':
 
     import sys,os
     curdir = os.path.dirname(sys.argv[0])
+    print curdir
     sys.path.append(curdir)
     import sfit4_setup as sf4s
 
     if len(sys.argv) < 2:
-        print 'One argument required: path to directory containg WACCM profiles'
+        print 'Usage: Create_REF_from_WACCM.py <path to WACCM profiles> <optional: result.prf>'
+        exit()
     if len(sys.argv) < 3:
         ref_file = 'waccm.prf'
     else:

@@ -224,6 +224,7 @@ class reference_prf:
             self.gasname.append(gas_default[nr])
             self.notes.append('created by sfit4_setup')
             if os.path.exists(waccm_file):
+                print waccm_file
                 alts, vmr, note = self.load_waccmfile(waccm_file)
                 self.vmr[nr,0:self.nr_layers] = vmr
                 self.notes[-1] = note
