@@ -32,6 +32,8 @@ class show_results:
         # Find a free figure for AVK
         self.winavk = plt.figure()#figsize=(24,12))
 
+        self.winfft = plt.figure()#figsize=(24,12))
+
     
 
         self.tkroot = Tk()
@@ -56,6 +58,10 @@ class show_results:
         def spectrum_show():
             nr = int(self.spec_nr.get())
             self.show_spectra(nr)
+
+        def fft_show():
+            nr = int(self.spec_nr.get())
+            self.show_fft(nr)
 
         frame1 = Frame(self.tkroot)
         frame1.grid(row=1,column=1)
@@ -125,10 +131,12 @@ class show_results:
         button_profile = Button(self.tkroot, text = 'Profile', command = lambda: profile_show())
         button_profile.grid(row=3, column=0, sticky=E+W)
 
-        button_summary = Button(self.tkroot, text = 'Summary')
+        button_summary = Button(self.tkroot, text = 'FFT',
+                                command = lambda: fft_show())
         button_summary.grid(row=4, column=0, sticky=E+W)
 
-        button_quit = Button(self.tkroot, text = 'Quit', command = self.tkroot.quit)
+        button_quit = Button(self.tkroot, text = 'Quit',
+                             command = self.tkroot.quit)
         button_quit.grid(row=5, column=0, sticky=E+W)
 
 # #        self.SummaryText()
@@ -201,6 +209,7 @@ class show_results:
         plt.close(self.winprf)
         plt.close(self.winmw)
         plt.close(self.winavk)
+        plt.close(self.winfft)
 
     def show(self, type='vmr', nr = 0):
         if (type == 'vmr' or type=='target'):
@@ -253,6 +262,22 @@ class show_results:
             self.winavk.show()
 
 
+    def show_fft(self,band_nr = 1,gas=None):
+        def oncall1(event):
+            dnum = event.artist.get_xdata()
+            mdnum = event.mouseevent.xdata
+            ind = np.argmin(np.abs(dnum-mdnum))
+            print (self.sp.mw_stop[band_nr-1] - self.sp.mw_start[band_nr-1])/ind/10.0
+        self.winfft.clf()
+        fsp = np.fft.fft(self.sp.dif[band_nr-1],
+                         10*self.sp.dif[band_nr-1].size)
+        spacing = self.sp.mw_res[band_nr-1]
+        xax = np.fft.fftfreq(fsp.size, spacing)
+        self.winfft.gca().plot(np.abs(fsp[xax>0]),picker=5)
+        self.winfft.canvas.mpl_connect('pick_event', oncall1)
+        self.winfft.show()
+
+            
     def show_spectra(self,band_nr = 1,gas=None):
 
 
