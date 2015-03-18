@@ -971,8 +971,8 @@ class ReadOutputData(_DateRange):
                 to an altitude layer [nLayers,nObservations]
                 retapFlg determines whether retrieved profiles (=1) or a priori profiles (=0) are read'''
         self.deflt = {}
-        retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS','H2O']   # These profiles will always be retrieved
-
+        #retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS','H2O']   # These profiles will always be read
+        retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be read
 
         if not fname: 
             if   retapFlg == 1: fname = 'rprfs.table'
@@ -983,7 +983,8 @@ class ReadOutputData(_DateRange):
         # Add user specified retrieved gas list 
         # to standard retrievals
         #--------------------------------------
-        rtrvGasList = [g.upper() for g in rtrvGasList if g.upper() != 'H2O']   # Remove water from gas list since this is retrieved by default
+        #orginalRtrvGasList = rtrvGasList
+        #rtrvGasList = [g.upper() for g in rtrvGasList if g.upper() != 'H2O']   # Remove water from gas list since this read by default
         retrvdAll.extend(rtrvGasList)
         
         #-----------------------------------
@@ -2707,6 +2708,7 @@ class PlotData(ReadOutputData):
         #------------------------------------------
         if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
         if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
+        if not self.readPrfFlgApr['H2O']:           self.readprfs(['H2O'],retapFlg=0)             # Apriori H2O Profiles
         if self.empty: return False
         if not self.readsummaryFlg:                 self.readsummary()                            # Summary File info
         if not self.readPbpFlg:                     self.readPbp()                                # Pbp file info
