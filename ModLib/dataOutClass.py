@@ -1003,7 +1003,6 @@ class ReadOutputData(_DateRange):
         # Loop through collected directories
         #-----------------------------------
         for sngDir in self.dirLst:       
-            print sngDir
             try:
                 with open(sngDir + fname,'r') as fopen:
                     
@@ -1673,8 +1672,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # entries for specDB data
         #-----------------------------------------------------------------------------
 
-        self.readprfs([self.PrimaryGas,'H2O'],retapFlg=1)          # Retrieved Profiles
-        self.readprfs([self.PrimaryGas],retapFlg=0)                # A priori Profiles
+        self.readprfs([self.PrimaryGas],retapFlg=1)          # Retrieved Profiles
+        self.readprfs([self.PrimaryGas,'H2O'],retapFlg=0)                # A priori Profiles
         self.readsummary()                                         # Summary file information
         self.readError(totFlg=True,avkFlg=True,vmrFlg=True)        # Read Error Data
         self.readPbp()                                             # Read pbp file for sza
@@ -1693,7 +1692,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFaGasPrfVMR = np.asarray(self.aprfs[self.PrimaryGas])                                    # A priori primary gas profile [VMR]
         self.HDFrGasPrfMol = self.HDFrGasPrfVMR * self.HDFairMass                                       # Retrieved primary gas profile [mol cm^-2]
         self.HDFaGasPrfMol = self.HDFaGasPrfVMR * self.HDFairMass                                       # A priori primary gas profile [mol cm^-2]
-        self.HDFh2oVMR     = np.asarray(self.rprfs['H2O'])                                              # Retrieved H2O profile [VMR]
+        self.HDFh2oVMR     = np.asarray(self.aprfs['H2O'])                                              # Retrieved H2O profile [VMR]
         self.HDFaltBnds    = np.vstack((self.alt[:-1],self.alt[1:]))        
 
         # Error 
@@ -1706,7 +1705,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # Total Column
         self.HDFretTC     = np.asarray(self.rprfs[self.PrimaryGas+'_tot_col'])                          # Primary gas retrieved total column
         self.HDFaprTC     = np.asarray(self.aprfs[self.PrimaryGas+'_tot_col'])                          # Primary gas a priori total column
-        self.HDFh2oTC     = np.asarray(self.rprfs['H2O_tot_col'])                                       # Primary gas a priori total column       
+        self.HDFh2oTC     = np.asarray(self.aprfs['H2O_tot_col'])                                       # Primary gas a priori total column       
         
         # Misc
         self.HDFdates     = np.asarray(self.rprfs['date'])                                              # Date stamp of retrieval
