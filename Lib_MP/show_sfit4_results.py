@@ -43,9 +43,9 @@ class show_results:
         self.entry.insert(0, os.path.abspath(self.direc))
 #        self.update_dirlist()
 
-        button_update = Button(self.tkroot, text = 'Reload', command = self.load_result)
+        button_update = Button(self.tkroot, text = 'Reload', command = self.update_result)
         button_update.grid(row=0, column=0, sticky=E+W)
-        button_update.config(state=DISABLED)
+#        button_update.config(state=DISABLED)
 #        button_update.pack()
 
         options = []
@@ -97,7 +97,7 @@ class show_results:
         button_spec.grid(row=2, column=0, sticky=E+W)
         if len(options) == 0:
             button_spec.config(state=DISABLED)
-
+        self.button_spec_by_gas = button_spec
 
         options =  ('Profile', 'AVK')
         self.show_var = StringVar(self.tkroot)
@@ -125,13 +125,18 @@ class show_results:
         button_profile = Button(self.tkroot, text = 'Profile', command = lambda: profile_show())
         button_profile.grid(row=3, column=0, sticky=E+W)
 
-        button_summary = Button(self.tkroot, text = 'Summary')
-        button_summary.grid(row=4, column=0, sticky=E+W)
 
-        button_quit = Button(self.tkroot, text = 'Quit', command = self.tkroot.quit)
-        button_quit.grid(row=5, column=0, sticky=E+W)
+        frame3 = Frame(self.tkroot)
+        frame3.grid(row=4,column=0)
+                
 
-# #        self.SummaryText()
+        button_summary = Button(frame3, text = 'Summary')
+        button_summary.grid(row=1, column=0, sticky=E+W)
+
+        button_quit = Button(frame3, text = 'Quit', command = self.tkroot.quit)
+        button_quit.grid(row=2, column=0, sticky=E+W)
+
+        self.SummaryText()
 # #        self.mkOptionMenu1()
 
         self.tkroot.mainloop()
@@ -144,7 +149,7 @@ class show_results:
         tt1 = Text(self.tkroot)
         nr_mw = self.sp.nr_mw
         tt1.insert('end', 'Nr. of microwindows %i'%nr_mw)
-        tt1.pack()
+        tt1.grid(row=4,column=1)
 
     def mkOptionMenu1(self):
         nr_mw = self.sp.nr_mw
@@ -164,6 +169,21 @@ class show_results:
         self.menu1 = OptionMenu(self.tkroot,var, *opt,command=self.menu1)
         self.menu1.pack()
 
+
+    def update_result(self):
+        self.load_result()
+        options = list(set(self.gas.gas[:]))
+        if len(options) == 0:
+            self.button_spec_by_gas.config(state=DISABLED)
+        else:
+            self.button_spec_by_gas.config(state=NORMAL)
+        if len(options) > 0:
+            self.spec_gas = StringVar(self.tkroot)
+            self.spec_gas.set(options[0])
+
+            self.menu1 = OptionMenu(self.tkroot,self.spec_gas, 
+                                    *options)
+            self.menu1.grid(row=2,column=1,stick=E+W)
         
 
     def load_result(self):
