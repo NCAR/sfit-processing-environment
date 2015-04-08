@@ -59,7 +59,9 @@ def main():
     spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/CoaddspDB_tab_1999_2014.dat'
     #spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/HRspDB_mlo_1995_2014.dat'
     statLyrFile    = '/data/Campaign/'+loc1.upper()+'/local/station.layers'
-    maxRMS         = 0.6
+    maxRMS         = 1.6
+    minDOFs        = 1.0
+    dofFlag        = False
     rmsFlag        = True
     tcFlag         = True
     pcFlag         = True
@@ -85,7 +87,7 @@ def main():
     #myhdf.initDummy()
     #myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
     myhdf.initPy(dataDir, ctlF,  spcDBfile, statLyrFile,iyear, imonth, iday,   fyear, fmonth, fday,
-                 mxRMS=maxRMS, rmsFlg=rmsFlag,tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,szaFlg=szaFlag)
+                 mxRMS=maxRMS,minDOF=minDOFs,dofFlg=dofFlag, rmsFlg=rmsFlag,tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,szaFlg=szaFlag)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.

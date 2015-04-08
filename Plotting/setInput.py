@@ -26,8 +26,10 @@ saveFlg    = True                  # Flag to either save data to pdf file (saveF
 errorFlg   = False                 # Flag to process error data
 fltrFlg    = True                  # Flag to filter the data
 byYrFlg    = False                 # Flag to create plots for each individual year in date range
+dofFlg     = False
 
 maxrms     = 1.70                  # Max Fit RMS to filter data. Data is filtered according to <= maxrms
+minDOF     = 1.0
 sclfct     = 1.0E9                 # Scale factor to apply to vmr plots (ppmv=1.0E6, ppbv=1.0E9, etc)
 sclfctName = 'ppbv'                # Name of scale factor for labeling plots
 
