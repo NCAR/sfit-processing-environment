@@ -497,6 +497,7 @@ class RetOutput():
         #----------------------------------------
         # Loop through retrieved profiles to read
         #----------------------------------------
+
         for rtrvdSing in retrvdAll:
             self.deflt.setdefault(rtrvdSing,[]).extend([ float(row.strip().split()[defltParm.index(rtrvdSing.upper())]) for row in defltLines[4:] ] )
 
