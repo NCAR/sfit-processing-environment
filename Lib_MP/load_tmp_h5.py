@@ -50,8 +50,9 @@ class load_tmph5:
         self.err_tot = np.sqrt(self.err_ran**2 + self.err_sys**2)
         igasnames = h5f.root.gasnames[:]
         self.gasname = igasnames[0]
-        if 'CO2' in igasnames:
-            self.col_co2 = h5f.root.icol_rt[igasnames.index('CO2')-1,:]
+        self.col_co2 = 0
+        for co2name in [s for s in igasnames if 'CO2']:
+            self.col_co2 = self.col_co2 + h5f.root.icol_rt[igasnames.index(co2name)-1,:]
         if 'H2O' in igasnames:
             self.col_h2o = h5f.root.icol_rt[igasnames.index('H2O')-1,:]
         h5f.close()
