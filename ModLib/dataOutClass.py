@@ -716,7 +716,8 @@ class ReadOutputData(_DateRange):
 
 
     def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,
-                 cnvrgFlg=True,szaFlg=False,maxCHI2=1000.0,maxVMR=-1.0,minVMR=+1.0,valFlg=False):
+                 cnvrgFlg=True,szaFlg=False,maxCHI2=1000.0,maxVMR=-1e99,minVMR=1e99,valFlg=False,
+                 co2Flg=False, minCO2=0.0, maxCO2=1e99):
 
         maxvmrFlg = True
         minvmrFlg = True
@@ -792,11 +793,11 @@ class ReadOutputData(_DateRange):
         #-------------------------------------
 
         if chi2Flg:
-            chi_2_inds = np.where(self.summary[self.PrimaryGas.upper()+'_CHI_2_Y'] > maxCHI2)[0]
-            print 'Total number of observations with CHI_2_Y greater than {0:} = {1:}'.format(maxCHI2,len(sza_inds))
+            chi_2_inds = np.where(np.asarray(self.summary[self.PrimaryGas.upper()+'_CHI_2_Y']) > maxCHI2)[0]
+            print 'Total number of observations with CHI_2_Y greater than {0:} = {1:}'.format(maxCHI2,len(chi_2_inds))
             self.inds = np.union1d(chi_2_inds,self.inds)
-            chi2_inds = np.where(self.summary[self.PrimaryGas.upper()+'_CHI_2_Y'] > 0.0)[0]
-            print 'Total number of observations with CHI_2_Y smaller than {0:} = {1:}'.format(0.0,len(sza_inds))
+            chi_2_inds = np.where(np.asarray(self.summary[self.PrimaryGas.upper()+'_CHI_2_Y']) < 0.0)[0]
+            print 'Total number of observations with CHI_2_Y smaller than {0:} = {1:}'.format(0.0,len(chi_2_inds))
             self.inds = np.union1d(chi_2_inds,self.inds)
             
         #-------------------------------------
@@ -821,7 +822,23 @@ class ReadOutputData(_DateRange):
 
             
         #--------------------------
-        # Filter data based on DOFs
+        # Filter data based on retrieved CO2 column
+        #--------------------------
+        if co2Flg:
+            if not gasName+'_RetColmn' in self.summary:
+                print 'CO2 columns not retrieved...exiting..'
+                sys.exit()
+
+            co2_inds = np.unique(np.where(np.asarray(self.summary['CO2_RetColmn']) < minCO2)[0])   
+            print ('Total number observations found CO2 below {0:} = {1:}'.format(minCO2, len(co2_inds)))
+            self.inds = np.union1d(co2_inds, self.inds)
+            
+            co2_inds = np.unique(np.where(np.asarray(self.summary['CO2_RetColmn']) > maxCO2)[0])    
+            print ('Total number observations found CO2 above {0:} = {1:}'.format(maxCO2, len(co2_inds)))
+            self.inds = np.union1d(co2_inds, self.inds)      
+            
+        #--------------------------
+        # Filter data based on DOFS
         #--------------------------
         if dofFlg:
             if not gasName+'_DOFS_TRG' in self.summary:
@@ -829,9 +846,9 @@ class ReadOutputData(_DateRange):
                 sys.exit() 
                 
             indsT = np.where(np.asarray(self.summary[gasName+'_DOFS_TRG']) < minDOF)[0]
-            print ('Total number observations found below minimum DOFs = {}'.format(len(indsT)))
+            print ('Total number observations found DOFs below {0:} = {1:}'.format(minDOF, len(indsT)))
             self.inds = np.union1d(indsT, self.inds)      
-        
+
 
         #------------------------------------
         # Find retrievals where not converged
@@ -1809,7 +1826,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
             else:
                 self.HDFsurfT[i]      = np.array(-99999) 
             
-    def fltrHDFdata(self,maxRMS,maxSZA,minDOF,dofF,rmsF,tcF,pcF,cnvF,szaF,maxCHI2,maxVMR,minVMR,valF):
+    def fltrHDFdata(self,maxRMS,maxSZA,minDOF,dofF,rmsF,tcF,pcF,cnvF,szaF,maxCHI2,maxVMR,minVMR,co2F,minCO2, maxCO2, valF):
 
         #----------------------------------------------------
         # Print total number of observations before filtering
@@ -1821,7 +1838,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
         #--------------------
         self.fltrData(self.PrimaryGas, mxrms=maxRMS, mxsza=maxSZA, rmsFlg=rmsF,
                       minDOF=minDOF,dofFlg=dofF,tcFlg=tcF,pcFlg=pcF,cnvrgFlg=cnvF,szaFlg=szaF,
-                      maxCHI2=maxCHI2, maxVMR=maxVMR,minVMR=minVMR,valFlg=valF)
+                      maxCHI2=maxCHI2, maxVMR=maxVMR,minVMR=minVMR,valFlg=valF,
+                      co2Flg=co2F,minCO2=minCO2, maxCO2=maxCO2)
         
         #------------
         # Remove data

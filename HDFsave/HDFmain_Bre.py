@@ -57,7 +57,10 @@ def main(args):
     validFlag      = True
     minDOFs        = 1.0
     dofFlag        = False
-
+    co2Flag        = False
+    minCO2         = 0
+    maxCO2         = 1e26
+    
     if loc1.lower() == 'bre':
         loc            = 'BREMEN'
         source         = 'IUP001'
@@ -96,9 +99,11 @@ def main(args):
         cnvFlag        = True
         szaFlag        = True
         validFlag      = True
-        minDOFs        = 1.0
+        minDOFs        = 0.8
         dofFlag        = True
-
+        co2Flag        = True
+        minCO2         = 6.5e21
+        maxCO2         = 8.5e21
         
    
    
@@ -132,7 +137,8 @@ def main(args):
                  iday,   fyear, fmonth, fday, mxRMS=maxRMS, mxSZA=maxSZA,
                  rmsFlg=rmsFlag, tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,
                  szaFlg=szaFlag, validFlg=validFlag,maxCHI2=maxCHI2,
-                 minVMR=minVMR,maxVMR=maxVMR,dofFlg=dofFlag)
+                 minVMR=minVMR,maxVMR=maxVMR,dofFlg=dofFlag,minDOF=minDOFs,
+                 co2Flag=co2Flag,minCO2=minCO2,maxCO2=maxCO2)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.
