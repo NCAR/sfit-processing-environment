@@ -13,7 +13,8 @@ class load_tmph5:
                      'col_rt':'col_rt',
                      'pcol_rt':'pcol_rt',
                      'col_ap':'col_ap',    
-                     'c2y':'chi_2_y',       
+                     'c2y':'chi_2_y',
+                     'vmr_rt': 'vmr_rt',
                      'err_ran':'col_ran',   
                      'err_sys':'col_sys',   
                      'err_tot':'',   
@@ -65,19 +66,28 @@ class load_tmph5:
 
             ind = np.array(ind)
             str = 'a = type(self.'+i+')'
-            exec(str)
+            try:
+                exec(str)
+            except:
+                continue
             if i == 'Z':
                 continue
             if a == type(np.ndarray([])):
                 str = 'l = len(self.'+i+'.shape)'
-                exec(str)
+                try:
+                    exec(str)
+                except:
+                    continue
                 if l == 2:
                     str = 'self.'+i+' = self.'+i+'[:,ind]'
                 else:
                     str = 'self.'+i+' = self.'+i+'[ind]'
-#            else:
-#                    str = 'self.'+i+' = self.'+i+'[ind]'
-            exec(str)
+                    #            else:
+                    #                    str = 'self.'+i+' = self.'+i+'[ind]'
+                try:
+                    exec(str)
+                except:
+                    continue
 
     def average(self):
         dd_mean = list(set(self.dnum.round()))
@@ -100,12 +110,13 @@ class load_tmph5:
             lon_mean = np.hstack((lon_mean, np.mean(self.longitude[inds], axis=1)))
             pcol_mean = np.hstack((pcol_mean, np.mean(self.pcol_rt[:,inds[0]], axis=1,keepdims=True)))
 
-        import ipdb
-        ipdb.set_trace()
             
         # Delete all other entries
         for i in self.vars.keys():
-            exec('del self.'+i)
+            try:
+                exec('del self.'+i)
+            except:
+                continue
 
         # set entries which are calculated
         self.dnum = np.array(dd_mean).copy()

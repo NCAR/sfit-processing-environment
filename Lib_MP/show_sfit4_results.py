@@ -140,7 +140,7 @@ class show_results:
 
         button_quit = Button(self.tkroot, text = 'Quit',
                              command = self.tkroot.quit)
-        button_quit.grid(row=3, column=0, sticky=E+W)
+        button_quit.grid(row=5, column=0, sticky=E+W)
 
         self.SummaryText()
 # #        self.mkOptionMenu1()

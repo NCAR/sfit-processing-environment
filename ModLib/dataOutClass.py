@@ -715,8 +715,11 @@ class ReadOutputData(_DateRange):
             self.readPrfFlgRet[self.PrimaryGas] = False
 
 
-    def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,szaFlg=False,valFlg=False):
-        
+    def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,szaFlg=False,maxCHI2=1000.0,maxVMR=-1.0,minVMR=+1.0,valFlg=False):
+
+        maxvmrFlg = True
+        minvmrFlg = True
+        chi2Flg = True
         
         #------------------------------------------
         # If filtering has already been done return
@@ -782,7 +785,40 @@ class ReadOutputData(_DateRange):
             sza_inds = np.where(self.pbp['sza'] > mxsza)[0]
             print 'Total number of observations with SZA greater than {0:} = {1:}'.format(mxsza,len(sza_inds))
             self.inds = np.union1d(sza_inds,self.inds)
-        
+
+        #-------------------------------------
+        # Find observations with CHI2 > max CHI2
+        #-------------------------------------
+
+        if chi2Flg:
+            chi_2_inds = np.where(self.summary[self.PrimaryGas.upper()+'_CHI_2_Y'] > maxCHI2)[0]
+            print 'Total number of observations with CHI_2_Y greater than {0:} = {1:}'.format(maxCHI2,len(sza_inds))
+            self.inds = np.union1d(chi_2_inds,self.inds)
+            chi2_inds = np.where(self.summary[self.PrimaryGas.upper()+'_CHI_2_Y'] > 0.0)[0]
+            print 'Total number of observations with CHI_2_Y smaller than {0:} = {1:}'.format(0.0,len(sza_inds))
+            self.inds = np.union1d(chi_2_inds,self.inds)
+            
+        #-------------------------------------
+        # Find observations with a minimum VMR smaller than minvmr
+        #-------------------------------------
+
+        if minvmrFlg:
+            minvmr_inds = np.unique(np.where(self.rprfs[self.PrimaryGas]
+                                             < minVMR)[0])
+            print 'Total number of observations with VMR smaller than {0:} = {1:}'.format(minVMR,len(minvmr_inds))
+            self.inds = np.union1d(minvmr_inds,self.inds)
+
+        #-------------------------------------
+        # Find observations with a maximum VMR larger than maxvmr
+        #-------------------------------------
+
+        if maxvmrFlg:
+            maxvmr_inds = np.unique(np.where(self.rprfs[self.PrimaryGas]
+                                             > maxVMR)[0])
+            print 'Total number of observations with SZA greater than {0:} = {1:}'.format(maxVMR,len(maxvmr_inds))
+            self.inds = np.union1d(maxvmr_inds,self.inds)
+
+            
         #------------------------------------
         # Find retrievals where not converged
         #------------------------------------
@@ -791,7 +827,7 @@ class ReadOutputData(_DateRange):
                 print 'Converged values do not exist...exiting..'
                 sys.exit()
                 
-            indsT = np.where( np.asarray(self.summary[gasName+'_CONVERGED']) == 'F')[0]
+            indsT = np.where( np.asarray(self.summary[self.PrimaryGas.upper()+'_CONVERGED']) == 'F')[0]
             print ('Total number observations that did not converge = {}'.format(len(indsT)))    
             self.inds = np.union1d(indsT, self.inds)
     
@@ -1757,7 +1793,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
             else:
                 self.HDFsurfT[i]      = np.array(-99999) 
             
-    def fltrHDFdata(self,maxRMS,maxSZA,rmsF,tcF,pcF,cnvF,szaF,valF):
+    def fltrHDFdata(self,maxRMS,maxSZA,rmsF,tcF,pcF,cnvF,szaF,maxCHI2,maxVMR,minVMR,valF):
 
         #----------------------------------------------------
         # Print total number of observations before filtering
@@ -1767,7 +1803,9 @@ class GatherHDF(ReadOutputData,DbInputFile):
         #--------------------
         # Call to filter data
         #--------------------
-        self.fltrData(self.PrimaryGas, mxrms=maxRMS, mxsza=maxSZA, rmsFlg=rmsF, tcFlg=tcF,pcFlg=pcF,cnvrgFlg=cnvF,szaFlg=szaF,valFlg=valF)
+        self.fltrData(self.PrimaryGas, mxrms=maxRMS, mxsza=maxSZA, rmsFlg=rmsF,
+                      tcFlg=tcF,pcFlg=pcF,cnvrgFlg=cnvF,szaFlg=szaF,
+                      maxCHI2=maxCHI2, maxVMR=maxVMR,minVMR=minVMR,valFlg=valF)
         
         #------------
         # Remove data

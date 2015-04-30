@@ -288,7 +288,7 @@ class load_hdf:
             dd_min = np.min(np.hstack((dd_min, dd)))
             dd_max = np.max(np.hstack((dd_max, dd)))
             if len(er) == len(rt):
-                ax.errorbar(dd,rt,np.sqrt(er*er+es*es),ecolor='b', fmt=None)
+                ax.errorbar(dd,rt,er,ecolor='b', fmt=None)
             if len(ap) == len(rt):
                 ax.plot(dd, ap,'ro')
   #      plt.sca(ax)

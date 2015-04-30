@@ -82,7 +82,19 @@ def main(args):
         cnvFlag        = True
         szaFlag        = True
         validFlag      = True
-        
+
+    if gasName.lower() == 'ccl4':
+        maxSZA         = 90.0
+        maxCHI2        = 10.0
+        maxVMR         = 4.0e-9
+        minVMR         = -1.0e-11
+        rmsFlag        = False
+        tcFlag         = False
+        pcFlag         = False
+        cnvFlag        = True
+        szaFlag        = True
+        validFlag      = True
+
         
    
     #------------------
@@ -122,7 +134,8 @@ def main(args):
     myhdf.initPy(dataDir, ctlF,  spcDBfile, statLyrFile,iyear, imonth,
                  iday,   fyear, fmonth, fday, mxRMS=maxRMS, mxSZA=maxSZA,
                  rmsFlg=rmsFlag, tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,
-                 szaFlg=szaFlag, validFlg=validFlag)
+                 szaFlg=szaFlag, validFlg=validFlag,maxCHI2=maxCHI2,
+                 minVMR=minVMR,maxVMR=maxVMR)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.
