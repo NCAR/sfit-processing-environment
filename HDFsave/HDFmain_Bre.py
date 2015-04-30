@@ -55,6 +55,8 @@ def main(args):
     cnvFlag        = False
     szaFlag        = True
     validFlag      = True
+    minDOFs        = 1.0
+    dofFlag        = False
 
     if loc1.lower() == 'bre':
         loc            = 'BREMEN'
@@ -94,15 +96,11 @@ def main(args):
         cnvFlag        = True
         szaFlag        = True
         validFlag      = True
+        minDOFs        = 1.0
+        dofFlag        = True
 
         
    
-    #------------------
-    # For IDL interface
-    #------------------
-    #idlFname       = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/1999_2012.sav'  # This is path and name of the IDL save file we use to store the data
-    #outDir         = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/HDFfiles/'      # This is the directory where the HDF file will be written to
-    #outDir         = '/Users/ebaumer/Data/HDF/'                                                  # This is the directory where the HDF file will be written to
    
     #---------------------
     # For python interface
@@ -129,13 +127,12 @@ def main(args):
     # Here we initialize the HDF object with our data
     # using our pre-defined interface
     #------------------------------------------------
-    #myhdf.initDummy()
-    #myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
+
     myhdf.initPy(dataDir, ctlF,  spcDBfile, statLyrFile,iyear, imonth,
                  iday,   fyear, fmonth, fday, mxRMS=maxRMS, mxSZA=maxSZA,
                  rmsFlg=rmsFlag, tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,
                  szaFlg=szaFlag, validFlg=validFlag,maxCHI2=maxCHI2,
-                 minVMR=minVMR,maxVMR=maxVMR)
+                 minVMR=minVMR,maxVMR=maxVMR,dofFlg=dofFlag)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.

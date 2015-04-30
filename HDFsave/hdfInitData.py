@@ -151,7 +151,9 @@ class HDFinitData(object):
         self.h2oColAbsSol                   = self.h2oColAbsSol[inds]
         
 
-    def initPy(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,mxRMS=1.0,mxSZA=80.0,rmsFlg=True,tcFlg=True,pcFlg=True,cnvFlg=True,szaFlg=False, validFlg=False,maxCHI2=-1.0,minVMR=1,maxVMR=-1):
+    def initPy(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,
+               mxRMS=1.0,mxSZA=80.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,
+               cnvFlg=True,szaFlg=False, validFlg=False,maxCHI2=-1.0,minVMR=1,maxVMR=-1):
         ''' Interface for initializing data with python set of routines'''
         
         #---------------------------------------
@@ -162,7 +164,8 @@ class HDFinitData(object):
         #------------
         # Filter data
         #------------
-        pyData.fltrHDFdata(maxRMS=mxRMS, maxSZA=mxSZA, rmsF=rmsFlg, tcF=tcFlg, pcF=pcFlg, cnvF=cnvFlg, szaF=szaFlg,maxCHI2=maxCHI2,maxVMR=maxVMR,minVMR=minVMR, valF=validFlg)
+        pyData.fltrHDFdata(maxRMS=mxRMS, maxSZA=mxSZA,minDOF=minDOF,dofF=dofFlg,rmsF=rmsFlg, tcF=tcFlg,
+                           pcF=pcFlg, cnvF=cnvFlg, szaF=szaFlg,maxCHI2=maxCHI2,maxVMR=maxVMR,minVMR=minVMR, valF=validFlg)
         
         #------------
         # Assign data

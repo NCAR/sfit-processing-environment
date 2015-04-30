@@ -586,6 +586,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         if logFile: logFile.error('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
         return False    # Critical file, if missing terminate program   
 
+    K_param = lines[2].strip().split()
+
     n_wav   = int( lines[1].strip().split()[0] )
     x_start = int( lines[1].strip().split()[2] )
     n_layer = int( lines[1].strip().split()[3] )
@@ -734,6 +736,22 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     AK_int2                    = AK[x_start:x_stop, x_stop:x_stop + n_int2_column] 
     Sa_int2                    = sa[x_stop:x_stop + n_int2_column, x_stop:x_stop + n_int2_column]
     S_ran['interfering_species'] = calcCoVar(Sa_int2,AK_int2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
+
+    #******************************************************************************************
+    #-------------------------------------------
+    # This is temprorary: calculate uncertainty
+    # associated with variability of water vapor
+    # Assume water is retrieved as profile
+    #-------------------------------------------
+    #H2Oind = [ind for ind,val in enumerate(K_param) if val == 'H2O']
+    #AK_H2O = AK[x_start:x_stop,H2Oind]
+
+    #diagFill = np.array(SbctlFileVars.inputs['sb.h2o.random'])
+    #diagFill = diagFill / sumVars.aprfs['H2O']
+    #Sb       = np.zeros((AK_H2O.shape[1],AK_H2O.shape[1]))
+    #np.fill_diagonal(Sb,diagFill**2)
+    #S_ran['H2O'] = calcCoVar(Sb,AK_H2O,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
+    #******************************************************************************************
 
     #----------------------------------------------
     # Errors from parameters not retrieved by sfit4
@@ -926,6 +944,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         fout.write('Measurement error (Sm)                        = {:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
         fout.write('Interference error (retrieved params)         = {:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
         fout.write('Interference error (interfering spcs)         = {:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
+        
+        #fout.write('Temperature (Random)                          = {:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
+        #fout.write('Water Vapor                                   = {:15.3f} [%]\n'.format(S_ran['H2O'][2]/retdenscol*100)              )
+        
         fout.write('Total random error                            = {:15.3f} [%]\n'.format(S_tot['Random'][2]           /retdenscol*100))
         fout.write('Total systematic error                        = {:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
         fout.write('Total random uncertainty                      = {:15.3E} [molecules cm^-2]\n'.format(S_tot['Random'][2])            )

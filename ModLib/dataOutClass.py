@@ -715,7 +715,8 @@ class ReadOutputData(_DateRange):
             self.readPrfFlgRet[self.PrimaryGas] = False
 
 
-    def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,szaFlg=False,maxCHI2=1000.0,maxVMR=-1.0,minVMR=+1.0,valFlg=False):
+    def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,
+                 cnvrgFlg=True,szaFlg=False,maxCHI2=1000.0,maxVMR=-1.0,minVMR=+1.0,valFlg=False):
 
         maxvmrFlg = True
         minvmrFlg = True
@@ -819,6 +820,19 @@ class ReadOutputData(_DateRange):
             self.inds = np.union1d(maxvmr_inds,self.inds)
 
             
+        #--------------------------
+        # Filter data based on DOFs
+        #--------------------------
+        if dofFlg:
+            if not gasName+'_DOFS_TRG' in self.summary:
+                print 'DOFs values do not exist...exiting..'
+                sys.exit() 
+                
+            indsT = np.where(np.asarray(self.summary[gasName+'_DOFS_TRG']) < minDOF)[0]
+            print ('Total number observations found below minimum DOFs = {}'.format(len(indsT)))
+            self.inds = np.union1d(indsT, self.inds)      
+        
+
         #------------------------------------
         # Find retrievals where not converged
         #------------------------------------
@@ -1033,6 +1047,8 @@ class ReadOutputData(_DateRange):
         # Add user specified retrieved gas list 
         # to standard retrievals
         #--------------------------------------
+        #orginalRtrvGasList = rtrvGasList
+        #rtrvGasList = [g.upper() for g in rtrvGasList if g.upper() != 'H2O']   # Remove water from gas list since this read by default
         retrvdAll.extend(rtrvGasList)
         
         #-----------------------------------
@@ -1793,7 +1809,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
             else:
                 self.HDFsurfT[i]      = np.array(-99999) 
             
-    def fltrHDFdata(self,maxRMS,maxSZA,rmsF,tcF,pcF,cnvF,szaF,maxCHI2,maxVMR,minVMR,valF):
+    def fltrHDFdata(self,maxRMS,maxSZA,minDOF,dofF,rmsF,tcF,pcF,cnvF,szaF,maxCHI2,maxVMR,minVMR,valF):
 
         #----------------------------------------------------
         # Print total number of observations before filtering
@@ -1804,7 +1820,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # Call to filter data
         #--------------------
         self.fltrData(self.PrimaryGas, mxrms=maxRMS, mxsza=maxSZA, rmsFlg=rmsF,
-                      tcFlg=tcF,pcFlg=pcF,cnvrgFlg=cnvF,szaFlg=szaF,
+                      minDOF=minDOF,dofFlg=dofF,tcFlg=tcF,pcFlg=pcF,cnvrgFlg=cnvF,szaFlg=szaF,
                       maxCHI2=maxCHI2, maxVMR=maxVMR,minVMR=minVMR,valFlg=valF)
         
         #------------
@@ -1868,7 +1884,7 @@ class PlotData(ReadOutputData):
     def closeFig(self):
         self.pdfsav.close()
     
-    def pltSpectra(self,fltr=False,maxRMS=1.0):
+    def pltSpectra(self,fltr=False,maxRMS=1.0,minDOF=1.0,dofFlg=False):
         ''' Plot spectra and fit and Jacobian matrix '''
     
         print '\nPlotting Spectral Data...........\n'
@@ -1902,7 +1918,7 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,valFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,valFlg=True)
         else: self.inds = np.array([]) 
         
         if self.empty: return False
@@ -2022,7 +2038,7 @@ class PlotData(ReadOutputData):
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)            
         
-    def pltPrf(self,fltr=False,maxRMS=1.0,allGas=True,sclfct=1.0,sclname='ppv',pltStats=True,errFlg=False):
+    def pltPrf(self,fltr=False,maxRMS=1.0,minDOF=1.0,dofFlg=False,allGas=True,sclfct=1.0,sclname='ppv',pltStats=True,errFlg=False):
         ''' Plot retrieved profiles '''
         
         
@@ -2077,7 +2093,7 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False
@@ -2548,12 +2564,12 @@ class PlotData(ReadOutputData):
                 else:           plt.show(block=False)                 
                                    
 
-    def pltAvk(self,fltr=False,maxRMS=1.0,errFlg=False,partialCols=False):
+    def pltAvk(self,fltr=False,maxRMS=1.0,minDOF=1.0,dofFlg=False,errFlg=False,partialCols=False):
         ''' Plot Averaging Kernel. Only for single retrieval '''
         
         print '\nPlotting Averaging Kernel........\n'
         
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False    
@@ -2759,7 +2775,7 @@ class PlotData(ReadOutputData):
         else:           plt.show(block=False)                         
         
         
-    def pltTotClmn(self,fltr=False,maxRMS=1.0,errFlg=False,sclfct=1.0,sclname='ppv',partialCols=False):
+    def pltTotClmn(self,fltr=False,maxRMS=1.0,minDOF=1.0,dofFlg=False,errFlg=False,sclfct=1.0,sclname='ppv',partialCols=False):
         ''' Plot Time Series of Total Column '''
         
         print '\nPrinting Total Column Plots.....\n'
@@ -2770,6 +2786,7 @@ class PlotData(ReadOutputData):
         #------------------------------------------
         if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
         if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
+        if not self.readPrfFlgApr['H2O']:           self.readprfs(['H2O'],retapFlg=0)             # Apriori H2O Profiles
         if self.empty: return False
         if not self.readsummaryFlg:                 self.readsummary()                            # Summary File info
         if not self.readPbpFlg:                     self.readPbp()                                # Pbp file info
@@ -2789,7 +2806,7 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False          
