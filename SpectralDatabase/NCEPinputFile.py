@@ -30,7 +30,7 @@ loc = 'tab'                                    # Three letter station identifier
 #----------------
 # Year to process
 #----------------
-years = [2013,2014]                                   # Year to process
+years = [2014,2015]                                   # Year to process
 
 #------
 # Flags
@@ -42,7 +42,7 @@ NonIntrpFileFlg = True
 #--------------------
 # Base Data Directory
 #--------------------
-dataDir   = '/Volumes/data/tools/NCEP_NMC/'    # Base directory with all external station data
+dataDir   = '/Volumes/data1/ancillary_data/NCEP_NMC/'    # Base directory with all external station data
 
 #------
 # Files

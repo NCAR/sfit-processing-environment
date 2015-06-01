@@ -23,17 +23,20 @@
 #    You should have received a copy of the GNU General Public License
 #    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #----------------------------------------------------------------------------------------                              
-import hdfsaveTAB as hdfsave
-#import hdfsaveMLO as hdfsave                            
+#import hdfsaveTAB as hdfsave
+#import hdfsaveMLO as hdfsave        
+import hdfsaveFL0 as hdfsave
                             
 def main():
-    loc1           = 'tab'
-    gasName        = 'co'                         # This is the target gas for retrieval
-    version        = 'Current'
+    loc1           = 'fl0'
+    gasName        = 'c2h6'                         # This is the target gas for retrieval
+    version        = 'Current_250'
     if loc1.lower() == 'tab':
         loc            = 'THULE'
-    else:    
+    elif loc1.lower() == "mlo":    
         loc            = 'MAUNA.LOA.HI'                                               
+    else: 
+        loc            = "BOULDER.COLORADO"
     sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
     year           = 1999
     iyear          = year
