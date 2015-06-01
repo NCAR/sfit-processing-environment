@@ -29,8 +29,8 @@ import hdfsaveFL0 as hdfsave
                             
 def main():
     loc1           = 'fl0'
-    gasName        = 'c2h6'                         # This is the target gas for retrieval
-    version        = 'Current_250'
+    gasName        = 'nh3'                         # This is the target gas for retrieval
+    version        = 'Current'
     if loc1.lower() == 'tab':
         loc            = 'THULE'
     elif loc1.lower() == "mlo":    
@@ -38,7 +38,7 @@ def main():
     else: 
         loc            = "BOULDER.COLORADO"
     sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
-    year           = 1999
+    year           = 2015
     iyear          = year
     imonth         = 1
     iday           = 1
@@ -59,12 +59,12 @@ def main():
     dataDir        = '/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/'+version+'/'
     ctlF           = '/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/x.'+gasName.lower()+'/sfit4.ctl'
     outDir         = '/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/HDFfiles/'
-    #spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/CoaddspDB_tab_1999_2014.dat'
-    spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/HRspDB_mlo_1995_2014.dat'
+    spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/CoaddspDB_fl0_2010_2015.dat'
+    #spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/HRspDB_mlo_1995_2014.dat'
     statLyrFile    = '/data/Campaign/'+loc1.upper()+'/local/station.layers'
-    maxRMS         = 1.6
+    maxRMS         = 0.8
     minDOFs        = 1.0
-    dofFlag        = False
+    dofFlag        = True
     rmsFlag        = True
     tcFlag         = True
     pcFlag         = True
