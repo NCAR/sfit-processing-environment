@@ -203,7 +203,10 @@ class show_results:
         self.retprf = sfit4.read_table(direc+'/rprfs.table')
         self.aprprf = sfit4.read_table(direc+'/aprfs.table')
         self.gases = self.aprprf.get_retrieval_gasnames()
-        self.sp = sfit4.pbp(direc+'/pbpfile')
+        pbp_m = ctl.get_value('file.out.pbpfile')
+        if pbp_m == -1:
+            self.sp = sfit4.pbp(direc+'/pbpfile')
+        else:            self.sp = sfit4.pbp(direc+'/'+pbp_m)
         if os.path.exists(direc+'/'+ak_m):
             self.avk = sfit4.avk(direc+'/'+ak_m, direc+'/aprfs.table')
         elif os.path.exists(direc+'/ak.target'):
