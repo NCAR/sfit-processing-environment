@@ -436,6 +436,26 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     using output from sfit4 and sb values from ctl file
     """
 
+    def matPosDefTest(mat):
+        ''' Test if matrix is positive definite'''
+        
+        #----------------------------------
+        # First test if matrix is symmetric
+        #----------------------------------
+        symRslt = np.allclose(mat.transpose(),mat)
+
+        #-------------------------------
+        # Then test if eignvales are > 0
+        #-------------------------------
+        eignRslt = np.all(np.linalg.eigvals(mat) > 0)
+        
+        if all([symRslt,eignRslt]): return True
+        else:                       return False
+        
+        
+    def matPDtest(mat):
+        ''' Test if matrix is positive definite'''
+
     def calcCoVar(coVar,A,retPrfVMR,airMass):
         ''' Calculate covariance matricies in various units'''
 
