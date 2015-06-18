@@ -776,7 +776,10 @@ def main(argv):
                                     #-----------------
                                     # Call to plot AVK
                                     #-----------------
-                                    if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  gas.pltAvk()                                
+                                    try:
+                                        if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  gas.pltAvk()                                
+                                    except:
+					print "Unable to plot AVK!!"
                                     #-----------------------------
                                     # Print summary file to screen
                                     #-----------------------------

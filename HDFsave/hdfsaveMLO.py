@@ -457,8 +457,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()
       dataStr['VAR_DESCRIPTION']      = 'Total systematic error covariance matrix associated with the retrieved vertical profiles of {} in VMR units'.format(self.gasNameUpper)
       dataStr['VAR_NOTES']            = 'Systematic error includes: Temperature, and Line Parameters. Temperature errors are determined by comparing ' +\
-                                        'radiosonde data with NCEP temperature profiles. Line parameter errors are set to 2% for line intensity, 1% for air-broadened half width, ' +\
-                                        'and 2% for temperature dependence coefficient. These errors come from HITRAN. Smoothing error is not included.'
+                                        'radiosonde data with NCEP temperature profiles. All lin parameter errors are set at 4% as given in ' +\
+                                        'Harrison et al., 2010 (JQRST). Smoothing error is not included.' 
+                                        #Line parameter errors are set to 2% for line intensity, 1% for air-broadened half width, ' +\
+                                        #'and 2% for temperature dependence coefficient. These errors come from HITRAN. Smoothing error is not included.'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr

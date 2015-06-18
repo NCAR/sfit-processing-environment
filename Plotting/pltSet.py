@@ -114,9 +114,12 @@ def main(argv):
     #-----------------
     # Call to plot AVK
     #-----------------
-    gas.pltAvk(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],errFlg=pltInputs['errorFlg'],
-               partialCols=pltInputs['pCols'],minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'])
-    
+    try:
+    	gas.pltAvk(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],errFlg=pltInputs['errorFlg'],
+       	           partialCols=pltInputs['pCols'],minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'])
+    except:
+	print "Unable to plot AVK!!" 
+
     #-------------------
     # Plot total columns
     #-------------------
