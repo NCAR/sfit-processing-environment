@@ -60,6 +60,8 @@ def main(args):
     co2Flag        = False
     minCO2         = 0
     maxCO2         = 1e26
+    minVMR         = -1.0e-7
+    maxVMR         = 2.0e-5
     
     if loc1.lower() == 'bre':
         loc            = 'BREMEN'
@@ -76,6 +78,7 @@ def main(args):
     elif loc1.lower() == 'pmb':    
         loc            = 'PARAMARIBO'
         source         = 'AWI019'
+        attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
         # source         = 'AWI028'
 
     if gasName.lower() == 'o3':
@@ -87,6 +90,9 @@ def main(args):
         cnvFlag        = True
         szaFlag        = True
         validFlag      = True
+        maxCHI2        = 5.0
+        minCO2         = 6.5e21
+        maxCO2         = 8.5e21
 
     if gasName.lower() == 'ccl4':
         maxSZA         = 90.0
