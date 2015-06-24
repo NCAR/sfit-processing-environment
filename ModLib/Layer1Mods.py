@@ -588,23 +588,25 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         #-------------------------------------------------
         # If matrix is symmetric but not positive definite
         # we can find the nearest covariance matrix using
-        # the method of (Higham, 2002)
+        # the method of (Higham, 2002). Not implenmented yet!!!!!!!!
         #-------------------------------------------------
-        if all([symRslt,not eignRslt,findNCMflg]):
-            try:
-                rtnMat = nearcorr(mat)
-            except ExceededMaxIterationsError as e:
-                rtnMat = (symRslt,eignRslt,False)
+        #if all([symRslt,not eignRslt,findNCMflg]):
+            #try:
+                #rtnMat = nearcorr(mat)
+            #except ExceededMaxIterationsError as e:
+                #rtnMat = (symRslt,eignRslt,False)
                 
-            return (symRslt,eignRslt,rtnMat)
+            #return (symRslt,eignRslt,rtnMat)
         
         #----------------------------------------------------------
         # If matrix is symmetric and positive definite, return true
         #----------------------------------------------------------
-        elif all([symRslt,eignRslt]): return (True,True,False)
+        #elif all([symRslt,eignRslt]): return (True,True,False)
         
     
-        else: return (symRslt,eignRslt,False)
+        #else: return (symRslt,eignRslt,False)
+
+        return(symRslt,eignRslt)
         
 
     def calcCoVar(coVar,A,retPrfVMR,airMass):
@@ -727,11 +729,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #-----------------------------------------------------
     # Test if Sa matrix is symmetric and positive definite
     #-----------------------------------------------------
-    (symRtn,pdRtn,rtnMat) = matPosDefTest(sa,findNCMflg=True)
+    (symRtn,pdRtn) = matPosDefTest(sa)
     if not symRtn: print "Warning!! The Sa matrix is not symmetric\n\n"
-    if all([symRtn,not pdRtn]):
-        if np.any(rtnMat): sa = rtnMat
-        else:              print "Warning!! The Sa matrix is not positive definite. Unable to find nearest correlation matrix!!\n\n"
+    if not pdRtn:  print "Warning!! The Sa matrix is not positive definite\n\n"
         
     #---------------------------------------------------------------
     # Create Se matrix (Two ways to do this depending on input flg):
@@ -760,11 +760,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #-----------------------------------------------------
     # Test if Se matrix is symmetric and positive definite
     #-----------------------------------------------------
-    (symRtn,pdRtn,rtnMat) = matPosDefTest(se,findNCMflg=True)
-    if not symRtn: print "Warning!! The Sa matrix is not symmetric\n\n"
-    if all([symRtn,not pdRtn]):
-        if np.any(rtnMat): se = rtnMat
-        else:              print "Warning!! The Se matrix is not positive definite. Unable to find nearest correlation matrix!!\n\n"
+    (symRtn,pdRtn) = matPosDefTest(se)
+    if not symRtn: print "Warning!! The Se matrix is not symmetric\n\n"
+    if not pdRtn:  print "Warning!! The Se matrix is not positive definite\n\n"
 
     #-----------------
     # Read in K matrix
@@ -967,6 +965,18 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     try:             kb_profile_gas = ctlFileVars.inputs['kb.profile.gas']
     except KeyError: kb_profile_gas = []
 
+    #----------------------------------------------------------------
+    # If file exists that has full covariances of Sb's read this file
+    #----------------------------------------------------------------
+    sbCovarRand = {}
+    sbCovarSys  = {}
+    
+    if "sb.file.random" in ctlFileVars.inputs:
+        sbCovarRand = readCovarFile(ctlFileVars.inputs["sb.file.random"])
+        
+    if "sb.file.systematic" in ctlFileVars.inputs:
+        sbCovarSys = readCovarFile(ctlFileVars.inputs["sb.file.systematic"])        
+
     #--------------------------------
     # Loop through parameter list and
     # determine errors
@@ -978,69 +988,80 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             #-------------------------------------------
             # Pre-allocate Sb matrix based on size of Kb
             #-------------------------------------------
-            Sb = np.zeros((DK.shape[1],DK.shape[1]))
+            Sb    = np.zeros((DK.shape[1],DK.shape[1]))
+            sbFlg = False
 
             try:
-                #-------------------------------------------------------------------------------------
-                # Get diagonal elements for Sb matricies. Some special cases require seperate handling
-                #-------------------------------------------------------------------------------------
-                #-------
-                # Zshift
-                #-------
-                if Kbl.lower() == 'zshift':	
-                    diagFill = np.array( [ SbctlFileVars.inputs['sb.band.'+str(x)+'.zshift.'+ErrType][0]  for x in bands['zshift'] ])
-
-                #---------------------------------
-                # Temperature (in case of scaling)
-                #---------------------------------
-                elif (Kbl.lower() == 'temperature') and (SbctlFileVars.inputs['sb.temperature.'+ErrType+'.scaled'][0].upper() == 'F'):
-                    diagFill = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
-                    if len(diagFill) != len(sumVars.aprfs['TEMPERATURE']): raise ExitError('Number of Sb for temperature, type:'+ErrType+' does not match atmospheric layers!!')
-                    diagFill = diagFill / sumVars.aprfs['TEMPERATURE']
-
-                #------------
-                # Profile Gas
-                #------------
-                elif Kbl.upper() in [x.upper() for x in kb_profile_gas]:
-                    diagFill = np.array(SbctlFileVars.inputs['sb.profile.'+Kbl+'.'+ErrType])
-
-                #-------------------------
-                # SZA (in case of scaling)
-                #-------------------------
-                elif (Kbl.lower() == 'sza') and (SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'][0].upper() == 'F'):
-                    if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for SZA, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
-                    diagFill = np.array(SbctlFileVars.inputs['sb.sza.'+ErrType]) / sumVars.pbp['sza']
-
-                #---------------------------------
-                # Omega (FOV) (in case of scaling)
-                #---------------------------------
-                elif (Kbl.lower() == 'omega') and (SbctlFileVars.inputs['sb.omega.'+ErrType+'.scaled'][0].upper() == 'F'):
-                    if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for omega, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
-                    diagFill = np.array(SbctlFileVars.inputs['sb.omega.'+ErrType]) / sumVars.summary['FOV']
-
-                #----------------
-                # All other cases
-                #----------------
-                else: 
-                    #--------------------------------------------------------------------
-                    # Catch errors where number of specified Sb does not match Kb columns
-                    #--------------------------------------------------------------------
-                    if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for '+Kbl+', type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
-                    diagFill = np.array(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) 
-
-                #--------------------------------------
-                # Fill Sb matrix with diagonal elements
-                #--------------------------------------
-                np.fill_diagonal(Sb,diagFill**2)
+                #----------------------------------------------------------------------------------
+                # Get elements for Sb matricies. If a file name is present, the file is read as the 
+                # Sb matrix. Some special cases require seperate handling
+                #----------------------------------------------------------------------------------
+                if ErrType == "random":
+                    if Kbl.lower() in sbCovarRand: 
+                        Sb = sbCovarRand[Kbl.lower()]
+                        sbFlg = True
+                        
+                elif ErrType == "systematic":
+                    if Kbl.lower() in sbCovarSys: 
+                        Sb = sbCovarSys[Kbl.lower()]
+                        sbFlg = True   
+                
+                if not sbFlg:
+                    #-------
+                    # Zshift
+                    #-------
+                    if Kbl.lower() == 'zshift':	
+                        diagFill = np.array( [ SbctlFileVars.inputs['sb.band.'+str(x)+'.zshift.'+ErrType][0]  for x in bands['zshift'] ])
+    
+                    #---------------------------------
+                    # Temperature (in case of scaling)
+                    #---------------------------------
+                    elif (Kbl.lower() == 'temperature') and (SbctlFileVars.inputs['sb.temperature.'+ErrType+'.scaled'][0].upper() == 'F'):
+                        diagFill = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
+                        if len(diagFill) != len(sumVars.aprfs['TEMPERATURE']): raise ExitError('Number of Sb for temperature, type:'+ErrType+' does not match atmospheric layers!!')
+                        diagFill = diagFill / sumVars.aprfs['TEMPERATURE']
+    
+                    #------------
+                    # Profile Gas
+                    #------------
+                    elif Kbl.upper() in [x.upper() for x in kb_profile_gas]:
+                        diagFill = np.array(SbctlFileVars.inputs['sb.profile.'+Kbl+'.'+ErrType])
+    
+                    #-------------------------
+                    # SZA (in case of scaling)
+                    #-------------------------
+                    elif (Kbl.lower() == 'sza') and (SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'][0].upper() == 'F'):
+                        if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for SZA, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
+                        diagFill = np.array(SbctlFileVars.inputs['sb.sza.'+ErrType]) / sumVars.pbp['sza']
+    
+                    #---------------------------------
+                    # Omega (FOV) (in case of scaling)
+                    #---------------------------------
+                    elif (Kbl.lower() == 'omega') and (SbctlFileVars.inputs['sb.omega.'+ErrType+'.scaled'][0].upper() == 'F'):
+                        if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for omega, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
+                        diagFill = np.array(SbctlFileVars.inputs['sb.omega.'+ErrType]) / sumVars.summary['FOV']
+    
+                    #----------------
+                    # All other cases
+                    #----------------
+                    else: 
+                        #--------------------------------------------------------------------
+                        # Catch errors where number of specified Sb does not match Kb columns
+                        #--------------------------------------------------------------------
+                        if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for '+Kbl+', type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
+                        diagFill = np.array(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) 
+    
+                    #--------------------------------------
+                    # Fill Sb matrix with diagonal elements
+                    #--------------------------------------
+                    np.fill_diagonal(Sb,diagFill**2)
                 
                 #-----------------------------------------------------
                 # Test if Sb matrix is symmetric and positive definite
                 #-----------------------------------------------------
-                (symRtn,pdRtn,rtnMat) = matPosDefTest(se,findNCMflg=True)
+                (symRtn,pdRtn) = matPosDefTest(Sb)
                 if not symRtn: print "Warning!! The Sb matrix is not symmetric\n\n"
-                if all([symRtn,not pdRtn]):
-                    if np.any(rtnMat): sb = rtnMat
-                    else:              print "Warning!! The Sb matrix is not positive definite. Unable to find nearest correlation matrix!!\n\n"
+                if not pdRtn:  print "Warning!! The Sb matrix is not positive definite\n\n"
 
             #-----------------------------------------------
             # Catch instances where DK exists for parameter; 

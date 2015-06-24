@@ -104,6 +104,25 @@ def ckDir(dirName,logFlg=False,exitFlg=False,quietFlg=False):
     else:
         return True   
 
+def readCovarFile(fname):
+    
+    ckFile(fname,exitFlg=True)
+    
+    with open(fname,"r") as fopen: lines = fopen.readlines()
+    sbCovar = {}
+    
+    for line in lines:
+        if not line.strip(): continue
+        try:    float(line.strip().split()[0])
+        except: 
+            var = line.strip().split()[0].lower()
+            continue
+            
+        if var not in sbCovar: sbCovar[var] = np.array([float(x) for x in line.strip().split()])
+        else: sbCovar[var] = np.vstack((sbCovar[var],np.array([float(x) for x in line.strip().split()])))    
+        
+    return sbCovar
+
                                                 #----------------#
                                                 # Define classes #
                                                 #----------------#
