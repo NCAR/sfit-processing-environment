@@ -50,9 +50,9 @@ def main(args):
     maxRMS         = 1.0
     maxSZA         = 90.0
     rmsFlag        = True
-    tcFlag         = False
-    pcFlag         = False
-    cnvFlag        = False
+    tcFlag         = True
+    pcFlag         = True
+    cnvFlag        = True
     szaFlag        = True
     validFlag      = True
     minDOFs        = 1.0
@@ -62,6 +62,7 @@ def main(args):
     maxCO2         = 1e26
     minVMR         = -1.0e-7
     maxVMR         = 2.0e-5
+    maxCHI2        = 100.0
     
     if loc1.lower() == 'bre':
         loc            = 'BREMEN'
@@ -111,8 +112,29 @@ def main(args):
         minCO2         = 6.5e21
         maxCO2         = 8.5e21
         
-   
-   
+    if gasName.lower() == 'hf':
+        tcFlag         = False
+        minDOFs        = 1.0
+        maxCHI2        = 10.0
+        maxVMR         = 6e-9
+        minVMR         = 0.0
+
+    if gasName.lower() == 'clono2':
+        tcFlag         = False
+        minDOFs        = 1.0
+        maxCHI2        = 2.0
+        maxVMR         = 5e-9
+        minVMR         = -1e-10
+
+    if gasName.lower() == 'ccl2f2': # CFC-12
+        tcFlag         = False
+        minDOFs        = 1.0
+        maxCHI2        = 10.0
+        maxVMR         = 3e-7
+        minVMR         = -1e-08
+        minCO2         = 2e22
+        maxCO2         = 10e22
+
     #---------------------
     # For python interface
     #---------------------
