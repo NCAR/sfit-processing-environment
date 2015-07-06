@@ -47,7 +47,7 @@ def main(args):
     fyear          = edate.year
     fmonth         = edate.month
     fday           = edate.day
-    maxRMS         = 1.0
+    maxRMS         = 100.0
     maxSZA         = 90.0
     rmsFlag        = True
     tcFlag         = True
@@ -120,6 +120,7 @@ def main(args):
         minVMR         = 0.0
 
     if gasName.lower() == 'clono2':
+        gasName        = 'ClONO2'
         tcFlag         = False
         minDOFs        = 1.0
         maxCHI2        = 2.0

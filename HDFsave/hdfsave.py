@@ -53,6 +53,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 #      if location.lower() == 'thule': self.locID = 'NCAR001'
 #      else:                           self.locID = 'NCAR002'
 
+      print self.gasName, self.gasNameUpper
 
    def glblAttrbs(self,fDOI,idate,fdate):
       ''' Meta-data for hdf file (Global Attributes) '''
@@ -77,7 +78,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       # dataStr['DS_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       # dataStr['DS_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
       # dataStr['DS_EMAIL']                = 'jamesw@ucar.edu'
-      # dataStr['DATA_DESCRIPTION']        = 'FTIR vmr vertical profile data of '+self.gasNameUpper+'. Data were taken from a 0.0035cm-1 resolution Bruker 120HR '  + \
+      # dataStr['DATA_DESCRIPTION']        = 'FTIR vmr vertical profile data of '+self.gasName+'. Data were taken from a 0.0035cm-1 resolution Bruker 120HR '  + \
       #                                      'FTIR spectrometer stationed at 3396masl at Mauna Loa, Hawaii (19.54N, 155.57W).  Data acquisition ' + \
       #                                      'is automated. Small wavenumber regions around features for a gas to be retrieved are used in the retrieval analysis.' + \
       #                                      'Retrievals take into account the SNR of the spectra region used in the fitting process as well as reasonable estimations of a priori VMR variability. ' + \
@@ -89,18 +90,18 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       # dataStr['DATA_DISCIPLINE']         = 'ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED'
       # dataStr['DATA_GROUP']              = 'EXPERIMENTAL;PROFILE.STATIONARY'
       # dataStr['DATA_LOCATION']           = self.loc.upper()
-      # dataStr['DATA_SOURCE']             = 'FTIR.'+self.gasNameUpper+'_'+self.locID.upper()
+      # dataStr['DATA_SOURCE']             = 'FTIR.'+self.gasName+'_'+self.locID.upper()
       dataStr['DATA_VARIABLES']          = self.getDatetimeName()+';'+self.getLatitudeInstrumentName()+';'+self.getLongitudeInstrumentName()+';'+self.getAltitudeInstrumentName()+';'+ \
                                            self.getSurfacePressureIndependentName()+';'+       \
                                            self.getSurfaceTemperatureIndependentName()+';'+self.getAltitudeName()+';'+self.getAltitudeBoundariesName()+';'+self.getPressureIndependentName()+';'+                 \
-                                           self.getTemperatureIndependentName()+';'+self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarName()+';'+self.gasNameUpper+'.'+                                     \
+                                           self.getTemperatureIndependentName()+';'+self.gasName+'.'+self.getMixingRatioAbsorptionSolarName()+';'+self.gasName+'.'+                                     \
                                            self.getMixingRatioAbsorptionSolarAprioriName()+';'+      \
-                                           self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarAvkName()+';'+self.getIntegrationTimeName()+';'+               \
-                                           self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()+';'+               \
-                                           self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()+';'+self.gasNameUpper+'.'+self.getColumnPartialAbsorptionSolarName()+';'+           \
-                                           self.gasNameUpper+'.'+self.getColumnPartialAbsorptionSolarAprioriName()+';'+self.gasNameUpper+'.'+self.getColumnAbsorptionSolarName()+';'+self.gasNameUpper+'.'+        \
+                                           self.gasName+'.'+self.getMixingRatioAbsorptionSolarAvkName()+';'+self.getIntegrationTimeName()+';'+               \
+                                           self.gasName+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()+';'+               \
+                                           self.gasName+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()+';'+self.gasName+'.'+self.getColumnPartialAbsorptionSolarName()+';'+           \
+                                           self.gasName+'.'+self.getColumnPartialAbsorptionSolarAprioriName()+';'+self.gasName+'.'+self.getColumnAbsorptionSolarName()+';'+self.gasName+'.'+        \
                                            self.getColumnAbsorptionSolarAprioriName()+';'+      \
-                                           self.gasNameUpper+'.'+self.getColumnAbsorptionSolarAvkName()+';'+self.gasNameUpper+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName()+';'+self.gasNameUpper+'.'+  \
+                                           self.gasName+'.'+self.getColumnAbsorptionSolarAvkName()+';'+self.gasName+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName()+';'+self.gasName+'.'+  \
                                            self.getColumnAbsorptionSolarUncertaintySystematicName()+';'+self.getAngleSolarZenithAstronomicalName()+';'+self.getAngleSolarAzimuthName()+';'+                        \
                                            self.getH2oMixingRatioAbsorptionSolarName()+';'+self.getH2oColumnAbsorptionSolarName(),
       dataStr['DATA_START_DATE']         = idateStr
@@ -150,7 +151,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['FILE_ASSOCIATION']        = '!!!CHANGE!!!'
       dataStr['FILE_META_VERSION']       = '!!!CHANGE!!!'
                                            
-      dataStr['DATA_SOURCE']             = 'FTIR.'+self.gasNameUpper+'_'+self.locID.upper()      
+      dataStr['DATA_SOURCE']             = 'FTIR.'+self.gasName+'_'+self.locID.upper()      
       dataStr['DATA_VARIABLES']          = self.getDatetimeName()+';'+self.getLatitudeInstrumentName()+';'\
                                            +self.getLongitudeInstrumentName()+';'+self.getAltitudeInstrumentName()+';'+ \
                                            self.getSurfacePressureIndependentName()+';'+  \
@@ -158,20 +159,20 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
                                            self.getAltitudeName()+';'+self.getAltitudeBoundariesName()+';'\
                                            +self.getPressureIndependentName()+';'+                 \
                                            self.getTemperatureIndependentName()+';'+\
-                                           self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarName()+';'+\
-                                           self.gasNameUpper+'.'+                                     \
+                                           self.gasName+'.'+self.getMixingRatioAbsorptionSolarName()+';'+\
+                                           self.gasName+'.'+                                     \
                                            self.getMixingRatioAbsorptionSolarAprioriName()+';'+      \
-                                           self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarAvkName()+';'+\
+                                           self.gasName+'.'+self.getMixingRatioAbsorptionSolarAvkName()+';'+\
                                            self.getIntegrationTimeName()+';'+               \
-                                           self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()+';'+\
-                                           self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()+';'+\
-                                           self.gasNameUpper+'.'+self.getColumnPartialAbsorptionSolarName()+';'+           \
-                                           self.gasNameUpper+'.'+self.getColumnPartialAbsorptionSolarAprioriName()+';'+\
-                                           self.gasNameUpper+'.'+self.getColumnAbsorptionSolarName()+';'+self.gasNameUpper+'.'+        \
+                                           self.gasName+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()+';'+\
+                                           self.gasName+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()+';'+\
+                                           self.gasName+'.'+self.getColumnPartialAbsorptionSolarName()+';'+           \
+                                           self.gasName+'.'+self.getColumnPartialAbsorptionSolarAprioriName()+';'+\
+                                           self.gasName+'.'+self.getColumnAbsorptionSolarName()+';'+self.gasName+'.'+        \
                                            self.getColumnAbsorptionSolarAprioriName()+';'+      \
-                                           self.gasNameUpper+'.'+self.getColumnAbsorptionSolarAvkName()+';'+\
-                                           self.gasNameUpper+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName()+';'+\
-                                           self.gasNameUpper+'.'+  \
+                                           self.gasName+'.'+self.getColumnAbsorptionSolarAvkName()+';'+\
+                                           self.gasName+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName()+';'+\
+                                           self.gasName+'.'+  \
                                            self.getColumnAbsorptionSolarUncertaintySystematicName()+';'+\
                                            self.getAngleSolarZenithAstronomicalName()+';'+self.getAngleSolarAzimuthName()+';'+\
                                            self.getH2oMixingRatioAbsorptionSolarName()+';'+self.getH2oColumnAbsorptionSolarName(),
@@ -420,8 +421,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr = cl.OrderedDict()
 
-      dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarName()
-      dataStr['VAR_DESCRIPTION']      = 'Retrieved mixing ratio profile of {} '.format(self.gasNameUpper)
+      dataStr['VAR_NAME']             = self.gasName+'.'+self.getMixingRatioAbsorptionSolarName()
+      dataStr['VAR_DESCRIPTION']      = 'Retrieved mixing ratio profile of {} '.format(self.gasName)
       dataStr['VAR_NOTES']            = 'Retrieval algorithm sfit4 version: ' + self.sfitVer + ' NDACC IRWG retrieval strategy. HITRAN2008 spectroscopy'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()
@@ -442,8 +443,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr = cl.OrderedDict()
 
-      dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarAprioriName()
-      dataStr['VAR_DESCRIPTION']      = 'A priori mixing raito profile of {}'.format(self.gasNameUpper)
+      dataStr['VAR_NAME']             = self.gasName+'.'+self.getMixingRatioAbsorptionSolarAprioriName()
+      dataStr['VAR_DESCRIPTION']      = 'A priori mixing raito profile of {}'.format(self.gasName)
       dataStr['VAR_NOTES']            = 'The same a priori vertical profile is used for all days in the present datafile and is based on WACCM 1980-2020 output'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()
@@ -464,8 +465,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr = cl.OrderedDict()
 
-      dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarAvkName()
-      dataStr['VAR_DESCRIPTION']      = 'Averaging kernel matrix (AVK) of the retrieved vertical profile of {} in VMR/VMR units'.format(self.gasNameUpper)
+      dataStr['VAR_NAME']             = self.gasName+'.'+self.getMixingRatioAbsorptionSolarAvkName()
+      dataStr['VAR_DESCRIPTION']      = 'Averaging kernel matrix (AVK) of the retrieved vertical profile of {} in VMR/VMR units'.format(self.gasName)
       dataStr['VAR_NOTES']            = 'Columns of AVK are the fastest running index (see https://wiki.ucar.edu/display/sfit4/Post-Processing)'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()+';'+self.getAltitudeName()
@@ -508,8 +509,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr = cl.OrderedDict()
 
-      dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()
-      dataStr['VAR_DESCRIPTION']      = 'Total random error covariance matrix associated with the retrieved vertical profiles of {} in VMR units'.format(self.gasNameUpper)
+      dataStr['VAR_NAME']             = self.gasName+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()
+      dataStr['VAR_DESCRIPTION']      = 'Total random error covariance matrix associated with the retrieved vertical profiles of {} in VMR units'.format(self.gasName)
       dataStr['VAR_NOTES']            = 'Random errors include: Temperature, SZA, and Measurement noise. Temperature errors are determined by comparing ' +\
                                         'radiosonde data with NCEP temperature profiles. SZA error is set at 0.10 degs. Measurement noise is calculated ' +\
                                         'using the SNR.'
@@ -532,8 +533,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr = cl.OrderedDict()
       
-      dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()
-      dataStr['VAR_DESCRIPTION']      = 'Total systematic error covariance matrix associated with the retrieved vertical profiles of {} in VMR units'.format(self.gasNameUpper)
+      dataStr['VAR_NAME']             = self.gasName+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()
+      dataStr['VAR_DESCRIPTION']      = 'Total systematic error covariance matrix associated with the retrieved vertical profiles of {} in VMR units'.format(self.gasName)
       dataStr['VAR_NOTES']            = 'Systematic error includes: Temperature, and Line Parameters. Temperature errors are determined by comparing ' +\
                                         'radiosonde data with NCEP temperature profiles. Line parameter errors are set at 4% as given ' + \
                                         'in Harrison et al., 2010 (JQRST). Smoothing error is not included.'
@@ -556,8 +557,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr = cl.OrderedDict()
 
-      dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getColumnPartialAbsorptionSolarName()
-      dataStr['VAR_DESCRIPTION']      = 'Retrieved {} (vertical) partial columns in the retrieval layers'.format(self.gasNameUpper)
+      dataStr['VAR_NAME']             = self.gasName+'.'+self.getColumnPartialAbsorptionSolarName()
+      dataStr['VAR_DESCRIPTION']      = 'Retrieved {} (vertical) partial columns in the retrieval layers'.format(self.gasName)
       dataStr['VAR_NOTES']            = 'Values depend on VMR and vertical airmass'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()
@@ -578,8 +579,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       
       dataStr = cl.OrderedDict()
 
-      dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getColumnPartialAbsorptionSolarAprioriName()
-      dataStr['VAR_DESCRIPTION']      = 'A priori {} (vertical) partial columns in the retrieval layers'.format(self.gasNameUpper)
+      dataStr['VAR_NAME']             = self.gasName+'.'+self.getColumnPartialAbsorptionSolarAprioriName()
+      dataStr['VAR_DESCRIPTION']      = 'A priori {} (vertical) partial columns in the retrieval layers'.format(self.gasName)
       dataStr['VAR_NOTES']            = 'Partial column evaluations use a priori pressure and temperature values from NCEP'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()
@@ -600,8 +601,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr = cl.OrderedDict()
 
-      dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getColumnAbsorptionSolarName()
-      dataStr['VAR_DESCRIPTION']      = 'Retrieved total vertical column for {} corresponding to retrieved vmr profiles'.format(self.gasNameUpper)
+      dataStr['VAR_NAME']             = self.gasName+'.'+self.getColumnAbsorptionSolarName()
+      dataStr['VAR_DESCRIPTION']      = 'Retrieved total vertical column for {} corresponding to retrieved vmr profiles'.format(self.gasName)
       dataStr['VAR_NOTES']            = 'None'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
@@ -622,8 +623,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr = cl.OrderedDict()
 
-      dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getColumnAbsorptionSolarAprioriName()
-      dataStr['VAR_DESCRIPTION']      = 'A priori total vertical column for {} corresponding to a priori vmr profiles'.format(self.gasNameUpper)
+      dataStr['VAR_NAME']             = self.gasName+'.'+self.getColumnAbsorptionSolarAprioriName()
+      dataStr['VAR_DESCRIPTION']      = 'A priori total vertical column for {} corresponding to a priori vmr profiles'.format(self.gasName)
       dataStr['VAR_NOTES']            = 'None'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
@@ -644,8 +645,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr = cl.OrderedDict()
 
-      dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getColumnAbsorptionSolarAvkName()
-      dataStr['VAR_DESCRIPTION']      = 'Total vertical column averaging kernel for {} derived from retrieved mixing ratio averaging kernel'.format(self.gasNameUpper)
+      dataStr['VAR_NAME']             = self.gasName+'.'+self.getColumnAbsorptionSolarAvkName()
+      dataStr['VAR_DESCRIPTION']      = 'Total vertical column averaging kernel for {} derived from retrieved mixing ratio averaging kernel'.format(self.gasName)
       dataStr['VAR_NOTES']            = 'This averaging kernel multiplies the partial column vector in order to get smoothed total column'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()
@@ -666,8 +667,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr = cl.OrderedDict()
 
-      dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName()
-      dataStr['VAR_DESCRIPTION']      = 'Estimated total random uncertainty on the retrieved total vertical columns of {}'.format(self.gasNameUpper)
+      dataStr['VAR_NAME']             = self.gasName+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName()
+      dataStr['VAR_DESCRIPTION']      = 'Estimated total random uncertainty on the retrieved total vertical columns of {}'.format(self.gasName)
       dataStr['VAR_NOTES']            = 'See notes for total random error covariance matrix'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
@@ -688,8 +689,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr = cl.OrderedDict()
 
-      dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getColumnAbsorptionSolarUncertaintySystematicName()
-      dataStr['VAR_DESCRIPTION']      = 'Estimated total systematic uncertainty on the retrieved total vertical columns of {}'.format(self.gasNameUpper)
+      dataStr['VAR_NAME']             = self.gasName+'.'+self.getColumnAbsorptionSolarUncertaintySystematicName()
+      dataStr['VAR_DESCRIPTION']      = 'Estimated total systematic uncertainty on the retrieved total vertical columns of {}'.format(self.gasName)
       dataStr['VAR_NOTES']            = 'See notes for total systematic error covariance matrix'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
@@ -744,6 +745,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MAX']        =  360.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
       dataStr['VALID_RANGE']          = (0.0,360.0)
+
       dataStr['units']                = 'deg'
       dataStr['_FillValue']           = self.getFillValue()
       
