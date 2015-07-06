@@ -206,6 +206,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	        continue
 	
 	    akfile =  string.join([direc, '/', dd, '/', 'ak.out'], '')
+            avk = True
 	    if not os.path.isfile(akfile):
 		print 'no sfit4 avk'
 	        ak_flag = False
@@ -234,8 +235,12 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	        chi_2_y[nr_res] = summary.chi_y_2
 	    except:
 		print 'no chi_2_y'
-	        continue
-	
+                continue
+
+            if not ak_flag:
+                print 'no avk found'
+                continue    
+        
 	    print 'akzepted'
 	    col_rt[:,nr_res] = summary.retriev
 	    col_ap[:,nr_res] = summary.apriori
