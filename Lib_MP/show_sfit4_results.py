@@ -31,6 +31,8 @@ class show_results:
         # Find a free figure for AVK
         self.winavk = plt.figure()#figsize=(24,12))
 
+        self.winpcol = plt.figure()#figsize=(24,12))
+
         self.winfft = plt.figure()#figsize=(24,12))
 
     
@@ -61,6 +63,9 @@ class show_results:
         def fft_show():
             nr = int(self.spec_nr.get())
             self.show_fft(nr)
+
+        def pcol_show():
+            self.show_pcol()
 
         frame1 = Frame(self.tkroot)
         frame1.grid(row=1,column=1)
@@ -138,13 +143,18 @@ class show_results:
                                 command = lambda: fft_show())
         button_summary.grid(row=2, column=0, sticky=E+W)
 
+        button_pcol = Button(frame3, text = 'PCOL',
+                             command = lambda: pcol_show())
+        button_pcol.grid(row=3,column=0)
+
         button_quit = Button(self.tkroot, text = 'Quit',
                              command = self.tkroot.quit)
-        button_quit.grid(row=5, column=0, sticky=E+W)
+        button_quit.grid(row=6, column=0, sticky=E+W)
 
-        self.SummaryText()
+#        self.SummaryText()
 # #        self.mkOptionMenu1()
 
+        
         self.tkroot.mainloop()
 
     def quit(self):
@@ -282,6 +292,17 @@ class show_results:
             self.winavk.show()
 
 
+    def show_pcol(self):
+        self.winpcol.clf()
+        ax = self.winpcol.add_subplot(111)
+        vmr,z = self.retprf.get_gas_vmr(self.gases[0])
+        ax.plot(np.sum(self.avk.avk('col')[-10:,:],0), z)
+        ax.plot(np.sum(self.avk.avk('col')[-14:-11,:],0), z)
+        ax.plot(np.sum(self.avk.avk('col')[:-15,:],0), z)
+        self.winpcol.show()
+        
+
+        
     def show_fft(self,band_nr = 1,gas=None):
         def oncall1(event):
             dnum = event.artist.get_xdata()
