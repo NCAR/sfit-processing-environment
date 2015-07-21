@@ -297,7 +297,42 @@ class load_hdf:
         ax.get_figure().canvas.mpl_connect('pick_event', oncall)
 
 
+    def save_all_columns(self, gas, src='GEOMS'):
+    
+        if src=='TMPH5':
+            src_hdf = self.h5
+        else:
+            src_hdf = self.h4
 
+        dd = []
+        rtt = []
+        app = []
+        err = []
+        ess = []
+        for hf in src_hdf:
+            dd.extend(dates.date2num(hf.dates))
+            rt,ap,er,es = hf.get_columns(gas)
+            rtt.extend(rt)
+            app.extend(ap)
+            err.extend(er)
+            ess.extend(es)
+
+        ind = np.argsort(dd)
+        dd = np.array(dd)[ind]
+        rt = np.array(rtt)[ind]
+        ap = np.array(app)[ind]
+        er = np.array(err)[ind]
+        es = np.array(ess)[ind]
+
+        fid = open('columns.dat', 'write')
+        fid.write('date dnum retr apr ran, sys\n')
+        for d,r,a,rr,ss in zip(dd,rt,ap,er,es):
+            dstring = dates.num2date(d).strftime('%Y%d%H%M%S')
+            fid.write('%s %d %g %g %g %g\n'%(dstring, d, r, a, rr, ss))
+        fid.close()
+
+
+    
     def plot_profiles(self,gas,ax):
         dd_min = 9e99
         dd_max = 0

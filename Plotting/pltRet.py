@@ -15,6 +15,7 @@
 # Import modules
 #---------------
 import sys
+sys.path.append('/data/sfit-processing-environment/ModLib/')
 import os
 import getopt
 import dataOutClass as dc

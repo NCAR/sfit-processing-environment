@@ -58,7 +58,7 @@ def match_dates(dd1, dd2, dist=1):
     ind2 = []
     for ndd in dd2:
         inds = np.argmin(abs(dd1 - ndd))
-        if abs(dd1[inds]-ndd) < dist:
+        if abs(dd1[inds]-ndd) <= dist:
 #            print abs(dd1[inds]-ndd), dd1[inds], ndd, dist, inds, nr
             ddc.append(dd1[inds])
             ind2.append(nr)

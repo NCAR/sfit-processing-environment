@@ -632,6 +632,32 @@ class ReadOutputData(_DateRange):
         self.readPrfFlgApr            = {}
         self.readPrfFlgRet            = {}
 
+        #-----------------------
+        # Read ctl File if given
+        #-----------------------
+        if ctlF: 
+            (self.PrimaryGas,self.ctl) = readCtlF(ctlF)     
+            #-------------------
+            # Construct Gas list
+            #-------------------
+            self.gasList = []
+            if 'gas.profile.list' in self.ctl: self.gasList += self.ctl['gas.profile.list'] 
+            if 'gas.column.list' in self.ctl:  self.gasList += self.ctl['gas.column.list']
+            if not self.gasList: 
+                print 'No gases listed in column or profile list....exiting'
+                sys.exit()
+                
+            self.gasList = filter(None,self.gasList)  # Filter out all empty strings
+            self.ngas    = len(self.gasList)   
+            
+            for gas in self.gasList:
+                self.readPrfFlgApr[gas.upper()] = False
+                self.readPrfFlgRet[gas.upper()] = False
+                
+        else:
+            self.readPrfFlgApr[self.PrimaryGas] = False
+            self.readPrfFlgRet[self.PrimaryGas] = False
+
         #---------------------------------
         # Test if date range given. If so 
         # create a list of directories to 
@@ -669,9 +695,20 @@ class ReadOutputData(_DateRange):
                     # Seconds can only go from 0-59. If this is case reduce seconds by 1. This is a 
                     # temp solution until coadd can be fixed.
                     #-----------------------------------------------------------------------------------
+
                     if drs[13:] == '60': ss = int(drs[13:]) - 1
                     else:                ss = int(drs[13:]) 
                     self.dirDateTime.append(dt.datetime(int(drs[0:4]), int(drs[4:6]), int(drs[6:8]), int(drs[9:11]), int(drs[11:13]), ss ) )
+                    if not os.path.isfile(dataDir + drs +'/'+ self.ctl['file.out.summary'][0]):
+                        continue
+                    if not os.path.isfile(dataDir + drs +'/'+ self.ctl['file.out.pbpfile'][0]):
+                        continue
+                    if not os.path.isfile(dataDir + drs +'/'+ self.ctl['file.out.retprofiles'][0]):
+                        continue
+                    if not os.path.isfile(dataDir + drs +'/'+ self.ctl['file.out.aprprofiles'][0]):
+                        continue
+                    if not os.path.isfile(dataDir + drs +'/Errorsummary.output'):
+                        continue
                     self.dirLst.append(dataDir+drs+'/')            
             
             #----------------------------------------------------------------------------
@@ -688,31 +725,6 @@ class ReadOutputData(_DateRange):
             self.dirLst = [dataDir]
             self.dirFlg = False
             
-        #-----------------------
-        # Read ctl File if given
-        #-----------------------
-        if ctlF: 
-            (self.PrimaryGas,self.ctl) = readCtlF(ctlF)     
-            #-------------------
-            # Construct Gas list
-            #-------------------
-            self.gasList = []
-            if 'gas.profile.list' in self.ctl: self.gasList += self.ctl['gas.profile.list'] 
-            if 'gas.column.list' in self.ctl:  self.gasList += self.ctl['gas.column.list']
-            if not self.gasList: 
-                print 'No gases listed in column or profile list....exiting'
-                sys.exit()
-                
-            self.gasList = filter(None,self.gasList)  # Filter out all empty strings
-            self.ngas    = len(self.gasList)   
-            
-            for gas in self.gasList:
-                self.readPrfFlgApr[gas.upper()] = False
-                self.readPrfFlgRet[gas.upper()] = False
-                
-        else:
-            self.readPrfFlgApr[self.PrimaryGas] = False
-            self.readPrfFlgRet[self.PrimaryGas] = False
 
 
     def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,
@@ -1741,8 +1753,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # entries for specDB data
         #-----------------------------------------------------------------------------
 
-        self.readprfs([self.PrimaryGas],retapFlg=1)          # Retrieved Profiles
-        self.readprfs([self.PrimaryGas,'H2O'],retapFlg=0)                # A priori Profiles
+        self.readprfs([self.PrimaryGas],retapFlg=1)                # Retrieved Profiles
+        self.readprfs([self.PrimaryGas,'H2O'],retapFlg=0)          # A priori Profiles
         self.readsummary()                                         # Summary file information
         self.readError(totFlg=True,avkFlg=True,vmrFlg=True)        # Read Error Data
         self.readPbp()                                             # Read pbp file for sza

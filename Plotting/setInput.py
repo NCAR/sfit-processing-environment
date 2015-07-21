@@ -15,8 +15,8 @@
 # If you specify files and directories directly you
 # don't need these (e.g. they are not used in plotting program)
 #--------------------------------------------------------------
-loc        = 'tab'                 # Name of station location
-gasName    = 'ch4'                 # Name of gas
+loc        = 'nya'                 # Name of station location
+gasName    = 'ccl4'                 # Name of gas
 ver        = 'Current'             # Name of retrieval version to process
 
 #------
@@ -53,13 +53,13 @@ pCols = [[0.0,8.0],[8.0,16.0],[16.0,25.0]]
 #------------
 # Directories
 #------------
-retDir = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/'+ver+'/'  
+retDir = '.'  
 
 
 #------
 # Files
 #------
-ctlFile  = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/'+'x.'+gasName.lower()+'/sfit4.ctl'
-pltFile  = '/data1/ebaumer/'+loc.lower()+'/' + 'Plots/' + loc + '_' + gasName + '_' + ver + '.pdf'
+ctlFile  = 'sfit4.ctl'
+pltFile  = gasName + '_' + ver + '.pdf'
 
        

@@ -1,6 +1,5 @@
 import tables as h5
 import numpy as np
-import time_series as ts
 
 class load_tmph5:
 
@@ -57,6 +56,10 @@ class load_tmph5:
             self.col_co2 = self.col_co2 + h5f.root.icol_rt[igasnames.index(co2name)-1,:]
         if 'H2O' in igasnames:
             self.col_h2o = h5f.root.icol_rt[igasnames.index('H2O')-1,:]
+
+        if 'HDO' in igasnames:
+            self.col_hdo = h5f.root.icol_rt[igasnames.index('HDO')-1,:]
+
         h5f.close()
 
 
