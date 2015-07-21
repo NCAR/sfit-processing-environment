@@ -5,6 +5,7 @@ from sfit4_ctl import *
 from Tkinter import *
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
+import matplotlib.dates as dates
 import matplotlib.gridspec as gridspec
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg,NavigationToolbar2TkAgg
 import numpy as np
@@ -52,13 +53,18 @@ class show_tmph5:
 
             self.menu1 = OptionMenu(frame_show,self.aux_val, 
                                     *options)
-            self.menu1.grid(row=0,column=1,stick=E+W)
+            self.menu1.grid(row=0,column=2,stick=E+W)
 
+
+        button_save = Button(frame_show, 
+                             text = 'Save columns', 
+                             command = lambda:self.save_values())
+        button_save.grid(row=0, column=0, sticky=E+W)
 
         button_show = Button(frame_show, 
                              text = 'Auxiliary quantity', 
                              command = lambda:self.plot_aux_val())
-        button_show.grid(row=0, column=0, sticky=E+W)
+        button_show.grid(row=0, column=1, sticky=E+W)
         if len(options) == 0:
             button_show.config(state=DISABLED)
 #        self.button_spec_by_gas = button_spec
@@ -185,6 +191,20 @@ class show_tmph5:
                                     color = 'b', fmt='none')        
         self.canvas.show()
 
+    def save_values(self):
+        fid = open('columns_show_and_filter.dat', 'write')
+        fid.write('date dnum retr apr ran, sys\n')
+        for d,r,a,rr,ss in zip(self.res.dnum[self.valid_ind],
+                               self.res.col_rt[self.valid_ind],
+                               self.res.col_ap[self.valid_ind],
+                               self.res.err_ran[self.valid_ind],
+                               self.res.err_sys[self.valid_ind]):
+            dstring = dates.num2date(d).strftime('%Y%d%H%M%S')
+            fid.write('%s %d %g %g %g %g\n'%(dstring, d, r, a, rr, ss))
+        fid.close()
+            
+
+        
     def plot_vmr(self):
         self.vmr.clf()
         self.vmr.gca().plot(self.res.vmr_rt[:,self.valid_ind], self.res.Z)
@@ -284,6 +304,27 @@ class show_tmph5:
         self.plot_values()
         self.plot_aux_val()
         self.plot_vmr()
+
+        self.min_dofs.delete(0,END)
+        self.min_dofs.insert(0,np.min(self.res.dofs[self.valid_ind]))
+        self.max_dofs.delete(0,END)
+        self.max_dofs.insert(0,np.max(self.res.dofs[self.valid_ind]))
+        self.min_c2y.delete(0,END)
+        self.min_c2y.insert(0,np.min(self.res.c2y[self.valid_ind]))
+        self.max_c2y.delete(0,END)
+        self.max_c2y.insert(0,np.max(self.res.c2y[self.valid_ind]))
+        self.min_co2.delete(0,END)
+        self.min_co2.insert(0,np.min(self.res.col_co2[self.valid_ind]))
+        self.max_co2.delete(0,END)
+        self.max_co2.insert(0,np.max(self.res.col_co2[self.valid_ind]))
+        self.min_vmr.delete(0,END)
+        self.min_vmr.insert(0,np.min(self.res.vmr_rt[:,self.valid_ind]))
+        self.max_vmr.delete(0,END)
+        self.max_vmr.insert(0,np.max(self.res.vmr_rt[:,self.valid_ind]))
+        self.err_col.delete(0,END)
+        self.err_col.insert(0,np.max(self.res.err_tot[self.valid_ind]))        
+
+
         
     def quit(self):
         self.tkroot.destroy()
