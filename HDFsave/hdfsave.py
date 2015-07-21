@@ -53,7 +53,6 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 #      if location.lower() == 'thule': self.locID = 'NCAR001'
 #      else:                           self.locID = 'NCAR002'
 
-      print self.gasName, self.gasNameUpper
 
    def glblAttrbs(self,fDOI,idate,fdate):
       ''' Meta-data for hdf file (Global Attributes) '''

@@ -83,6 +83,7 @@ def main(args):
         # source         = 'AWI028'
 
     if gasName.lower() == 'o3':
+        gasName        = 'O3'
         maxRMS         = 5.0 # in percent
         maxSZA         = 90.0
         rmsFlag        = True
@@ -96,6 +97,7 @@ def main(args):
         maxCO2         = 8.5e21
 
     if gasName.lower() == 'ccl4':
+        gasName        = 'CCl4'
         maxSZA         = 90.0
         maxCHI2        = 10.0
         maxVMR         = 4.0e-9
@@ -108,26 +110,63 @@ def main(args):
         validFlag      = True
         minDOFs        = 0.8
         dofFlag        = True
-        co2Flag        = True
-        minCO2         = 6.5e21
-        maxCO2         = 8.5e21
+        co2Flag        = False
         
     if gasName.lower() == 'hf':
+        gasName        = 'HF'
         tcFlag         = False
         minDOFs        = 1.0
+        dofFlag        = True
         maxCHI2        = 10.0
         maxVMR         = 6e-9
-        minVMR         = 0.0
+        minVMR         = -1e-10
+        minCO2         = 6.5e21
+        maxCO2         = 8.5e23
+        co2f           = True
+
+    if gasName.lower() == 'hcl':
+        gasName        = 'HCl'
+        tcFlag         = False
+        minDOFs        = 1.0
+        dofFlag        = True
+        maxCHI2        = 5.0
+        maxVMR         = 6e-9
+        minVMR         = -2e-12
+        minCO2         = -5e22
+        maxCO2         = 1.5e23
+        co2f           = True
+        cnvFlag        = True
+
+    if gasName.lower() == 'hcn':
+        gasName        = 'HCN'
+        tcFlag         = False
+        minDOFs        = 1.0
+        dofFlag        = True
+        maxCHI2        = 5.0
+        maxVMR         = 1e-9
+        minVMR         = -1e-11
+        co2f           = False
+        cnvFlag        = True
 
     if gasName.lower() == 'clono2':
         gasName        = 'ClONO2'
         tcFlag         = False
+        dofFlag        = True
         minDOFs        = 1.0
         maxCHI2        = 2.0
         maxVMR         = 5e-9
         minVMR         = -1e-10
 
+    if gasName.lower() == 'c2h6':
+        gasName        = 'C2H6'
+        tcFlag         = False
+        minDOFs        = 0.8
+        maxCHI2        = 20.0
+        maxVMR         = 5e-8
+        minVMR         = -1e-9
+
     if gasName.lower() == 'ccl2f2': # CFC-12
+        gasName        = 'CCl2F2'
         tcFlag         = False
         minDOFs        = 1.0
         maxCHI2        = 10.0

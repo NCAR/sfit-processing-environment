@@ -376,7 +376,7 @@ class HDFbaseRetDat(object):
         #-------------------------------------------------------------
         # Create gasname retrieved vertical profile dataset (variable)
         #-------------------------------------------------------------
-        hdfFile.createDataSet(self.gasNameUpper+"."+self.getMixingRatioAbsorptionSolarName(), \
+        hdfFile.createDataSet(self.gasName+"."+self.getMixingRatioAbsorptionSolarName(), \
                                 (self.gasMxRatAbsSolar.shape[0],self.gasMxRatAbsSolar.shape[1]),self.gasMxRatAbsSolar, \
                                 self.rprfAttrbs(self.gasMxRatAbsSolar.shape[1],self.gasMxRatAbsSolar.shape[0], \
                                                 float(self.gasMxRatAbsSolar.max())))
@@ -384,7 +384,7 @@ class HDFbaseRetDat(object):
         #------------------------------------------------------------
         # Create gasname a priori vertical profile dataset (variable)
         #------------------------------------------------------------
-        hdfFile.createDataSet(self.gasNameUpper+"."+self.getMixingRatioAbsorptionSolarAprioriName(), \
+        hdfFile.createDataSet(self.gasName+"."+self.getMixingRatioAbsorptionSolarAprioriName(), \
                                 (self.gasMxRatAbsSolarApriori.shape[0],self.gasMxRatAbsSolarApriori.shape[1]),self.gasMxRatAbsSolarApriori, \
                                 self.aprfAttrbs(self.gasMxRatAbsSolarApriori.shape[1],self.gasMxRatAbsSolarApriori.shape[0], 
                                                 float(self.gasMxRatAbsSolarApriori.max())))
@@ -392,7 +392,7 @@ class HDFbaseRetDat(object):
         #--------------------------------------------------------------------------------------
         # Create gasname averaging Kernel maxtrix retrieved vertical profile dataset (variable)
         #--------------------------------------------------------------------------------------
-        hdfFile.createDataSet(self.gasNameUpper+"."+self.getMixingRatioAbsorptionSolarAvkName(), \
+        hdfFile.createDataSet(self.gasName+"."+self.getMixingRatioAbsorptionSolarAvkName(), \
                                 (self.gasMxRatAbsSolarAVK.shape[0],self.gasMxRatAbsSolarAVK.shape[1],self.gasMxRatAbsSolarAVK.shape[2]),  \
                                 self.gasMxRatAbsSolarAVK, \
                                 self.avkAttrbs(self.gasMxRatAbsSolarAVK.shape[1],self.gasMxRatAbsSolarAVK.shape[0]))
@@ -406,62 +406,62 @@ class HDFbaseRetDat(object):
         #-------------------------------------------------------------------------------
         # Create gasname total random error covariance matrix profile dataset (variable) nlyrs,nsize,datatype,units,sclfctr,maxval
         #-------------------------------------------------------------------------------
-        hdfFile.createDataSet(self.gasNameUpper+"."+self.getMixingRatioAbsorptionSolarUncertaintyRandomName(), \
+        hdfFile.createDataSet(self.gasName+"."+self.getMixingRatioAbsorptionSolarUncertaintyRandomName(), \
                                 (self.gasMxRatAbsSolarUncRand.shape[0],self.gasMxRatAbsSolarUncRand.shape[1],self.gasMxRatAbsSolarUncRand.shape[2]), \
                                 self.gasMxRatAbsSolarUncRand, self.mRandAttrbs(self.gasMxRatAbsSolarUncRand.shape[1],self.gasMxRatAbsSolarUncRand.shape[0]))
 
         #-----------------------------------------------------------------------------
         # Create gasname systematic error covariance matrix profile dataset (variable)
         #-----------------------------------------------------------------------------
-        hdfFile.createDataSet(self.gasNameUpper+"."+self.getMixingRatioAbsorptionSolarUncertaintySystematicName(), \
+        hdfFile.createDataSet(self.gasName+"."+self.getMixingRatioAbsorptionSolarUncertaintySystematicName(), \
                                 (self.gasMxRatAbsSolarUncSys.shape[0],self.gasMxRatAbsSolarUncSys.shape[1],self.gasMxRatAbsSolarUncSys.shape[2]), \
                                 self.gasMxRatAbsSolarUncSys, self.mSysAttrbs(self.gasMxRatAbsSolarUncSys.shape[1],self.gasMxRatAbsSolarUncSys.shape[0]))
 
         #-----------------------------------------------------------------------------
         # Create gasname retrieved partial column profile dataset (variable)
         #-----------------------------------------------------------------------------
-        hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnPartialAbsorptionSolarName(), \
+        hdfFile.createDataSet(self.gasName+'.'+self.getColumnPartialAbsorptionSolarName(), \
                                 (self.gasColPartAbsSolar.shape[0],self.gasColPartAbsSolar.shape[1]), self.gasColPartAbsSolar, \
                                 self.pcRtrprfAttrbs(self.gasColPartAbsSolar.shape[1],self.gasColPartAbsSolar.shape[0]))
 
         #-----------------------------------------------------------------------------
         # Create gasname a priori partial column profile dataset (variable)
         #-----------------------------------------------------------------------------
-        hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnPartialAbsorptionSolarAprioriName(), 
+        hdfFile.createDataSet(self.gasName+'.'+self.getColumnPartialAbsorptionSolarAprioriName(), 
                                 (self.gasColPartAbsApriori.shape[0],self.gasColPartAbsApriori.shape[1]), self.gasColPartAbsApriori, \
                                 self.pcaAprfAttrbs(self.gasColPartAbsApriori.shape[1],self.gasColPartAbsApriori.shape[0]))
 
         #-----------------------------------------------------------------------------
         # Create gasname total column profile dataset (variable)
         #-----------------------------------------------------------------------------
-        hdfFile.createDataSet(self.gasNameUpper+"."+self.getColumnAbsorptionSolarName(),np.size(self.gasColAbsSolar), \
+        hdfFile.createDataSet(self.gasName+"."+self.getColumnAbsorptionSolarName(),np.size(self.gasColAbsSolar), \
                                 self.gasColAbsSolar, self.tcRprfAttrbs(np.size(self.gasColAbsSolar)))
 
         #-----------------------------------------------------------------------------
         # Create gasname apriori total column profile dataset (variable)
         #-----------------------------------------------------------------------------
-        hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnAbsorptionSolarAprioriName(), \
+        hdfFile.createDataSet(self.gasName+'.'+self.getColumnAbsorptionSolarAprioriName(), \
                                 np.size(self.gasColAbsSolarApriori), self.gasColAbsSolarApriori, 
                                 self.tcAprfAttrbs(np.size(self.gasColAbsSolarApriori)))
 
         #-----------------------------------------------------------------------------
         # Create gasname total column averaging kernel profile dataset (variable)
         #-----------------------------------------------------------------------------
-        hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnAbsorptionSolarAvkName(), 
+        hdfFile.createDataSet(self.gasName+'.'+self.getColumnAbsorptionSolarAvkName(), 
                                 (self.gasColAbsSolarAVK.shape[0],self.gasColAbsSolarAVK.shape[1]), self.gasColAbsSolarAVK, \
                                 self.tcAvkAttrbs(self.gasColAbsSolarAVK.shape[1],self.gasColAbsSolarAVK.shape[0]))
 
         #-----------------------------------------------------------------------------
         # Create gasname total column random uncertainty dataset (variable)
         #-----------------------------------------------------------------------------
-        hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName(), \
+        hdfFile.createDataSet(self.gasName+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName(), \
                                 np.size(self.gasColAbsSolarUncRand), self.gasColAbsSolarUncRand, \
                                 self.tcRandAttrbs(np.size(self.gasColAbsSolarUncRand)))
 
         #-----------------------------------------------------------------------------
         # Create gasname total column systematic uncertainty dataset (variable)
         #-----------------------------------------------------------------------------
-        hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnAbsorptionSolarUncertaintySystematicName(), \
+        hdfFile.createDataSet(self.gasName+'.'+self.getColumnAbsorptionSolarUncertaintySystematicName(), \
                                 np.size(self.gasColAbsSolarUncSys),  self.gasColAbsSolarUncSys, \
                                 self.tcSysAttrbs(np.size(self.gasColAbsSolarUncSys)))
 
