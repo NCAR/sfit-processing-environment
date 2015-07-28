@@ -38,85 +38,61 @@ class load_tmph5:
                      'itmx':'itmx'}
 
         self.h5f = h5.File(filename)
-        for i in self.vars.keys():
-            if len(self.vars[i]) > 0:
-                val = self.vars[i]
-                str = 'self.'+i+' = h5f.root.'+val+'[:]'
-                exec(str)
-        # Construct and evaluate lines like
+        self.dnum = self.h5f.root.mdate[:]
+        self.Z = self.h5f.root.Z[:]
+        self.valid = np.array(range(0,len(self.dnum)))
 
-        # not in the scheme
-        self.spectra = np.array(self.spectra)
-        self.directories = np.array(self.directories)
-        self.err_tot = np.sqrt(self.err_ran**2 + self.err_sys**2)
-        igasnames = h5f.root.gasnames[:]
-        self.gasname = igasnames[0]
-        self.col_co2 = 0
-        for co2name in [s for s in igasnames if 'CO2']:
-            self.col_co2 = self.col_co2 + h5f.root.icol_rt[igasnames.index(co2name)-1,:]
-        if 'H2O' in igasnames:
-            self.col_h2o = h5f.root.icol_rt[igasnames.index('H2O')-1,:]
 
-        if 'HDO' in igasnames:
-            self.col_hdo = h5f.root.icol_rt[igasnames.index('HDO')-1,:]
 
     def __del__(self):
         self.h5f.close()
 
+    def get_values(self):
+        return(self.vars.keys())
+        
     def return_value(self, value):
         if value not in self.vars.keys():
-            disp 'value %s not defined in tmp.h5'%value
+            print 'value %s not defined in tmp.h5'%(value)
             return
+
+        # values not in the scheme
+        if value == 'err_tot':
+            return(np.sqrt(diag(self.h5f.root.cov_vmr_ran[:,:,self.valid] +
+                                self.h5f.root.cov_vmr_sys[:,:,self.valid])))
 
         if value == 'col_co2':
             col_co2 = 0
             for co2name in [s for s in igasnames if 'CO2']:
                 col_co2 = col_co2
-                + h5f.root.icol_rt[igasnames.index(co2name)-1,:]
+                + h5f.root.icol_rt[igasnames.index(co2name)-1,self.valid]
                 return(col_co2)
 
         if value == 'col_h2o' and 'H2O' in igasnames:
-            return(h5f.root.icol_rt[igasnames.index('H2O')-1,:])
+            return(h5f.root.icol_rt[igasnames.index('H2O')-1,self.valid])
         if value == 'col_hdo' and 'HDO' in igasnames:
-            return(h5f.root.icol_rt[igasnames.index('HDO')-1,:])
+            return(h5f.root.icol_rt[igasnames.index('HDO')-1,self.valid])
 
-        val = self.vars[i]
-        str = 'return(= h5f.root.'+val+'[:])'
+        val = self.vars[value]
+        exec('dims = self.h5f.root.'+val+'[:].shape')
+        if len(dims) == 1:
+            str = 'valb = self.h5f.root.'+val+'[self.valid]'
+        elif len(dims) == 2:
+            str = 'valb = self.h5f.root.'+val+'[:,self.valid]'
+        elif len(dims) == 3:
+            str = 'valb = self.h5f.root.'+val+'[:,:,self.valid]'
         exec(str)
+        return(valb)
             
 
-    def valid(self, ind):
+    def set_valid(self, ind = -1):
         # keeps only entries which are in ind. This may be used to 
         # sort or weed the data.
-        for i in self.vars.keys():
-#            if len(self.vars[i]) > 0:
-#                val = self.vars[i]
+        if ind == -1:
+            self.valid = np.array(range(0,len(self.dnum)))
+            
+        self.valid = ind
 
-            ind = np.array(ind)
-            str = 'a = type(self.'+i+')'
-            try:
-                exec(str)
-            except:
-                continue
-            if i == 'Z':
-                continue
-            if a == type(np.ndarray([])):
-                str = 'l = len(self.'+i+'.shape)'
-                try:
-                    exec(str)
-                except:
-                    continue
-                if l == 2:
-                    str = 'self.'+i+' = self.'+i+'[:,ind]'
-                else:
-                    str = 'self.'+i+' = self.'+i+'[ind]'
-                    #            else:
-                    #                    str = 'self.'+i+' = self.'+i+'[ind]'
-                try:
-                    exec(str)
-                except:
-                    continue
-
+        
     def average(self):
         dd_mean = list(set(self.dnum.round()))
         col_mean = np.zeros(0)
@@ -129,7 +105,8 @@ class load_tmph5:
         Z = self.Z
 
         for ndd in dd_mean:
-            inds = np.int16(np.nonzero(abs(ndd - self.dnum)<1))
+            inds = np.int16(np.nonzero(abs(ndd - self.dnum[self.valid])<1))
+            inds = self.valid[inds]
             col_mean = np.hstack((col_mean, np.mean(self.col_rt[inds], axis=1)))
             ac_mean =  np.hstack((ac_mean, np.mean(self.aircol[inds], axis=1)))
             esys_mean = np.hstack((esys_mean, np.linalg.norm(self.err_sys[inds])/inds.size))
@@ -159,6 +136,14 @@ class load_tmph5:
 
     def get_partial_columns(self,zrange):
         ind1 = np.where(np.all((self.Z > zrange[0],self.Z < zrange[1]),axis=0))[0]
-        pcolrt = np.sum(self.pcol_rt[ind1,:],axis=0)
-
-        return(self.dnum, pcolrt)
+        a = self.h5f.root.pcol_rt[:]
+        pcolrt = np.sum(a[np.ix_(ind1,self.valid)],axis=0)
+        print self.valid
+        print self.h5f.root.pcol_ran[:].shape
+        a = self.h5f.root.pcol_ran[:,self.valid]
+        b = self.h5f.root.pcol_sys[:,self.valid]
+#        import ipdb
+#        ipdb.set_trace()
+        pcoltot = np.sqrt(np.sum(a[ind1,:]**2 + b[ind1,:]**2,axis=0))
+        
+        return(self.dnum[self.valid], pcolrt, pcoltot)

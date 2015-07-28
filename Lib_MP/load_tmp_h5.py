@@ -35,7 +35,8 @@ class load_tmph5:
                      'aux_ap':'aux_ap',
                      'aux_rt': 'aux_rt',
                      'iter':'iter',
-                     'itmx':'itmx'}
+                     'itmx':'itmx',
+                     'gasnames':'gasnames'}
 
         h5f = h5.File(filename)
         for i in self. vars.keys():

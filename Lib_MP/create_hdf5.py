@@ -289,7 +289,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	        pcol_sys.append(np.reshape(sspcol,(len_vmr, -1)))
 	        col_ran[nr_res] = srcol
 	        col_sys[nr_res] = sscol
-	    pcol_rt.append(np.reshape(rcol[0],(len_vmr, -1)))
+            pcol_rt.append(np.reshape(rcol[0],(len_vmr, -1)))
 	    pcol_ap.append(np.reshape(acol[0],(len_vmr, -1)))
 	    P.append(np.reshape(p,(len_vmr, -1)))
 	    T.append(np.reshape(t,(len_vmr, -1)))
