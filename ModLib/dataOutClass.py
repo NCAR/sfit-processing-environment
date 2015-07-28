@@ -3058,8 +3058,8 @@ class PlotData(ReadOutputData):
         
         fig1,ax1 = plt.subplots()
         ax1.scatter(dates,totClmn,label='data')
-        ax1.plt(dates,f_drift(dateYearFrac),label='Fitted Anual Trend')
-        ax1.plt(dates,f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
+        ax1.plot(dates,f_drift(dateYearFrac),label='Fitted Anual Trend')
+        ax1.plot(dates,f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
@@ -3099,8 +3099,8 @@ class PlotData(ReadOutputData):
         
         fig1,ax1 = plt.subplots()
         ax1.scatter(dailyVals['dates'],dailyVals['dailyAvg'],label='data')
-        ax1.plt(dailyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
-        ax1.plt(dailyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
+        ax1.plot(dailyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
+        ax1.plot(dailyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
         ax1.grid(True)
         ax1.set_ylabel('Daily Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
@@ -3139,8 +3139,8 @@ class PlotData(ReadOutputData):
         
         fig1,ax1 = plt.subplots()
         ax1.scatter(mnthlyVals['dates'],mnthlyVals['mnthlyAvg'],label='data')
-        ax1.plt(mnthlyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
-        ax1.plt(mnthlyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
+        ax1.plot(mnthlyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
+        ax1.plot(mnthlyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
         ax1.grid(True)
         ax1.set_ylabel('Monthly Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
