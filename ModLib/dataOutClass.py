@@ -3057,16 +3057,17 @@ class PlotData(ReadOutputData):
         f_drift, f_fourier, f_driftfourier = res[3:6]
         
         fig1,ax1 = plt.subplots()
-        ax1.scatter(dates,totClmn,label='data')
+        ax1.scatter(dates,totClmn,markersize=4,label='data')
         ax1.plot(dates,f_drift(dateYearFrac),label='Fitted Anual Trend')
         ax1.plot(dates,f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
         ax1.grid(True)
+        ax1.set_ylim([0, np.max(totClmn)+0.15*np.max(totClmn)])
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
         ax1.set_title('Trend Analysis with Boot Strap Resampling\nIndividual Retrievals',multialignment='center')
-        ax1.text(0.1,0.94,"fitted trend (slope): {:.3f}".format(res[1]))
-        ax1.text(0.1,0.9,"fitted intercept at xmin: {:.3f}".format(res[0]))
-        ax1.text(0.1,0.9,"std of residuals: {:.3f}".format(res[6]))
+        ax1.text(0.02,0.94,"fitted trend (slope): {:.3f}".format(res[1]),transform=ax1.transAxes)
+        ax1.text(0.02,0.9,"fitted intercept at xmin: {:.3f}".format(res[0]),transform=ax1.transAxes)
+        ax1.text(0.02,0.86,"std of residuals: {:.3f}".format(res[6]),transform=ax1.transAxes)   
     
         if yrsFlg:
             #plt.xticks(rotation=45)
@@ -3098,16 +3099,17 @@ class PlotData(ReadOutputData):
         f_drift, f_fourier, f_driftfourier = res[3:6]
         
         fig1,ax1 = plt.subplots()
-        ax1.scatter(dailyVals['dates'],dailyVals['dailyAvg'],label='data')
+        ax1.scatter(dailyVals['dates'],dailyVals['dailyAvg'],markersize=4,label='data')
         ax1.plot(dailyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
         ax1.plot(dailyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
         ax1.grid(True)
+        ax1.set_ylim([0, np.max(dailyVals['dailyAvg'])+0.15*np.max(dailyVals['dailyAvg'])])
         ax1.set_ylabel('Daily Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
         ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
-        ax1.text(0.1,0.94,"fitted trend (slope): {:.3f}".format(res[1]))
-        ax1.text(0.1,0.9,"fitted intercept at xmin: {:.3f}".format(res[0]))
-        ax1.text(0.1,0.9,"std of residuals: {:.3f}".format(res[6]))
+        ax1.text(0.02,0.94,"fitted trend (slope): {:.3f}".format(res[1]),transform=ax1.transAxes)
+        ax1.text(0.02,0.9,"fitted intercept at xmin: {:.3f}".format(res[0]),transform=ax1.transAxes)
+        ax1.text(0.02,0.86,"std of residuals: {:.3f}".format(res[6]),transform=ax1.transAxes)   
     
         if yrsFlg:
             #plt.xticks(rotation=45)
@@ -3138,16 +3140,17 @@ class PlotData(ReadOutputData):
         f_drift, f_fourier, f_driftfourier = res[3:6]
         
         fig1,ax1 = plt.subplots()
-        ax1.scatter(mnthlyVals['dates'],mnthlyVals['mnthlyAvg'],label='data')
+        ax1.scatter(mnthlyVals['dates'],mnthlyVals['mnthlyAvg'],markersize=4,label='data')
         ax1.plot(mnthlyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
         ax1.plot(mnthlyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
         ax1.grid(True)
+        ax1.set_ylim([0, np.max(mnthlyVals['mnthlyAvg'])+0.15*np.max(mnthlyVals['mnthlyAvg'])])
         ax1.set_ylabel('Monthly Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
         ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
-        ax1.text(0.1,0.94,"fitted trend (slope): {:.3f}".format(res[1]))
-        ax1.text(0.1,0.9,"fitted intercept at xmin: {:.3f}".format(res[0]))
-        ax1.text(0.1,0.9,"std of residuals: {:.3f}".format(res[6]))
+        ax1.text(0.02,0.94,"fitted trend (slope): {:.3f}".format(res[1]),transform=ax1.transAxes)
+        ax1.text(0.02,0.9,"fitted intercept at xmin: {:.3f}".format(res[0]),transform=ax1.transAxes)
+        ax1.text(0.02,0.86,"std of residuals: {:.3f}".format(res[6]),transform=ax1.transAxes)   
     
         if yrsFlg:
             #plt.xticks(rotation=45)
