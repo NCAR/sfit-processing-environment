@@ -3065,9 +3065,9 @@ class PlotData(ReadOutputData):
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
         ax1.set_title('Trend Analysis with Boot Strap Resampling\nIndividual Retrievals',multialignment='center')
-        ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3E}%)".format(res[1],res[1]/np.mean(totClmn)*100.0),transform=ax1.transAxes)
+        ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(totClmn)*100.0),transform=ax1.transAxes)
         ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
-        ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3E}%)".format(res[6],res[6]/np.mean(totClmn)*100.0),transform=ax1.transAxes) 
+        ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(totClmn)*100.0),transform=ax1.transAxes) 
         
         
         if yrsFlg:
@@ -3108,9 +3108,9 @@ class PlotData(ReadOutputData):
         ax1.set_ylabel('Daily Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
         ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
-        ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3E}%)".format(res[1],res[1]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)
+        ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)
         ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
-        ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3E}%)".format(res[6],res[6]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)   
+        ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)   
     
         if yrsFlg:
             #plt.xticks(rotation=45)
@@ -3149,9 +3149,9 @@ class PlotData(ReadOutputData):
         ax1.set_ylabel('Monthly Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
         ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
-        ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3E}%)".format(res[1],res[1]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)
+        ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)
         ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
-        ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3E}%)".format(res[6],res[6]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)  
+        ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)  
     
         if yrsFlg:
             #plt.xticks(rotation=45)
