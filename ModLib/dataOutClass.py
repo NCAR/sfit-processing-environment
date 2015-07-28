@@ -34,6 +34,7 @@
 #----------------------------------------------------------------------------------------
 
 import datetime as dt
+import time
 import math
 import sys
 import numpy as np
@@ -240,6 +241,30 @@ def rmse(xData, yData):
     rmse = np.sqrt( SS_res / len(yData) )
 
     return rmse
+
+
+def toYearFraction(dates):
+    ''' Convert datetime to year and fraction of year'''
+
+    #def sinceEpoch(date): # returns seconds since epoch
+        #return time.mktime(date.timetuple())
+    #s = sinceEpoch
+    ep_fnc = lambda x: time.mktime(x.timetuple())
+    
+    retrnDates = np.zeros(len(dates))
+    
+    for i,sngDate in enumerate(dates):
+        year = sngDate.year
+        startOfThisYear = dt.datetime(year=year, month=1, day=1)
+        startOfNextYear = dt.datetime(year=year+1, month=1, day=1)
+    
+        yearElapsed = ep_fnc(sngDate) - ep_fnc(startOfThisYear)
+        yearDuration = ep_fnc(startOfNextYear) - ep_fnc(startOfThisYear)
+        fraction = yearElapsed/yearDuration
+        retrnDates[i] = sngDate.year + fraction
+
+    return retrnDates
+
 
 def dailyAvg(data, dates, dateAxis=1, meanAxis=0, quad=0):
     ''' Creates daily averages of specified quantity'''
@@ -546,6 +571,164 @@ def readCtlF(ctlF):
     
     if not gas_flg: return (PrimaryGas,ctl)
     else:           return ctl
+    
+
+#-------------------------------------
+# Code to do boot strap trend analysis
+#-------------------------------------
+def fourier_basis(x, degree, half_period):
+    """Returns a 2-d array of fourier basis."""
+    A = np.ones((x.size, 2 * degree + 1))
+    
+    for d in range(1, degree + 1):
+        A[:, 2*d-1] = np.cos(d * np.pi * x / half_period)
+        A[:, 2*d] = np.sin(d * np.pi * x / half_period)
+    
+    return A
+
+
+def fit_driftfourier(x, data, weights, degree, half_period=0.5):
+    """
+    Fit y = f(x - x.min()) to data where f is given by
+    fourier series + drift.
+    
+    Parameters
+    ----------
+    x : 1-d array
+        x-coordinates
+    data : 1-d array
+        data values
+    weights : 1-d array
+        weights (>=0)
+    degree : int
+        degree of fourier series
+    half_period : float
+        half period
+    
+    Returns
+    -------
+    intercept : float
+        intercept at x.min()
+    slope : float
+        slope (drift) for the normalized data
+        (x - x.min())
+    pfourier : 1-d array
+        Fourier series parameters for the
+        normalized data
+    f_drift : callable
+        Can be used to calculate the drift
+        given any (non-normalized) x
+    f_fourier : callable
+        Can be used to calculate fourier series
+    f_driftfourier : callable
+        Can be used to calculate drift + fourier
+    residual_std : float
+        estimated standard deviation of residuals
+    A : 2-d array
+        matrix of "coefficients"
+    
+    """
+    xmin = x.min()
+    xnorm = x - xmin
+    
+    # coefficient matrix
+    A = np.ones((x.size, 2 * degree + 2))
+    A[:, 1] = xnorm
+    A[:, 2:] = fourier_basis(xnorm, degree, half_period)[:, 1:]
+    
+    # linear weighted least squares
+    results = np.linalg.lstsq(A * weights[:, np.newaxis],
+                              data * weights)
+    
+    params = results[0]
+    intercept = params[0]
+    slope = params[1]
+    pfourier = params[2:]
+    
+    f_drift = lambda t: slope * (t - xmin) + intercept
+    f_fourier = lambda t: np.sum(fourier_basis(t - xmin, degree,
+                                               half_period)[:, 1:]
+                                 * pfourier[np.newaxis, :],
+                                 axis=1) + intercept
+    f_driftfourier = lambda t: f_drift(t) + f_fourier(t) - intercept
+    
+    residual_std = np.sqrt(results[1][0] / (x.size - 2 * degree + 2)) 
+    
+    return (intercept, slope, pfourier,
+            f_drift, f_fourier, f_driftfourier,
+            residual_std, A)
+
+
+def cf_driftfourier(x, data, weights, degree,
+                    half_period=0.5, nboot=5000,
+                    percentiles=(2.5, 50., 97.5)):
+    """
+    Calculate confidence intervals for the fitted
+    parameters from fourier series + drift modelling,
+    using bootstrap resampling.
+    
+    Parameters
+    ----------
+    nboot : int
+        number of bootstrap replicates
+    percentiles : sequence of floats
+        percentiles of parameter estimate
+        distributions to return 
+    
+    Returns
+    -------
+    perc : dict
+        percentiles for of each parameter
+        distribution
+    intercept : 1-d array
+        intercept estimates from bootstraped
+        datasets.
+    slope : 1-d array
+        slope estimates
+    pfourier : 2-d array
+        fourier parameters estimates
+    
+    See Also
+    --------
+    :func:`fit_driftfourier`
+    """
+    
+    # 1st fit without bootstraping
+    results = fit_driftfourier(x, data, weights,
+                               degree, half_period)
+    f_driftfourier = results[5]
+    A = results[7]
+    model = f_driftfourier(x)
+    residuals = data - model
+    
+    # generate bootstrap resamples of residuals
+    # and new datasets from these resamples
+    boot_dataset = np.empty((x.size, nboot))
+    for i in range(nboot):
+        resample_i = np.floor(np.random.rand(x.size) * x.size).astype(int)
+        resample_residuals = residuals[resample_i]
+        boot_dataset[:, i] = model + resample_residuals
+    
+    # fit all bootstrap datasets
+    results_boot = np.linalg.lstsq(A * weights[:, np.newaxis],
+                                   boot_dataset * weights[:, np.newaxis])
+    
+    params_boot = results_boot[0]
+    
+    # compute percentiles
+    perc_boot = np.column_stack(np.percentile(params_boot,
+                                              percentiles, axis=1))
+    
+    perc = {'intercept' : perc_boot[0],
+            'slope' : perc_boot[1],
+            'pfourier' : perc_boot[2:]}
+    
+    intercept = params_boot[0]
+    slope = params_boot[1]
+    pfourier = params_boot[2:]
+    
+    return perc, intercept, slope, pfourier
+    
     
 
                                                 #----------------#
@@ -1645,7 +1828,7 @@ class DbInputFile(_DateRange):
 
 class GatherHDF(ReadOutputData,DbInputFile):
     
-    def __init__(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imnth,iday,fyear,fmnth,fday,incr=1):
+    def __init__(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imnth,iday,fyear,fmnth,fday,errFlg=True,incr=1):
         primGas = ''
 
         #-----------------------------------------
@@ -1669,7 +1852,10 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # Gather Retrieval output data, filter set, and then find corresponding specDB
         # entries for specDB data
         #-----------------------------------------------------------------------------
-        self.readprfs([self.PrimaryGas,'H2O'],retapFlg=1)          # Retrieved Profiles
+        if "H2O" not in self.PrimaryGas:
+            self.readprfs([self.PrimaryGas,'H2O'],retapFlg=1)          # Retrieved Profiles
+        else:
+            self.readprfs([self.PrimaryGas],retapFlg=1)          # Retrieved Profiles
         self.readprfs([self.PrimaryGas],retapFlg=0)                # A priori Profiles
         self.readsummary()                                         # Summary file information
         self.readError(totFlg=True,avkFlg=True,vmrFlg=True)        # Read Error Data
@@ -1695,11 +1881,27 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFaltBnds    = np.vstack((self.alt[:-1],self.alt[1:]))        
 
         # Error 
-        self.HDFak        = np.asarray(self.error['AVK_vmr'])                                          # Averaging Kernel [VMR/VMR]
-        self.HDFsysErr    = np.asarray(self.error['Total_Systematic_Error_VMR'])                       # Total Systematic error covariance matrix [VMR]
-        self.HDFrandErr   = np.asarray(self.error['Total_Random_Error_VMR'])                           # Total Random error covariance matrix [VMR]
-        self.HDFtcSysErr  = np.asarray(self.error['Total systematic uncertainty'])                     # Total column systematic error [mol cm^-2]
-        self.HDFtcRanErr  = np.asarray(self.error['Total random uncertainty'])                         # Total column random error [mol cm^-2]
+        if errFlg:
+            self.HDFak        = np.asarray(self.error['AVK_vmr'])                                          # Averaging Kernel [VMR/VMR]
+            self.HDFsysErr    = np.asarray(self.error['Total_Systematic_Error_VMR'])                       # Total Systematic error covariance matrix [VMR]
+            self.HDFrandErr   = np.asarray(self.error['Total_Random_Error_VMR'])                           # Total Random error covariance matrix [VMR]
+            self.HDFtcSysErr  = np.asarray(self.error['Total systematic uncertainty'])                     # Total column systematic error [mol cm^-2]
+            self.HDFtcRanErr  = np.asarray(self.error['Total random uncertainty'])                         # Total column random error [mol cm^-2]
+        else:
+            dim1 = np.shape(self.HDFtempPrf)[0]
+            dim2 = np.shape(self.HDFtempPrf)[1]
+            dim3 = np.shape(self.HDFtempPrf)[1]
+            self.HDFak        = np.empty([dim1,dim2,dim3])                                                # Averaging Kernel [VMR/VMR]
+            self.HDFsysErr    = np.empty([dim1,dim2,dim3])                                                # Total Systematic error covariance matrix [VMR]
+            self.HDFrandErr   = np.empty([dim1,dim2,dim3])                                                # Total Random error covariance matrix [VMR]
+            self.HDFtcSysErr  = np.empty([dim1])                                                          # Total column systematic error [mol cm^-2]
+            self.HDFtcRanErr  = np.empty([dim1])                                                          # Total column random error [mol cm^-2]
+            self.HDFak.fill(-9.0E4)
+            self.HDFsysErr.fill(-9.0E4)
+            self.HDFrandErr.fill(-9.0E4)
+            self.HDFtcSysErr.fill(-9.0E4)
+            self.HDFtcRanErr.fill(-9.0E4)
+            
                         
         # Total Column
         self.HDFretTC     = np.asarray(self.rprfs[self.PrimaryGas+'_tot_col'])                          # Primary gas retrieved total column
@@ -2842,6 +3044,129 @@ class PlotData(ReadOutputData):
         
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
         else:           plt.show(block=False)  
+        
+        
+        #-----------------------------------
+        # Plot trend analysis of time series
+        #-----------------------------------
+        # Actual data
+        #------------
+        dateYearFrac = toYearFraction(dates)
+        weights      = np.ones_like(dateYearFrac)
+        res          = fit_driftfourier(dateYearFrac, totClmn, weights, 2)
+        f_drift, f_fourier, f_driftfourier = res[3:6]
+        
+        fig1,ax1 = plt.subplots()
+        ax1.scatter(dates,totClmn,label='data')
+        ax1.plt(dates,f_drift(dateYearFrac),label='Fitted Anual Trend')
+        ax1.plt(dates,f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
+        ax1.grid(True)
+        ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+        ax1.set_xlabel('Date [MM]')
+        ax1.set_title('Trend Analysis with Boot Strap Resampling\nIndividual Retrievals',multialignment='center')
+        ax1.text(0.1,0.94,"fitted trend (slope): {:.3f}".format(res[1]))
+        ax1.text(0.1,0.9,"fitted intercept at xmin: {:.3f}".format(res[0]))
+        ax1.text(0.1,0.9,"std of residuals: {:.3f}".format(res[6]))
+    
+        if yrsFlg:
+            #plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(yearsLc)
+            ax1.xaxis.set_minor_locator(months)
+            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+            ax1.xaxis.set_major_formatter(DateFmt) 
+            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            ax1.xaxis.set_tick_params(which='major',labelsize=8)
+            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+        else:
+            ax1.xaxis.set_major_locator(monthsAll)
+            ax1.xaxis.set_major_formatter(DateFmt)
+            ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+            ax1.xaxis.set_minor_locator(AutoMinorLocator())
+            fig1.autofmt_xdate()  
+            
+        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+        else:           plt.show(block=False)          
+        
+        
+        #------
+        # Daily
+        #------
+        dailyVals = dailyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
+        dateYearFrac = toYearFraction(dailyVals['dates'])
+        weights      = np.ones_like(dateYearFrac)
+        res          = fit_driftfourier(dateYearFrac, dailyVals['dailyAvg'], weights, 2)
+        f_drift, f_fourier, f_driftfourier = res[3:6]
+        
+        fig1,ax1 = plt.subplots()
+        ax1.scatter(dailyVals['dates'],dailyVals['dailyAvg'],label='data')
+        ax1.plt(dailyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
+        ax1.plt(dailyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
+        ax1.grid(True)
+        ax1.set_ylabel('Daily Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+        ax1.set_xlabel('Date [MM]')
+        ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
+        ax1.text(0.1,0.94,"fitted trend (slope): {:.3f}".format(res[1]))
+        ax1.text(0.1,0.9,"fitted intercept at xmin: {:.3f}".format(res[0]))
+        ax1.text(0.1,0.9,"std of residuals: {:.3f}".format(res[6]))
+    
+        if yrsFlg:
+            #plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(yearsLc)
+            ax1.xaxis.set_minor_locator(months)
+            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+            ax1.xaxis.set_major_formatter(DateFmt) 
+            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            ax1.xaxis.set_tick_params(which='major',labelsize=8)
+            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+        else:
+            ax1.xaxis.set_major_locator(monthsAll)
+            ax1.xaxis.set_major_formatter(DateFmt)
+            ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+            ax1.xaxis.set_minor_locator(AutoMinorLocator())
+            fig1.autofmt_xdate()    
+            
+        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+        else:           plt.show(block=False)            
+        
+        #--------
+        # Monthly
+        #--------
+        mnthlyVals = mnthlyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
+        dateYearFrac = toYearFraction(mnthlyVals['dates'])
+        weights      = np.ones_like(dateYearFrac)
+        res          = fit_driftfourier(dateYearFrac, mnthlyVals['mnthlyAvg'], weights, 2)
+        f_drift, f_fourier, f_driftfourier = res[3:6]
+        
+        fig1,ax1 = plt.subplots()
+        ax1.scatter(mnthlyVals['dates'],mnthlyVals['mnthlyAvg'],label='data')
+        ax1.plt(mnthlyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
+        ax1.plt(mnthlyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
+        ax1.grid(True)
+        ax1.set_ylabel('Monthly Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+        ax1.set_xlabel('Date [MM]')
+        ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
+        ax1.text(0.1,0.94,"fitted trend (slope): {:.3f}".format(res[1]))
+        ax1.text(0.1,0.9,"fitted intercept at xmin: {:.3f}".format(res[0]))
+        ax1.text(0.1,0.9,"std of residuals: {:.3f}".format(res[6]))
+    
+        if yrsFlg:
+            #plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(yearsLc)
+            ax1.xaxis.set_minor_locator(months)
+            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+            ax1.xaxis.set_major_formatter(DateFmt) 
+            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            ax1.xaxis.set_tick_params(which='major',labelsize=8)
+            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+        else:
+            ax1.xaxis.set_major_locator(monthsAll)
+            ax1.xaxis.set_major_formatter(DateFmt)
+            ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+            ax1.xaxis.set_minor_locator(AutoMinorLocator())
+            fig1.autofmt_xdate()        
+            
+        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+        else:           plt.show(block=False)                 
         
         #------------------------------------
         # Plot time series of partial columns

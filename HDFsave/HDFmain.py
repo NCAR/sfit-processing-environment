@@ -29,8 +29,8 @@ import hdfsaveMLO as hdfsave
                             
 def main():
     loc1           = 'mlo'
-    gasName        = 'c2h6'                         # This is the target gas for retrieval
-    version        = 'Current_newSA'
+    gasName        = 'o3'                         # This is the target gas for retrieval
+    version        = 'Current'
     if loc1.lower() == 'tab':
         loc            = 'THULE'
     elif loc1.lower() == "mlo":    
@@ -38,7 +38,7 @@ def main():
     else: 
         loc            = "BOULDER.COLORADO"
     sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
-    year           = 2014
+    year           = 1995
     iyear          = year
     imonth         = 1
     iday           = 1
@@ -56,14 +56,14 @@ def main():
     #---------------------
     # For python interface
     #---------------------
-    dataDir        = '/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/'+version+'/'
-    ctlF           = '/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/x.'+gasName.lower()+'/sfit4.ctl'
-    outDir         = '/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/HDFfiles/'
-    spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/HRspDB_mlo_1995_2014.dat'
-    #spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/CoaddspDB_fl0_2010_2015.dat'
-    #spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/HRspDB_mlo_1995_2014.dat'
-    statLyrFile    = '/data/Campaign/'+loc1.upper()+'/local/station.layers'
-    maxRMS         = 0.8
+    dataDir        = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/'+version+'/'
+    ctlF           = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/x.'+gasName.lower()+'/sfit4.ctl'
+    outDir         = '/Volumes/data1/ebaumer/'+loc1.lower()+'/'+gasName.lower()+'/HDFfiles/'
+    spcDBfile      = '/Volumes/data/Campaign/'+loc1.upper()+'/Spectral_DB/HRspDB_mlo_1995_2014.dat'
+    #spcDBfile      = '/Volumes/data/Campaign/'+loc1.upper()+'/Spectral_DB/CoaddspDB_fl0_2010_2015.dat'
+    #spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/HRspDB_mlo_1995_2015.dat'
+    statLyrFile    = '/Volumes/data/Campaign/'+loc1.upper()+'/local/station.layers'
+    maxRMS         = 0.9
     minDOFs        = 1.0
     dofFlag        = True
     rmsFlag        = True
@@ -71,6 +71,7 @@ def main():
     pcFlag         = True
     cnvFlag        = True
     szaFlag        = False
+    errFlg         = True
    
    
     print("Creating HDF file")
@@ -91,7 +92,7 @@ def main():
     #myhdf.initDummy()
     #myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
     myhdf.initPy(dataDir, ctlF,  spcDBfile, statLyrFile,iyear, imonth, iday,   fyear, fmonth, fday,
-                 mxRMS=maxRMS,minDOF=minDOFs,dofFlg=dofFlag, rmsFlg=rmsFlag,tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,szaFlg=szaFlag)
+                 mxRMS=maxRMS,minDOF=minDOFs,dofFlg=dofFlag, rmsFlg=rmsFlag,tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,szaFlg=szaFlag,errFlg=errFlg)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.
