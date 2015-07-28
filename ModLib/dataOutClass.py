@@ -3057,7 +3057,7 @@ class PlotData(ReadOutputData):
         f_drift, f_fourier, f_driftfourier = res[3:6]
         
         fig1,ax1 = plt.subplots()
-        ax1.scatter(dates,totClmn,markersize=4,label='data')
+        ax1.scatter(dates,totClmn,s=4,label='data')
         ax1.plot(dates,f_drift(dateYearFrac),label='Fitted Anual Trend')
         ax1.plot(dates,f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
         ax1.grid(True)
@@ -3099,7 +3099,7 @@ class PlotData(ReadOutputData):
         f_drift, f_fourier, f_driftfourier = res[3:6]
         
         fig1,ax1 = plt.subplots()
-        ax1.scatter(dailyVals['dates'],dailyVals['dailyAvg'],markersize=4,label='data')
+        ax1.scatter(dailyVals['dates'],dailyVals['dailyAvg'],s=4,label='data')
         ax1.plot(dailyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
         ax1.plot(dailyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
         ax1.grid(True)
@@ -3140,7 +3140,7 @@ class PlotData(ReadOutputData):
         f_drift, f_fourier, f_driftfourier = res[3:6]
         
         fig1,ax1 = plt.subplots()
-        ax1.scatter(mnthlyVals['dates'],mnthlyVals['mnthlyAvg'],markersize=4,label='data')
+        ax1.scatter(mnthlyVals['dates'],mnthlyVals['mnthlyAvg'],s=4,label='data')
         ax1.plot(mnthlyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
         ax1.plot(mnthlyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
         ax1.grid(True)
