@@ -286,9 +286,8 @@ class show_results:
             ax = self.winavk.add_subplot(154)
             ax.plot(np.sum(self.avk.avk('col'),0), z)
             ax = self.winavk.add_subplot(155)
-            ax.plot(np.sum(self.avk.avk('col')[-10:,:],0), z)
-            ax.plot(np.sum(self.avk.avk('col')[-14:-11,:],0), z)
-            ax.plot(np.sum(self.avk.avk('col')[:-15,:],0), z)
+            ax.plot(np.sum(self.avk.avk('col')[-15:,:],0), z)
+            ax.plot(np.sum(self.avk.avk('col')[:-16,:],0), z)
             self.winavk.show()
 
 
@@ -308,7 +307,7 @@ class show_results:
             dnum = event.artist.get_xdata()
             mdnum = event.mouseevent.xdata
             ind = np.argmin(np.abs(dnum-mdnum))
-            print (self.sp.mw_stop[band_nr-1] - self.sp.mw_start[band_nr-1])/ind/10.0
+            print (self.sp.mw_stop[band_nr-1] - self.sp.mw_start[band_nr-1])/(ind/10.0)
         self.winfft.clf()
         fsp = np.fft.fft(self.sp.dif[band_nr-1],
                          10*self.sp.dif[band_nr-1].size)
