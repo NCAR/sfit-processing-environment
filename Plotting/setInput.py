@@ -26,10 +26,17 @@ saveFlg    = True                  # Flag to either save data to pdf file (saveF
 errorFlg   = False                 # Flag to process error data
 fltrFlg    = True                  # Flag to filter the data
 byYrFlg    = False                 # Flag to create plots for each individual year in date range
-dofFlg     = False
+szaFlg     = False                 # Flag to filter based on min and max SZA
+dofFlg     = False                 # Flag to filter based on min DOFs
+pcNegFlg   = True                  # Flag to filter profiles with negative partial columns
+tcNegFlg   = True                  # Flag to filter profiles with negative total columns
+cnvrgFlg   = True                  # Flag to filter profiles that did not converge
+rmsFlg     = True                  # Flag to filter based on max RMS
 
-maxrms     = 1.70                  # Max Fit RMS to filter data. Data is filtered according to <= maxrms
-minDOF     = 1.0
+maxRMS     = 1.70                  # Max Fit RMS to filter data. Data is filtered according to <= maxrms
+minDOF     = 1.0                   # Min DOFs for filtering
+minSZA     = 0.0                   # Min SZA for filtering
+maxSZA     = 80.0                  # Max SZA for filtering
 sclfct     = 1.0E9                 # Scale factor to apply to vmr plots (ppmv=1.0E6, ppbv=1.0E9, etc)
 sclfctName = 'ppbv'                # Name of scale factor for labeling plots
 
@@ -39,7 +46,7 @@ sclfctName = 'ppbv'                # Name of scale factor for labeling plots
 iyear      = 1999
 imnth      = 1
 iday       = 1
-fyear      = 2013
+fyear      = 2014
 fmnth      = 12
 fday       = 31
 

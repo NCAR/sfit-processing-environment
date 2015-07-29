@@ -898,7 +898,7 @@ class ReadOutputData(_DateRange):
             self.readPrfFlgRet[self.PrimaryGas] = False
 
 
-    def fltrData(self,gasName,mxrms=1.0,mxsza=80.0,minDOF=1.0,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,szaFlg=False,dofFlg=False):
+    def fltrData(self,gasName,mxrms=1.0,minsza=0.0,mxsza=80.0,minDOF=1.0,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,szaFlg=False,dofFlg=False):
         
         #------------------------------------------
         # If filtering has already been done return
@@ -961,8 +961,11 @@ class ReadOutputData(_DateRange):
                 print 'SZA not found.....exiting'
                 sys.exit()  
             
-            sza_inds = np.where(self.pbp['sza'] > mxsza)[0]
-            print 'Total number of observations with SZA greater than {0:} = {1:}'.format(mxsza,len(sza_inds))
+            sza_inds1 = np.where(self.pbp['sza'] > mxsza)[0]
+            sza_inds2 = np.where(self.pbp['sza'] < minsza)[0]
+            sza_inds  = np.union1d(sza_inds1, sza_inds2)
+            print 'Total number of observations with SZA greater than {0:} = {1:}'.format(mxsza,len(sza_inds1))
+            print 'Total number of observations with SZA less than    {0:} = {1:}'.format(minsza,len(sza_inds2))
             self.inds = np.union1d(sza_inds,self.inds)
         
         #--------------------------
@@ -2020,7 +2023,8 @@ class PlotData(ReadOutputData):
     def closeFig(self):
         self.pdfsav.close()
     
-    def pltSpectra(self,fltr=False,maxRMS=1.0,minDOF=1.0,dofFlg=False):
+    def pltSpectra(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,dofFlg=False,rmsFlg=True,
+                   tcFlg=True,pcFlg=True,szaFlg=False,cnvrgFlg=True):
         ''' Plot spectra and fit and Jacobian matrix '''
     
         print '\nPlotting Spectral Data...........\n'
@@ -2054,7 +2058,7 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg)
         else: self.inds = np.array([]) 
         
         if self.empty: return False
@@ -2174,7 +2178,8 @@ class PlotData(ReadOutputData):
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)            
         
-    def pltPrf(self,fltr=False,maxRMS=1.0,minDOF=1.0,dofFlg=False,allGas=True,sclfct=1.0,sclname='ppv',pltStats=True,errFlg=False):
+    def pltPrf(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,
+               pcFlg=True,cnvrgFlg=True,allGas=True,sclfct=1.0,sclname='ppv',pltStats=True,szaFlg=False,errFlg=False):
         ''' Plot retrieved profiles '''
         
         
@@ -2229,7 +2234,7 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False
@@ -2700,12 +2705,13 @@ class PlotData(ReadOutputData):
                 else:           plt.show(block=False)                 
                                    
 
-    def pltAvk(self,fltr=False,maxRMS=1.0,minDOF=1.0,dofFlg=False,errFlg=False,partialCols=False):
+    def pltAvk(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,dofFlg=False,errFlg=False,szaFlg=False,partialCols=False,
+               cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True):
         ''' Plot Averaging Kernel. Only for single retrieval '''
         
         print '\nPlotting Averaging Kernel........\n'
         
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False    
@@ -2911,7 +2917,8 @@ class PlotData(ReadOutputData):
         else:           plt.show(block=False)                         
         
         
-    def pltTotClmn(self,fltr=False,maxRMS=1.0,minDOF=1.0,dofFlg=False,errFlg=False,sclfct=1.0,sclname='ppv',partialCols=False):
+    def pltTotClmn(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,dofFlg=False,errFlg=False,szaFlg=False,sclfct=1.0,sclname='ppv',
+                   partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,):
         ''' Plot Time Series of Total Column '''
         
         print '\nPrinting Total Column Plots.....\n'
@@ -2942,7 +2949,7 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False          

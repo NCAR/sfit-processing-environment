@@ -108,28 +108,38 @@ def main(argv):
     #----------------------
     # Call to plot profiles
     #----------------------
-    gas.pltPrf(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],allGas=False,sclfct=pltInputs['sclfct'],
-               sclname=pltInputs['sclfctName'],errFlg=pltInputs['errorFlg'],minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'])
+    gas.pltPrf(fltr=pltInputs['fltrFlg'],allGas=False,sclfct=pltInputs['sclfct'],sclname=pltInputs['sclfctName'],
+               errFlg=pltInputs['errorFlg'],minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],
+               minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],
+               pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
     
     #-----------------
     # Call to plot AVK
     #-----------------
     try:
-    	gas.pltAvk(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],errFlg=pltInputs['errorFlg'],
-       	           partialCols=pltInputs['pCols'],minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'])
+    	gas.pltAvk(fltr=pltInputs['fltrFlg'],errFlg=pltInputs['errorFlg'],partialCols=pltInputs['pCols'],
+	           minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],
+	           minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],
+	           tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
     except:
 	print "Unable to plot AVK!!" 
 
     #-------------------
     # Plot total columns
     #-------------------
-    gas.pltTotClmn(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],sclfct=pltInputs['sclfct'],
-                   sclname=pltInputs['sclfctName'],partialCols=pltInputs['pCols'],errFlg=pltInputs['errorFlg'],minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'])
+    gas.pltTotClmn(fltr=pltInputs['fltrFlg'],sclfct=pltInputs['sclfct'],sclname=pltInputs['sclfctName'],
+                   partialCols=pltInputs['pCols'],errFlg=pltInputs['errorFlg'],minSZA=pltInputs['minSZA'],
+                   maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'],
+                   dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],
+                   pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
     
     #------------------
     # Plot Spectral fit
     #------------------
-    gas.pltSpectra(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'])
+    gas.pltSpectra(fltr=pltInputs['fltrFlg'],minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],
+                   maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'],
+                   rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],
+                   szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
     
     if pltInputs['saveFlg']: gas.closeFig()
     
@@ -141,9 +151,15 @@ def main(argv):
                     if pltInputs['saveFlg']: fname = pltInputs['pltFile'][:-4]+'_'+str(year)+'.pdf'
                     else:                    fname = ''
                     gasYr = dc.PlotData(pltInputs['retDir'],pltInputs['ctlFile'],iyear=pltInputs['iyear'],imnth=1,iday=1,fyear=year,fmnth=12,fday=31,outFname=fname)
-                    gas.pltPrf(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],allGas=False,sclfct=pltInputs['sclfct'],
-                               sclname=pltInputs['sclfctName'],errFlg=pltInputs['errorFlg'],minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'])
-                    gas.pltTotClmn(fltr=pltInputs['fltrFlg'],maxRMS=pltInputs['maxrms'],errFlg=pltInputs['errorFlg'],minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'])
+                    gas.pltPrf(fltr=pltInputs['fltrFlg'],allGas=False,sclfct=pltInputs['sclfct'],sclname=pltInputs['sclfctName'],
+		               errFlg=pltInputs['errorFlg'],minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],
+		               minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],
+		               pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
+                    gas.pltTotClmn(fltr=pltInputs['fltrFlg'],sclfct=pltInputs['sclfct'],sclname=pltInputs['sclfctName'],
+		                   partialCols=pltInputs['pCols'],errFlg=pltInputs['errorFlg'],minSZA=pltInputs['minSZA'],
+		                   maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'],
+		                   dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],
+		                   pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
                     if pltInputs['saveFlg']: gasYr.closeFig()
     
     print('\nFinished Plots.......\n')
