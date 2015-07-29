@@ -138,8 +138,6 @@ class load_tmph5:
         ind1 = np.where(np.all((self.Z > zrange[0],self.Z < zrange[1]),axis=0))[0]
         a = self.h5f.root.pcol_rt[:]
         pcolrt = np.sum(a[np.ix_(ind1,self.valid)],axis=0)
-        print self.valid
-        print self.h5f.root.pcol_ran[:].shape
         a = self.h5f.root.pcol_ran[:,self.valid]
         b = self.h5f.root.pcol_sys[:,self.valid]
 #        import ipdb
@@ -147,3 +145,13 @@ class load_tmph5:
         pcoltot = np.sqrt(np.sum(a[ind1,:]**2 + b[ind1,:]**2,axis=0))
         
         return(self.dnum[self.valid], pcolrt, pcoltot)
+
+    def get_partial_avk(self,zrange,norm=False):
+        ind1 = np.where(np.all((self.Z > zrange[0],self.Z < zrange[1]),axis=0))[0]
+        if norm:
+            a = self.h5f.root.avk[:,:,self.valid]
+        else:
+            a = self.h5f.root.avk_col[:,:,self.valid]
+        a = np.sum(a[ind1,:,:], axis=0)
+
+        return(self.dnum[self.valid], a)
