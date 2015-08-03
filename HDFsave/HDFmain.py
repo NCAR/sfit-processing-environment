@@ -65,6 +65,8 @@ def main():
     statLyrFile    = '/Volumes/data/Campaign/'+loc1.upper()+'/local/station.layers'
     maxRMS         = 0.9
     minDOFs        = 1.0
+    minSZA         = 0.0
+    maxSZA         = 80.0
     dofFlag        = True
     rmsFlag        = True
     tcFlag         = True
@@ -72,7 +74,7 @@ def main():
     cnvFlag        = True
     szaFlag        = False
     errFlg         = True
-   
+    
    
     print("Creating HDF file")
     
@@ -91,8 +93,9 @@ def main():
     #------------------------------------------------
     #myhdf.initDummy()
     #myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
-    myhdf.initPy(dataDir, ctlF,  spcDBfile, statLyrFile,iyear, imonth, iday,   fyear, fmonth, fday,
-                 mxRMS=maxRMS,minDOF=minDOFs,dofFlg=dofFlag, rmsFlg=rmsFlag,tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,szaFlg=szaFlag,errFlg=errFlg)
+    myhdf.initPy(dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,
+                 mxRMS=maxRMS,minDOF=minDOFs,minSZA=minSZA,mxSZA=maxSZA,dofFlg=dofFlag,rmsFlg=rmsFlag,
+                 tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,szaFlg=szaFlag,errFlg=errFlg)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.

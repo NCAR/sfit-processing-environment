@@ -1950,7 +1950,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
             
                 
             
-    def fltrHDFdata(self,maxRMS,maxSZA,minDOF,dofF,rmsF,tcF,pcF,cnvF,szaF):
+    def fltrHDFdata(self,maxRMS,minSZA,maxSZA,minDOF,dofF,rmsF,tcF,pcF,cnvF,szaF):
 
         #----------------------------------------------------
         # Print total number of observations before filtering
@@ -1960,7 +1960,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
         #--------------------
         # Call to filter data
         #--------------------
-        self.fltrData(self.PrimaryGas,mxrms=maxRMS,mxsza=maxSZA,minDOF=minDOF,dofFlg=dofF,rmsFlg=rmsF,tcFlg=tcF,pcFlg=pcF,cnvrgFlg=cnvF,szaFlg=szaF)
+        self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,dofFlg=dofF,
+                      rmsFlg=rmsF,tcFlg=tcF,pcFlg=pcF,cnvrgFlg=cnvF,szaFlg=szaF)
         
         #------------
         # Remove data
@@ -3068,7 +3069,7 @@ class PlotData(ReadOutputData):
         ax1.plot(dates,f_drift(dateYearFrac),label='Fitted Anual Trend')
         ax1.plot(dates,f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
         ax1.grid(True)
-        ax1.set_ylim([0, np.max(totClmn)+0.15*np.max(totClmn)])
+        ax1.set_ylim([np.min(totClmn)-0.1*np.min(totClmn), np.max(totClmn)+0.15*np.max(totClmn)])
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
         ax1.set_title('Trend Analysis with Boot Strap Resampling\nIndividual Retrievals',multialignment='center')
@@ -3111,7 +3112,7 @@ class PlotData(ReadOutputData):
         ax1.plot(dailyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
         ax1.plot(dailyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
         ax1.grid(True)
-        ax1.set_ylim([0, np.max(dailyVals['dailyAvg'])+0.15*np.max(dailyVals['dailyAvg'])])
+        ax1.set_ylim([np.min(dailyVals['dailyAvg'])-0.1*np.min(dailyVals['dailyAvg']), np.max(dailyVals['dailyAvg'])+0.15*np.max(dailyVals['dailyAvg'])])
         ax1.set_ylabel('Daily Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
         ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
@@ -3152,7 +3153,7 @@ class PlotData(ReadOutputData):
         ax1.plot(mnthlyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
         ax1.plot(mnthlyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
         ax1.grid(True)
-        ax1.set_ylim([0, np.max(mnthlyVals['mnthlyAvg'])+0.15*np.max(mnthlyVals['mnthlyAvg'])])
+        ax1.set_ylim([np.min(mnthlyVals['mnthlyAvg'])-0.1*np.min(mnthlyVals['mnthlyAvg']), np.max(mnthlyVals['mnthlyAvg'])+0.15*np.max(mnthlyVals['mnthlyAvg'])])
         ax1.set_ylabel('Monthly Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
         ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
