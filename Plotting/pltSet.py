@@ -110,8 +110,8 @@ def main(argv):
     #----------------------
     gas.pltPrf(fltr=pltInputs['fltrFlg'],allGas=False,sclfct=pltInputs['sclfct'],sclname=pltInputs['sclfctName'],
                errFlg=pltInputs['errorFlg'],minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],
-               minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],
-               pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
+               minDOF=pltInputs['minDOF'],maxCHI=pltInputs['maxCHI'],dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],
+               pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'],chiFlg=pltInputs['chiFlg'])
     
     #-----------------
     # Call to plot AVK
@@ -119,8 +119,9 @@ def main(argv):
     try:
     	gas.pltAvk(fltr=pltInputs['fltrFlg'],errFlg=pltInputs['errorFlg'],partialCols=pltInputs['pCols'],
 	           minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],
-	           minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],
-	           tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
+	           minDOF=pltInputs['minDOF'],maxCHI=pltInputs['maxCHI'],dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],
+	           tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],
+	           chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
     except:
 	print "Unable to plot AVK!!" 
 
@@ -129,17 +130,17 @@ def main(argv):
     #-------------------
     gas.pltTotClmn(fltr=pltInputs['fltrFlg'],sclfct=pltInputs['sclfct'],sclname=pltInputs['sclfctName'],
                    partialCols=pltInputs['pCols'],errFlg=pltInputs['errorFlg'],minSZA=pltInputs['minSZA'],
-                   maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'],
+                   maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'],maxCHI=pltInputs['maxCHI'],
                    dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],
-                   pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
+                   pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
     
     #------------------
     # Plot Spectral fit
     #------------------
     gas.pltSpectra(fltr=pltInputs['fltrFlg'],minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],
-                   maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'],
+                   maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'],maxCHI=pltInputs['maxCHI'],dofFlg=pltInputs['dofFlg'],
                    rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],
-                   szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
+                   szaFlg=pltInputs['szaFlg'],chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
     
     if pltInputs['saveFlg']: gas.closeFig()
     
@@ -153,13 +154,13 @@ def main(argv):
                     gasYr = dc.PlotData(pltInputs['retDir'],pltInputs['ctlFile'],iyear=pltInputs['iyear'],imnth=1,iday=1,fyear=year,fmnth=12,fday=31,outFname=fname)
                     gas.pltPrf(fltr=pltInputs['fltrFlg'],allGas=False,sclfct=pltInputs['sclfct'],sclname=pltInputs['sclfctName'],
 		               errFlg=pltInputs['errorFlg'],minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],
-		               minDOF=pltInputs['minDOF'],dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],
-		               pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
+		               minDOF=pltInputs['minDOF'],maxCHI=pltInputs['maxCHI'],dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],
+		               pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
                     gas.pltTotClmn(fltr=pltInputs['fltrFlg'],sclfct=pltInputs['sclfct'],sclname=pltInputs['sclfctName'],
 		                   partialCols=pltInputs['pCols'],errFlg=pltInputs['errorFlg'],minSZA=pltInputs['minSZA'],
-		                   maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'],
+		                   maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'],maxCHI=pltInputs['maxCHI'],
 		                   dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],
-		                   pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
+		                   pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'])
                     if pltInputs['saveFlg']: gasYr.closeFig()
     
     print('\nFinished Plots.......\n')

@@ -898,7 +898,8 @@ class ReadOutputData(_DateRange):
             self.readPrfFlgRet[self.PrimaryGas] = False
 
 
-    def fltrData(self,gasName,mxrms=1.0,minsza=0.0,mxsza=80.0,minDOF=1.0,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,szaFlg=False,dofFlg=False):
+    def fltrData(self,gasName,mxrms=1.0,minsza=0.0,mxsza=80.0,minDOF=1.0,maxCHI=2.0,
+                 rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,szaFlg=False,dofFlg=False,chiFlg=False):
         
         #------------------------------------------
         # If filtering has already been done return
@@ -939,7 +940,19 @@ class ReadOutputData(_DateRange):
             indsT = np.where(np.asarray(self.summary[gasName+'_FITRMS']) >= mxrms)[0]
             print ('Total number observations found above max rms value = {}'.format(len(indsT)))
             self.inds = np.union1d(indsT, self.inds)
-        
+            
+        #------------------------------
+        # Find values above max chi_2_y
+        #------------------------------
+        if chiFlg:
+            if not gasName+"_CHI_2_Y" in self.summary:
+                print 'CHI_2_Y values do not exist...exiting..'
+                sys.exit()            
+                
+            indsT = np.where(np.asarray(self.summary[gasName+"_CHI_2_Y"]) >= maxCHI)[0]
+            print ('Total number observations found above max chi_2_y value = {}'.format(len(indsT)))
+            self.inds = np.union1d(indsT, self.inds)            
+                    
         #-----------------------------------
         # Find any partial column amount < 0
         #-----------------------------------
@@ -2024,8 +2037,8 @@ class PlotData(ReadOutputData):
     def closeFig(self):
         self.pdfsav.close()
     
-    def pltSpectra(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,dofFlg=False,rmsFlg=True,
-                   tcFlg=True,pcFlg=True,szaFlg=False,cnvrgFlg=True):
+    def pltSpectra(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,dofFlg=False,rmsFlg=True,
+                   tcFlg=True,pcFlg=True,szaFlg=False,chiFlg=False,cnvrgFlg=True):
         ''' Plot spectra and fit and Jacobian matrix '''
     
         print '\nPlotting Spectral Data...........\n'
@@ -2059,7 +2072,8 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg)
         else: self.inds = np.array([]) 
         
         if self.empty: return False
@@ -2179,8 +2193,8 @@ class PlotData(ReadOutputData):
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)            
         
-    def pltPrf(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,
-               pcFlg=True,cnvrgFlg=True,allGas=True,sclfct=1.0,sclname='ppv',pltStats=True,szaFlg=False,errFlg=False):
+    def pltPrf(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,dofFlg=False,rmsFlg=True,tcFlg=True,
+               pcFlg=True,cnvrgFlg=True,allGas=True,sclfct=1.0,sclname='ppv',pltStats=True,szaFlg=False,errFlg=False,chiFlg=False):
         ''' Plot retrieved profiles '''
         
         
@@ -2235,7 +2249,8 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False
@@ -2706,13 +2721,14 @@ class PlotData(ReadOutputData):
                 else:           plt.show(block=False)                 
                                    
 
-    def pltAvk(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,dofFlg=False,errFlg=False,szaFlg=False,partialCols=False,
-               cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True):
+    def pltAvk(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,dofFlg=False,errFlg=False,szaFlg=False,partialCols=False,
+               cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,chiFlg=False):
         ''' Plot Averaging Kernel. Only for single retrieval '''
         
         print '\nPlotting Averaging Kernel........\n'
         
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False    
@@ -2918,8 +2934,8 @@ class PlotData(ReadOutputData):
         else:           plt.show(block=False)                         
         
         
-    def pltTotClmn(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,dofFlg=False,errFlg=False,szaFlg=False,sclfct=1.0,sclname='ppv',
-                   partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,):
+    def pltTotClmn(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,dofFlg=False,errFlg=False,szaFlg=False,sclfct=1.0,sclname='ppv',
+                   partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,chiFlg=False):
         ''' Plot Time Series of Total Column '''
         
         print '\nPrinting Total Column Plots.....\n'
@@ -2950,7 +2966,8 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False          
@@ -3370,6 +3387,36 @@ class PlotData(ReadOutputData):
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)               
             
+            
+        #----------------------------
+        # Plot time series of CHI_2_Y
+        #----------------------------
+        fig, ax = plt.subplots()           
+        ax.plot(dates,chi2y,'k.',markersize=4)
+        ax.grid(True)
+        ax.set_ylabel(r'$\chi_y^{2}$')
+        ax.set_xlabel('Date [MM]')
+        ax.set_title(r'$\chi_y^{2}$')
+        
+        if yrsFlg:
+            #plt.xticks(rotation=45)
+            ax.xaxis.set_major_locator(yearsLc)
+            ax.xaxis.set_minor_locator(months)
+            #ax.xaxis.set_minor_formatter(DateFormatter('%m'))
+            ax.xaxis.set_major_formatter(DateFmt) 
+            #ax.xaxis.set_tick_params(which='major', pad=15)  
+            ax.xaxis.set_tick_params(which='major',labelsize=8)
+            ax.xaxis.set_tick_params(which='minor',labelbottom='off')
+        else:
+            ax.xaxis.set_major_locator(monthsAll)
+            ax.xaxis.set_major_formatter(DateFmt)
+            ax.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+            ax1.xaxis.set_minor_locator(AutoMinorLocator())
+            fig.autofmt_xdate()
+        
+        if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+        else:           plt.show(block=False)          
+
         #--------------------------------------------
         # Plot Histograms (SZA,FITRMS, DOFS, Chi_2_Y)
         #--------------------------------------------

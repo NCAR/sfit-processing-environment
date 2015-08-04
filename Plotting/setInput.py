@@ -32,11 +32,13 @@ pcNegFlg   = True                  # Flag to filter profiles with negative parti
 tcNegFlg   = True                  # Flag to filter profiles with negative total columns
 cnvrgFlg   = True                  # Flag to filter profiles that did not converge
 rmsFlg     = True                  # Flag to filter based on max RMS
+chiFlg     = False                 # Flag to filter based on max CHI_2_Y
 
 maxRMS     = 1.70                  # Max Fit RMS to filter data. Data is filtered according to <= maxrms
 minDOF     = 1.0                   # Min DOFs for filtering
 minSZA     = 0.0                   # Min SZA for filtering
 maxSZA     = 80.0                  # Max SZA for filtering
+maxCHI     = 2.0
 sclfct     = 1.0E9                 # Scale factor to apply to vmr plots (ppmv=1.0E6, ppbv=1.0E9, etc)
 sclfctName = 'ppbv'                # Name of scale factor for labeling plots
 
