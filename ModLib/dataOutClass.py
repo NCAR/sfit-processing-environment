@@ -801,10 +801,11 @@ class ReadOutputData(_DateRange):
         # Set flags to indicate whether 
         # data has been read
         #------------------------------
-        self.readPbpFlg     = False
-        self.readSpectraFlg = False
-        self.readsummaryFlg = False
-        self.readRefPrfFlg  = False
+        self.readPbpFlg               = False
+        self.readSpectraFlg           = False
+        self.readsummaryFlg           = False
+        self.readRefPrfFlg            = False
+        self.readStateVecFlg          = False
         self.readErrorFlg             = {}
         self.readErrorFlg['totFlg']   = False
         self.readErrorFlg['sysFlg']   = False
@@ -1279,6 +1280,72 @@ class ReadOutputData(_DateRange):
         if self.dirFlg: del self.deflt
         else:           return self.deflt        
              
+    
+    def readStateVec(self,fname=""):
+        ''' Read retrieved parameters in state vector (not includinng profiles)'''
+        
+        if not fname: fname = "statevec"
+        self.statevec = {}
+        
+        #-----------------------------------
+        # Loop through collected directories
+        #-----------------------------------
+        for sngDir in self.dirLst:
+    
+            try:
+                with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
+        
+                #--------------------------------------------------
+                # Find location of non profile retrieved parameters
+                # These are burried near the end of the file
+                #--------------------------------------------------
+                # Determine number of layers
+                #---------------------------
+                nlyrs  = int(lines[1].strip().split()[0])
+                nlines = int(np.ceil(nlyrs/5.0))
+                
+                #------------------------------------
+                # Determine number of retrieved gases
+                #------------------------------------
+                nskip = nlines*3+6
+                ngas  = int(lines[nskip].strip().split()[0])
+                
+                #--------------------------------------------------------
+                # Finally find number of non profile retrieved parameters
+                #--------------------------------------------------------
+                nskip += 2*ngas*(3+nlines) + 2
+                nparms = int(lines[nskip].strip().split()[0])
+                
+                #----------------------------------------
+                # Get retrieved parameters (not a priori)
+                #----------------------------------------
+                nlines = int(np.ceil(nparms/5.0))
+                parms = []
+                vals  = []
+                
+                for lineNum in range(0,nlines):
+                    parms.extend(lines[nskip+lineNum+1].strip().split())
+                    skipVal = nskip + lineNum + nlines*3 - 1
+                    vals.extend(lines[skipVal].strip().split())
+                    
+                vals = [float(val) for val in vals]
+    
+                for key,val in zip(*(parms,vals)):
+                    self.statevec.setdefault(key,[]).append(val)
+                    
+            except Exception as errmsg:
+                print errmsg
+                continue            
+    
+        #------------------------
+        # Convert to numpy arrays
+        # and sort based on date
+        #------------------------
+        for k in self.statevec:
+            self.statevec[k] = np.asarray(self.statevec[k])    
+            
+        self.readStateVecFlg = True
+   
     
     def readError(self,totFlg=True,sysFlg=False,randFlg=False,vmrFlg=False,avkFlg=False,KbFlg=False):
         ''' Reads in error analysis data from Layer1 output '''

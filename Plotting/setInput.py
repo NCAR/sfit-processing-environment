@@ -16,8 +16,8 @@
 # don't need these (e.g. they are not used in plotting program)
 #--------------------------------------------------------------
 loc        = 'tab'                 # Name of station location
-gasName    = 'ch4'                 # Name of gas
-ver        = 'Current'             # Name of retrieval version to process
+gasName    = 'ccl4'                 # Name of gas
+ver        = 'Mathias'             # Name of retrieval version to process
 
 #------
 # Flags
@@ -26,18 +26,18 @@ saveFlg    = True                  # Flag to either save data to pdf file (saveF
 errorFlg   = False                 # Flag to process error data
 fltrFlg    = True                  # Flag to filter the data
 byYrFlg    = False                 # Flag to create plots for each individual year in date range
-szaFlg     = False                 # Flag to filter based on min and max SZA
-dofFlg     = False                 # Flag to filter based on min DOFs
+szaFlg     = True                 # Flag to filter based on min and max SZA
+dofFlg     = True                 # Flag to filter based on min DOFs
 pcNegFlg   = True                  # Flag to filter profiles with negative partial columns
 tcNegFlg   = True                  # Flag to filter profiles with negative total columns
 cnvrgFlg   = True                  # Flag to filter profiles that did not converge
 rmsFlg     = True                  # Flag to filter based on max RMS
-chiFlg     = False                 # Flag to filter based on max CHI_2_Y
+chiFlg     = True                 # Flag to filter based on max CHI_2_Y
 
-maxRMS     = 1.70                  # Max Fit RMS to filter data. Data is filtered according to <= maxrms
-minDOF     = 1.0                   # Min DOFs for filtering
-minSZA     = 0.0                   # Min SZA for filtering
-maxSZA     = 80.0                  # Max SZA for filtering
+maxRMS     = 2.00                  # Max Fit RMS to filter data. Data is filtered according to <= maxrms
+minDOF     = 0.7                   # Min DOFs for filtering
+minSZA     = 55.0                   # Min SZA for filtering
+maxSZA     = 85.0                  # Max SZA for filtering
 maxCHI     = 2.0
 sclfct     = 1.0E9                 # Scale factor to apply to vmr plots (ppmv=1.0E6, ppbv=1.0E9, etc)
 sclfctName = 'ppbv'                # Name of scale factor for labeling plots
