@@ -29,8 +29,8 @@ import hdfsaveMLO as hdfsave
                             
 def main():
     loc1           = 'mlo'
-    gasName        = 'o3'                         # This is the target gas for retrieval
-    version        = 'Current'
+    gasName        = 'ocs'                         # This is the target gas for retrieval
+    version        = 'v3'
     if loc1.lower() == 'tab':
         loc            = 'THULE'
     elif loc1.lower() == "mlo":    
@@ -38,7 +38,7 @@ def main():
     else: 
         loc            = "BOULDER.COLORADO"
     sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
-    year           = 1995
+    year           = 2015
     iyear          = year
     imonth         = 1
     iday           = 1
@@ -63,17 +63,26 @@ def main():
     #spcDBfile      = '/Volumes/data/Campaign/'+loc1.upper()+'/Spectral_DB/CoaddspDB_fl0_2010_2015.dat'
     #spcDBfile      = '/data/Campaign/'+loc1.upper()+'/Spectral_DB/HRspDB_mlo_1995_2015.dat'
     statLyrFile    = '/Volumes/data/Campaign/'+loc1.upper()+'/local/station.layers'
-    maxRMS         = 0.9
-    minDOFs        = 1.0
-    minSZA         = 0.0
-    maxSZA         = 80.0
-    dofFlag        = True
-    rmsFlag        = True
-    tcFlag         = True
-    pcFlag         = True
-    cnvFlag        = True
-    szaFlag        = False
-    errFlg         = True
+
+    dofFlg         = True          # Flag to filter based on min DOFs
+    rmsFlg         = True          # Flag to filter based on max RMS
+    tcNegFlg       = True          # Flag to filter profiles with negative total columns
+    tcMMFlg        = True          # Flag to filter based on min and max total column amount
+    pcFlg          = True          # Flag to filter profiles with negative total columns
+    cnvFlg         = True          # Flag to filter profiles that did not converge
+    szaFlg         = True         # Flag to filter based on min max SZA
+    errFlg         = True          # Flag to include error within the HDF file
+    chiFlg         = False         # Flag to filter based on max CHI_2_Y
+    
+    
+    maxRMS         = 0.5                   # Max Fit RMS to filter data. Data is filtered according to <= maxrms
+    minDOFs        = 2.2                    # Min DOFs for filtering
+    minSZA         = 20.0                   # Min SZA for filtering
+    maxSZA         = 90.0                   # Max SZA for filtering
+    maxCHI         = 2.0                    # Max CHI_y_2 value
+    maxTC          = 5.0E16                 # Max Total column amount for filtering
+    minTC          = 5.0E15                 # Min Total column amount for filtering
+
     
    
     print("Creating HDF file")
@@ -94,8 +103,9 @@ def main():
     #myhdf.initDummy()
     #myhdf.initIDL(idlFname,iyear,imonth,iday,fyear,fmonth,fday)
     myhdf.initPy(dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,
-                 mxRMS=maxRMS,minDOF=minDOFs,minSZA=minSZA,mxSZA=maxSZA,dofFlg=dofFlag,rmsFlg=rmsFlag,
-                 tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,szaFlg=szaFlag,errFlg=errFlg)
+                 mxRMS=maxRMS,minDOF=minDOFs,minSZA=minSZA,mxSZA=maxSZA,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,
+                 dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcNegFlg,pcFlg=pcFlg,cnvFlg=cnvFlg,szaFlg=szaFlg,
+                 chiFlg=chiFlg,errFlg=errFlg,tcMMflg=tcMMFlg)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.

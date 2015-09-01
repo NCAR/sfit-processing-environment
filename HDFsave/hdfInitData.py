@@ -152,7 +152,8 @@ class HDFinitData(object):
         
 
     def initPy(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,
-               mxRMS=1.0,minSZA=0.0,mxSZA=80.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,cnvFlg=True,szaFlg=False,errFlg=True):
+               mxRMS=1.0,minSZA=0.0,mxSZA=80.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,dofFlg=False,rmsFlg=True,
+               tcFlg=True,pcFlg=True,cnvFlg=True,szaFlg=False,errFlg=True,chiFlg=False,tcMMflg=False):
         ''' Interface for initializing data with python set of routines'''
         
         #---------------------------------------
@@ -164,8 +165,8 @@ class HDFinitData(object):
         # Filter data
         #------------
         
-        pyData.fltrHDFdata(maxRMS=mxRMS,minSZA=minSZA,maxSZA=mxSZA,minDOF=minDOF,dofF=dofFlg,
-                           rmsF=rmsFlg, tcF=tcFlg, pcF=pcFlg, cnvF=cnvFlg, szaF=szaFlg)
+        pyData.fltrHDFdata(maxRMS=mxRMS,minSZA=minSZA,maxSZA=mxSZA,minDOF=minDOF,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,dofF=dofFlg,
+                           rmsF=rmsFlg, tcF=tcFlg, pcF=pcFlg, cnvF=cnvFlg, szaF=szaFlg,chiFlg=chiFlg,tcMMflg=tcMMflg)
         
         #------------
         # Assign data
