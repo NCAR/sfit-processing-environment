@@ -2233,10 +2233,10 @@ class PlotData(ReadOutputData):
             #---------------------------------------------------                
             gasAbs[self.PrimaryGas+"_"+x] = simps(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)       
             
-            #---------------------------------------------------------
-            # Calculate the total absorption potential in micro-window
-            #---------------------------------------------------------
-            gasAbs["Total_"+x] = 1.0 * np.abs(dataSpec['WaveN_'+x][-1] - dataSpec['WaveN_'+x][0])       
+            #--------------------------------------------------------
+            # Calculate the total Observed absorption in micro-window
+            #--------------------------------------------------------
+            gasAbs["Total_"+x] = simps(1.0 - dataSpec['Obs_'+x],x=dataSpec['WaveN_'+x],axis=1)      
             
             #-----------------------------------
             # Calculate the peak absorption of 
