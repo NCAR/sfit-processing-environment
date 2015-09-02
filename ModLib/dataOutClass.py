@@ -2213,6 +2213,13 @@ class PlotData(ReadOutputData):
         # Calculate Statistics
         #---------------------
         for x in mw:  # Loop through micro-windows
+
+            #-------------------------------------------------------------
+            # Calculate the total Observed absorption in micro-window
+            # This must be done first because below code modifies dataSpec
+            #-------------------------------------------------------------
+            gasAbs["Total_"+x] = simps(1.0 - dataSpec['Obs_'+x],x=dataSpec['WaveN_'+x],axis=1)               
+                        
             if len(self.dirLst) > 1:
                 dataSpec['Obs_'+x]        = np.mean(dataSpec['Obs_'+x],axis=0)
                 dataSpec['Fitted_'+x]     = np.mean(dataSpec['Fitted_'+x],axis=0)
@@ -2232,11 +2239,6 @@ class PlotData(ReadOutputData):
             # Calculate the integrate absorption for primary gas
             #---------------------------------------------------                
             gasAbs[self.PrimaryGas+"_"+x] = simps(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)       
-            
-            #--------------------------------------------------------
-            # Calculate the total Observed absorption in micro-window
-            #--------------------------------------------------------
-            gasAbs["Total_"+x] = simps(1.0 - dataSpec['Obs_'+x],x=dataSpec['WaveN_'+x],axis=1)      
             
             #-----------------------------------
             # Calculate the peak absorption of 
