@@ -2231,7 +2231,12 @@ class PlotData(ReadOutputData):
             #---------------------------------------------------
             # Calculate the integrate absorption for primary gas
             #---------------------------------------------------                
-            gasAbs[self.PrimaryGas+"_"+x] = simps(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)        
+            gasAbs[self.PrimaryGas+"_"+x] = simps(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)       
+            
+            #---------------------------------------------------------
+            # Calculate the total absorption potential in micro-window
+            #---------------------------------------------------------
+            gasAbs["Total_"+x] = 1.0 * np.abs(dataSpec['WaveN_'+x][-1] - dataSpec['WaveN_'+x][0])       
             
             #-----------------------------------
             # Calculate the peak absorption of 
@@ -2332,11 +2337,11 @@ class PlotData(ReadOutputData):
             # Plot time series of integrated absorption for each microwindow
             #---------------------------------------------------------------
             fig1,ax1 = plt.subplots()
-            ax1.plot(dates,gasAbs[self.PrimaryGas+"_"+x],'k.',markersize=4)
+            ax1.plot(dates,gasAbs[self.PrimaryGas+"_"+x]/gasAbs["Total_"+x],'k.',markersize=4)
             ax1.grid(True)
-            ax1.set_ylabel("Integrated Spectral Absorption")
+            ax1.set_ylabel("Fractional Integrated Spectral Absorption")
             ax1.set_xlabel('Date [MM]')
-            ax1.set_title("Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')
+            ax1.set_title("Fractional Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')
             
             if yrsFlg:
                 #plt.xticks(rotation=45)
