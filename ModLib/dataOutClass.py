@@ -2242,7 +2242,8 @@ class PlotData(ReadOutputData):
             #---------------------------------------------
             # Determine product of SNR and Peak Absorption
             #---------------------------------------------
-            gasAbsSNR[self.PrimaryGas+"_"+x] = gasAbs[self.PrimaryGas+"_"+x] * self.summary["SNR_"+x]
+            tempSNR  = np.delete(self.summary["SNR_"+x],self.inds)
+            gasAbsSNR[self.PrimaryGas+"_"+x] = gasAbs[self.PrimaryGas+"_"+x] * tempSNR 
             
   
         if len(self.dirLst) > 1:
