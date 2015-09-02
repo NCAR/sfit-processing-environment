@@ -2251,6 +2251,15 @@ class PlotData(ReadOutputData):
         else:
             for x in gasSpec: gasSpec[x] = gasSpec[x][0]
  
+        #---------------------------
+        # Date locators for plotting
+        #---------------------------
+        yearsLc      = YearLocator()
+        monthsAll    = MonthLocator()
+        #months       = MonthLocator(bymonth=1,bymonthday=1)
+        months       = MonthLocator()
+        DateFmt      = DateFormatter('%m\n%Y')      
+ 
         #----------------------------------------
         # Plot Jacobian only if there are
         # profile retrievals and single retrieval
