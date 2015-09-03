@@ -3318,7 +3318,7 @@ class PlotData(ReadOutputData):
         tcks = range(np.int(np.floor(np.min(sza))),np.int(np.ceil(np.max(sza)))+2)
         norm = colors.BoundaryNorm(tcks,cm.N)   
         
-        ax1.scatter(dates,totClmn,'k.',c=sza,cmap=cm,norm=norm,markersize=4)
+        ax1.scatter(dates,totClmn,'k.',c=sza,cmap=cm,norm=norm)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         ax1.set_xlabel('Date [MM]')
