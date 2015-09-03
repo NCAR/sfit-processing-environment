@@ -2194,14 +2194,15 @@ class PlotData(ReadOutputData):
         #------------------------------
         # Get dates for timeseries plot
         #------------------------------
-        if len(self.dirLst) > 1: dates = np.delete(self.pbp["date"],self.inds)
+        if len(self.dirLst) > 1: 
+            dates = np.delete(self.pbp["date"],self.inds)
         
-        #----------------------------
-        # Determine if multiple years
-        #----------------------------
-        years = [ singDate.year for singDate in dates]      # Find years for all date entries
-        if len(list(set(years))) > 1: yrsFlg = True         # Determine all unique years
-        else:                         yrsFlg = False        
+            #----------------------------
+            # Determine if multiple years
+            #----------------------------
+            years = [ singDate.year for singDate in dates]      # Find years for all date entries
+            if len(list(set(years))) > 1: yrsFlg = True         # Determine all unique years
+            else:                         yrsFlg = False        
     
         #----------------------------------------
         # Loop through gases and micro-windows
