@@ -3311,6 +3311,44 @@ class PlotData(ReadOutputData):
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
         else:           plt.show(block=False)  
         
+                
+        #--------------------------------------
+        # Plot time series color coded with SZA
+        #--------------------------------------    
+        tcks = range(np.int(np.floor(np.min(sza))),np.int(np.ceil(np.max(sza)))+2)
+        norm = colors.BoundaryNorm(tcks,cm.N)   
+        
+        ax1.scatter(dates,totClmn,'k.',c=sza,cmap=cm,norm=norm,markersize=4)
+        ax1.grid(True)
+        ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+        ax1.set_xlabel('Date [MM]')
+        ax1.set_title('Time Series of Retrieved Total Column with SZA\n[molecules cm$^{-2}$]',multialignment='center')
+        
+        if yrsFlg:
+            #plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(yearsLc)
+            ax1.xaxis.set_minor_locator(months)
+            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+            ax1.xaxis.set_major_formatter(DateFmt) 
+            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            ax1.xaxis.set_tick_params(which='major',labelsize=8)
+            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+        else:
+            ax1.xaxis.set_major_locator(monthsAll)
+            ax1.xaxis.set_major_formatter(DateFmt)
+            ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+            ax1.xaxis.set_minor_locator(AutoMinorLocator())
+            fig1.autofmt_xdate()
+        
+        fig.subplots_adjust(right=0.82)
+        cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+            
+        cbar = fig.colorbar(sc1, cax=cax, format='%2i')
+        cbar.set_label('SZA')    
+        
+        if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+        else:           plt.show(block=False)           
+        
         
         #-----------------------------------
         # Plot trend analysis of time series
