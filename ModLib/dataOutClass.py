@@ -2194,7 +2194,7 @@ class PlotData(ReadOutputData):
         #------------------------------
         # Get dates for timeseries plot
         #------------------------------
-        dates = np.delete(self.pbp["date"],self.inds)
+        if len(self.dirLst) > 1: dates = np.delete(self.pbp["date"],self.inds)
         
         #----------------------------
         # Determine if multiple years
@@ -2239,23 +2239,24 @@ class PlotData(ReadOutputData):
                 dataSpec['Difference_'+x] = dataSpec['Difference_'+x][0]
                 dataSpec['All_'+x]        = dataSpec['All_'+x][0]
                 if self.solarFlg:dataSpec['Sol_'+x]        = dataSpec['Sol_'+x][0]
+                                
+            if len(self.dirLst) > 1:    
+                #---------------------------------------------------
+                # Calculate the integrate absorption for primary gas
+                #---------------------------------------------------                
+                gasAbs[self.PrimaryGas+"_"+x] = simps(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)       
                 
-            #---------------------------------------------------
-            # Calculate the integrate absorption for primary gas
-            #---------------------------------------------------                
-            gasAbs[self.PrimaryGas+"_"+x] = simps(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)       
-            
-            #-----------------------------------
-            # Calculate the peak absorption of 
-            # primary gas for each micro-window
-            #-----------------------------------
-            gasAbs[self.PrimaryGas+"_trans_"+x] = 1.0 - np.min(gasSpec[self.PrimaryGas+"_"+x],axis=1)
-            
-            #---------------------------------------------
-            # Determine product of SNR and Peak Absorption
-            #---------------------------------------------
-            tempSNR  = np.delete(self.summary["SNR_"+x],self.inds)
-            gasAbsSNR[self.PrimaryGas+"_"+x] = gasAbs[self.PrimaryGas+"_"+x] * tempSNR 
+                #-----------------------------------
+                # Calculate the peak absorption of 
+                # primary gas for each micro-window
+                #-----------------------------------
+                gasAbs[self.PrimaryGas+"_trans_"+x] = 1.0 - np.min(gasSpec[self.PrimaryGas+"_"+x],axis=1)
+                
+                #---------------------------------------------
+                # Determine product of SNR and Peak Absorption
+                #---------------------------------------------
+                tempSNR  = np.delete(self.summary["SNR_"+x],self.inds)
+                gasAbsSNR[self.PrimaryGas+"_"+x] = gasAbs[self.PrimaryGas+"_"+x] * tempSNR 
                         
   
         if len(self.dirLst) > 1:
@@ -2345,87 +2346,87 @@ class PlotData(ReadOutputData):
             
             #---------------------------------------------------------------
             # Plot time series of integrated absorption for each microwindow
-            # Colored by SZA
-            #---------------------------------------------------------------     
-            fig,ax1  = plt.subplots()
-            tcks = range(np.int(np.floor(np.min(sza))),np.int(np.ceil(np.max(sza)))+2)
-            norm = colors.BoundaryNorm(tcks,cm.N)                        
-            sc1  = ax1.scatter(dates,gasAbs[self.PrimaryGas+"_"+x],c=sza,cmap=cm,norm=norm)
+            # Colored by SZA if multiple directories
+            #---------------------------------------------------------------   
+            if len(self.dirLst) > 1:
+                fig,ax1  = plt.subplots()
+                tcks = range(np.int(np.floor(np.min(sza))),np.int(np.ceil(np.max(sza)))+2)
+                norm = colors.BoundaryNorm(tcks,cm.N)                        
+                sc1  = ax1.scatter(dates,gasAbs[self.PrimaryGas+"_"+x],c=sza,cmap=cm,norm=norm)
+                    
+                ax1.grid(True,which='both')
+                ax1.set_xlabel('Date')
+                ax1.set_ylabel('Integrated Spectral Absorption',fontsize=9)
+                ax1.set_title("Fractional Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')        
+                ax1.tick_params(axis='x',which='both',labelsize=8)
                 
-            ax1.grid(True,which='both')
-            ax1.set_xlabel('Date')
-            ax1.set_ylabel('Integrated Spectral Absorption',fontsize=9)
-            ax1.set_title("Fractional Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')        
-            ax1.tick_params(axis='x',which='both',labelsize=8)
-            
-            fig.subplots_adjust(right=0.82)
-            cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+                fig.subplots_adjust(right=0.82)
+                cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+                    
+                cbar = fig.colorbar(sc1, cax=cax, format='%2i')
+                cbar.set_label('SZA')    
                 
-            cbar = fig.colorbar(sc1, cax=cax, format='%2i')
-            cbar.set_label('SZA')    
-            
-            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-            else:           plt.show(block=False)   
-
-            
-            #--------------------------------------------------------------------------
-            # Plot time series of fractional integrated absorption for each microwindow
-            #---------------------------------------------------------------    
-            fig1,ax1 = plt.subplots()
-            ax1.plot(dates,gasAbs[self.PrimaryGas+"_"+x]/gasAbs["Total_"+x],'k.',markersize=4)
-            ax1.grid(True)
-            ax1.set_ylabel("Fractional Integrated Spectral Absorption")
-            ax1.set_xlabel('Date [MM]')
-            ax1.set_title("Fractional Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')
-            
-            if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax1.xaxis.set_major_locator(yearsLc)
-                ax1.xaxis.set_minor_locator(months)
-                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax1.xaxis.set_major_formatter(DateFmt) 
-                #ax1.xaxis.set_tick_params(which='major', pad=15)  
-                ax1.xaxis.set_tick_params(which='major',labelsize=8)
-                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-            else:
-                ax1.xaxis.set_major_locator(monthsAll)
-                ax1.xaxis.set_major_formatter(DateFmt)
-                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                fig1.autofmt_xdate()
-            
-            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-            else:           plt.show(block=False)          
-            
-            #----------------------------------------------
-            # Plot time series of peak absorption times SNR
-            #----------------------------------------------
-            fig1,ax1 = plt.subplots()
-            ax1.plot(dates,gasAbsSNR[self.PrimaryGas+"_"+x],'k.',markersize=4)
-            ax1.grid(True)
-            ax1.set_ylabel("Peak Spectral Absorption * SNR")
-            ax1.set_xlabel('Date [MM]')
-            ax1.set_title("Peak Spectral Absorption * SNR\nMicro-window {}".format(x),multialignment='center')
-            
-            if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax1.xaxis.set_major_locator(yearsLc)
-                ax1.xaxis.set_minor_locator(months)
-                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax1.xaxis.set_major_formatter(DateFmt) 
-                #ax1.xaxis.set_tick_params(which='major', pad=15)  
-                ax1.xaxis.set_tick_params(which='major',labelsize=8)
-                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-            else:
-                ax1.xaxis.set_major_locator(monthsAll)
-                ax1.xaxis.set_major_formatter(DateFmt)
-                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                fig1.autofmt_xdate()
-            
-            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-            else:           plt.show(block=False)               
-            gasAbsSNR[self.PrimaryGas+"_"+x] 
+                if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                else:           plt.show(block=False)   
+    
+                
+                #--------------------------------------------------------------------------
+                # Plot time series of fractional integrated absorption for each microwindow
+                #---------------------------------------------------------------    
+                fig1,ax1 = plt.subplots()
+                ax1.plot(dates,gasAbs[self.PrimaryGas+"_"+x]/gasAbs["Total_"+x],'k.',markersize=4)
+                ax1.grid(True)
+                ax1.set_ylabel("Fractional Integrated Spectral Absorption")
+                ax1.set_xlabel('Date [MM]')
+                ax1.set_title("Fractional Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')
+                
+                if yrsFlg:
+                    #plt.xticks(rotation=45)
+                    ax1.xaxis.set_major_locator(yearsLc)
+                    ax1.xaxis.set_minor_locator(months)
+                    #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                    ax1.xaxis.set_major_formatter(DateFmt) 
+                    #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                    ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                    ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+                else:
+                    ax1.xaxis.set_major_locator(monthsAll)
+                    ax1.xaxis.set_major_formatter(DateFmt)
+                    ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                    ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                    fig1.autofmt_xdate()
+                
+                if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+                else:           plt.show(block=False)          
+                
+                #----------------------------------------------
+                # Plot time series of peak absorption times SNR
+                #----------------------------------------------
+                fig1,ax1 = plt.subplots()
+                ax1.plot(dates,gasAbsSNR[self.PrimaryGas+"_"+x],'k.',markersize=4)
+                ax1.grid(True)
+                ax1.set_ylabel("Peak Spectral Absorption * SNR")
+                ax1.set_xlabel('Date [MM]')
+                ax1.set_title("Peak Spectral Absorption * SNR\nMicro-window {}".format(x),multialignment='center')
+                
+                if yrsFlg:
+                    #plt.xticks(rotation=45)
+                    ax1.xaxis.set_major_locator(yearsLc)
+                    ax1.xaxis.set_minor_locator(months)
+                    #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                    ax1.xaxis.set_major_formatter(DateFmt) 
+                    #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                    ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                    ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+                else:
+                    ax1.xaxis.set_major_locator(monthsAll)
+                    ax1.xaxis.set_major_formatter(DateFmt)
+                    ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                    ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                    fig1.autofmt_xdate()
+                
+                if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+                else:           plt.show(block=False)               
             
             
         
