@@ -3318,6 +3318,7 @@ class PlotData(ReadOutputData):
         tcks = range(np.int(np.floor(np.min(sza))),np.int(np.ceil(np.max(sza)))+2)
         norm = colors.BoundaryNorm(tcks,cm.N)   
         
+        fig1,ax1 = plt.subplots()
         ax1.scatter(dates,totClmn,'k.',c=sza,cmap=cm,norm=norm)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
@@ -3340,13 +3341,13 @@ class PlotData(ReadOutputData):
             ax1.xaxis.set_minor_locator(AutoMinorLocator())
             fig1.autofmt_xdate()
         
-        fig.subplots_adjust(right=0.82)
-        cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+        fig1.subplots_adjust(right=0.82)
+        cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
             
-        cbar = fig.colorbar(sc1, cax=cax, format='%2i')
+        cbar = fig1.colorbar(sc1, cax=cax, format='%2i')
         cbar.set_label('SZA')    
         
-        if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
         else:           plt.show(block=False)           
         
         
