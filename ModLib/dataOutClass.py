@@ -2348,7 +2348,7 @@ class PlotData(ReadOutputData):
             # Colored by SZA
             #---------------------------------------------------------------     
             fig,ax1  = plt.subplots()
-            tcks = range(np.floor(np.min(sza)),np.ceil(np.max(sza))+2)
+            tcks = range(np.int(np.floor(np.min(sza))),np.int(np.ceil(np.max(sza)))+2)
             norm = colors.BoundaryNorm(tcks,cm.N)                        
             sc1  = ax1.scatter(dates,gasAbs[self.PrimaryGas+"_"+x],c=sza,cmap=cm,norm=norm)
                 
