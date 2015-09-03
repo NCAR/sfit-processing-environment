@@ -2261,6 +2261,8 @@ class PlotData(ReadOutputData):
         #---------------------------
         # Date locators for plotting
         #---------------------------
+        clmap        = 'jet'
+        cm           = plt.get_cmap(clmap)              
         yearsLc      = YearLocator()
         monthsAll    = MonthLocator()
         #months       = MonthLocator(bymonth=1,bymonthday=1)
@@ -2335,9 +2337,43 @@ class PlotData(ReadOutputData):
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)            
             
+            
             #---------------------------------------------------------------
             # Plot time series of integrated absorption for each microwindow
-            #---------------------------------------------------------------
+            # Colored by SZA
+            #---------------------------------------------------------------     
+            fig,ax1  = plt.subplots()
+            if yrsFlg:
+                tcks = range(np.min(years),np.max(years)+2)
+                norm = colors.BoundaryNorm(tcks,cm.N)                        
+                sc1  = ax1.scatter(dates,gasAbs[self.PrimaryGas+"_"+x],c=years,cmap=cm,norm=norm)
+            else:                           
+                sc1 = ax1.scatter(dates,gasAbs[self.PrimaryGas+"_"+x],c=doy,cmap=cm)
+                
+            ax1.grid(True,which='both')
+            ax1.set_xlabel('Date')
+            ax1.set_ylabel('Integrated Spectral Absorption',fontsize=9)
+            ax1.set_title("Fractional Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')        
+            ax1.tick_params(axis='x',which='both',labelsize=8)
+            
+            fig.subplots_adjust(right=0.82)
+            cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+            
+            if yrsFlg:
+                cbar = fig.colorbar(sc1, cax=cax, ticks=tcks, norm=norm, format='%4i')                           
+                cbar.set_label('Year')
+                plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
+            else:      
+                cbar = fig.colorbar(sc1, cax=cax, format='%3i')
+                cbar.set_label('DOY')    
+            
+            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False)   
+
+            
+            #--------------------------------------------------------------------------
+            # Plot time series of fractional integrated absorption for each microwindow
+            #---------------------------------------------------------------    
             fig1,ax1 = plt.subplots()
             ax1.plot(dates,gasAbs[self.PrimaryGas+"_"+x]/gasAbs["Total_"+x],'k.',markersize=4)
             ax1.grid(True)
