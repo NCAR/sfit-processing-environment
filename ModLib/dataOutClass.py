@@ -2170,6 +2170,11 @@ class PlotData(ReadOutputData):
         
         if self.empty: return False
         
+        #---------------------
+        # Get SZA for Plotting
+        #---------------------
+        sza = np.delete(self.pbp["sza"],self.inds)
+        
         #------------
         # Get spectra
         #------------
@@ -2251,7 +2256,7 @@ class PlotData(ReadOutputData):
             #---------------------------------------------
             tempSNR  = np.delete(self.summary["SNR_"+x],self.inds)
             gasAbsSNR[self.PrimaryGas+"_"+x] = gasAbs[self.PrimaryGas+"_"+x] * tempSNR 
-            
+                        
   
         if len(self.dirLst) > 1:
             gasSpec = {gas.upper()+'_'+x:np.mean(gasSpec[gas.upper()+'_'+x],axis=0) for x in mwList for gas in mwList[x]}   
@@ -2343,12 +2348,9 @@ class PlotData(ReadOutputData):
             # Colored by SZA
             #---------------------------------------------------------------     
             fig,ax1  = plt.subplots()
-            if yrsFlg:
-                tcks = range(np.min(years),np.max(years)+2)
-                norm = colors.BoundaryNorm(tcks,cm.N)                        
-                sc1  = ax1.scatter(dates,gasAbs[self.PrimaryGas+"_"+x],c=years,cmap=cm,norm=norm)
-            else:                           
-                sc1 = ax1.scatter(dates,gasAbs[self.PrimaryGas+"_"+x],c=doy,cmap=cm)
+            tcks = range(np.min(sza),np.max(sza)+2)
+            norm = colors.BoundaryNorm(tcks,cm.N)                        
+            sc1  = ax1.scatter(dates,gasAbs[self.PrimaryGas+"_"+x],c=sza,cmap=cm,norm=norm)
                 
             ax1.grid(True,which='both')
             ax1.set_xlabel('Date')
@@ -2358,14 +2360,9 @@ class PlotData(ReadOutputData):
             
             fig.subplots_adjust(right=0.82)
             cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
-            
-            if yrsFlg:
-                cbar = fig.colorbar(sc1, cax=cax, ticks=tcks, norm=norm, format='%4i')                           
-                cbar.set_label('Year')
-                plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
-            else:      
-                cbar = fig.colorbar(sc1, cax=cax, format='%3i')
-                cbar.set_label('DOY')    
+                
+            cbar = fig.colorbar(sc1, cax=cax, format='%2i')
+            cbar.set_label('SZA')    
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)   
