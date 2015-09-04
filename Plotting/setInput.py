@@ -34,9 +34,11 @@ tcNegFlg   = True                   # Flag to filter profiles with negative tota
 tcMMFlg    = True                   # Flag to filter based on min and max total column amount
 cnvrgFlg   = True                   # Flag to filter profiles that did not converge
 rmsFlg     = True                   # Flag to filter based on max RMS
-chiFlg     = False                   # Flag to filter based on max CHI_2_Y
+chiFlg     = False                  # Flag to filter based on max CHI_2_Y
+mnthFlg    = False                  # Flag to filter based on 
 
-maxRMS     = 2.0                   # Max Fit RMS to filter data. Data is filtered according to <= maxrms
+mnths      = [6,7,8]                # Months to filter on (these are the months to include data)
+maxRMS     = 2.0                    # Max Fit RMS to filter data. Data is filtered according to <= maxrms
 minDOF     = 0.9                    # Min DOFs for filtering
 minSZA     = 75.0                   # Min SZA for filtering
 maxSZA     = 85.0                   # Max SZA for filtering
