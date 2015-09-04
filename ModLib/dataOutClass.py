@@ -3377,121 +3377,124 @@ class PlotData(ReadOutputData):
         res          = fit_driftfourier(dateYearFrac, totClmn, weights, 2)
         f_drift, f_fourier, f_driftfourier = res[3:6]
         
-        fig1,ax1 = plt.subplots()
-        ax1.scatter(dates,totClmn,s=4,label='data')
-        ax1.plot(dates,f_drift(dateYearFrac),label='Fitted Anual Trend')
-        ax1.plot(dates,f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
-        ax1.grid(True)
-        ax1.set_ylim([np.min(totClmn)-0.1*np.min(totClmn), np.max(totClmn)+0.15*np.max(totClmn)])
-        ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
-        ax1.set_title('Trend Analysis with Boot Strap Resampling\nIndividual Retrievals',multialignment='center')
-        ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(totClmn)*100.0),transform=ax1.transAxes)
-        ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
-        ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(totClmn)*100.0),transform=ax1.transAxes) 
-        
-        
-        if yrsFlg:
-            #plt.xticks(rotation=45)
-            ax1.xaxis.set_major_locator(yearsLc)
-            ax1.xaxis.set_minor_locator(months)
-            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax1.xaxis.set_major_formatter(DateFmt) 
-            #ax1.xaxis.set_tick_params(which='major', pad=15)  
-            ax1.xaxis.set_tick_params(which='major',labelsize=8)
-            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-        else:
-            ax1.xaxis.set_major_locator(monthsAll)
-            ax1.xaxis.set_major_formatter(DateFmt)
-            ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            fig1.autofmt_xdate()  
+        try:
+            fig1,ax1 = plt.subplots()
+            ax1.scatter(dates,totClmn,s=4,label='data')
+            ax1.plot(dates,f_drift(dateYearFrac),label='Fitted Anual Trend')
+            ax1.plot(dates,f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
+            ax1.grid(True)
+            ax1.set_ylim([np.min(totClmn)-0.1*np.min(totClmn), np.max(totClmn)+0.15*np.max(totClmn)])
+            ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel('Date [MM]')
+            ax1.set_title('Trend Analysis with Boot Strap Resampling\nIndividual Retrievals',multialignment='center')
+            ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(totClmn)*100.0),transform=ax1.transAxes)
+            ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
+            ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(totClmn)*100.0),transform=ax1.transAxes) 
             
-        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-        else:           plt.show(block=False)          
-        
-        
-        #------
-        # Daily
-        #------
-        dailyVals = dailyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
-        dateYearFrac = toYearFraction(dailyVals['dates'])
-        weights      = np.ones_like(dateYearFrac)
-        res          = fit_driftfourier(dateYearFrac, dailyVals['dailyAvg'], weights, 2)
-        f_drift, f_fourier, f_driftfourier = res[3:6]
-        
-        fig1,ax1 = plt.subplots()
-        ax1.scatter(dailyVals['dates'],dailyVals['dailyAvg'],s=4,label='data')
-        ax1.plot(dailyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
-        ax1.plot(dailyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
-        ax1.grid(True)
-        ax1.set_ylim([np.min(dailyVals['dailyAvg'])-0.1*np.min(dailyVals['dailyAvg']), np.max(dailyVals['dailyAvg'])+0.15*np.max(dailyVals['dailyAvg'])])
-        ax1.set_ylabel('Daily Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
-        ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
-        ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)
-        ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
-        ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)   
-    
-        if yrsFlg:
-            #plt.xticks(rotation=45)
-            ax1.xaxis.set_major_locator(yearsLc)
-            ax1.xaxis.set_minor_locator(months)
-            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax1.xaxis.set_major_formatter(DateFmt) 
-            #ax1.xaxis.set_tick_params(which='major', pad=15)  
-            ax1.xaxis.set_tick_params(which='major',labelsize=8)
-            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-        else:
-            ax1.xaxis.set_major_locator(monthsAll)
-            ax1.xaxis.set_major_formatter(DateFmt)
-            ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            fig1.autofmt_xdate()    
             
-        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-        else:           plt.show(block=False)            
-        
-        #--------
-        # Monthly
-        #--------
-        mnthlyVals = mnthlyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
-        dateYearFrac = toYearFraction(mnthlyVals['dates'])
-        weights      = np.ones_like(dateYearFrac)
-        res          = fit_driftfourier(dateYearFrac, mnthlyVals['mnthlyAvg'], weights, 2)
-        f_drift, f_fourier, f_driftfourier = res[3:6]
-        
-        fig1,ax1 = plt.subplots()
-        ax1.scatter(mnthlyVals['dates'],mnthlyVals['mnthlyAvg'],s=4,label='data')
-        ax1.plot(mnthlyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
-        ax1.plot(mnthlyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
-        ax1.grid(True)
-        ax1.set_ylim([np.min(mnthlyVals['mnthlyAvg'])-0.1*np.min(mnthlyVals['mnthlyAvg']), np.max(mnthlyVals['mnthlyAvg'])+0.15*np.max(mnthlyVals['mnthlyAvg'])])
-        ax1.set_ylabel('Monthly Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
-        ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
-        ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)
-        ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
-        ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)  
-    
-        if yrsFlg:
-            #plt.xticks(rotation=45)
-            ax1.xaxis.set_major_locator(yearsLc)
-            ax1.xaxis.set_minor_locator(months)
-            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax1.xaxis.set_major_formatter(DateFmt) 
-            #ax1.xaxis.set_tick_params(which='major', pad=15)  
-            ax1.xaxis.set_tick_params(which='major',labelsize=8)
-            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-        else:
-            ax1.xaxis.set_major_locator(monthsAll)
-            ax1.xaxis.set_major_formatter(DateFmt)
-            ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            fig1.autofmt_xdate()        
+            if yrsFlg:
+                #plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(yearsLc)
+                ax1.xaxis.set_minor_locator(months)
+                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                ax1.xaxis.set_major_formatter(DateFmt) 
+                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(monthsAll)
+                ax1.xaxis.set_major_formatter(DateFmt)
+                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                fig1.autofmt_xdate()  
+                
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)          
             
-        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-        else:           plt.show(block=False)                 
+            
+            #------
+            # Daily
+            #------
+            dailyVals = dailyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
+            dateYearFrac = toYearFraction(dailyVals['dates'])
+            weights      = np.ones_like(dateYearFrac)
+            res          = fit_driftfourier(dateYearFrac, dailyVals['dailyAvg'], weights, 2)
+            f_drift, f_fourier, f_driftfourier = res[3:6]
+            
+            fig1,ax1 = plt.subplots()
+            ax1.scatter(dailyVals['dates'],dailyVals['dailyAvg'],s=4,label='data')
+            ax1.plot(dailyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
+            ax1.plot(dailyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
+            ax1.grid(True)
+            ax1.set_ylim([np.min(dailyVals['dailyAvg'])-0.1*np.min(dailyVals['dailyAvg']), np.max(dailyVals['dailyAvg'])+0.15*np.max(dailyVals['dailyAvg'])])
+            ax1.set_ylabel('Daily Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel('Date [MM]')
+            ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
+            ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)
+            ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
+            ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)   
+        
+            if yrsFlg:
+                #plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(yearsLc)
+                ax1.xaxis.set_minor_locator(months)
+                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                ax1.xaxis.set_major_formatter(DateFmt) 
+                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(monthsAll)
+                ax1.xaxis.set_major_formatter(DateFmt)
+                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                fig1.autofmt_xdate()    
+                
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)            
+            
+            #--------
+            # Monthly
+            #--------
+            mnthlyVals = mnthlyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
+            dateYearFrac = toYearFraction(mnthlyVals['dates'])
+            weights      = np.ones_like(dateYearFrac)
+            res          = fit_driftfourier(dateYearFrac, mnthlyVals['mnthlyAvg'], weights, 2)
+            f_drift, f_fourier, f_driftfourier = res[3:6]
+            
+            fig1,ax1 = plt.subplots()
+            ax1.scatter(mnthlyVals['dates'],mnthlyVals['mnthlyAvg'],s=4,label='data')
+            ax1.plot(mnthlyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
+            ax1.plot(mnthlyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
+            ax1.grid(True)
+            ax1.set_ylim([np.min(mnthlyVals['mnthlyAvg'])-0.1*np.min(mnthlyVals['mnthlyAvg']), np.max(mnthlyVals['mnthlyAvg'])+0.15*np.max(mnthlyVals['mnthlyAvg'])])
+            ax1.set_ylabel('Monthly Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel('Date [MM]')
+            ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
+            ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)
+            ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
+            ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)  
+        
+            if yrsFlg:
+                #plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(yearsLc)
+                ax1.xaxis.set_minor_locator(months)
+                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                ax1.xaxis.set_major_formatter(DateFmt) 
+                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(monthsAll)
+                ax1.xaxis.set_major_formatter(DateFmt)
+                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                fig1.autofmt_xdate()        
+                
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)                 
+        
+        except: pass 
         
         #------------------------------------
         # Plot time series of partial columns
