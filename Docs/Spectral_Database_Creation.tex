@@ -1,0 +1,239 @@
+\documentclass[12pt, letterpaper]{article}
+
+% font
+%\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+%\usepackage[sfdefault,scaled=.85]{FiraSans}
+%\usepackage{newtxsf}
+\usepackage{hyperref}
+
+% math
+\usepackage{mathcomp}
+
+% document formatting
+\usepackage{geometry}
+\geometry{letterpaper, left=1in, right=1in, top=1in, bottom=1in}
+\usepackage{changepage}
+
+% lists
+\usepackage{enumitem}
+
+% tables
+\usepackage{tabularx}
+\newcolumntype{S}{@{\stepcounter{Definition}\theDefinition.~} >{}l @{~ : ~}X@{}}
+%\newcolumntype{S}{@{\stepcounter{Definition}\theDefinition.~} >{\bfseries}l @{~ : ~}X@{}}
+\newcounter{Definition}[subsection]
+
+\usepackage{textcomp}
+
+% graphics
+\usepackage{graphicx}
+\usepackage{float}
+\graphicspath{ {./} }
+
+% colors
+\usepackage{color}
+\definecolor{light-gray}{gray}{0.85}
+
+% my own macros!
+\usepackage{xspace}
+\newcommand{\code}[1]{\colorbox{light-gray}{\texttt{#1}}}
+\newcommand{\apr}{\`{a} priori\xspace}
+
+% header / footer
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\fancyhead[LE,RO]{\slshape \leftmark}
+\fancyhead[LO,RE]{\slshape \rightmark}
+\fancyfoot[LE,RO]{\thepage}
+
+% author tags
+\usepackage{authblk}
+\renewcommand\Affilfont{\itshape\small}
+\renewcommand\Authands{ and }
+
+% multiple columns
+\usepackage{multicol}
+
+% code listing
+\usepackage{listings}
+\lstset{language=FORTRAN} 
+
+\title{Creation of Spectral Database and ZPTW Profiles}
+
+%\begin{center}
+%SFIT4 Development Team
+%\end{center}
+
+\author[1]{Eric Nussbaumer \thanks{corresponding author: ebaumer@ucar.edu +1 (303) 497-1861}}
+\affil[1]{National Center for Atmospheric Research, Boulder, CO, USA}
+
+\date{September 2015}
+
+\begin{document}
+
+\begin{titlepage}
+
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+\begin{abstract}
+  \begin{adjustwidth}{2em}{2em} 
+    \large{
+      \emph{
+This document outlines the creation of the spectral database as well as the profiles for pressure, temperature, and water vapor.
+}}
+      
+  \end{adjustwidth}
+
+\end{abstract}
+
+\end{titlepage}
+ 
+
+\section{Introduction} 
+\label{sec:intro}
+
+The spectral database and ZPTW (altitude, pressure, temperature, and water vapor) profiles are necessary pre-processing steps to retrievals. The spectral database holds information pertaining to each of the measurements. A spectral database is unique to each site\\
+The majority of information in the spectral database comes from the OPUS file itself; however, we append meteorological data from local weather weather stations.\\
+There are several steps in creating the spectral database:
+
+\begin{enumerate}
+\item Creating the initial spectral database
+\item Formatting the house log data files
+\item Formatting the external station weather data
+\item Appending the initial spectral database with house an external station weather data
+\end{enumerate}
+
+\noindent Note that not all sites have house or external station weather data.\\
+
+\begin{tabular}{ l l l }
+\textbf{Station} & \textbf{House Data} & \textbf{External Station Data} \\
+\hline
+MLO   & Yes & Yes (CMDL) \\
+TAB   & Yes & No \\
+FL0   & No  & Yes (EOL) \\
+\end{tabular} \\
+
+\noindent The necessary python files are located in the \href{https://git.ucar.edu/?p=sfit-processing-environment.git}{sfit-processing-environment} git repository. 
+
+\section{Spectral Database}
+\subsection{Initial Spectral Database}
+\label{sec:ISD}
+The initial spectral database file is created by running ckopus on the various raw OPUS file. A python program is created to manage the creation of the initial spectral database file (mkSpecDB.py). The program will create a new spectral database file or append an already existing file. Associated with mkSpecDB.py is an input file. The input file allows one to specify the starting and ending date to process, the station, and the various directories and files to use. In addition, one can specify additional ckopus flags to use in the ckopus call. There are logical flags which control the creating of a file which list the folders processed and whether bnr files are created. These files are located under the SpectralDatabase folder of the git repository.\\
+
+\begin{tabular}{ l l }
+\textbf{Program} & \textbf{Description} \\
+\hline
+mkSpecDB.py         & Main program to create initial spectral database \\
+specDBInputFile.py  & Input file for mkSpecDB.py program \\
+\end{tabular} \\
+
+
+\subsection{House Data}
+\label{sec:HD}
+
+House data is data that is recorded by the FTS autonomous system, such as outside temperature, pressure, wind direction, etc. The format of this data has changed for each station over time as the instrument gets modified or upgraded. A python program (station\_house\_reader.py) is created to read the various formats and create a standardized file. There is one file for each year. There are no input files for the station\_house\_reader.py program. The time range, station identifier, and directories are specified directly in the program under the main function. An excel spreadsheet describes the various formats for the house log files for MLO and TAB.\\
+
+\begin{tabular}{ l l }
+\textbf{Program} & \textbf{Description} \\
+\hline
+station\_house\_reader.py & Main program to read house data files\\
+HouseReaderC.py           & Supporting program with formats of previous house data files \\
+HouseDataLog.xlsx         & Excel file with format of house log files\\
+\end{tabular} \\
+
+These programs are located in the ExternalData folder of the git repository.
+
+
+\subsection{External Station Data}
+\label{sec:ED}
+
+There are currently two external station data sources used (EOL for FL0, and CMDL for MLO) only the EOL data needs to be pre-processed. The original format of this data is in netcdf files. The program read\_FL0\_EOL\_data.py reads the daily netcdf files and creates a yearly text file. There are no input files for read\_FL0\_EOL\_data.py program. The year of interest and directories of data are specified directly in the program under the main function.  The program pullAncillaryData.py pulls the CMDL and EOL data from each individual ftp site. \\
+
+\begin{tabular}{ l l }
+\textbf{Program} & \textbf{Description} \\
+\hline
+pullAncillaryData.py    & Program to automatically pull EOL and CMDL data\\
+read\_FL0\_EOL\_data.py & Main program to read EOL and CMDL data \\
+\end{tabular} \\
+
+\noindent These programs are located in the ExternalData folder of the git repository.
+
+\subsection{Append Spectral Database File}
+\label{sec:ASDF}
+The final step is appending the initial spectral database file with the house and external station weather data. A python program was created to accomplish this (appendSpecDB.py). The program appendSpecDB.py reads in the initial spectral database file. It then searches the house and external station files for weather data at the time of observation, plus a certain number of minutes specified by the user. The mean of the data collected is calculated and a new spectral database file is created. If no data is present missing values are used. Associated with appendSpecDB.py is an input file. The input file allows one to specify directories and files, year to process, station, how many minutes to use for averaging, and whether to create a comma separated or pre-specified formatted new spectral database file.\\
+
+\begin{tabular}{ l l }
+\textbf{Program} & \textbf{Description} \\
+\hline
+appendSpecDB.py         & Program to create the append spectral database file\\
+appndSpecDBInputFile.py & Input file for appendSpecDB.py \\
+\end{tabular} \\
+
+\noindent \textit{Note:A warning message will often appear when running this program originating from the python numpy module. This warning is a result of numpy taking the mean of an empty array. This is handled by the main program.}
+
+
+\subsection{Steps for Creating Spectral Database}
+\label{sec:SCSD}
+
+\begin{enumerate}
+\item Download external station data using pullAncillaryData.py
+\item Create initial database file by running mkSpecDB.py
+\item Format house data by running station\_house\_reader.py
+\item Format external station data by running read\_FL0\_EOL\_data.py
+\item Create appended spectral database file by running appendSpecDB.py
+\end{enumerate}
+
+\section{ZPTW Profiles}
+The pressure, temperature, and water vapor profiles can be created from several outside sources. Temperature, pressure, and water profiles are taken from NCEP nmc data; while currently only water profiles are taken from ERA-Interim data. Both NCEP and ERA-Interim data are interpolated with WACCM data to reach 120km vertical height. The profiles are daily averages and they reside in the raw data directories (directories with bnr files).
+
+\subsection{WACCM \& NCEP Profiles}
+\label{sec:WACCM}
+Profiles from WACCM are monthly means. These monthly means have been pre-calculated from the WACCM model. The profiles from NCEP come from the NCEP nmc data which are daily averages. The program MergPrf.py creates either WACCM and NCEP altitude, pressure, and temperature profiles as files named ZPT.nmc.120. Water files are also created (w-120.v1) using the NCEP data. When NCEP data is not available the full WACCM profiles are used. These files are stored in the raw data directories.\\
+
+\begin{tabular}{ l l }
+\textbf{Program} & \textbf{Description} \\
+\hline
+MergPrf.py  & Main program to create ZPT and water files from NCEP data\\
+\end{tabular} \\
+
+\subsection{ERA Interim Water Profiles}
+\label{sec:ERAInt}
+The ERA-Interim daily profiles are calculated from 6 hourly data. Both the 6 hourly and daily data for profiles are created. The ERA-Interim data is housed locally at NCAR in the CISL Research Data Archive. Information regarding the data set can be found at: \href{http://rda.ucar.edu/datasets/ds627.0/}{ds627.0}. There is a three month lag between the current date and when the data becomes available. The data is hosted on /glade/ and can be accessed through the data-access.ucar.edu server. The data can be found at: /glade/p/rda/data/ds627.0/ei.oper.an.pl/. The following steps should be used to pre-process the data:\\
+
+\begin{enumerate}
+\item Copy over the data from glade
+\item Convert GRIB format files to NetCDF files using cnvrtNC.py
+\item Create water profiles using ERAwaterPrf.py
+\end{enumerate}
+
+\begin{tabular}{ l l }
+\textbf{Program} & \textbf{Description} \\
+\hline
+cnvrtNC.py     & Program to convert ERA-Interim GRIB files to NetCDF files\\
+ERAwaterPrf.py & Program to extract daily averaged water profiles from ERA-Interim\\
+\end{tabular} \\
+
+\section{Retrieved Water Profiles}
+\label{sec:RWP}
+For all sites (MLO,TAB, and FL0) water is retrieved when available. This water can be used as a prior for other retrievals. The program retWaterPrf.py creates w-120.YYYYMMDD.HHMMSS.v99 for each retrieval. These files are stored in the raw data directories (/data1/tab,mlo,fl0/). A daily average of these profiles can be created using the program retWaterPrfDaily.py. These daily averages are also stored in the main data directories.\\
+
+\begin{tabular}{ l l }
+\textbf{Program} & \textbf{Description} \\
+\hline
+retWaterPrf.py      & Program to create water profiles from water retrieval\\
+retWaterPrfDaily.py & Program to create daily average profiles from water retrievals\\
+\end{tabular} \\
+
+
+\end{document}
+
+
+
+
