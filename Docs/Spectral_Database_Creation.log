@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  9 SEP 2015 07:31
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  10 SEP 2015 10:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -634,66 +634,122 @@ Underfull \hbox (badness 10000) in paragraph at lines 172--178
  []
 
 [2]
+Underfull \hbox (badness 10000) in paragraph at lines 196--197
+
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 198--199
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 200--205
+Underfull \hbox (badness 10000) in paragraph at lines 200--211
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 208--209
+Underfull \hbox (badness 10000) in paragraph at lines 213--214
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 215--223
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 227--228
 
  []
 
 [3]
-Overfull \hbox (4.9223pt too wide) in paragraph at lines 216--222
+Underfull \hbox (badness 10000) in paragraph at lines 229--230
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 231--232
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 233--248
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 252--253
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 254--255
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 256--257
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 258--264
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 267--268
+
+ []
+
+[4]
+Underfull \hbox (badness 10000) in paragraph at lines 275--276
+
+ []
+
+
+Overfull \hbox (13.73267pt too wide) in paragraph at lines 277--284
 [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 216--222
+Underfull \hbox (badness 10000) in paragraph at lines 277--284
 
  []
 
 
-Overfull \hbox (51.23256pt too wide) in paragraph at lines 225--226
+Overfull \hbox (51.23256pt too wide) in paragraph at lines 288--289
 \T1/cmr/m/n/12 as a prior for other re-trievals. The pro-gram ret-Wa-ter-Prf.py
  cre-ates w-120.YYYYMMDD.HHMMSS.v99
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 225--226
+Underfull \hbox (badness 10000) in paragraph at lines 288--289
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 227--233
+Underfull \hbox (badness 10000) in paragraph at lines 290--296
 
  []
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 235.
-[4]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 235.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 298.
+[5]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 298.
  (./Spectral_Database_Creation.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 235.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 235.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 298.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 298.
 Package rerunfilecheck Info: File `Spectral_Database_Creation.out' has not chan
 ged.
-(rerunfilecheck)             Checksum: 3F7D9AD31DE0BF939F7FF907FE7C8E65;722.
-
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 235.
+(rerunfilecheck)             Checksum: 789B9955AA521D4BDAB61109E2360056;806.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 298.
  ) 
 Here is how much of TeX's memory you used:
- 8261 strings out of 493315
- 121733 string characters out of 6137904
- 238530 words of memory out of 5000000
- 11582 multiletter control sequences out of 15000+600000
+ 8265 strings out of 493315
+ 121774 string characters out of 6137904
+ 239530 words of memory out of 5000000
+ 11584 multiletter control sequences out of 15000+600000
  23728 words of font info for 54 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
  32i,12n,49p,849b,345s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -713,10 +769,10 @@ ve/2013/texmf-dist/fonts/type1/public/cm-super/sfrm1440.pfb></usr/local/texlive
 3/texmf-dist/fonts/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2013/
 texmf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2013/te
 xmf-dist/fonts/type1/public/cm-super/sfti1440.pfb>
-Output written on Spectral_Database_Creation.pdf (5 pages, 233796 bytes).
+Output written on Spectral_Database_Creation.pdf (6 pages, 239968 bytes).
 PDF statistics:
- 154 PDF objects out of 1000 (max. 8388607)
- 130 compressed objects within 2 object streams
- 28 named destinations out of 1000 (max. 500000)
- 89 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 161 PDF objects out of 1000 (max. 8388607)
+ 136 compressed objects within 2 object streams
+ 30 named destinations out of 1000 (max. 500000)
+ 97 words of extra memory for PDF output out of 10000 (max. 10000000)
 

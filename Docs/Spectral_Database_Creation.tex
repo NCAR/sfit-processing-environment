@@ -190,22 +190,81 @@ appndSpecDBInputFile.py & Input file for appendSpecDB.py \\
 \item Create appended spectral database file by running appendSpecDB.py
 \end{enumerate}
 
-\section{ZPTW Profiles}
-The pressure, temperature, and water vapor profiles can be created from several outside sources. Temperature, pressure, and water profiles are taken from NCEP nmc data; while currently only water profiles are taken from ERA-Interim data. Both NCEP and ERA-Interim data are interpolated with WACCM data to reach 120km vertical height. The profiles are daily averages and they reside in the raw data directories (directories with bnr files).
 
-\subsection{WACCM \& NCEP Profiles}
-\label{sec:WACCM}
-Profiles from WACCM are monthly means. These monthly means have been pre-calculated from the WACCM model. The profiles from NCEP come from the NCEP nmc data which are daily averages. The program MergPrf.py creates either WACCM and NCEP altitude, pressure, and temperature profiles as files named ZPT.nmc.120. Water files are also created (w-120.v1) using the NCEP data. When NCEP data is not available the full WACCM profiles are used. These files are stored in the raw data directories.\\
+
+\section{ZPTW Profiles}
+The pressure, temperature, and water vapor profiles can be created from several outside sources. Temperature and pressure profiles are taken from NCEP nmc data; while currently only water profiles are taken from NCEP I and ERA-Interim re-analysis data. Both NCEP and ERA-Interim data are interpolated with WACCM data to reach 120km vertical height. The profiles are daily averages and they reside in the data directories (/data1/tab,mlo,fl0/).\\
+
+\noindent The following is a table showing the various reference profiles, their sources, along with the associated file names.\\
+
+\begin{tabular}{ l l l }
+\textbf{Profile Type} & \textbf{Source} & \textbf{File Name} \\
+\hline
+Temperature   & NCEP nmc          & ZPT.nmc.120 \\
+Pressure      & NCEP nmc          & ZPT.nmc.120 \\
+Water Vapor   & WACCM             & w-120.v1    \\
+Water Vapor   & NCEP I            & w-120.v3    \\
+Water Vapor   & ERA-Interim       & w-120.v4    \\
+Water Vapor   & Retrieved         & w-120.YYYYMMDD.HHMMSS.v99    \\
+Water Vapor   & Retrieved Daily   & w-120.v5    \\
+\end{tabular} \\
+
+
+\noindent The following table shows the various sources for the data.\\
+
+\begin{tabular}{ l l }
+\textbf{Data} & \textbf{Source} \\
+\hline
+WACCM              & Local (otserver:/data/Campaign/TAB,MLO,FL0/waccm/  \\
+NCEP nmc           & ftp://ftp.cpc.ncep.noaa.gov/ndacc/ncep/\\
+NCEP I re-analysis & ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.dailyavgs/          \\
+ERA-Interim re-analysis   & /glade/p/rda/data/ds627.0/ei.oper.an.pl/         \\
+\end{tabular} \\
+
+
+\subsection{Pulling Data}
+\label{sec:PD}
+The supporting data is pulled with a program using wget. The program is pullAncillaryData.py and is located at: /data/bin/. This program has been setup in cron tab to pull data everyday. The program pullAncillaryData.py gets the following data: NCEP nmc, NCEP I re-analysis, EOL, and CMDL. \\
+
+\noindent ERA-Interim data must be manually pulled through the server data-access.ucar.edu.\\
+
+\noindent The following table shows the local storage of the ancillary data\\
+
+\begin{tabular}{ l l }
+\textbf{Data} & \textbf{Local Storage} \\
+\hline
+WACCM               & otserver:/data/Campaign/TAB,MLO,FL0/waccm/       \\
+NCEP nmc Height     & otserver:/data1/ancillary\_data/NCEP\_NMC/height/  \\
+NCEP nmc Temp       & otserver:/data1/ancillary\_data/NCEP\_NMC/temp/  \\
+NCEP I Height       & otserver:/data1/ancillary\_data/NCEPdata/NCEP\_hgt/ \\
+NCEP I Shum         & otserver:/data1/ancillary\_data/NCEPdata/NCEP\_Shum/ \\
+NCEP I Temp         & otserver:/data1/ancillary\_data/NCEPdata/NCEP\_Temp/ \\
+NCEP I Trpp         & otserver:/data1/ancillary\_data/NCEPdata/NCEP\_trpp/ \\
+ERA-Interim         & otserver:/data1/ancillary\_data/ERAdata/ \\
+EOL                 & otserver:/data1/ancillary\_data/fl0/eol/ \\
+CMDL Hourly         & otserver:/data1/ancillary\_data/mlo/cmdl/Hourly\_Data/\\
+CMDL Minute         & otserver:/data1/ancillary\_data/mlo/cmdl/Minute\_Data/\\
+\end{tabular} \\
+
+
+\subsection{Pressure \& Temperature Profiles}
+\label{sec:PT}
+Pressure and temperature profiles in the ZPT.nmc.120 files come from NCEP nmc data. The NCEP nmc data is vertically interpolated with WACCM data to reach 120km. In the event that the NCEP nmc data is not available for a particular day, the WACCM data is substituted.\\
+
+\noindent The NCEP nmc data must first be formatted. This is done using the program NCEPnmcFormat.py.\\
+
+\noindent After formating the NCEP nmc data one can create the altitude, pressure, and temperature profiles using the program MergPrf.py. This program also creates water profiles from WACCM data (v1).\\
 
 \begin{tabular}{ l l }
 \textbf{Program} & \textbf{Description} \\
 \hline
-MergPrf.py  & Main program to create ZPT and water files from NCEP data\\
+NCEPnmcFormat.py & Program to format the NCEP nmc data\\
+MergPrf.py       & Main program to create ZPT and water files from NCEP data\\
 \end{tabular} \\
 
-\subsection{ERA Interim Water Profiles}
+\subsection{NCEP I \& ERA Interim Water Profiles}
 \label{sec:ERAInt}
-The ERA-Interim daily profiles are calculated from 6 hourly data. Both the 6 hourly and daily data for profiles are created. The ERA-Interim data is housed locally at NCAR in the CISL Research Data Archive. Information regarding the data set can be found at: \href{http://rda.ucar.edu/datasets/ds627.0/}{ds627.0}. There is a three month lag between the current date and when the data becomes available. The data is hosted on /glade/ and can be accessed through the data-access.ucar.edu server. The data can be found at: /glade/p/rda/data/ds627.0/ei.oper.an.pl/. The following steps should be used to pre-process the data:\\
+The ERA-Interim daily profiles are calculated from 6 hourly data. Both the 6 hourly and daily data for profiles are created. The ERA-Interim data is housed locally at NCAR in the CISL Research Data Archive. There is a three month lag between the current date and when the data becomes available. The data is hosted on /glade/ and can be accessed through the data-access.ucar.edu server. The data can be found at: /glade/p/rda/data/ds627.0/ei.oper.an.pl/. The following steps should be used to pre-process the data:\\
 
 \begin{enumerate}
 \item Copy over the data from glade
@@ -213,16 +272,20 @@ The ERA-Interim daily profiles are calculated from 6 hourly data. Both the 6 hou
 \item Create water profiles using ERAwaterPrf.py
 \end{enumerate}
 
+\noindent The NCEP I re-analysis data are already daily averages. The grid resolution of NCEP I is less than ERA-interim. In addition ERA-Interim assimilates GPS occultation data. It is preferable to use ERA-Interim over NCEP I. The program to create water profiles from NCEP I data is NCEPwaterPrf.py.\\
+
 \begin{tabular}{ l l }
 \textbf{Program} & \textbf{Description} \\
 \hline
 cnvrtNC.py     & Program to convert ERA-Interim GRIB files to NetCDF files\\
 ERAwaterPrf.py & Program to extract daily averaged water profiles from ERA-Interim\\
+NCEPwaterPrf.py& Program to create daily water profiles from NCEP I\\
 \end{tabular} \\
+
 
 \section{Retrieved Water Profiles}
 \label{sec:RWP}
-For all sites (MLO,TAB, and FL0) water is retrieved when available. This water can be used as a prior for other retrievals. The program retWaterPrf.py creates w-120.YYYYMMDD.HHMMSS.v99 for each retrieval. These files are stored in the raw data directories (/data1/tab,mlo,fl0/). A daily average of these profiles can be created using the program retWaterPrfDaily.py. These daily averages are also stored in the main data directories.\\
+For all sites (MLO,TAB, and FL0) water is retrieved when available. This water can be used as a prior for other retrievals. The program retWaterPrf.py creates w-120.YYYYMMDD.HHMMSS.v99 for each retrieval. These files are stored in the data directories (/data1/tab,mlo,fl0/). A daily average of these profiles can be created using the program retWaterPrfDaily.py. These daily averages are also stored in the main data directories (/data1/tab,mlo,fl0/).\\
 
 \begin{tabular}{ l l }
 \textbf{Program} & \textbf{Description} \\
