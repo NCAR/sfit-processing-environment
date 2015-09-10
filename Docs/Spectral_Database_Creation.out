@@ -1,12 +1,15 @@
 \BOOKMARK [1][-]{section.1}{Introduction}{}% 1
-\BOOKMARK [1][-]{section.2}{Spectral Database}{}% 2
-\BOOKMARK [2][-]{subsection.2.1}{Initial Spectral Database}{section.2}% 3
-\BOOKMARK [2][-]{subsection.2.2}{House Data}{section.2}% 4
-\BOOKMARK [2][-]{subsection.2.3}{External Station Data}{section.2}% 5
-\BOOKMARK [2][-]{subsection.2.4}{Append Spectral Database File}{section.2}% 6
-\BOOKMARK [2][-]{subsection.2.5}{Steps for Creating Spectral Database}{section.2}% 7
-\BOOKMARK [1][-]{section.3}{ZPTW Profiles}{}% 8
-\BOOKMARK [2][-]{subsection.3.1}{Pulling Data}{section.3}% 9
-\BOOKMARK [2][-]{subsection.3.2}{Pressure \046 Temperature Profiles}{section.3}% 10
-\BOOKMARK [2][-]{subsection.3.3}{NCEP I \046 ERA Interim Water Profiles}{section.3}% 11
-\BOOKMARK [1][-]{section.4}{Retrieved Water Profiles}{}% 12
+\BOOKMARK [1][-]{section.2}{Pre-Processing}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Pulling Data}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Initial Quality Check}{section.2}% 4
+\BOOKMARK [1][-]{section.3}{Spectral Database}{}% 5
+\BOOKMARK [2][-]{subsection.3.1}{Initial Spectral Database}{section.3}% 6
+\BOOKMARK [2][-]{subsection.3.2}{House Data}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.3}{External Station Data}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.4}{Append Spectral Database File}{section.3}% 9
+\BOOKMARK [1][-]{section.4}{ZPTW Profiles}{}% 10
+\BOOKMARK [2][-]{subsection.4.1}{Pressure \046 Temperature Profiles}{section.4}% 11
+\BOOKMARK [2][-]{subsection.4.2}{NCEP I \046 ERA Interim Water Profiles}{section.4}% 12
+\BOOKMARK [2][-]{subsection.4.3}{Retrieved Water Profiles}{section.4}% 13
+\BOOKMARK [2][-]{subsection.4.4}{Steps for Pre-Processing}{section.4}% 14
+\BOOKMARK [1][-]{section.5}{Post Processing}{}% 15

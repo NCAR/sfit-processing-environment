@@ -1,10 +1,7 @@
 \documentclass[12pt, letterpaper]{article}
 
 % font
-%\usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-%\usepackage[sfdefault,scaled=.85]{FiraSans}
-%\usepackage{newtxsf}
 \usepackage{hyperref}
 
 % math
@@ -21,7 +18,6 @@
 % tables
 \usepackage{tabularx}
 \newcolumntype{S}{@{\stepcounter{Definition}\theDefinition.~} >{}l @{~ : ~}X@{}}
-%\newcolumntype{S}{@{\stepcounter{Definition}\theDefinition.~} >{\bfseries}l @{~ : ~}X@{}}
 \newcounter{Definition}[subsection]
 
 \usepackage{textcomp}
@@ -63,11 +59,7 @@
 \usepackage{listings}
 \lstset{language=FORTRAN} 
 
-\title{Creation of Spectral Database and ZPTW Profiles}
-
-%\begin{center}
-%SFIT4 Development Team
-%\end{center}
+\title{FTS Profile Retrieval Pre and Post Processing}
 
 \author[1]{Eric Nussbaumer \thanks{corresponding author: ebaumer@ucar.edu +1 (303) 497-1861}}
 \affil[1]{National Center for Atmospheric Research, Boulder, CO, USA}
@@ -95,18 +87,30 @@ This document outlines the creation of the spectral database as well as the prof
 
 \end{titlepage}
  
+\newpage
+%------------------
+% Table of contents
+%------------------
+\tableofcontents
+\newpage
+
 
 \section{Introduction} 
 \label{sec:intro}
 
+
+
+\section{Pre-Processing}
 The spectral database and ZPTW (altitude, pressure, temperature, and water vapor) profiles are necessary pre-processing steps to retrievals. The spectral database holds information pertaining to each of the measurements. A spectral database is unique to each site\\
-The majority of information in the spectral database comes from the OPUS file itself; however, we append meteorological data from local weather weather stations.\\
-There are several steps in creating the spectral database:
+
+\noindent The majority of information in the spectral database comes from the OPUS file itself; however, we append meteorological data from local weather weather stations.\\
+
+\noindent There are several steps in creating the spectral database:\\
 
 \begin{enumerate}
 \item Creating the initial spectral database
-\item Formatting the house log data files
-\item Formatting the external station weather data
+\item Re-formatting the house log data files
+\item Re-formatting the external station weather data
 \item Appending the initial spectral database with house an external station weather data
 \end{enumerate}
 
@@ -116,11 +120,55 @@ There are several steps in creating the spectral database:
 \textbf{Station} & \textbf{House Data} & \textbf{External Station Data} \\
 \hline
 MLO   & Yes & Yes (CMDL) \\
-TAB   & Yes & No \\
-FL0   & No  & Yes (EOL) \\
+TAB   & Yes & No         \\
+FL0   & No  & Yes (EOL)  \\
 \end{tabular} \\
 
-\noindent The necessary python files are located in the \href{https://git.ucar.edu/?p=sfit-processing-environment.git}{sfit-processing-environment} git repository. 
+\noindent The necessary python files are located in the \href{https://git.ucar.edu/?p=sfit-processing-environment.git}{sfit-processing-environment} git repository. \\
+
+\subsection{Pulling Data}
+\label{sec:PD}
+Both the ancillary data as well as the OPUS files need to be downloaded from various sources. The OPUS data is automatically downloaded from MLO and TAB by the program pullRemoteData2.py. This program is set on a cron tab to download data everyday.
+
+\noindent The following table shows where the OPUS data is downloaded to.\\
+
+\begin{tabular}{ l l }
+\textbf{Data} & \textbf{Local Storage} \\
+\hline
+MLO   & otserver:/ya4/id/mlo/   \\
+TAB   & otserver:/ya4/id/tab/   \\
+\end{tabular} \\
+
+\noindent The supporting data is pulled with a program using wget. The program is pullAncillaryData.py and is located at: /data/bin/. This program has been setup in cron tab to pull data everyday. The program pullAncillaryData.py gets the following data: NCEP nmc, NCEP I re-analysis, EOL, and CMDL. \\
+
+\noindent ERA-Interim data must be manually pulled through the server data-access.ucar.edu.\\
+
+\noindent The following table shows the local storage of the ancillary data\\
+
+\begin{tabular}{ l l }
+\textbf{Data} & \textbf{Local Storage} \\
+\hline
+WACCM               & otserver:/data/Campaign/TAB,MLO,FL0/waccm/             \\
+NCEP nmc Height     & otserver:/data1/ancillary\_data/NCEP\_NMC/height/      \\
+NCEP nmc Temp       & otserver:/data1/ancillary\_data/NCEP\_NMC/temp/        \\
+NCEP I Height       & otserver:/data1/ancillary\_data/NCEPdata/NCEP\_hgt/    \\
+NCEP I Shum         & otserver:/data1/ancillary\_data/NCEPdata/NCEP\_Shum/   \\
+NCEP I Temp         & otserver:/data1/ancillary\_data/NCEPdata/NCEP\_Temp/   \\
+NCEP I Trpp         & otserver:/data1/ancillary\_data/NCEPdata/NCEP\_trpp/   \\
+ERA-Interim         & otserver:/data1/ancillary\_data/ERAdata/               \\
+EOL                 & otserver:/data1/ancillary\_data/fl0/eol/               \\
+CMDL Hourly         & otserver:/data1/ancillary\_data/mlo/cmdl/Hourly\_Data/ \\
+CMDL Minute         & otserver:/data1/ancillary\_data/mlo/cmdl/Minute\_Data/ \\
+\end{tabular} \\
+
+\subsection{Initial Quality Check}
+An initial quality check on the spectrum is done using the IDL program ckop.pro. This program allows the user to look through each individual spectra and discard or keep it. Once this is completed the data should be copied over from /ya4/id/(mlo,tab,fl0) to the directory /data1/(mlo,tab,fl0).\\
+
+\begin{tabular}{ l l }
+\textbf{Program} & \textbf{Description} \\
+\hline
+ckop.pro         & IDL program to check OPUS spectra \\
+\end{tabular} \\
 
 \section{Spectral Database}
 \subsection{Initial Spectral Database}
@@ -131,7 +179,7 @@ The initial spectral database file is created by running ckopus on the various r
 \textbf{Program} & \textbf{Description} \\
 \hline
 mkSpecDB.py         & Main program to create initial spectral database \\
-specDBInputFile.py  & Input file for mkSpecDB.py program \\
+specDBInputFile.py  & Input file for mkSpecDB.py program               \\
 \end{tabular} \\
 
 
@@ -178,20 +226,6 @@ appndSpecDBInputFile.py & Input file for appendSpecDB.py \\
 
 \noindent \textit{Note:A warning message will often appear when running this program originating from the python numpy module. This warning is a result of numpy taking the mean of an empty array. This is handled by the main program.}
 
-
-\subsection{Steps for Creating Spectral Database}
-\label{sec:SCSD}
-
-\begin{enumerate}
-\item Download external station data using pullAncillaryData.py
-\item Create initial database file by running mkSpecDB.py
-\item Format house data by running station\_house\_reader.py
-\item Format external station data by running read\_FL0\_EOL\_data.py
-\item Create appended spectral database file by running appendSpecDB.py
-\end{enumerate}
-
-
-
 \section{ZPTW Profiles}
 The pressure, temperature, and water vapor profiles can be created from several outside sources. Temperature and pressure profiles are taken from NCEP nmc data; while currently only water profiles are taken from NCEP I and ERA-Interim re-analysis data. Both NCEP and ERA-Interim data are interpolated with WACCM data to reach 120km vertical height. The profiles are daily averages and they reside in the data directories (/data1/tab,mlo,fl0/).\\
 
@@ -219,31 +253,6 @@ WACCM              & Local (otserver:/data/Campaign/TAB,MLO,FL0/waccm/  \\
 NCEP nmc           & ftp://ftp.cpc.ncep.noaa.gov/ndacc/ncep/\\
 NCEP I re-analysis & ftp://ftp.cdc.noaa.gov/Datasets/ncep.reanalysis.dailyavgs/          \\
 ERA-Interim re-analysis   & /glade/p/rda/data/ds627.0/ei.oper.an.pl/         \\
-\end{tabular} \\
-
-
-\subsection{Pulling Data}
-\label{sec:PD}
-The supporting data is pulled with a program using wget. The program is pullAncillaryData.py and is located at: /data/bin/. This program has been setup in cron tab to pull data everyday. The program pullAncillaryData.py gets the following data: NCEP nmc, NCEP I re-analysis, EOL, and CMDL. \\
-
-\noindent ERA-Interim data must be manually pulled through the server data-access.ucar.edu.\\
-
-\noindent The following table shows the local storage of the ancillary data\\
-
-\begin{tabular}{ l l }
-\textbf{Data} & \textbf{Local Storage} \\
-\hline
-WACCM               & otserver:/data/Campaign/TAB,MLO,FL0/waccm/       \\
-NCEP nmc Height     & otserver:/data1/ancillary\_data/NCEP\_NMC/height/  \\
-NCEP nmc Temp       & otserver:/data1/ancillary\_data/NCEP\_NMC/temp/  \\
-NCEP I Height       & otserver:/data1/ancillary\_data/NCEPdata/NCEP\_hgt/ \\
-NCEP I Shum         & otserver:/data1/ancillary\_data/NCEPdata/NCEP\_Shum/ \\
-NCEP I Temp         & otserver:/data1/ancillary\_data/NCEPdata/NCEP\_Temp/ \\
-NCEP I Trpp         & otserver:/data1/ancillary\_data/NCEPdata/NCEP\_trpp/ \\
-ERA-Interim         & otserver:/data1/ancillary\_data/ERAdata/ \\
-EOL                 & otserver:/data1/ancillary\_data/fl0/eol/ \\
-CMDL Hourly         & otserver:/data1/ancillary\_data/mlo/cmdl/Hourly\_Data/\\
-CMDL Minute         & otserver:/data1/ancillary\_data/mlo/cmdl/Minute\_Data/\\
 \end{tabular} \\
 
 
@@ -283,7 +292,7 @@ NCEPwaterPrf.py& Program to create daily water profiles from NCEP I\\
 \end{tabular} \\
 
 
-\section{Retrieved Water Profiles}
+\subsection{Retrieved Water Profiles}
 \label{sec:RWP}
 For all sites (MLO,TAB, and FL0) water is retrieved when available. This water can be used as a prior for other retrievals. The program retWaterPrf.py creates w-120.YYYYMMDD.HHMMSS.v99 for each retrieval. These files are stored in the data directories (/data1/tab,mlo,fl0/). A daily average of these profiles can be created using the program retWaterPrfDaily.py. These daily averages are also stored in the main data directories (/data1/tab,mlo,fl0/).\\
 
@@ -293,6 +302,32 @@ For all sites (MLO,TAB, and FL0) water is retrieved when available. This water c
 retWaterPrf.py      & Program to create water profiles from water retrieval\\
 retWaterPrfDaily.py & Program to create daily average profiles from water retrievals\\
 \end{tabular} \\
+
+
+\subsection{Steps for Pre-Processing}
+\label{sec:SCSD}
+
+\begin{itemize}
+\item Download OPUS and ancillary data (This is done automatically)
+\item Check OPUS spectra
+\item Copy spectra from /ya4/id/(mlo,tab,fl0) to /data1/(mlo,tab,fl0)
+\item Create initial database
+\item Format house data
+\item Format external station data
+\item Create appended spectral database
+\item Create Altitude, Pressure, and Temperature profiles (ZPT.nmc.120)
+\item Create water profiles (v1,v2,v3,v4,v5,v99)
+\end{itemize}
+
+
+\section{Processing}
+\subsection{Layer0}
+
+\subsection{Layer1}
+
+
+\section{Post-Processing}
+
 
 
 \end{document}
