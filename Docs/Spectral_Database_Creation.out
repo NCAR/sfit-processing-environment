@@ -12,4 +12,9 @@
 \BOOKMARK [2][-]{subsection.4.2}{NCEP I \046 ERA Interim Water Profiles}{section.4}% 12
 \BOOKMARK [2][-]{subsection.4.3}{Retrieved Water Profiles}{section.4}% 13
 \BOOKMARK [2][-]{subsection.4.4}{Steps for Pre-Processing}{section.4}% 14
-\BOOKMARK [1][-]{section.5}{Post Processing}{}% 15
+\BOOKMARK [1][-]{section.5}{Processing}{}% 15
+\BOOKMARK [2][-]{subsection.5.1}{Layer0}{section.5}% 16
+\BOOKMARK [2][-]{subsection.5.2}{Layer1}{section.5}% 17
+\BOOKMARK [1][-]{section.6}{Post-Processing}{}% 18
+\BOOKMARK [2][-]{subsection.6.1}{Plotting}{section.6}% 19
+\BOOKMARK [2][-]{subsection.6.2}{HDF Creation}{section.6}% 20

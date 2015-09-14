@@ -6,14 +6,22 @@
 
 % math
 \usepackage{mathcomp}
+\usepackage{amsmath}
 
 % document formatting
 \usepackage{geometry}
 \geometry{letterpaper, left=1in, right=1in, top=1in, bottom=1in}
 \usepackage{changepage}
 
+% Images
+\usepackage{graphicx}
+\graphicspath{ {images/} }
+
 % lists
 \usepackage{enumitem}
+
+% No indent for entire file
+\setlength\parindent{0pt}
 
 % tables
 \usepackage{tabularx}
@@ -25,7 +33,7 @@
 % graphics
 \usepackage{graphicx}
 \usepackage{float}
-\graphicspath{ {./} }
+\graphicspath{ {images/} }
 
 % colors
 \usepackage{color}
@@ -103,9 +111,9 @@ This document outlines the creation of the spectral database as well as the prof
 \section{Pre-Processing}
 The spectral database and ZPTW (altitude, pressure, temperature, and water vapor) profiles are necessary pre-processing steps to retrievals. The spectral database holds information pertaining to each of the measurements. A spectral database is unique to each site\\
 
-\noindent The majority of information in the spectral database comes from the OPUS file itself; however, we append meteorological data from local weather weather stations.\\
+The majority of information in the spectral database comes from the OPUS file itself; however, we append meteorological data from local weather weather stations.\\
 
-\noindent There are several steps in creating the spectral database:\\
+There are several steps in creating the spectral database:\\
 
 \begin{enumerate}
 \item Creating the initial spectral database
@@ -114,7 +122,7 @@ The spectral database and ZPTW (altitude, pressure, temperature, and water vapor
 \item Appending the initial spectral database with house an external station weather data
 \end{enumerate}
 
-\noindent Note that not all sites have house or external station weather data.\\
+Note that not all sites have house or external station weather data.\\
 
 \begin{tabular}{ l l l }
 \textbf{Station} & \textbf{House Data} & \textbf{External Station Data} \\
@@ -124,13 +132,13 @@ TAB   & Yes & No         \\
 FL0   & No  & Yes (EOL)  \\
 \end{tabular} \\
 
-\noindent The necessary python files are located in the \href{https://git.ucar.edu/?p=sfit-processing-environment.git}{sfit-processing-environment} git repository. \\
+The necessary python files are located in the \href{https://git.ucar.edu/?p=sfit-processing-environment.git}{sfit-processing-environment} git repository. \\
 
 \subsection{Pulling Data}
 \label{sec:PD}
 Both the ancillary data as well as the OPUS files need to be downloaded from various sources. The OPUS data is automatically downloaded from MLO and TAB by the program pullRemoteData2.py. This program is set on a cron tab to download data everyday.
 
-\noindent The following table shows where the OPUS data is downloaded to.\\
+The following table shows where the OPUS data is downloaded to.\\
 
 \begin{tabular}{ l l }
 \textbf{Data} & \textbf{Local Storage} \\
@@ -139,11 +147,11 @@ MLO   & otserver:/ya4/id/mlo/   \\
 TAB   & otserver:/ya4/id/tab/   \\
 \end{tabular} \\
 
-\noindent The supporting data is pulled with a program using wget. The program is pullAncillaryData.py and is located at: /data/bin/. This program has been setup in cron tab to pull data everyday. The program pullAncillaryData.py gets the following data: NCEP nmc, NCEP I re-analysis, EOL, and CMDL. \\
+The supporting data is pulled with a program using wget. The program is pullAncillaryData.py and is located at: /data/bin/. This program has been setup in cron tab to pull data everyday. The program pullAncillaryData.py gets the following data: NCEP nmc, NCEP I re-analysis, EOL, and CMDL. \\
 
-\noindent ERA-Interim data must be manually pulled through the server data-access.ucar.edu.\\
+ERA-Interim data must be manually pulled through the server data-access.ucar.edu.\\
 
-\noindent The following table shows the local storage of the ancillary data\\
+The following table shows the local storage of the ancillary data\\
 
 \begin{tabular}{ l l }
 \textbf{Data} & \textbf{Local Storage} \\
@@ -211,7 +219,7 @@ pullAncillaryData.py    & Program to automatically pull EOL and CMDL data\\
 read\_FL0\_EOL\_data.py & Main program to read EOL and CMDL data \\
 \end{tabular} \\
 
-\noindent These programs are located in the ExternalData folder of the git repository.
+These programs are located in the ExternalData folder of the git repository.
 
 \subsection{Append Spectral Database File}
 \label{sec:ASDF}
@@ -224,12 +232,12 @@ appendSpecDB.py         & Program to create the append spectral database file\\
 appndSpecDBInputFile.py & Input file for appendSpecDB.py \\
 \end{tabular} \\
 
-\noindent \textit{Note:A warning message will often appear when running this program originating from the python numpy module. This warning is a result of numpy taking the mean of an empty array. This is handled by the main program.}
+\textit{Note:A warning message will often appear when running this program originating from the python numpy module. This warning is a result of numpy taking the mean of an empty array. This is handled by the main program.}
 
 \section{ZPTW Profiles}
 The pressure, temperature, and water vapor profiles can be created from several outside sources. Temperature and pressure profiles are taken from NCEP nmc data; while currently only water profiles are taken from NCEP I and ERA-Interim re-analysis data. Both NCEP and ERA-Interim data are interpolated with WACCM data to reach 120km vertical height. The profiles are daily averages and they reside in the data directories (/data1/tab,mlo,fl0/).\\
 
-\noindent The following is a table showing the various reference profiles, their sources, along with the associated file names.\\
+The following is a table showing the various reference profiles, their sources, along with the associated file names.\\
 
 \begin{tabular}{ l l l }
 \textbf{Profile Type} & \textbf{Source} & \textbf{File Name} \\
@@ -244,7 +252,7 @@ Water Vapor   & Retrieved Daily   & w-120.v5    \\
 \end{tabular} \\
 
 
-\noindent The following table shows the various sources for the data.\\
+The following table shows the various sources for the data.\\
 
 \begin{tabular}{ l l }
 \textbf{Data} & \textbf{Source} \\
@@ -260,9 +268,9 @@ ERA-Interim re-analysis   & /glade/p/rda/data/ds627.0/ei.oper.an.pl/         \\
 \label{sec:PT}
 Pressure and temperature profiles in the ZPT.nmc.120 files come from NCEP nmc data. The NCEP nmc data is vertically interpolated with WACCM data to reach 120km. In the event that the NCEP nmc data is not available for a particular day, the WACCM data is substituted.\\
 
-\noindent The NCEP nmc data must first be formatted. This is done using the program NCEPnmcFormat.py.\\
+The NCEP nmc data must first be formatted. This is done using the program NCEPnmcFormat.py.\\
 
-\noindent After formating the NCEP nmc data one can create the altitude, pressure, and temperature profiles using the program MergPrf.py. This program also creates water profiles from WACCM data (v1).\\
+After formating the NCEP nmc data one can create the altitude, pressure, and temperature profiles using the program MergPrf.py. This program also creates water profiles from WACCM data (v1).\\
 
 \begin{tabular}{ l l }
 \textbf{Program} & \textbf{Description} \\
@@ -281,7 +289,7 @@ The ERA-Interim daily profiles are calculated from 6 hourly data. Both the 6 hou
 \item Create water profiles using ERAwaterPrf.py
 \end{enumerate}
 
-\noindent The NCEP I re-analysis data are already daily averages. The grid resolution of NCEP I is less than ERA-interim. In addition ERA-Interim assimilates GPS occultation data. It is preferable to use ERA-Interim over NCEP I. The program to create water profiles from NCEP I data is NCEPwaterPrf.py.\\
+The NCEP I re-analysis data are already daily averages. The grid resolution of NCEP I is less than ERA-interim. In addition ERA-Interim assimilates GPS occultation data. It is preferable to use ERA-Interim over NCEP I. The program to create water profiles from NCEP I data is NCEPwaterPrf.py.\\
 
 \begin{tabular}{ l l }
 \textbf{Program} & \textbf{Description} \\
@@ -322,11 +330,175 @@ retWaterPrfDaily.py & Program to create daily average profiles from water retrie
 
 \section{Processing}
 \subsection{Layer0}
+The purpose of Layer0 is to run a single retrieval. The program sfit4Layer0.py runs layer 0. This program is called with command line arguments. There is no input file.\\ 
+
+\begin{tabular}{ l l }
+\textbf{Program} & \textbf{Description} \\
+\hline
+sfit4Layer0.py      & Program to run layer 0 using command line arguments\\
+\end{tabular} \\
 
 \subsection{Layer1}
+The purpose of Layer1 is to batch process multiple or many retrievals. Layer1 requires an input file to specify retrieval options such as date range, input/output directory, etc. In addition, from Layer1 a user can create plots of an individual retrieval. The layer one processing environment serves to do the following:\\
 
+\begin{itemize}
+\item Create a directory structure to organize the output data
+\item Generate the necessary input files to run SFIT core code
+\item Execute the SFIT core code
+\item Conduct error analysis on output
+\end{itemize}
+
+The following figure shows the input/output flow control for layer 1 processing.
+
+\begin{figure}[H]
+\includegraphics[width=1.0\textwidth]{Slide05}
+\caption{A visual representation of the processing flow. }
+\label{figure:Layer1Flow}
+\end{figure}
+
+
+\begin{tabular}{ l l }
+\textbf{Program} & \textbf{Description} \\
+\hline
+sfit4Layer1.py      & Program to run layer 1\\
+stat\_input.py       & Input file for layer 1\\
+mkListFile.py       & Program to create list file from retrieval set (for IDL)\\
+\end{tabular} \\
 
 \section{Post-Processing}
+\subsection{Plotting}
+One can plot individual retrievals or an entire set of retrievals. There are no filtering options for a single retrieval; however, for a set of retrieval there are multiple parameters that one can filter on such as RMS, DOFs, date, etc. The program pltRet.py creates plots for a single retrieval and only requires command line arguments. The program pltSet.py plots an entire set of retrievals and requires an input file (setInput.py).\\
+
+\begin{tabular}{ l l }
+\textbf{Program} & \textbf{Description} \\
+\hline
+pltRet.py      & Program to plot individual retrieval using command line arguments\\
+pltSet.py      & Program to plot multiple retrievals using an input file\\
+setInput.py    & Input file for pltSet.py\\
+
+\end{tabular} \\
+
+\subsection{HDF Creation}
+In order to archive retrievals of NDACC gases one must put the data in a GEOMS complient HDF file (\href{http://avdc.gsfc.nasa.gov/index.php?site=1989220925}{Link}. There is a python routine that converts data to GEOMS HDF4 format. This package of code will also write HDF5 files. In order to run this code there are several software packages that must be install prior to use:
+
+\begin{itemize}
+\item The latest HDF4 libraries should be installed on your computer. This library and information on the install can be found at: HDF4
+\item If you wish to write HDF5 files, install the python package: h5py (IRWG / GEOMS files are only HDF4.)
+\item For writing HDF4 files you need to install the python pyhdf package. We have had to 'tweak' this package for use with GEOMS file format so use the link on the sfit4 wiki page \href{https://wiki.ucar.edu/display/sfit4/Post-Processing}{https://wiki.ucar.edu/display/sfit4/Post-Processing}. Installation instructions for this package are in the INSTALL text file
+\item You will also need pythons numpy package
+\end{itemize}
+
+The following are a list of files used in the creation of the HDF files:
+
+\begin{itemize}
+\item hdfBaseRetDat.py
+\item hdfCrtFile.py
+\item hdfInitData.py
+\item hdfsave.py
+\item HDFmain.py
+\end{itemize}
+
+The only files that you will need to modify are hdfsave.py, HDFmain.py, and hdfInitData.py. Here is a description of these files:
+
+\begin{itemize}
+\item HDFmain.py -- This is an example of how you call the HDFsave object and create an HDF file. From here you define the directory to write the HDF file, whether to write the file using single or double precision, and whether to write an HDF4 or HDF5 file (IRWG / GEOMS are single precision.)
+\item hdfsave.py -- This file contains all the global and variable attributes or meta-data. You will need to modify the strings in this file to reflect the specifics of your group, instrument and retrieval process. Remember the formatting of the strings for GEOMS files is VERY specific (e.g. space and capitalization).
+\item hdfInitData.py -- This file is the interface between your data and the HDF file. Everyone has data in a specific format so you will need to define a function that takes that data from that format and fills the appropriate class attributes. Currently there are three example interfaces in this file:
+\begin{itemize}
+\item initIDL -- This interface takes data in from an IDL save file. Note the IDL save file has a specific structure (this idl program is available on request.)
+\item initPy  -- This interface can take data using python functions. This interface has not been developed
+\item initDummy -- This is a dummy interface which will create dummy (FillValue) data to go into the HDF file.
+\end{itemize}
+\end{itemize} 
+
+\textcolor{red}{A note on writing data to HDF file:}\\
+
+First, a brief description of the difference between row-major (column is fastest running index) and column-major (row is the fastest running index):\\
+
+Row-major and column-major are methods for storing multidimensional arrays in linear memory. For example, the C language follows row-major convention such that a 2x3 C matrix:\\
+
+\[
+C[2,3] =
+\begin{pmatrix}
+1 & 2 & 3 \\
+4 & 5 & 6
+\end{pmatrix}
+\] 
+\\
+
+will be written into linear memory such as: 1,2,3,4,5,6. The rows are written contiguously. The columns are the fastest running index.\\
+
+In Fortran, a 2x3 matrix:
+
+\[
+F[2,3] =
+\begin{pmatrix}
+1 & 2 & 3 \\
+4 & 5 & 6
+\end{pmatrix}
+\] 
+\\
+
+will be written into linear memory such as: 1,4,2,5,3,6. The columns are written contiguously. The rows are the fastest running index.\\
+
+How does this translate to higher level dimensions?\\
+
+For column-major convention (Fortran) the fastest running index is furthest left index. For row-major convention (C) the fastest running index is the furthest right index.\\
+
+What does this mean for writing to HDF?\\
+
+HDF uses C storage conventions. It assumes row-major (or the column is the fastest running index). The HDF read and write codes also ensure that the fastest running index is consistent no matter which program (Fortran or C) reads/writes the data. This has implications if you are writing to an HDF file using the Fortran wrapper. From the HDF documentation:
+
+\begin{center}
+\textit{"When a Fortran application describes a dataspace to store an array as A(20,100), it specifies the value of the first dimension to be 20 and the second to be 100. Since Fortran stores data by columns, the first-listed dimension with the value 20 is the fastest-changing dimension and the last-listed dimension with the value 100 is the slowest-changing. In order to adhere to the HDF5 storage convention, the HDF5 Fortran wrapper transposes dimensions, so the first dimension becomes the last. The dataspace dimensions stored in the file will be 100,20 instead of 20,100 in order to correctly describe the Fortran data that is stored in 100 columns, each containing 20 elements."}
+\end{center}
+ 
+
+The Fortran wrapper transposes the matrix before it is written to HDF. So the Fortran matrix:\\
+\[
+F[3,2] =
+\begin{pmatrix}
+1 & 4 \\
+2 & 5 \\
+3 & 6
+\end{pmatrix}
+\] 
+\\
+
+Is written to the HDF file as:\\
+\[
+\begin{matrix}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+\end{matrix}
+\] 
+\\
+
+If read using the C wrapper the matrix would look like:\\
+\[
+\begin{matrix}
+1 & 2 & 3 \\
+4 & 5 & 6 \\
+\end{matrix}
+\] 
+\\
+
+This makes the values in the fastest running index consistent between Fortran and C. For Fortran the fastest running index are the row (1,2,3) (4,5,6) and for C the fastest running index is the column (1,2,3) (4,5,6). Transposing the matrix before writing and after reading in the Fortran wrapper ensures that the same values are in the fastest running index for Fortran as in C, even though these are different indices in terms of math matrix.\\
+
+The higher-level scripting languages such as Python and IDL use the C set  wrappers, so this is not an issue for them; however, if you are using Matlab to write the data this WILL be an issue. Matlab follows column-major convention (or the rows are the fastest running index). See Matlab documentation.\\
+
+In terms of NDACC GEOMS HDF files this can be an issue for the averaging kernel (AVK) since this matrix is square. The standard for the GEOMS format is that the columns of the AVK  (as described in Rodgers, 2000 pg) should be the fastest running index.\\
+
+So, if you are using column-major (Fortran, Matlab) the dimensions of your AVK when you write to HDF should be:\\
+
+$AVK[ layer\_Index, Kernel_index, Datetime\_index ]$\\
+
+If you are using row-major (C, Python, IDL) the dimensions of your AVK when you write to the HDF should be:\\
+
+$AVK[ Datetime\_index, Kernel_index, layer\_index ]$\\
+
+ 
+If you have any doubt about how your data is written download either HDF-View or Panalopy or use HDP to view the HDF file you have written. These use C libraries to read the data. When you view the AVK with these programs it should have the following dimensions:  $[datetime, kernel, altitude]$.
 
 
 

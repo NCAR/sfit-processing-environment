@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  10 SEP 2015 15:47
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  14 SEP 2015 10:59
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -239,55 +239,84 @@ LaTeX Font Info:    Overwriting symbol font `TC' in version `bold'
 LaTeX Font Info:    Redeclaring math symbol \dagger on input line 47.
 LaTeX Font Info:    Redeclaring math symbol \ddagger on input line 48.
 )
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsmath.sty
+Package: amsmath 2013/01/14 v2.14 AMS math features
+\@mathmargin=\skip44
+
+For additional information on amsmath, use the `?' option.
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amstext.sty
+Package: amstext 2000/06/29 v2.01
+
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsgen.sty
+File: amsgen.sty 1999/11/30 v2.0
+\@emptytoks=\toks15
+\ex@=\dimen107
+))
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsbsy.sty
+Package: amsbsy 1999/11/29 v1.2d
+\pmbraise@=\dimen108
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/amsmath/amsopn.sty
+Package: amsopn 1999/12/14 v2.01 operator names
+)
+\inf@bad=\count97
+LaTeX Info: Redefining \frac on input line 210.
+\uproot@=\count98
+\leftroot@=\count99
+LaTeX Info: Redefining \overline on input line 306.
+\classnum@=\count100
+\DOTSCASE@=\count101
+LaTeX Info: Redefining \ldots on input line 378.
+LaTeX Info: Redefining \dots on input line 381.
+LaTeX Info: Redefining \cdots on input line 466.
+\Mathstrutbox@=\box26
+\strutbox@=\box27
+\big@size=\dimen109
+LaTeX Font Info:    Redeclaring font encoding OML on input line 566.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 567.
+\macc@depth=\count102
+\c@MaxMatrixCols=\count103
+\dotsspace@=\muskip11
+\c@parentequation=\count104
+\dspbrk@lvl=\count105
+\tag@help=\toks16
+\row@=\count106
+\column@=\count107
+\maxfields@=\count108
+\andhelp@=\toks17
+\eqnshift@=\dimen110
+\alignsep@=\dimen111
+\tagshift@=\dimen112
+\tagwidth@=\dimen113
+\totwidth@=\dimen114
+\lineht@=\dimen115
+\@envbody=\toks18
+\multlinegap=\skip45
+\multlinetaggap=\skip46
+\mathdisplay@stack=\toks19
+LaTeX Info: Redefining \[ on input line 2665.
+LaTeX Info: Redefining \] on input line 2666.
+)
 (/usr/local/texlive/2013/texmf-dist/tex/latex/geometry/geometry.sty
 Package: geometry 2010/09/12 v5.6 Page Geometry
-\Gm@cnth=\count97
-\Gm@cntv=\count98
-\c@Gm@tempcnt=\count99
-\Gm@bindingoffset=\dimen107
-\Gm@wd@mp=\dimen108
-\Gm@odd@mp=\dimen109
-\Gm@even@mp=\dimen110
-\Gm@layoutwidth=\dimen111
-\Gm@layoutheight=\dimen112
-\Gm@layouthoffset=\dimen113
-\Gm@layoutvoffset=\dimen114
-\Gm@dimlist=\toks15
+\Gm@cnth=\count109
+\Gm@cntv=\count110
+\c@Gm@tempcnt=\count111
+\Gm@bindingoffset=\dimen116
+\Gm@wd@mp=\dimen117
+\Gm@odd@mp=\dimen118
+\Gm@even@mp=\dimen119
+\Gm@layoutwidth=\dimen120
+\Gm@layoutheight=\dimen121
+\Gm@layouthoffset=\dimen122
+\Gm@layoutvoffset=\dimen123
+\Gm@dimlist=\toks20
 )
 (/usr/local/texlive/2013/texmf-dist/tex/latex/changepage/changepage.sty
 Package: changepage 2009/10/20 v1.0c check page and change page layout
-\c@cp@cntr=\count100
-\cp@tempcnt=\count101
+\c@cp@cntr=\count112
+\cp@tempcnt=\count113
 )
-(/usr/local/texlive/2013/texmf-dist/tex/latex/enumitem/enumitem.sty
-Package: enumitem 2011/09/28 v3.5.2 Customized lists
-\labelindent=\skip44
-\enit@outerparindent=\dimen115
-\enit@toks=\toks16
-\enit@inbox=\box26
-\enitdp@description=\count102
-)
-(/usr/local/texlive/2013/texmf-dist/tex/latex/tools/tabularx.sty
-Package: tabularx 1999/01/07 v2.07 `tabularx' package (DPC)
-
-(/usr/local/texlive/2013/texmf-dist/tex/latex/tools/array.sty
-Package: array 2008/09/09 v2.4c Tabular extension package (FMi)
-\col@sep=\dimen116
-\extrarowheight=\dimen117
-\NC@list=\toks17
-\extratabsurround=\skip45
-\backup@length=\skip46
-)
-\TX@col@width=\dimen118
-\TX@old@table=\dimen119
-\TX@old@col=\dimen120
-\TX@target=\dimen121
-\TX@delta=\dimen122
-\TX@cols=\count103
-\TX@ftn=\toks18
-)
-\c@Definition=\count104
-
 (/usr/local/texlive/2013/texmf-dist/tex/latex/graphics/graphicx.sty
 Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
 
@@ -304,18 +333,47 @@ Package graphics Info: Driver file: pdftex.def on input line 91.
 
 (/usr/local/texlive/2013/texmf-dist/tex/latex/pdftex-def/pdftex.def
 File: pdftex.def 2011/05/27 v0.06d Graphics/color for pdfTeX
-\Gread@gobject=\count105
+\Gread@gobject=\count114
 ))
-\Gin@req@height=\dimen123
-\Gin@req@width=\dimen124
+\Gin@req@height=\dimen124
+\Gin@req@width=\dimen125
 )
+(/usr/local/texlive/2013/texmf-dist/tex/latex/enumitem/enumitem.sty
+Package: enumitem 2011/09/28 v3.5.2 Customized lists
+\labelindent=\skip47
+\enit@outerparindent=\dimen126
+\enit@toks=\toks21
+\enit@inbox=\box28
+\enitdp@description=\count115
+)
+(/usr/local/texlive/2013/texmf-dist/tex/latex/tools/tabularx.sty
+Package: tabularx 1999/01/07 v2.07 `tabularx' package (DPC)
+
+(/usr/local/texlive/2013/texmf-dist/tex/latex/tools/array.sty
+Package: array 2008/09/09 v2.4c Tabular extension package (FMi)
+\col@sep=\dimen127
+\extrarowheight=\dimen128
+\NC@list=\toks22
+\extratabsurround=\skip48
+\backup@length=\skip49
+)
+\TX@col@width=\dimen129
+\TX@old@table=\dimen130
+\TX@old@col=\dimen131
+\TX@target=\dimen132
+\TX@delta=\dimen133
+\TX@cols=\count116
+\TX@ftn=\toks23
+)
+\c@Definition=\count117
+
 (/usr/local/texlive/2013/texmf-dist/tex/latex/float/float.sty
 Package: float 2001/11/08 v1.3d Float enhancements (AL)
-\c@float@type=\count106
-\float@exts=\toks19
-\float@box=\box27
-\@float@everytoks=\toks20
-\@floatcapt=\box28
+\c@float@type=\count118
+\float@exts=\toks24
+\float@box=\box29
+\@float@everytoks=\toks25
+\@floatcapt=\box30
 )
 (/usr/local/texlive/2013/texmf-dist/tex/latex/graphics/color.sty
 Package: color 2005/11/14 v1.0j Standard LaTeX Color (DPC)
@@ -329,60 +387,58 @@ Package color Info: Driver file: pdftex.def on input line 130.
 Package: xspace 2009/10/20 v1.13 Space after command names (DPC,MH)
 )
 (/usr/local/texlive/2013/texmf-dist/tex/latex/fancyhdr/fancyhdr.sty
-\fancy@headwidth=\skip47
-\f@ncyO@elh=\skip48
-\f@ncyO@erh=\skip49
-\f@ncyO@olh=\skip50
-\f@ncyO@orh=\skip51
-\f@ncyO@elf=\skip52
-\f@ncyO@erf=\skip53
-\f@ncyO@olf=\skip54
-\f@ncyO@orf=\skip55
+\fancy@headwidth=\skip50
+\f@ncyO@elh=\skip51
+\f@ncyO@erh=\skip52
+\f@ncyO@olh=\skip53
+\f@ncyO@orh=\skip54
+\f@ncyO@elf=\skip55
+\f@ncyO@erf=\skip56
+\f@ncyO@olf=\skip57
+\f@ncyO@orf=\skip58
 )
 
 Package Fancyhdr Warning: \fancyhead's `E' option without twoside option is use
-less on input line 46.
+less on input line 54.
 
 
 Package Fancyhdr Warning: \fancyhead's `E' option without twoside option is use
-less on input line 47.
+less on input line 55.
 
 
 Package Fancyhdr Warning: \fancyfoot's `E' option without twoside option is use
-less on input line 48.
+less on input line 56.
 
 (/usr/local/texlive/2013/texmf-dist/tex/latex/preprint/authblk.sty
 Package: authblk 2001/02/27 1.3 (PWD)
-\affilsep=\skip56
-\@affilsep=\skip57
-\c@Maxaffil=\count107
-\c@authors=\count108
-\c@affil=\count109
+\affilsep=\skip59
+\@affilsep=\skip60
+\c@Maxaffil=\count119
+\c@authors=\count120
+\c@affil=\count121
 )
 (/usr/local/texlive/2013/texmf-dist/tex/latex/tools/multicol.sty
 Package: multicol 2011/06/27 v1.7a multicolumn formatting (FMi)
-\c@tracingmulticols=\count110
-\mult@box=\box29
-\multicol@leftmargin=\dimen125
-\c@unbalance=\count111
-\c@collectmore=\count112
-\doublecol@number=\count113
-\multicoltolerance=\count114
-\multicolpretolerance=\count115
-\full@width=\dimen126
-\page@free=\dimen127
-\premulticols=\dimen128
-\postmulticols=\dimen129
-\multicolsep=\skip58
-\multicolbaselineskip=\skip59
-\partial@page=\box30
-\last@line=\box31
-\mult@rightbox=\box32
-\mult@grightbox=\box33
-\mult@gfirstbox=\box34
-\mult@firstbox=\box35
-\@tempa=\box36
-\@tempa=\box37
+\c@tracingmulticols=\count122
+\mult@box=\box31
+\multicol@leftmargin=\dimen134
+\c@unbalance=\count123
+\c@collectmore=\count124
+\doublecol@number=\count125
+\multicoltolerance=\count126
+\multicolpretolerance=\count127
+\full@width=\dimen135
+\page@free=\dimen136
+\premulticols=\dimen137
+\postmulticols=\dimen138
+\multicolsep=\skip61
+\multicolbaselineskip=\skip62
+\partial@page=\box32
+\last@line=\box33
+\mult@rightbox=\box34
+\mult@grightbox=\box35
+\mult@gfirstbox=\box36
+\mult@firstbox=\box37
 \@tempa=\box38
 \@tempa=\box39
 \@tempa=\box40
@@ -398,34 +454,36 @@ Package: multicol 2011/06/27 v1.7a multicolumn formatting (FMi)
 \@tempa=\box50
 \@tempa=\box51
 \@tempa=\box52
-\c@columnbadness=\count116
-\c@finalcolumnbadness=\count117
-\last@try=\dimen130
-\multicolovershoot=\dimen131
-\multicolundershoot=\dimen132
-\mult@nat@firstbox=\box53
-\colbreak@box=\box54
-\multicol@sort@counter=\count118
+\@tempa=\box53
+\@tempa=\box54
+\c@columnbadness=\count128
+\c@finalcolumnbadness=\count129
+\last@try=\dimen139
+\multicolovershoot=\dimen140
+\multicolundershoot=\dimen141
+\mult@nat@firstbox=\box55
+\colbreak@box=\box56
+\multicol@sort@counter=\count130
 )
 (/usr/local/texlive/2013/texmf-dist/tex/latex/listings/listings.sty
-\lst@mode=\count119
-\lst@gtempboxa=\box55
-\lst@token=\toks21
-\lst@length=\count120
-\lst@currlwidth=\dimen133
-\lst@column=\count121
-\lst@pos=\count122
-\lst@lostspace=\dimen134
-\lst@width=\dimen135
-\lst@newlines=\count123
-\lst@lineno=\count124
-\lst@maxwidth=\dimen136
+\lst@mode=\count131
+\lst@gtempboxa=\box57
+\lst@token=\toks26
+\lst@length=\count132
+\lst@currlwidth=\dimen142
+\lst@column=\count133
+\lst@pos=\count134
+\lst@lostspace=\dimen143
+\lst@width=\dimen144
+\lst@newlines=\count135
+\lst@lineno=\count136
+\lst@maxwidth=\dimen145
 
 (/usr/local/texlive/2013/texmf-dist/tex/latex/listings/lstmisc.sty
 File: lstmisc.sty 2007/02/22 1.4 (Carsten Heinz)
-\c@lstnumber=\count125
-\lst@skipnumbers=\count126
-\lst@framebox=\box56
+\c@lstnumber=\count137
+\lst@skipnumbers=\count138
+\lst@framebox=\box58
 )
 (/usr/local/texlive/2013/texmf-dist/tex/latex/listings/listings.cfg
 File: listings.cfg 2007/02/22 1.4 listings configuration
@@ -441,29 +499,29 @@ File: lstlang1.sty 2004/09/05 1.3 listings language file
 (./Spectral_Database_Creation.aux)
 \openout1 = `Spectral_Database_Creation.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 69.
-LaTeX Font Info:    ... okay on input line 69.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 69.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 69.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 77.
+LaTeX Font Info:    ... okay on input line 77.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 77.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 77.
 
 (/usr/local/texlive/2013/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 1999/05/25 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 69.
-\AtBeginShipoutBox=\box57
-Package hyperref Info: Link coloring OFF on input line 69.
+LaTeX Font Info:    ... okay on input line 77.
+\AtBeginShipoutBox=\box59
+Package hyperref Info: Link coloring OFF on input line 77.
 
 (/usr/local/texlive/2013/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
@@ -471,11 +529,11 @@ Package: nameref 2012/10/27 v2.43 Cross-referencing by name of section
 (/usr/local/texlive/2013/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
 Package: gettitlestring 2010/12/03 v1.4 Cleanup title references (HO)
 )
-\c@section@level=\count127
+\c@section@level=\count139
 )
-LaTeX Info: Redefining \ref on input line 69.
-LaTeX Info: Redefining \pageref on input line 69.
-LaTeX Info: Redefining \nameref on input line 69.
+LaTeX Info: Redefining \ref on input line 77.
+LaTeX Info: Redefining \pageref on input line 77.
+LaTeX Info: Redefining \nameref on input line 77.
 
 (./Spectral_Database_Creation.out) (./Spectral_Database_Creation.out)
 \@outlinefile=\write3
@@ -518,17 +576,17 @@ LaTeX Info: Redefining \nameref on input line 69.
 
 (/usr/local/texlive/2013/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count128
-\scratchdimen=\dimen137
-\scratchbox=\box58
-\nofMPsegments=\count129
-\nofMParguments=\count130
-\everyMPshowfont=\toks22
-\MPscratchCnt=\count131
-\MPscratchDim=\dimen138
-\MPnumerator=\count132
-\makeMPintoPDFobject=\count133
-\everyMPtoPDFconversion=\toks23
+\scratchcounter=\count140
+\scratchdimen=\dimen146
+\scratchbox=\box60
+\nofMPsegments=\count141
+\nofMParguments=\count142
+\everyMPshowfont=\toks27
+\MPscratchCnt=\count143
+\MPscratchDim=\dimen147
+\MPnumerator=\count144
+\makeMPintoPDFobject=\count145
+\everyMPtoPDFconversion=\toks28
 ) (/usr/local/texlive/2013/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
 Package: epstopdf-base 2010/02/09 v2.5 Base part for package epstopdf
 
@@ -544,21 +602,9 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-\c@lstlisting=\count134
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <14.4> on input line 73.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 73.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 73.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <10.95> on input line 73.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <8> on input line 73.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <6> on input line 73.
+\c@lstlisting=\count146
 
-Overfull \hbox (0.31346pt too wide) in paragraph at lines 82--83
+Overfull \hbox (0.31346pt too wide) in paragraph at lines 90--91
 [] \T1/cmr/m/it/14.4 This doc-u-ment out-lines the cre-ation of the spec-tral d
 atabase
  []
@@ -566,10 +612,7 @@ atabase
 [1
 
 {/usr/local/texlive/2013/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-(./Spectral_Database_Creation.toc
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <12> on input line 3.
-)
+(./Spectral_Database_Creation.toc)
 \tf@toc=\write4
 \openout4 = `Spectral_Database_Creation.toc'.
 
@@ -584,169 +627,164 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.95 \newpage
-              [1]
-Underfull \hbox (badness 10000) in paragraph at lines 104--105
+l.103 \newpage
+               [1]
+Underfull \hbox (badness 10000) in paragraph at lines 112--113
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 106--107
+Underfull \hbox (badness 10000) in paragraph at lines 114--115
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 108--109
+Underfull \hbox (badness 10000) in paragraph at lines 116--117
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 117--118
+Underfull \hbox (badness 10000) in paragraph at lines 125--126
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 119--126
+Underfull \hbox (badness 10000) in paragraph at lines 127--134
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 127--128
+Underfull \hbox (badness 10000) in paragraph at lines 135--136
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 133--134
+Underfull \hbox (badness 10000) in paragraph at lines 141--142
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 135--141
+Underfull \hbox (badness 10000) in paragraph at lines 143--149
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 142--143
+Underfull \hbox (badness 10000) in paragraph at lines 150--151
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 144--145
+Underfull \hbox (badness 10000) in paragraph at lines 152--153
 
  []
 
 [2]
-Underfull \hbox (badness 10000) in paragraph at lines 146--147
+Underfull \hbox (badness 10000) in paragraph at lines 154--155
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 148--163
+Underfull \hbox (badness 10000) in paragraph at lines 156--171
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 165--166
+Underfull \hbox (badness 10000) in paragraph at lines 173--174
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 167--172
+Underfull \hbox (badness 10000) in paragraph at lines 175--180
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 176--177
+Underfull \hbox (badness 10000) in paragraph at lines 184--185
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 178--184
+Underfull \hbox (badness 10000) in paragraph at lines 186--192
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 189--190
+Underfull \hbox (badness 10000) in paragraph at lines 197--198
 
  []
 
 [3]
-Overfull \hbox (18.65222pt too wide) in paragraph at lines 191--198
+Overfull \hbox (1.0274pt too wide) in paragraph at lines 199--206
 [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 191--198
+Underfull \hbox (badness 10000) in paragraph at lines 199--206
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 205--206
+Underfull \hbox (badness 10000) in paragraph at lines 213--214
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 207--213
+Underfull \hbox (badness 10000) in paragraph at lines 215--221
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 218--219
+Underfull \hbox (badness 10000) in paragraph at lines 226--227
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 220--226
+Underfull \hbox (badness 10000) in paragraph at lines 228--234
 
  []
 
 [4]
-Underfull \hbox (badness 10000) in paragraph at lines 230--231
+Underfull \hbox (badness 10000) in paragraph at lines 238--239
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 232--233
+Underfull \hbox (badness 10000) in paragraph at lines 240--241
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 234--245
+Underfull \hbox (badness 10000) in paragraph at lines 242--253
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 247--248
+Underfull \hbox (badness 10000) in paragraph at lines 255--256
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 249--257
+Underfull \hbox (badness 10000) in paragraph at lines 257--265
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 261--262
+Underfull \hbox (badness 10000) in paragraph at lines 269--270
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 263--264
+Underfull \hbox (badness 10000) in paragraph at lines 271--272
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 265--266
+Underfull \hbox (badness 10000) in paragraph at lines 273--274
 
  []
 
 [5]
-Underfull \hbox (badness 10000) in paragraph at lines 267--273
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 276--277
+Underfull \hbox (badness 10000) in paragraph at lines 275--281
 
  []
 
@@ -756,85 +794,232 @@ Underfull \hbox (badness 10000) in paragraph at lines 284--285
  []
 
 
-Overfull \hbox (13.73267pt too wide) in paragraph at lines 286--293
-[][] 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 286--293
+Underfull \hbox (badness 10000) in paragraph at lines 292--293
 
  []
 
 
-Overfull \hbox (51.23256pt too wide) in paragraph at lines 297--298
+Underfull \hbox (badness 10000) in paragraph at lines 294--301
+
+ []
+
+
+Overfull \hbox (51.23256pt too wide) in paragraph at lines 305--306
 \T1/cmr/m/n/12 as a prior for other re-trievals. The pro-gram ret-Wa-ter-Prf.py
  cre-ates w-120.YYYYMMDD.HHMMSS.v99
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 297--298
+Underfull \hbox (badness 10000) in paragraph at lines 305--306
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 299--305
+Underfull \hbox (badness 10000) in paragraph at lines 307--313
 
  []
 
 [6]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 329.
- [7]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 329.
+Underfull \hbox (badness 10000) in paragraph at lines 333--334
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 335--340
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 342--343
+
+ []
+
+<images/Slide05.jpg, id=158, 722.7pt x 542.025pt>
+File: images/Slide05.jpg Graphic file (type jpg)
+ <use images/Slide05.jpg>
+Package pdftex.def Info: images/Slide05.jpg used on input line 354.
+(pdftex.def)             Requested size: 469.75502pt x 352.32034pt.
+
+[7]
+Underfull \hbox (badness 10000) in paragraph at lines 360--367
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 370--371
+
+ []
+
+[8pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) 
+has been already used, duplicate ignored
+
+\AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
+                                                  \fi \fi 
+l.372 \begin{tabular}
+                     { l l } <./images/Slide05.jpg>]
+Underfull \hbox (badness 10000) in paragraph at lines 372--380
+
+ []
+
+[9]
+Underfull \hbox (badness 10000) in paragraph at lines 414--415
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 416--417
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 418--419
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 426--428
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 429--430
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 439--441
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 442--443
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 444--445
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 446--447
+
+ []
+
+[10]
+Underfull \hbox (badness 10000) in paragraph at lines 448--449
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 457--458
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 465--467
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 468--469
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 474--476
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 477--478
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 483--485
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 486--487
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 488--489
+
+ []
+
+[11]
+Underfull \hbox (badness 10000) in paragraph at lines 490--491
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 492--493
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 494--495
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 496--497
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 498--499
+
+ []
+
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 505.
+[12]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 505.
  (./Spectral_Database_Creation.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 329.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 329.
-
-
-Package rerunfilecheck Warning: File `Spectral_Database_Creation.out' has chang
-ed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `Spectral_Database_Creation.out':
-(rerunfilecheck)             Before: FBCDAA33D0DCC4B551C57DF28DBEC03B;927
-(rerunfilecheck)             After:  12C446D091C0D578416BAE4336835A09;980.
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 329.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 505.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 505.
+Package rerunfilecheck Info: File `Spectral_Database_Creation.out' has not chan
+ged.
+(rerunfilecheck)             Checksum: E563363146BC1A632D589A4479461765;1258.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 505.
  ) 
 Here is how much of TeX's memory you used:
- 8276 strings out of 493315
- 121964 string characters out of 6137904
- 238530 words of memory out of 5000000
- 11590 multiletter control sequences out of 15000+600000
- 23728 words of font info for 54 fonts, out of 8000000 for 9000
+ 8891 strings out of 493315
+ 128996 string characters out of 6137904
+ 248796 words of memory out of 5000000
+ 12172 multiletter control sequences out of 15000+600000
+ 26070 words of font info for 62 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
- 32i,12n,49p,849b,430s stack positions out of 5000i,500n,10000p,200000b,80000s
-pdfTeX warning (dest): name{subsection.3.5} has been referenced but does not 
-exist, replaced by a fixed one
-
-{/usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}{
-/usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}</u
-sr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></us
-r/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/
-local/texlive/2013/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/lo
-cal/texlive/2013/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/loca
-l/texlive/2013/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/
-texlive/2013/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/te
-xlive/2013/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texl
-ive/2013/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texliv
-e/2013/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/
-2013/texmf-dist/fonts/type1/public/cm-super/sfrm1440.pfb></usr/local/texlive/20
-13/texmf-dist/fonts/type1/public/cm-super/sfrm2074.pfb></usr/local/texlive/2013
-/texmf-dist/fonts/type1/public/cm-super/sfsl1200.pfb></usr/local/texlive/2013/t
-exmf-dist/fonts/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2013/tex
-mf-dist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2013/texmf
--dist/fonts/type1/public/cm-super/sfti1440.pfb>
-Output written on Spectral_Database_Creation.pdf (8 pages, 247276 bytes).
+ 32i,12n,49p,849b,491s stack positions out of 5000i,500n,10000p,200000b,80000s
+{/usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
+}{/usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}<
+/usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></
+usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></u
+sr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr
+/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/l
+ocal/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/lo
+cal/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/loca
+l/texlive/2013/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/
+texlive/2013/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/te
+xlive/2013/texmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texl
+ive/2013/texmf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texliv
+e/2013/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/
+2013/texmf-dist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/20
+13/texmf-dist/fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2013
+/texmf-dist/fonts/type1/public/cm-super/sfrm1440.pfb></usr/local/texlive/2013/t
+exmf-dist/fonts/type1/public/cm-super/sfrm2074.pfb></usr/local/texlive/2013/tex
+mf-dist/fonts/type1/public/cm-super/sfsl1200.pfb></usr/local/texlive/2013/texmf
+-dist/fonts/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2013/texmf-d
+ist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2013/texmf-dis
+t/fonts/type1/public/cm-super/sfti1440.pfb>
+Output written on Spectral_Database_Creation.pdf (13 pages, 399609 bytes).
 PDF statistics:
- 195 PDF objects out of 1000 (max. 8388607)
- 168 compressed objects within 2 object streams
- 32 named destinations out of 1000 (max. 500000)
- 113 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 268 PDF objects out of 1000 (max. 8388607)
+ 230 compressed objects within 3 object streams
+ 42 named destinations out of 1000 (max. 500000)
+ 166 words of extra memory for PDF output out of 10000 (max. 10000000)
 

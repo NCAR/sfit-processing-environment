@@ -12,4 +12,9 @@
 \contentsline {subsection}{\numberline {4.2}NCEP I \& ERA Interim Water Profiles}{6}{subsection.4.2}
 \contentsline {subsection}{\numberline {4.3}Retrieved Water Profiles}{6}{subsection.4.3}
 \contentsline {subsection}{\numberline {4.4}Steps for Pre-Processing}{7}{subsection.4.4}
-\contentsline {section}{\numberline {5}Post Processing}{7}{section.5}
+\contentsline {section}{\numberline {5}Processing}{7}{section.5}
+\contentsline {subsection}{\numberline {5.1}Layer0}{7}{subsection.5.1}
+\contentsline {subsection}{\numberline {5.2}Layer1}{7}{subsection.5.2}
+\contentsline {section}{\numberline {6}Post-Processing}{8}{section.6}
+\contentsline {subsection}{\numberline {6.1}Plotting}{8}{subsection.6.1}
+\contentsline {subsection}{\numberline {6.2}HDF Creation}{9}{subsection.6.2}
