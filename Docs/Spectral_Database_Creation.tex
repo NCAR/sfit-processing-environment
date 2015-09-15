@@ -106,8 +106,6 @@ This document outlines the creation of the spectral database as well as the prof
 \section{Introduction} 
 \label{sec:intro}
 
-
-
 \section{Pre-Processing}
 The spectral database and ZPTW (altitude, pressure, temperature, and water vapor) profiles are necessary pre-processing steps to retrievals. The spectral database holds information pertaining to each of the measurements. A spectral database is unique to each site\\
 
@@ -276,7 +274,9 @@ After formating the NCEP nmc data one can create the altitude, pressure, and tem
 \textbf{Program} & \textbf{Description} \\
 \hline
 NCEPnmcFormat.py & Program to format the NCEP nmc data\\
+NCEPinputFile.py & Input file for NCEPnmcFormat.py program \\
 MergPrf.py       & Main program to create ZPT and water files from NCEP data\\
+mergprfInput.py  & Input file for MergPrf.py program \\
 \end{tabular} \\
 
 \subsection{NCEP I \& ERA Interim Water Profiles}
@@ -500,7 +500,214 @@ $AVK[ Datetime\_index, Kernel_index, layer\_index ]$\\
  
 If you have any doubt about how your data is written download either HDF-View or Panalopy or use HDP to view the HDF file you have written. These use C libraries to read the data. When you view the AVK with these programs it should have the following dimensions:  $[datetime, kernel, altitude]$.
 
+\section{Program List}
+The following is a list of programs along with a description.
 
+\subsection{Pre-Processing}
+\subsection{Spectral Database}
+%mkSpecDB.py
+\begin{itemize}
+\item mkSpecDB.py
+\begin{itemize}
+\item \textit{Description:} This is the main program to create the spectral database. This program will append a spectral database if one already exists or create a new file. The spectral databases are text files space deliminated. The program looks for .bnr files in the date directories for a given input directory and runs ckopus. The output from ckopus is used to create the initial database. One must have a working version of ckopus.c on their computer in order to create the database. A seperate database is created for each year. This program uses an input file.
+\item \textit{Dependencies:} This program requires ckopus.c and an input file (specDBInputFile.py).
+\item \textit{Invocation:} mkSpecDB.py -i specDBinputFile.py
+\item \textit{Output:} Initial spectral database file. Current location of spectral databases: /data/Campaign/(MLO,TAB)/Spectral\_DB/
+\end{itemize}
+\end{itemize}
+
+%station_house_reader.py
+\begin{itemize}
+\item station\_house\_reader.py
+\begin{itemize}
+\item \textit{Description:} This program reformats the house data log files from MLO and TAB into a single format. The inputs are specified directly in the program file. Even though one can specify a start and stop year, this program should be run for only one year at a time. 
+\item \textit{Dependencies:} This program requires HouseReaderC.py which tells the program how to read the various formats of the MLO and TAB house data.
+\item \textit{Invocation:} station\_house\_reader.py
+\item \textit{Output:} Reformated house log file data. Current directory of reformated house log data: /data/Campaign/(MLO,TAB)/House\_Log\_Files/ 
+\end{itemize}
+\end{itemize}
+
+%HouseReaderC.py
+\begin{itemize}
+\item HouseReaderC.py
+\begin{itemize}
+\item \textit{Description:} This program contains the formats for MLO and TAB house log files.
+\item \textit{Dependencies:} None
+\item \textit{Invocation:} None
+\item \textit{Output:} None
+\end{itemize}
+\end{itemize}
+
+%HouseDataLog.xlsx
+\begin{itemize}
+\item HouseDataLog.xlsx
+\begin{itemize}
+\item \textit{Description:} This program contains a description of the house log files.
+\item \textit{Dependencies:} None
+\item \textit{Invocation:} None
+\item \textit{Output:} None
+\end{itemize}
+\end{itemize}
+
+%pullAncillaryData.py
+\begin{itemize}
+\item pullAncillaryData.py
+\begin{itemize}
+\item \textit{Description:} This program uses the system call "wget" to get NCEP nmc, NCEP re-analysis, EOL, and CMDL data. The output data directories are specified directly in the program. Command line argument allows one to specify the particular date to get data for. This program is set on a cron tab to download data every day. If no date is specified current day is used.
+\item \textit{Dependencies:} None
+\item \textit{Invocation:} pullAncillaryData.py [-d YYYYMMDD]
+\item \textit{Output:} Various directories. See program for output directories.
+\end{itemize}
+\end{itemize}
+
+%read_FL0_EOL_data.py
+\begin{itemize}
+\item read\_FL0\_EOL\_data.py
+\begin{itemize}
+\item \textit{Description:} This program uses the system call "wget" to get NCEP nmc, NCEP re-analysis, EOL, and CMDL data. The output data directories are specified directly in the program. Command line argument allows one to specify the particular date to get data for. This program is set on a cron tab to download data every day. If no date is specified current day is used.
+\item \textit{Dependencies:} None
+\item \textit{Invocation:} pullAncillaryData.py [-d YYYYMMDD]
+\item \textit{Output:} See program for various output directories.
+\end{itemize}
+\end{itemize}
+
+%appendSpecDB.py
+\begin{itemize}
+\item appendSpecDB.py
+\begin{itemize}
+\item \textit{Description:} This program appends already created spectral database files with house and station outside pressure, temperature, and relative humidity values. The inputs are specified with an input file (appndSpecDBInputFile.py). The spectral databases for each year are appended. After the new appended spectral databases are created, the user should concatenate these together into a single database.
+\item \textit{Dependencies:} Requires an input file (appndSpecDBInputFile.py)
+\item \textit{Invocation:} appndSpecDBInputFile.py -i appndSpecDBInputFile.py
+\item \textit{Output:} Appended spectral database file. Current location of spectral databases: /data/Campaign/(MLO,TAB)/Spectral\_DB/
+\end{itemize}
+\end{itemize}
+
+\subsection{Reference Profiles}
+%NCEPnmcFormat.py
+\begin{itemize}
+\item NCEPnmnFormat.py
+\begin{itemize}
+\item \textit{Description:} For an individual station this program re-formats the NCEP nmc pressure and temperature data into a single file by year. This program takes an input file (NCEPinputFile.py)
+\item \textit{Dependencies:} Requires an input file (NCEPinputFile.py)
+\item \textit{Invocation:} NCEPnmnFormat.py -i NCEPinputFile.py
+\item \textit{Input:} The input NCEP nmc data is currently located at /data/ancillary\_data/NCEP\_NMC/
+\item \textit{Output:} The re-formated NCEP nmc data is currently located at /data/Campaign/(MLO,TAB,FL0)/NCEP\_nmc/
+\end{itemize}
+\end{itemize}
+
+%MergPrf.py
+\begin{itemize}
+\item MergPrf.py
+\begin{itemize}
+\item \textit{Description:} This program creates ZPT files from NCEP nmc data and water files from WACCM data. It requires the use of an input file (mergprfInput.py)
+\item \textit{Dependencies:} Requires an input file (mergprfInput.py)
+\item \textit{Invocation:} MergPrf.py -i mergprfInput.py
+\item \textit{Input:} The input NCEP nmc data is currently located at /data/ancillary\_data/NCEP\_NMC/. The input WACCM data is currently at /data/Campaign/(MLO,TAB,FL0)/waccm/
+\item \textit{Output:} The profiles are stored with the bnr data in the daily directories /data1/(mlo,tab,fl0)/
+\end{itemize}
+\end{itemize}
+
+%cnvrtNC.py
+\begin{itemize}
+\item cnvrtNC.py
+\begin{itemize}
+\item \textit{Description:} This program converts the ERA-Interim GRIB files into NetCDF files. This program calls the linux program ncl\_convert2nc to convert the GRIB file to NetCDF. The inputs are directly specified in the program. The NetCDF files are easily readable by python.
+\item \textit{Dependencies:} Requires installation of linux program ncl\_convert2nc.
+\item \textit{Invocation:} cnvrtNC.py
+\item \textit{Input:} The input ERA-Interim (GRIB) data is currently located at /data1/ancillary\_data/ERAdata/
+\item \textit{Output:} The output ERA-Interim (NetCDF) data is currently located at /data1/ancillary\_data/ERAdata/
+\end{itemize}
+\end{itemize}
+
+%ERAwaterPrf.py
+\begin{itemize}
+\item ERAwaterPrf.py
+\begin{itemize}
+\item \textit{Description:} This program creates water profiles from the ERA-Interim data. The inputs are directly specified in the program. It interpolates a location and altitude profile to the ERA-Interim grid. It creates daily averages; however, it also stores the 6 hourly PV, Temperature, and Q.
+\item \textit{Dependencies:} None
+\item \textit{Invocation:} ERAwaterPrf.py
+\item \textit{Input:} The input ERA-Interim (NetCDF) data is currently located at /data1/ancillary\_data/ERAdata/
+\item \textit{Output:} The output water profiles are stored with the bnr data in the daily directories /data1/(mlo,tab,fl0)
+\end{itemize}
+\end{itemize}
+
+%NCEPwaterPrf.py
+\begin{itemize}
+\item NCEPwaterPrf.py
+\begin{itemize}
+\item \textit{Description:} This program creates water profiles from the NCEP re-analysis data. The inputs are directly specified in the program. It interpolates a location and altitude profile to the NCEP grid. Initial NCEP re-analysis data is already daily averaged.
+\item \textit{Dependencies:} None
+\item \textit{Invocation:} NCEPwaterPrf.py
+\item \textit{Input:} The input NCEP re-analysis (NetCDF) data is currently located at /data1/ancillary\_data/NCEPdata/
+\item \textit{Output:} The output water profiles are stored with the bnr data in the daily directories /data1/(mlo,tab,fl0)
+\end{itemize}
+\end{itemize}
+
+%retWaterPrf.py
+\begin{itemize}
+\item retWaterPrf.py
+\begin{itemize}
+\item \textit{Description:} This program creates water a priori profiles retrieved water profiles. The inputs are directly specified in the program. The a priori water profiles are time stamped (date and time) corresponding with measurement time.
+\item \textit{Dependencies:} None
+\item \textit{Invocation:} retWaterPrf.py
+\item \textit{Input:} The input is the location of the retrieved water data.
+\item \textit{Output:} The output water profiles are stored with the bnr data in the daily directories /data1/(mlo,tab,fl0)
+\end{itemize}
+\end{itemize}
+
+%retWaterPrfDaily.py
+\begin{itemize}
+\item retWaterPrfDaily.py
+\begin{itemize}
+\item \textit{Description:} This program creates daily averaged water profiles from the a priori water files created from the program retWaterPrf.py. The inputs are specified directly in the program.
+\item \textit{Dependencies:} None
+\item \textit{Invocation:} retWaterPrfDaily.py
+\item \textit{Input:} The input water profiles are located with the bnr data in the daily directories /data1/(mlo,tab,fl0)
+\item \textit{Output:} The output water profiles are stored with the bnr data in the daily directories /data1/(mlo,tab,fl0)
+\end{itemize}
+\end{itemize}
+
+\subsection{Processing}
+%sfit4Layer0.py
+\begin{itemize}
+\item sfit4Layer0.py
+\begin{itemize}
+\item \textit{Description:} 
+\item \textit{Dependencies:} 
+\item \textit{Invocation:} 
+\item \textit{Input:} 
+\item \textit{Output:}
+\end{itemize}
+\end{itemize}
+
+
+%sfit4Layer1.py
+\begin{itemize}
+\item sfit4Layer1.py
+\begin{itemize}
+\item \textit{Description:} 
+\item \textit{Dependencies:} 
+\item \textit{Invocation:} 
+\item \textit{Input:} 
+\item \textit{Output:}
+\end{itemize}
+\end{itemize}
+
+
+%mkListFile.py
+\begin{itemize}
+\item mkListFile.py
+\begin{itemize}
+\item \textit{Description:} 
+\item \textit{Dependencies:} 
+\item \textit{Invocation:} 
+\item \textit{Input:} 
+\item \textit{Output:}
+\end{itemize}
+\end{itemize}
+
+
+\subsection{Post-Processing}
 
 \end{document}
 
