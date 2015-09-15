@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  15 SEP 2015 11:32
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013) (format=pdflatex 2013.5.30)  15 SEP 2015 15:57
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -704,92 +704,112 @@ Underfull \hbox (badness 10000) in paragraph at lines 182--183
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 184--190
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 195--196
+Underfull \hbox (badness 10000) in paragraph at lines 184--185
 
  []
 
 [3]
-Overfull \hbox (1.0274pt too wide) in paragraph at lines 197--204
+Underfull \hbox (badness 10000) in paragraph at lines 186--187
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 188--194
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 199--200
+
+ []
+
+
+Overfull \hbox (1.0274pt too wide) in paragraph at lines 201--208
 [][] 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 197--204
+Underfull \hbox (badness 10000) in paragraph at lines 201--208
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 211--212
+Underfull \hbox (badness 10000) in paragraph at lines 215--216
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 213--219
+Underfull \hbox (badness 10000) in paragraph at lines 217--223
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 224--225
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 226--232
+Underfull \hbox (badness 10000) in paragraph at lines 228--229
 
  []
 
 [4]
-Underfull \hbox (badness 10000) in paragraph at lines 236--237
+Underfull \hbox (badness 10000) in paragraph at lines 230--231
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 238--239
+Underfull \hbox (badness 10000) in paragraph at lines 232--233
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 240--251
+Underfull \hbox (badness 10000) in paragraph at lines 234--240
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 253--254
+Underfull \hbox (badness 10000) in paragraph at lines 241--242
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 255--263
+Underfull \hbox (badness 10000) in paragraph at lines 243--244
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 267--268
+Underfull \hbox (badness 10000) in paragraph at lines 248--254
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 269--270
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 271--272
+Underfull \hbox (badness 10000) in paragraph at lines 257--258
 
  []
 
 [5]
-Underfull \hbox (badness 10000) in paragraph at lines 273--281
+Underfull \hbox (badness 10000) in paragraph at lines 259--260
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 284--285
+Underfull \hbox (badness 10000) in paragraph at lines 261--272
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 274--275
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 276--284
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 288--289
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 290--291
 
  []
 
@@ -799,14 +819,8 @@ Underfull \hbox (badness 10000) in paragraph at lines 292--293
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 294--301
+Underfull \hbox (badness 10000) in paragraph at lines 294--302
 
- []
-
-
-Overfull \hbox (51.23256pt too wide) in paragraph at lines 305--306
-\T1/cmr/m/n/12 as a prior for other re-trievals. The pro-gram ret-Wa-ter-Prf.py
- cre-ates w-120.YYYYMMDD.HHMMSS.v99
  []
 
 
@@ -814,160 +828,141 @@ Underfull \hbox (badness 10000) in paragraph at lines 305--306
 
  []
 
-
-Underfull \hbox (badness 10000) in paragraph at lines 307--313
-
- []
-
 [6]
-Underfull \hbox (badness 10000) in paragraph at lines 333--334
+Underfull \hbox (badness 10000) in paragraph at lines 313--314
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 335--340
+Underfull \hbox (badness 10000) in paragraph at lines 315--322
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 342--343
+Overfull \hbox (51.23256pt too wide) in paragraph at lines 326--327
+\T1/cmr/m/n/12 as a prior for other re-trievals. The pro-gram ret-Wa-ter-Prf.py
+ cre-ates w-120.YYYYMMDD.HHMMSS.v99
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 326--327
 
  []
 
-<images/Slide05.jpg, id=188, 722.7pt x 542.025pt>
-File: images/Slide05.jpg Graphic file (type jpg)
- <use images/Slide05.jpg>
-Package pdftex.def Info: images/Slide05.jpg used on input line 354.
-(pdftex.def)             Requested size: 469.75502pt x 352.32034pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 328--334
+
+ []
 
 [7]
-Underfull \hbox (badness 10000) in paragraph at lines 360--367
+Underfull \hbox (badness 10000) in paragraph at lines 354--355
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 370--371
+Underfull \hbox (badness 10000) in paragraph at lines 356--361
 
  []
 
-[8pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) 
+
+Underfull \hbox (badness 10000) in paragraph at lines 363--364
+
+ []
+
+<images/Slide05.jpg, id=198, 722.7pt x 542.025pt>
+File: images/Slide05.jpg Graphic file (type jpg)
+ <use images/Slide05.jpg>
+Package pdftex.def Info: images/Slide05.jpg used on input line 375.
+(pdftex.def)             Requested size: 469.75502pt x 352.32034pt.
+
+[8]
+Underfull \hbox (badness 10000) in paragraph at lines 381--388
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 391--392
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 393--401
+
+ []
+
+[9pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) 
 has been already used, duplicate ignored
 
 \AtBegShi@Output ...ipout \box \AtBeginShipoutBox 
                                                   \fi \fi 
-l.372 \begin{tabular}
-                     { l l } <./images/Slide05.jpg>]
-Underfull \hbox (badness 10000) in paragraph at lines 372--380
-
- []
-
-[9]
-Underfull \hbox (badness 10000) in paragraph at lines 414--415
+l.402 \subsection
+                 {HDF Creation} <./images/Slide05.jpg>] [10]
+Underfull \hbox (badness 10000) in paragraph at lines 435--436
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 416--417
+Underfull \hbox (badness 10000) in paragraph at lines 437--438
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 418--419
+Underfull \hbox (badness 10000) in paragraph at lines 439--440
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 426--428
+Underfull \hbox (badness 10000) in paragraph at lines 447--449
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 429--430
+Underfull \hbox (badness 10000) in paragraph at lines 450--451
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 439--441
+Underfull \hbox (badness 10000) in paragraph at lines 460--462
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 442--443
+Underfull \hbox (badness 10000) in paragraph at lines 463--464
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 444--445
+Underfull \hbox (badness 10000) in paragraph at lines 465--466
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 446--447
-
- []
-
-[10]
-Underfull \hbox (badness 10000) in paragraph at lines 448--449
+Underfull \hbox (badness 10000) in paragraph at lines 467--468
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 457--458
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 465--467
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 468--469
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 474--476
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 477--478
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 483--485
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 486--487
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 488--489
+Underfull \hbox (badness 10000) in paragraph at lines 469--470
 
  []
 
 [11]
-Underfull \hbox (badness 10000) in paragraph at lines 490--491
+Underfull \hbox (badness 10000) in paragraph at lines 478--479
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 492--493
+Underfull \hbox (badness 10000) in paragraph at lines 486--488
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 494--495
+Underfull \hbox (badness 10000) in paragraph at lines 489--490
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 496--497
+Underfull \hbox (badness 10000) in paragraph at lines 495--497
 
  []
 
@@ -976,74 +971,132 @@ Underfull \hbox (badness 10000) in paragraph at lines 498--499
 
  []
 
-[12] [13]
-Overfull \hbox (64.79398pt too wide) in paragraph at lines 593--594
+
+Underfull \hbox (badness 10000) in paragraph at lines 504--506
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 507--508
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 509--510
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 511--512
+
+ []
+
+[12]
+Underfull \hbox (badness 10000) in paragraph at lines 513--514
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 515--516
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 517--518
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 519--520
+
+ []
+
+[13]
+Overfull \hbox (107.85423pt too wide) in paragraph at lines 591--592
+[]\T1/cmr/m/it/12 Input: \T1/cmr/m/n/12 In-put NetCDF files are cur-rently lo-c
+ated at: data1/ancillary_data/fl0/eol/flab.YYYMMDD.cdf 
+ []
+
+
+Overfull \hbox (104.20502pt too wide) in paragraph at lines 592--593
+[]\T1/cmr/m/it/12 Output: \T1/cmr/m/n/12 Out-put data is cur-rently writ-ten to
+: data1/ancillary_data/fl0/eol/fl0_met_data_YYYY.txt 
+ []
+
+[14]
+Overfull \hbox (64.79398pt too wide) in paragraph at lines 615--616
 []\T1/cmr/m/it/12 Input: \T1/cmr/m/n/12 The in-put NCEP nmc data is cur-rently 
 lo-cated at /data/an-cil-lary_data/NCEP_NMC/ 
  []
 
 
-Overfull \hbox (68.05705pt too wide) in paragraph at lines 605--606
+Overfull \hbox (68.05705pt too wide) in paragraph at lines 627--628
 []\T1/cmr/m/it/12 Input: \T1/cmr/m/n/12 The in-put NCEP nmc data is cur-rently 
 lo-cated at /data/an-cil-lary_data/NCEP_NMC/.
  []
 
 
-Overfull \hbox (12.96915pt too wide) in paragraph at lines 605--606
+Overfull \hbox (12.96915pt too wide) in paragraph at lines 627--628
 \T1/cmr/m/n/12 The in-put WACCM data is cur-rently at /data/-Cam-paign/(MLO,TAB
 ,FL0)/waccm/ 
  []
 
 
-Overfull \hbox (58.99547pt too wide) in paragraph at lines 606--607
+Overfull \hbox (58.99547pt too wide) in paragraph at lines 628--629
 []\T1/cmr/m/it/12 Output: \T1/cmr/m/n/12 The pro-files are stored with the bnr 
 data in the daily di-rec-to-ries /data1/(mlo,tab,fl0)/ 
  []
 
-[14]
-Overfull \hbox (100.1117pt too wide) in paragraph at lines 617--618
+[15]
+Overfull \hbox (100.1117pt too wide) in paragraph at lines 639--640
 []\T1/cmr/m/it/12 Input: \T1/cmr/m/n/12 The in-put ERA-Interim (GRIB) data is c
 ur-rently lo-cated at /data1/ancillary_data/ERAdata/ 
  []
 
 
-Overfull \hbox (128.6645pt too wide) in paragraph at lines 618--619
+Overfull \hbox (128.6645pt too wide) in paragraph at lines 640--641
 []\T1/cmr/m/it/12 Output: \T1/cmr/m/n/12 The out-put ERA-Interim (NetCDF) data 
 is cur-rently lo-cated at /data1/ancillary_data/ERAdata/ 
  []
 
 
-Overfull \hbox (113.40987pt too wide) in paragraph at lines 629--630
+Overfull \hbox (113.40987pt too wide) in paragraph at lines 651--652
 []\T1/cmr/m/it/12 Input: \T1/cmr/m/n/12 The in-put ERA-Interim (NetCDF) data is
  cur-rently lo-cated at /data1/ancillary_data/ERAdata/ 
  []
 
 
-Overfull \hbox (144.21632pt too wide) in paragraph at lines 641--642
+Overfull \hbox (144.21632pt too wide) in paragraph at lines 663--664
 []\T1/cmr/m/it/12 Input: \T1/cmr/m/n/12 The in-put NCEP re-analysis (NetCDF) da
 ta is cur-rently lo-cated at /data1/ancillary_data/NCEPdata/ 
  []
 
-[15]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 712.
- [16] [17]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 712.
+[16]
+Overfull \hbox (32.00058pt too wide) in paragraph at lines 699--701
+[]\T1/cmr/m/it/12 Invocation: \T1/cmr/m/n/12 They are sev-eral com-mand line fl
+ags to use with this pro-gram: sfit4Layer0.py
+ []
+
+[17]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 750.
+ [18]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 750.
  (./Spectral_Database_Creation.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 712.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 712.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 750.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 750.
 Package rerunfilecheck Info: File `Spectral_Database_Creation.out' has not chan
 ged.
-(rerunfilecheck)             Checksum: 12B572F880AA57EE6FCD839157E68837;1630.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 712.
+(rerunfilecheck)             Checksum: 21A68D8211EF9368741C346B008BA0BC;1708.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 750.
  ) 
 Here is how much of TeX's memory you used:
- 8908 strings out of 493315
- 129201 string characters out of 6137904
+ 8915 strings out of 493315
+ 129297 string characters out of 6137904
  249796 words of memory out of 5000000
- 12178 multiletter control sequences out of 15000+600000
+ 12183 multiletter control sequences out of 15000+600000
  26070 words of font info for 62 fonts, out of 8000000 for 9000
  957 hyphenation exceptions out of 8191
- 32i,12n,49p,849b,519s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 32i,12n,49p,843b,597s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
 }{/usr/local/texlive/2013/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}<
 /usr/local/texlive/2013/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></
@@ -1065,10 +1118,10 @@ mf-dist/fonts/type1/public/cm-super/sfsl1200.pfb></usr/local/texlive/2013/texmf
 -dist/fonts/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2013/texmf-d
 ist/fonts/type1/public/cm-super/sfti1200.pfb></usr/local/texlive/2013/texmf-dis
 t/fonts/type1/public/cm-super/sfti1440.pfb>
-Output written on Spectral_Database_Creation.pdf (18 pages, 410092 bytes).
+Output written on Spectral_Database_Creation.pdf (19 pages, 414987 bytes).
 PDF statistics:
- 320 PDF objects out of 1000 (max. 8388607)
- 277 compressed objects within 3 object streams
- 53 named destinations out of 1000 (max. 500000)
- 214 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 331 PDF objects out of 1000 (max. 8388607)
+ 287 compressed objects within 3 object streams
+ 55 named destinations out of 1000 (max. 500000)
+ 222 words of extra memory for PDF output out of 10000 (max. 10000000)
 

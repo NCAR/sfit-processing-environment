@@ -181,6 +181,10 @@ ckop.pro         & IDL program to check OPUS spectra \\
 \label{sec:ISD}
 The initial spectral database file is created by running ckopus on the various raw OPUS file. A python program is created to manage the creation of the initial spectral database file (mkSpecDB.py). The program will create a new spectral database file or append an already existing file. Associated with mkSpecDB.py is an input file. The input file allows one to specify the starting and ending date to process, the station, and the various directories and files to use. In addition, one can specify additional ckopus flags to use in the ckopus call. There are logical flags which control the creating of a file which list the folders processed and whether bnr files are created. These files are located under the SpectralDatabase folder of the git repository.\\
 
+The initial spectral databases should be made for individual years. The output files have the names spDB\_loc\_YYYY.dat. They are space delimited text files. You can either re-write the particular year database file or append it depending if you are processing an entire year or just a portion of it. If you want to append the spectral database file keep the original file in place and just adjust the time interval in the specDBInputFile.py input file. Make sure the start date in the input file is at least a day after the last entry in the spectral database file.\\
+
+An input file for each site (MLO,FL0,TAB) already exists in each of the Campaign directories (/data/Campaign/(MLO,TAB,FL0)/Spectra\_DB/.\\
+
 \begin{tabular}{ l l }
 \textbf{Program} & \textbf{Description} \\
 \hline
@@ -221,7 +225,11 @@ These programs are located in the ExternalData folder of the git repository.
 
 \subsection{Append Spectral Database File}
 \label{sec:ASDF}
-The final step is appending the initial spectral database file with the house and external station weather data. A python program was created to accomplish this (appendSpecDB.py). The program appendSpecDB.py reads in the initial spectral database file. It then searches the house and external station files for weather data at the time of observation, plus a certain number of minutes specified by the user. The mean of the data collected is calculated and a new spectral database file is created. If no data is present missing values are used. Associated with appendSpecDB.py is an input file. The input file allows one to specify directories and files, year to process, station, how many minutes to use for averaging, and whether to create a comma separated or pre-specified formatted new spectral database file.\\
+One can now appending the initial spectral database file with the house and external station weather data. A python program was created to accomplish this (appendSpecDB.py). The program appendSpecDB.py reads in the initial spectral database file. It then searches the house and external station files for weather data at the time of observation, plus a certain number of minutes specified by the user. The mean of the data collected is calculated and a new spectral database file is created. If no data is present missing values are used. Associated with appendSpecDB.py is an input file. The input file allows one to specify directories and files, year to process, station, how many minutes to use for averaging, and whether to create a comma separated or pre-specified formatted new spectral database file.\\
+
+One should remove previous spectral database files (HRspDB\_loc\_YYYY.dat) from the output location before creating new appended spectral database files.\\
+
+Each site already has an input file located in their Campaign directory. \\
 
 \begin{tabular}{ l l }
 \textbf{Program} & \textbf{Description} \\
@@ -230,7 +238,20 @@ appendSpecDB.py         & Program to create the append spectral database file\\
 appndSpecDBInputFile.py & Input file for appendSpecDB.py \\
 \end{tabular} \\
 
-\textit{Note:A warning message will often appear when running this program originating from the python numpy module. This warning is a result of numpy taking the mean of an empty array. This is handled by the main program.}
+\textit{Note:A warning message will often appear when running this program originating from the python numpy module. This warning is a result of numpy taking the mean of an empty array. This is handled by the main program.}\\
+
+The sfit4Layer1 processing looks for a database file with all years. Once you create a year appended spectral database file you should copy or append this to the file which contains all years processed. For example say you have processed 2010 to 2014 and have a spectral database file called HRspDB\_fl0\_2010\_2014.dat. You then create an and appended spectral database file for 2015 called HRspDB\_fl0\_2015.dat. You should append the contents of this file to the HRspDB\_fl0\_2010\_2014.dat file and rename to HRspDB\_fl0\_2010\_2015.dat. Take care not to include the header of the individual year file. There should only be one header at the top in the conglomerated file.\\
+
+\subsection{Coadd Spectral Database File}
+\label{sec:CSDF}
+
+\begin{tabular}{ l l }
+\textbf{Program} & \textbf{Description} \\
+\hline
+mkCoadSpecDB.py     & Main program to create coadded spectral database\\
+CoadSpecDBInputFile.py & Input file for mkCoadSpecDB.py
+\end{tabular} \\
+
 
 \section{ZPTW Profiles}
 The pressure, temperature, and water vapor profiles can be created from several outside sources. Temperature and pressure profiles are taken from NCEP nmc data; while currently only water profiles are taken from NCEP I and ERA-Interim re-analysis data. Both NCEP and ERA-Interim data are interpolated with WACCM data to reach 120km vertical height. The profiles are daily averages and they reside in the data directories (/data1/tab,mlo,fl0/).\\
@@ -564,10 +585,11 @@ The following is a list of programs along with a description.
 \begin{itemize}
 \item read\_FL0\_EOL\_data.py
 \begin{itemize}
-\item \textit{Description:} This program uses the system call "wget" to get NCEP nmc, NCEP re-analysis, EOL, and CMDL data. The output data directories are specified directly in the program. Command line argument allows one to specify the particular date to get data for. This program is set on a cron tab to download data every day. If no date is specified current day is used.
+\item \textit{Description:} This program re-formats the EOL data from netCDF data into simple text data to be used by the append spectral database program. All inputs are specified within the program. One year is processed at a time.
 \item \textit{Dependencies:} None
-\item \textit{Invocation:} pullAncillaryData.py [-d YYYYMMDD]
-\item \textit{Output:} See program for various output directories.
+\item \textit{Invocation:} read\_FL0\_EOL\_data.py
+\item \textit{Input:} Input NetCDF files are currently located at: data1/ancillary\_data/fl0/eol/flab.YYYMMDD.cdf
+\item \textit{Output:} Output data is currently written to: data1/ancillary\_data/fl0/eol/fl0\_met\_data\_YYYY.txt
 \end{itemize}
 \end{itemize}
 
@@ -672,11 +694,16 @@ The following is a list of programs along with a description.
 \begin{itemize}
 \item sfit4Layer0.py
 \begin{itemize}
-\item \textit{Description:} 
-\item \textit{Dependencies:} 
-\item \textit{Invocation:} 
-\item \textit{Input:} 
-\item \textit{Output:}
+\item \textit{Description:} This program runs individual retrievals using sfit4. The inputs for this program are specified through command line arguments. 
+\item \textit{Dependencies:} The program depends on the following files: sfitClasses.py and Layer1Mods.py
+\item \textit{Invocation:} They are several command line flags to use with this program: sfit4Layer0.py -f <str> [-i <dir> [-b <dir/str> ]
+\begin{itemize}
+\item -i Data directory. This is optional. The default directory is the current working directory
+\item -f Run flags: h = hbin, p = psepc, s = sfit4, e = error analysis, c = clean directory
+\item -b sfit binary directory: This is optional. The default is hard-coded in the main program. Also accepts v1, v2, etc
+\end{itemize}
+\item \textit{Input:} The input is the specified data directory or the current working directory
+\item \textit{Output:} The output is also the specified data directory or the current working directory
 \end{itemize}
 \end{itemize}
 
@@ -684,21 +711,27 @@ The following is a list of programs along with a description.
 %sfit4Layer1.py
 \begin{itemize}
 \item sfit4Layer1.py
+\begin{itemize} 
+\item \textit{Description:} This program runs multiple retrievals using sfit4. The inputs are specified through an input file and some command line arguments. If one pauses during the processing using the -P command you can plot intermediate results or re-processes the last retrieval done.
+\item \textit{Dependencies:} This program depends on the following programs: sfitClasses.py, dataOutClass.py, Layer1Mods.py
+\item \textit{Invocation:} sfit4Layer1.py -i <InputFile> -l -L0 -P <int> -?
 \begin{itemize}
-\item \textit{Description:} 
-\item \textit{Dependencies:} 
-\item \textit{Invocation:} 
-\item \textit{Input:} 
-\item \textit{Output:}
+\item -i Filename and path of input file
+\item -l Flag to create log file. Path for log files is specified in input file.
+\item -L 0/1: Flag to create output list file. 
+\item -P <int>: Pause processing after retrieval number <int>. So -P1 would pause after the first retrieval.
+\item -? Show all flags
+\end{itemize}
+\item \textit{Input:} Inputs paths and directories are specified in the input file.
+\item \textit{Output:} Output paths and directories are specified in the input file
 \end{itemize}
 \end{itemize}
-
 
 %mkListFile.py
 \begin{itemize}
 \item mkListFile.py
 \begin{itemize}
-\item \textit{Description:} 
+\item \textit{Description:} This program creates a list file of all the directories with retrievals and some meta-data for the IDL program gather.pro to create
 \item \textit{Dependencies:} 
 \item \textit{Invocation:} 
 \item \textit{Input:} 
@@ -708,6 +741,11 @@ The following is a list of programs along with a description.
 
 
 \subsection{Post-Processing}
+
+
+
+
+
 
 \end{document}
 
