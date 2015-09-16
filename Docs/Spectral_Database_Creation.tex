@@ -17,6 +17,9 @@
 \usepackage{graphicx}
 \graphicspath{ {images/} }
 
+% Split lines
+\usepackage{seqsplit}
+
 % lists
 \usepackage{enumitem}
 
@@ -69,7 +72,7 @@
 
 \title{FTS Profile Retrieval Pre and Post Processing}
 
-\author[1]{Eric Nussbaumer \thanks{corresponding author: ebaumer@ucar.edu +1 (303) 497-1861}}
+\author[1]{Eric Nussbaumer \thanks{corresponding author: ebaumer@ucar.edu}}
 \affil[1]{National Center for Atmospheric Research, Boulder, CO, USA}
 
 \date{September 2015}
@@ -244,6 +247,9 @@ The sfit4Layer1 processing looks for a database file with all years. Once you cr
 
 \subsection{Coadd Spectral Database File}
 \label{sec:CSDF}
+When the spectral data is to be co-added an additional step must be taken after the creation of the appended spectral database. The program mkCoadSpecDB.py co-adds two bnr files together with the appropriate forward and backward scans. A new coadded bnr file is created. The program mkCoadSpecDB.py calls the C program coadd.c to co-add the files. The program mkCoadSpecDB.py requires an input file.\\
+
+The mkCoadSpecDB.py program reads in a HRspDB\_loc\_YYYY.dat data file and creates a CoaddspDB\_loc\_YYYY.dat output file. One can either run the co-add program on a conglomerated spectral database file (e.g. HRspDB\_fl0\_2010\_2014.dat) or on individual year file (e.g. HRspDB\_fl0\_2014.dat) and then conglomerate all the years. When running the co-add program all previous output files with the same name should be removed.\\
 
 \begin{tabular}{ l l }
 \textbf{Program} & \textbf{Description} \\
@@ -296,7 +302,7 @@ After formating the NCEP nmc data one can create the altitude, pressure, and tem
 \hline
 NCEPnmcFormat.py & Program to format the NCEP nmc data\\
 NCEPinputFile.py & Input file for NCEPnmcFormat.py program \\
-MergPrf.py       & Main program to create ZPT and water files from NCEP data\\
+MergPrf.py       & Main program to create ZPT and water files from WACCM data\\
 mergprfInput.py  & Input file for MergPrf.py program \\
 \end{tabular} \\
 
@@ -323,7 +329,7 @@ NCEPwaterPrf.py& Program to create daily water profiles from NCEP I\\
 
 \subsection{Retrieved Water Profiles}
 \label{sec:RWP}
-For all sites (MLO,TAB, and FL0) water is retrieved when available. This water can be used as a prior for other retrievals. The program retWaterPrf.py creates w-120.YYYYMMDD.HHMMSS.v99 for each retrieval. These files are stored in the data directories (/data1/tab,mlo,fl0/). A daily average of these profiles can be created using the program retWaterPrfDaily.py. These daily averages are also stored in the main data directories (/data1/tab,mlo,fl0/).\\
+For all sites (MLO,TAB, and FL0) water is retrieved when available. This water can be used as a prior for other retrievals. The program retWaterPrf.py creates \seqsplit{w-120.YYYYMMDD.HHMMSS.v99} for each retrieval. These files are stored in the data directories (/data1/tab,mlo,fl0/). A daily average of these profiles can be created using the program retWaterPrfDaily.py. These daily averages are also stored in the main data directories (/data1/tab,mlo,fl0/).\\
 
 \begin{tabular}{ l l }
 \textbf{Program} & \textbf{Description} \\
@@ -344,6 +350,7 @@ retWaterPrfDaily.py & Program to create daily average profiles from water retrie
 \item Format house data
 \item Format external station data
 \item Create appended spectral database
+\item Create co-added spectral database file if necessary
 \item Create Altitude, Pressure, and Temperature profiles (ZPT.nmc.120)
 \item Create water profiles (v1,v2,v3,v4,v5,v99)
 \end{itemize}
@@ -588,8 +595,8 @@ The following is a list of programs along with a description.
 \item \textit{Description:} This program re-formats the EOL data from netCDF data into simple text data to be used by the append spectral database program. All inputs are specified within the program. One year is processed at a time.
 \item \textit{Dependencies:} None
 \item \textit{Invocation:} read\_FL0\_EOL\_data.py
-\item \textit{Input:} Input NetCDF files are currently located at: data1/ancillary\_data/fl0/eol/flab.YYYMMDD.cdf
-\item \textit{Output:} Output data is currently written to: data1/ancillary\_data/fl0/eol/fl0\_met\_data\_YYYY.txt
+\item \textit{Input:} Input NetCDF files are currently located at: \seqsplit{data1/ancillary\_data/fl0/eol/flab.YYYMMDD.cdf}
+\item \textit{Output:} Output data is currently written to: \seqsplit{data1/ancillary\_data/fl0/eol/fl0\_met\_data\_YYYY.txt}
 \end{itemize}
 \end{itemize}
 
@@ -600,7 +607,19 @@ The following is a list of programs along with a description.
 \item \textit{Description:} This program appends already created spectral database files with house and station outside pressure, temperature, and relative humidity values. The inputs are specified with an input file (appndSpecDBInputFile.py). The spectral databases for each year are appended. After the new appended spectral databases are created, the user should concatenate these together into a single database.
 \item \textit{Dependencies:} Requires an input file (appndSpecDBInputFile.py)
 \item \textit{Invocation:} appndSpecDBInputFile.py -i appndSpecDBInputFile.py
-\item \textit{Output:} Appended spectral database file. Current location of spectral databases: /data/Campaign/(MLO,TAB)/Spectral\_DB/
+\item \textit{Output:} Appended spectral database file. Current location of spectral databases: \seqsplit{/data/Campaign/(MLO,TAB)/Spectral\_DB/}
+\end{itemize}
+\end{itemize}
+
+%mkCoadSpecDB.py
+\begin{itemize}
+\item mkCoadSpecDB.py
+\begin{itemize}
+\item \textit{Description:} This program creates co-added bnr files (.bnrc) and a co-added spectral database file. The inputs to the program are specified through an input file (CoadSpecDBInputFile.py). The mkCoadSpecDB.py program reads in a HRspDB\_loc\_YYYY.dat data file and creates a CoaddspDB\_loc\_YYYY.dat output file. One can either run the co-add program on a conglomerated spectral database file (e.g. HRspDB\_fl0\_2010\_2014.dat) or on individual year file (e.g. HRspDB\_fl0\_2014.dat) and then conglomerate all the years. When running the co-add program all previous output files with the same name should be removed.
+\item \textit{Dependencies:} Requires an input file (CoadSpecDBINputFile.py) and coad.c
+\item \textit{Invocation:} mkCoadSpecDB.py -i CoadSpecDBInputFile.py
+\item \textit{Input:} Appended spectral database file (e.g. HRspDB\_fl0\_2014.dat). 
+\item \textit{Output:} Co-added spectral database file (e.g. CoaddspDB\_fl0\_2014.dat).
 \end{itemize}
 \end{itemize}
 
@@ -612,8 +631,8 @@ The following is a list of programs along with a description.
 \item \textit{Description:} For an individual station this program re-formats the NCEP nmc pressure and temperature data into a single file by year. This program takes an input file (NCEPinputFile.py)
 \item \textit{Dependencies:} Requires an input file (NCEPinputFile.py)
 \item \textit{Invocation:} NCEPnmnFormat.py -i NCEPinputFile.py
-\item \textit{Input:} The input NCEP nmc data is currently located at /data/ancillary\_data/NCEP\_NMC/
-\item \textit{Output:} The re-formated NCEP nmc data is currently located at /data/Campaign/(MLO,TAB,FL0)/NCEP\_nmc/
+\item \textit{Input:} The input NCEP nmc data is currently located at \seqsplit{/data/ancillary\_data/NCEP\_NMC/}
+\item \textit{Output:} The re-formated NCEP nmc data is currently located at \seqsplit{/data/Campaign/(MLO,TAB,FL0)/NCEP\_nmc/}
 \end{itemize}
 \end{itemize}
 
@@ -624,8 +643,8 @@ The following is a list of programs along with a description.
 \item \textit{Description:} This program creates ZPT files from NCEP nmc data and water files from WACCM data. It requires the use of an input file (mergprfInput.py)
 \item \textit{Dependencies:} Requires an input file (mergprfInput.py)
 \item \textit{Invocation:} MergPrf.py -i mergprfInput.py
-\item \textit{Input:} The input NCEP nmc data is currently located at /data/ancillary\_data/NCEP\_NMC/. The input WACCM data is currently at /data/Campaign/(MLO,TAB,FL0)/waccm/
-\item \textit{Output:} The profiles are stored with the bnr data in the daily directories /data1/(mlo,tab,fl0)/
+\item \textit{Input:} The input NCEP nmc data is currently located at \seqsplit{/data/ancillary\_data/NCEP\_NMC/}. The input WACCM data is currently at \seqsplit{/data/Campaign/(MLO,TAB,FL0)/waccm/}
+\item \textit{Output:} The profiles are stored with the bnr data in the daily directories \seqsplit{/data1/(mlo,tab,fl0)/}
 \end{itemize}
 \end{itemize}
 
@@ -636,8 +655,8 @@ The following is a list of programs along with a description.
 \item \textit{Description:} This program converts the ERA-Interim GRIB files into NetCDF files. This program calls the linux program ncl\_convert2nc to convert the GRIB file to NetCDF. The inputs are directly specified in the program. The NetCDF files are easily readable by python.
 \item \textit{Dependencies:} Requires installation of linux program ncl\_convert2nc.
 \item \textit{Invocation:} cnvrtNC.py
-\item \textit{Input:} The input ERA-Interim (GRIB) data is currently located at /data1/ancillary\_data/ERAdata/
-\item \textit{Output:} The output ERA-Interim (NetCDF) data is currently located at /data1/ancillary\_data/ERAdata/
+\item \textit{Input:} The input ERA-Interim (GRIB) data is currently located at \seqsplit{/data1/ancillary\_data/ERAdata/}
+\item \textit{Output:} The output ERA-Interim (NetCDF) data is currently located at \seqsplit{/data1/ancillary\_data/ERAdata/}
 \end{itemize}
 \end{itemize}
 
@@ -648,7 +667,7 @@ The following is a list of programs along with a description.
 \item \textit{Description:} This program creates water profiles from the ERA-Interim data. The inputs are directly specified in the program. It interpolates a location and altitude profile to the ERA-Interim grid. It creates daily averages; however, it also stores the 6 hourly PV, Temperature, and Q.
 \item \textit{Dependencies:} None
 \item \textit{Invocation:} ERAwaterPrf.py
-\item \textit{Input:} The input ERA-Interim (NetCDF) data is currently located at /data1/ancillary\_data/ERAdata/
+\item \textit{Input:} The input ERA-Interim (NetCDF) data is currently located at \seqsplit{/data1/ancillary\_data/ERAdata/}
 \item \textit{Output:} The output water profiles are stored with the bnr data in the daily directories /data1/(mlo,tab,fl0)
 \end{itemize}
 \end{itemize}
@@ -660,8 +679,8 @@ The following is a list of programs along with a description.
 \item \textit{Description:} This program creates water profiles from the NCEP re-analysis data. The inputs are directly specified in the program. It interpolates a location and altitude profile to the NCEP grid. Initial NCEP re-analysis data is already daily averaged.
 \item \textit{Dependencies:} None
 \item \textit{Invocation:} NCEPwaterPrf.py
-\item \textit{Input:} The input NCEP re-analysis (NetCDF) data is currently located at /data1/ancillary\_data/NCEPdata/
-\item \textit{Output:} The output water profiles are stored with the bnr data in the daily directories /data1/(mlo,tab,fl0)
+\item \textit{Input:} The input NCEP re-analysis (NetCDF) data is currently located at \seqsplit{/data1/ancillary\_data/NCEPdata/}
+\item \textit{Output:} The output water profiles are stored with the bnr data in the daily directories \seqsplit{/data1/(mlo,tab,fl0)}
 \end{itemize}
 \end{itemize}
 
@@ -673,7 +692,7 @@ The following is a list of programs along with a description.
 \item \textit{Dependencies:} None
 \item \textit{Invocation:} retWaterPrf.py
 \item \textit{Input:} The input is the location of the retrieved water data.
-\item \textit{Output:} The output water profiles are stored with the bnr data in the daily directories /data1/(mlo,tab,fl0)
+\item \textit{Output:} The output water profiles are stored with the bnr data in the daily directories \seqsplit{/data1/(mlo,tab,fl0)}
 \end{itemize}
 \end{itemize}
 
@@ -684,8 +703,8 @@ The following is a list of programs along with a description.
 \item \textit{Description:} This program creates daily averaged water profiles from the a priori water files created from the program retWaterPrf.py. The inputs are specified directly in the program.
 \item \textit{Dependencies:} None
 \item \textit{Invocation:} retWaterPrfDaily.py
-\item \textit{Input:} The input water profiles are located with the bnr data in the daily directories /data1/(mlo,tab,fl0)
-\item \textit{Output:} The output water profiles are stored with the bnr data in the daily directories /data1/(mlo,tab,fl0)
+\item \textit{Input:} The input water profiles are located with the bnr data in the daily directories \seqsplit{/data1/(mlo,tab,fl0)}
+\item \textit{Output:} The output water profiles are stored with the bnr data in the daily directories \seqsplit{/data1/(mlo,tab,fl0)}
 \end{itemize}
 \end{itemize}
 
@@ -706,7 +725,6 @@ The following is a list of programs along with a description.
 \item \textit{Output:} The output is also the specified data directory or the current working directory
 \end{itemize}
 \end{itemize}
-
 
 %sfit4Layer1.py
 \begin{itemize}
@@ -731,18 +749,69 @@ The following is a list of programs along with a description.
 \begin{itemize}
 \item mkListFile.py
 \begin{itemize}
-\item \textit{Description:} This program creates a list file of all the directories with retrievals and some meta-data for the IDL program gather.pro to create
-\item \textit{Dependencies:} 
-\item \textit{Invocation:} 
-\item \textit{Input:} 
-\item \textit{Output:}
+\item \textit{Description:} This program creates a list file of all the directories with retrievals and some meta-data for the IDL program gather.pro to create a sav file.
+\item \textit{Dependencies:} None
+\item \textit{Invocation:} mkListFile.py -i <file> -N <file> -d <dir> -?
+\begin{itemize}
+\item -i Filename and path of layer1 input file
+\item -N Filename and path to output list file
+\item -d Base directory of data 
+\item -? Show all flags
+\end{itemize}
+\item \textit{Input:} Layer1 input file, Base directory to data
+\item \textit{Output:} Name of list file
 \end{itemize}
 \end{itemize}
 
 
 \subsection{Post-Processing}
+%pltRet.py
+\begin{itemize}
+\item pltRet.py
+\begin{itemize}
+\item \textit{Description:} This program creates plots for an individual retrieval. The input, which is the directory of the retrieval, is given as a command line argument. If no command line argument is specified the current working directory is used.
+\item \textit{Dependencies:} dataOutClass.py
+\item \textit{Invocation:} pltRet.py -i <dir> -?
+\begin{itemize}
+\item -i Directory of retrieval
+\item -? Show all flags
+\end{itemize}
+\item \textit{Input:} Directory of retrieval
+\item \textit{Output:} Various plots
+\end{itemize}
+\end{itemize}
 
+%pltSet.py
+\begin{itemize}
+\item pltRet.py
+\begin{itemize}
+\item \textit{Description:} This program creates plots for a set of retrievals. There are multiple filters and flags that can be used to filter the data. These flags and filters are specified in the input file
+\item \textit{Dependencies:} dataOutClass.py
+\item \textit{Invocation:} pltSet.py -i setInput.py [-?]
+\begin{itemize}
+\item -i Input file name
+\item -? Show all flags
+\end{itemize}
+\item \textit{Input:} Input file
+\item \textit{Output:} Various plots
+\end{itemize}
+\end{itemize}
 
+%HDFmain.py
+\begin{itemize}
+\item HDFmain.py
+\begin{itemize}
+\item \textit{Description:} This is the main file for creating HDF files from data. In this program you call the HDFsave object and create an HDF file. From here you define the directory to write the HDF file, whether to write the file using single or double precision, and whether to write an HDF4 or HDF5 file (IRWG / GEOMS are single precision.). The inputs are directly specified in the file.
+\item \textit{Dependencies:} hdfsave.py
+\item \textit{Invocation:} HDFmain.py
+\begin{itemize}
+\item -i Input file name
+\item -? Show all flags
+\end{itemize}
+\item \textit{Input:} Input file
+\item \textit{Output:} Various plots
+\end{itemize}
+\end{itemize}
 
 
 

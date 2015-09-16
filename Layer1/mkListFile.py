@@ -63,7 +63,7 @@ import datetime as dt
                                 #-------------------------#
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'mkListFile.py -i <file> -N <file> -?'
+    print 'mkListFile.py -i <file> -N <file> -d <dir> -?'
     print '  -i <file> : Path and file name of Layer1 input file'
     print '  -N <file> : Path and file name for output list file'
     print '  -d <dir>  : Base directory of data'
