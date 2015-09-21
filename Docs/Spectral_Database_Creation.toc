@@ -25,3 +25,6 @@
 \contentsline {subsection}{\numberline {7.3}Reference Profiles}{15}{subsection.7.3}
 \contentsline {subsection}{\numberline {7.4}Processing}{18}{subsection.7.4}
 \contentsline {subsection}{\numberline {7.5}Post-Processing}{19}{subsection.7.5}
+\contentsline {section}{\numberline {8}Tips \& Tricks }{20}{section.8}
+\contentsline {subsection}{\numberline {8.1}HDF Creation}{20}{subsection.8.1}
+\contentsline {subsection}{\numberline {8.2}Retrieval List Updating}{20}{subsection.8.2}
