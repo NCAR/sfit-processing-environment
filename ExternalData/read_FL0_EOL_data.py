@@ -1,4 +1,5 @@
-#! /usr/bin/python2.7
+#! /usr/local/python-2.7/bin/python
+###! /usr/bin/python2.7
 
 #----------------------------------------------------------------------------------------
 # Name:
@@ -63,15 +64,15 @@ def ckDir(dirName):
     '''Check if a directory exists'''
     if not os.path.exists( dirName ):
         print 'Input Directory %s does not exist' % (dirName)
-        sys.exit()   
-        
+        sys.exit()
+
 def ckFile(fName):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
         print 'File %s does not exist' % (fName)
         sys.exit()
 
-         
+
                                     #----------------------------#
                                     #                            #
                                     #        --- Main---         #
@@ -79,14 +80,16 @@ def ckFile(fName):
                                     #----------------------------#
 
 def main():
-                                    
+
     #----------------
     # Initializations
     #----------------
     dataDir     = '/Volumes/data1/ancillary_data/fl0/eol/'
+    dataDir     = '/data1/ancillary_data/fl0/eol/'
     dataFileTag = 'flab'
     fileExtTag  = 'cdf'
     outDataDir  = '/Volumes/data1/ancillary_data/fl0/eol/'
+    outDataDir  = '/data1/ancillary_data/fl0/eol/'
     yearstr     = '2015'
 
     #--------------------------
@@ -100,7 +103,7 @@ def main():
     rmind      = []
 
     #--------------------
-    # Search through base 
+    # Search through base
     # directory for files
     #--------------------
     files = glob.glob(dataDir + 'flab.' + yearstr + '*.' + fileExtTag)
@@ -109,12 +112,12 @@ def main():
         sys.exit()
     else:
         print ' %d files found for year: %s' % (len(files),yearstr)
-    
+
     #-------------------------
     # Loop through found files
     #-------------------------
-    for indvfile in files:                               
-            
+    for indvfile in files:
+
         cdfname = netcdf.netcdf_file(indvfile,'r',mmap=False)       # Open netcdf file
         # Get variables
         base_time   = cdfname.variables['base_time']
@@ -124,7 +127,7 @@ def main():
         press       = cdfname.variables['pres']
         tempDP      = cdfname.variables['dp']
         cdfname.close()
-        
+
         #----------------------------------
         # Create an actual time vector from
         # basetime and offset (unix time)
@@ -132,7 +135,7 @@ def main():
         total_time = base_time[()] + time_offset.data
         #total_time = [dt.datetime.utcfromtimestamp(indtime) for indtime in total_time]
         total_time = total_time.tolist()                # Convert numpy array to list
-        
+
         #------------------------------------------------------------
         # There seems to be a timing issue in some of the data files.
         # time_offset can have unusually large numbers. Need to check
@@ -145,7 +148,7 @@ def main():
             except ValueError:
                 total_time[ind] = -9999
                 rmind.append(ind)
-        
+
         #------------------------------------------------------
         # Remove observations with erroneous time_offset values
         #------------------------------------------------------
@@ -154,7 +157,7 @@ def main():
         rh.data       = np.delete(rh.data,rmind)                                           # Numpy array
         press.data    = np.delete(press.data,rmind)                                        # Numpy array
         tempDP.data   = np.delete(tempDP.data,rmind)                                       # Numpy array
-        
+
         #---------------------
         # Append to main lists
         #---------------------
@@ -163,13 +166,13 @@ def main():
         rhList.extend(rh.data)
         pressList.extend(press.data)
         tempDPList.extend(tempDP.data)
-                                        
+
     #------------------------
     # Sort list based on time
     # This returns a tuple
     #------------------------
     timeList, tempList, rhList, pressList, tempDPList = zip(*sorted(zip(timeList, tempList, rhList, pressList, tempDPList)))
-                
+
     #-----------------------------------
     # Construct a vector of string years
     #-----------------------------------

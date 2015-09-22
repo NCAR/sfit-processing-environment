@@ -33,12 +33,12 @@ loc = 'fl0'                                    # Three letter station identifier
 # and ending dates!!
 #----------------------------------
 # Starting
-iyear = 2009               # Year
+iyear = 2015               # Year
 imnth = 1                  # Month
 iday  = 1                  # Day
 
 # Ending
-fyear = 2014               # Year
+fyear = 2015               # Year
 fmnth = 12                 # Month
 fday  = 31                 # Day
 
