@@ -25,7 +25,6 @@
 #----------------------------------------------------------------------------------------                              
 if __name__ != "__main__":
     import hdfsave as hdfsave
-#import hdfsaveMLO as hdfsave                            
                             
 def main(args):
     if len(args) != 7:
@@ -63,6 +62,7 @@ def main(args):
     minVMR         = -1.0e-7
     maxVMR         = 2.0e-5
     maxCHI2        = 100.0
+    granularity    = 'yearly'
     
     if loc1.lower() == 'bre':
         loc            = 'BREMEN'
@@ -81,21 +81,24 @@ def main(args):
         source         = 'AWI019'
         attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
         # source         = 'AWI028'
+    if loc1.lower() == 'jfj':
+        loc            = 'Jungfraujoch'
+        source         = 'Jungfraujoch'
+        attribute_file = os.path.join(script_dir, 'external.txt')
 
     if gasName.lower() == 'o3':
         gasName        = 'O3'
         maxRMS         = 5.0 # in percent
         maxSZA         = 90.0
         rmsFlag        = True
-        tcFlag         = True
-        pcFlag         = True
+        tcFlag         = False
+        pcFlag         = False
         cnvFlag        = True
         szaFlag        = True
         validFlag      = True
-        maxCHI2        = 5.0
-        minCO2         = 6.5e21
-        maxCO2         = 8.5e21
-
+        maxCHI2        = 6.0
+        minVMR         = -1e-7
+        
     if gasName.lower() == 'ccl4':
         gasName        = 'CCl4'
         maxSZA         = 90.0
@@ -175,6 +178,17 @@ def main(args):
         minCO2         = 2e22
         maxCO2         = 10e22
 
+    if gasName.lower() == 'ocs':
+        gasName        = 'OCS'
+        tcFlag         = False
+        minDOFs        = 1.0
+        maxCHI2        = 4.0
+        maxVMR         = 1e-6
+        minVMR         = -1e-11
+        dofFlag        = True
+        cnvFlag        = True
+        validFlag      = True
+
     #---------------------
     # For python interface
     #---------------------
@@ -194,7 +208,7 @@ def main(args):
     # variable DATETIME will always be written as a DOUBLE as 
     # specified in GEOMS: http://avdc.gsfc.nasa.gov/index.php?site=1989220925
     #------------------------------------------------------------
-    myhdf = hdfsave.HDFsave(gasName,outDir,sfitVer,loc,source,attribute_file,dType='float32')
+    myhdf = hdfsave.HDFsave(gasName,outDir,sfitVer,loc,source,attribute_file,granularity,dType='float32')
     
     #------------------------------------------------
     # Here we initialize the HDF object with our data

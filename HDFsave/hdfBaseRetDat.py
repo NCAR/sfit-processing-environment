@@ -92,6 +92,9 @@ class HDFbaseRetDat(object):
     def getAltitudeName(self):
         return 'ALTITUDE'
 
+    def getAirmassName(self):
+        return 'AIRMASS'
+
     def getAltitudeBoundariesName(self):
         return 'ALTITUDE.BOUNDARIES'
 
@@ -208,6 +211,11 @@ class HDFbaseRetDat(object):
         pass
 
     @abc.abstractmethod
+    def airmassAttrbs(self,nlyrs,nsize,datatype):
+        ''' Return a dictionary of airmass profile for the hdf file,  like dataStr = { 'VAR_NAME': self.AirmassName() } '''
+        pass
+
+    @abc.abstractmethod
     def rprfAttrbs(self,nlyrs,nsize,datatype,units,sclfctr,maxval):
         ''' Return a dictionary of gasname mixing ratio absorption solar attributes for the hdf file,  like dataStr = { 'VAR_NAME': 'gasName.upper()+'.'+self.getMixingRatioAbsorptionSolarName() } '''
         pass
@@ -303,7 +311,7 @@ class HDFbaseRetDat(object):
         fDOI           = dt.datetime.now()
         hdfHdr         = self.glblAttrbs(fDOI,idate,fdate)
         hdfFname       = hdfHdr['FILE_NAME']
-
+        
         #-----------------------------------
         # Create HDF file
         #-----------------------------------
@@ -372,6 +380,13 @@ class HDFbaseRetDat(object):
         hdfFile.createDataSet(self.getTemperatureIndependentName(), \
                                 (self.temperatures.shape[0],self.temperatures.shape[1]),self.temperatures, \
                                 self.tempAttrbs(self.temperatures.shape[1],self.temperatures.shape[0],float(self.temperatures.max())))
+
+        #-------------------------------------------------
+        # Create Airmass dataset (variable)
+        #-------------------------------------------------
+#        hdfFile.createDataSet(self.getAirmassName(), \
+#                                (self.airmass.shape[0],self.airmass.shape[1]),self.airmass, \
+#                                self.airmassAttrbs(self.airmass.shape[1],self.airmass.shape[0],float(self.airmass.max())))
 
         #-------------------------------------------------------------
         # Create gasname retrieved vertical profile dataset (variable)

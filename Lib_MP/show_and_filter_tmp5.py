@@ -199,7 +199,7 @@ class show_tmph5:
                                self.res.col_ap[self.valid_ind],
                                self.res.err_ran[self.valid_ind],
                                self.res.err_sys[self.valid_ind]):
-            dstring = dates.num2date(d).strftime('%Y%d%H%M%S')
+            dstring = dates.num2date(d).strftime('%Y%m%d%H%M%S')
             fid.write('%s %d %g %g %g %g\n'%(dstring, d, r, a, rr, ss))
         fid.close()
             

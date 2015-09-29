@@ -33,6 +33,7 @@ class load_H4:
         self.h4file = file
         # in hdf file datenum since 2000-1-1-0-0-0
         self.dates = dates.num2date(self.h4.select('DATETIME').get()+730120.0)
+        self.data_template = self.h4.attributes()['DATA_TEMPLATE']
 #        import pdb
 #        pdb.set_trace()
 
@@ -69,15 +70,23 @@ class load_H4:
         except:
             pass
         try:
-            er = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM.STANDARD').get()
-            es = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC.STANDARD').get()
+            if self.data_template == 'GEOMS-TE-FTIR-001':
+                er = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM').get()
+                es = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC').get()
+            else:
+                er = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM.STANDARD').get()
+                es = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC.STANDARD').get()
         except:
             pass
         return(rt,ap,er,es)
 
     def get_profile(self,gas):
-        vmrt = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR').get()
-        vmap = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI').get()
+        if self.data_template == 'GEOMS-TE-FTIR-001':
+            vmrt = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR').get()
+            vmap = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_APRIORI').get()
+        else:
+            vmrt = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR').get()
+            vmap = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI').get()
         z = self.h4.select('ALTITUDE').get()
         return(vmrt,vmap,z)
 
@@ -87,17 +96,26 @@ class load_H4:
         return(avk_col,z)
 
     def get_avk_vmr(self, gas):
-        avk_vmr = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_AVK').get()
+        if self.data_template == 'GEOMS-TE-FTIR-001':
+            avk_vmr = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_AVK').get()
+        else:
+            avk_vmr = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_AVK').get()
         z = self.h4.select('ALTITUDE').get()
         return(avk_vmr,z)
 
     def get_sys_vmr(self, gas):
-        sys_vmr = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC.COVARIANCE').get()
+        if self.data_template == 'GEOMS-TE-FTIR-001':
+            sys_vmr = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC.COVARIANCE').get()
+        else:
+            sys_vmr = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC.COVARIANCE').get()
         z = self.h4.select('ALTITUDE').get()
         return(sys_vmr,z)
 
     def get_ran_vmr(self, gas):
-        ran_vmr = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM.COVARIANCE').get()
+        if self.data_template == 'GEOMS-TE-FTIR-001':
+            ran_vmr = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM.COVARIANCE').get()
+        else:
+            ran_vmr = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM.COVARIANCE').get()
         z = self.h4.select('ALTITUDE').get()
         return(ran_vmr,z)
 
@@ -317,6 +335,8 @@ class load_hdf:
             err.extend(er)
             ess.extend(es)
 
+#        import ipdb
+#        ipdb.set_trace()    
         ind = np.argsort(dd)
         dd = np.array(dd)[ind]
         rt = np.array(rtt)[ind]
@@ -327,7 +347,7 @@ class load_hdf:
         fid = open('columns.dat', 'write')
         fid.write('date dnum retr apr ran, sys\n')
         for d,r,a,rr,ss in zip(dd,rt,ap,er,es):
-            dstring = dates.num2date(d).strftime('%Y%d%H%M%S')
+            dstring = dates.num2date(d).strftime('%Y%m%d%H%M%S')
             fid.write('%s %d %g %g %g %g\n'%(dstring, d, r, a, rr, ss))
         fid.close()
 

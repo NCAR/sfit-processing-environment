@@ -97,7 +97,7 @@ class HDFinitData(object):
         #---------------------------------------------------
         self.datesJD2K                      = np.asarray(dataStrc['ds']['DATETIME'])
         self.latitude                       = dataStrc['ds']['LATITUDE'][0]
-        self.longitude                      = 360.0 - dataStrc['ds']['LONGITUDE'][0]                                # Convert [West Long] -> [East Long]
+        self.longitude                      = dataStrc['ds']['LONGITUDE'][0]                                
         self.instAltitudes                  = dataStrc['ds']['ALT_INSTRUMENT'][0] / 1000.0                          # Convert [m] -> [km]
         self.surfPressures                  = np.asarray(dataStrc['ds']['SURFACE_PRESSURE'])
         self.surfTemperatures               = np.asarray(dataStrc['ds']['SURFACE_TEMPERATURE'])
@@ -175,7 +175,7 @@ class HDFinitData(object):
         self.dates                          = pyData.HDFdates
         self.datesJD2K                      = pyData.HDFdatesJD2K
         self.latitude                       = pyData.HDFlat
-        self.longitude                      = 360.0 - pyData.HDFlon                        # Convert [West Long] -> [East Long]
+        self.longitude                      = pyData.HDFlon
         self.instAltitudes                  = pyData.HDFinstAlt
         self.surfPressures                  = pyData.HDFsurfP
         self.surfTemperatures               = pyData.HDFsurfT
@@ -183,6 +183,7 @@ class HDFinitData(object):
         self.altitudeBoundaries             = pyData.HDFaltBnds
         self.pressures                      = pyData.HDFpressPrf
         self.temperatures                   = pyData.HDFtempPrf
+        self.airmass                        = pyData.HDFairMass
         self.gasMxRatAbsSolar               = pyData.HDFrGasPrfVMR   / self.mxSclFctVal
         self.gasMxRatAbsSolarApriori        = pyData.HDFaGasPrfVMR   / self.mxSclFctVal
         self.gasMxRatAbsSolarAVK            = pyData.HDFak

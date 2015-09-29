@@ -31,7 +31,7 @@ class load_tmph5:
                      'dofs':'dofs',
                      'spectra':'spectra',
                      'directories': 'directories',
-                     'auxname':'auxnames',
+                     'auxnames':'auxnames',
                      'aux_ap':'aux_ap',
                      'aux_rt': 'aux_rt',
                      'iter':'iter',
@@ -60,18 +60,17 @@ class load_tmph5:
             return(np.sqrt(diag(self.h5f.root.cov_vmr_ran[:,:,self.valid] +
                                 self.h5f.root.cov_vmr_sys[:,:,self.valid])))
 
+        igasnames =self.h5f.root.gasnames[:]
+        
         if value == 'col_co2':
-            col_co2 = 0
-            for co2name in [s for s in igasnames if 'CO2']:
-                col_co2 = col_co2
-                + h5f.root.icol_rt[igasnames.index(co2name)-1,self.valid]
-                return(col_co2)
-
+            return(self.h5f.root.icol_rt[igasnames.index('CO2')-1,self.valid])
         if value == 'col_h2o' and 'H2O' in igasnames:
-            return(h5f.root.icol_rt[igasnames.index('H2O')-1,self.valid])
+            return(self.h5f.root.icol_rt[igasnames.index('H2O')-1,self.valid])
         if value == 'col_hdo' and 'HDO' in igasnames:
-            return(h5f.root.icol_rt[igasnames.index('HDO')-1,self.valid])
-
+            return(self.h5f.root.icol_rt[igasnames.index('HDO')-1,self.valid])
+        if value == 'auxnames':
+            return(self.h5f.root.auxnames)
+        
         val = self.vars[value]
         exec('dims = self.h5f.root.'+val+'[:].shape')
         if len(dims) == 1:

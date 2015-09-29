@@ -34,7 +34,7 @@ import hdfInitData
 
 class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
-   def __init__(self,gasNameStr,outputDir,processingSfitVer,location,source,attr_file,dType):
+   def __init__(self,gasNameStr,outputDir,processingSfitVer,location,source,attr_file,granu,dType):
       super(HDFsave, self).__init__(gasNameStr)
       self.dType               = dType
       if   dType.lower() == 'float32': self.dTypeStr = 'REAL'
@@ -50,8 +50,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.mxSclFct2Val        = 1E-12
       self.attribute_file      = attr_file
       self.locID               = source
-#      if location.lower() == 'thule': self.locID = 'NCAR001'
-#      else:                           self.locID = 'NCAR002'
+      self.granularity         = granu
 
 
    def glblAttrbs(self,fDOI,idate,fdate):
@@ -64,63 +63,24 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr2 = cl.OrderedDict()
 
 
-         
-      # dataStr['PI_NAME']                 = 'Hannigan;James'
-      # dataStr['PI_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
-      # dataStr['PI_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
-      # dataStr['PI_EMAIL']                = 'jamesw@ucar.edu'
-      # dataStr['DO_NAME']                 = 'Hannigan;James'
-      # dataStr['DO_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
-      # dataStr['DO_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
-      # dataStr['DO_EMAIL']                = 'jamesw@ucar.edu'
-      # dataStr['DS_NAME']                 = 'Hannigan;James'
-      # dataStr['DS_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
-      # dataStr['DS_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
-      # dataStr['DS_EMAIL']                = 'jamesw@ucar.edu'
-      # dataStr['DATA_DESCRIPTION']        = 'FTIR vmr vertical profile data of '+self.gasName+'. Data were taken from a 0.0035cm-1 resolution Bruker 120HR '  + \
-      #                                      'FTIR spectrometer stationed at 3396masl at Mauna Loa, Hawaii (19.54N, 155.57W).  Data acquisition ' + \
-      #                                      'is automated. Small wavenumber regions around features for a gas to be retrieved are used in the retrieval analysis.' + \
-      #                                      'Retrievals take into account the SNR of the spectra region used in the fitting process as well as reasonable estimations of a priori VMR variability. ' + \
-      #                                      'A priori profiles are taken from WACCM 75y run monthly means for the site. The profile retrieval on each measurement is done using ' + \
-      #                                      'the SFIT4 version: ' + self.sfitVer + ' code that employs the Optimal Estimation retrieval algorithm and is publically available. ' + \
-      #                                      'HITRAN 2008 line list with additional pseudo-line parameters are used in the forward calculation. ' + \
-      #                                      'Temperature profiles are derived from NCEP analyses for each day to approx. 1.0 mbar and WACCM monthly mean above. ' + \
-      #                                      'Daily water profiles are averaged from 6 hourly ERA-Interim re-analysis data. Further information can be found at www://acd.ucar.edu/irwg/index/html'
-      # dataStr['DATA_DISCIPLINE']         = 'ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED'
-      # dataStr['DATA_GROUP']              = 'EXPERIMENTAL;PROFILE.STATIONARY'
-      # dataStr['DATA_LOCATION']           = self.loc.upper()
-      # dataStr['DATA_SOURCE']             = 'FTIR.'+self.gasName+'_'+self.locID.upper()
-      dataStr['DATA_VARIABLES']          = self.getDatetimeName()+';'+self.getLatitudeInstrumentName()+';'+self.getLongitudeInstrumentName()+';'+self.getAltitudeInstrumentName()+';'+ \
-                                           self.getSurfacePressureIndependentName()+';'+       \
-                                           self.getSurfaceTemperatureIndependentName()+';'+self.getAltitudeName()+';'+self.getAltitudeBoundariesName()+';'+self.getPressureIndependentName()+';'+                 \
-                                           self.getTemperatureIndependentName()+';'+self.gasName+'.'+self.getMixingRatioAbsorptionSolarName()+';'+self.gasName+'.'+                                     \
-                                           self.getMixingRatioAbsorptionSolarAprioriName()+';'+      \
-                                           self.gasName+'.'+self.getMixingRatioAbsorptionSolarAvkName()+';'+self.getIntegrationTimeName()+';'+               \
-                                           self.gasName+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()+';'+               \
-                                           self.gasName+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()+';'+self.gasName+'.'+self.getColumnPartialAbsorptionSolarName()+';'+           \
-                                           self.gasName+'.'+self.getColumnPartialAbsorptionSolarAprioriName()+';'+self.gasName+'.'+self.getColumnAbsorptionSolarName()+';'+self.gasName+'.'+        \
-                                           self.getColumnAbsorptionSolarAprioriName()+';'+      \
-                                           self.gasName+'.'+self.getColumnAbsorptionSolarAvkName()+';'+self.gasName+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName()+';'+self.gasName+'.'+  \
-                                           self.getColumnAbsorptionSolarUncertaintySystematicName()+';'+self.getAngleSolarZenithAstronomicalName()+';'+self.getAngleSolarAzimuthName()+';'+                        \
-                                           self.getH2oMixingRatioAbsorptionSolarName()+';'+self.getH2oColumnAbsorptionSolarName(),
-      dataStr['DATA_START_DATE']         = idateStr
-      dataStr['DATA_STOP_DATE']          = fdateStr
-      dataStr['DATA_FILE_VERSION']       = '003'
-#      dataStr['DATA_MODIFICATIONS']      = 'None'
+      dataStr['DATA_FILE_VERSION']       = '004'
       dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-002'
-      # dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper Hannigan, J.W., Coffey, M.T., Goldman, A. Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
-      # dataStr['DATA_CAVEATS']            = 'None'
-      # dataStr['DATA_RULES_OF_USE']       = 'Contact Hannigan;James'
-      # dataStr['DATA_ACKNOWLEDGEMENT']    = 'NCAR is sponsored by the National Science Foundation. This work is supported under contract by the National Aeronautics and Space Administration.'
-      # dataStr['FILE_DOI']                = ' '
-      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_002.hdf'
+      if False and self.granularity == 'yearly':
+         file_idateStr = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(idate.year,1,1,0,0,0)
+         file_fdateStr = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fdate.year,12,31,23,59,59)
+      else:
+         file_idateStr = idateStr
+         file_fdateStr = fdateStr
+      file_idateStr = file_idateStr.lower()
+      file_fdateStr = file_fdateStr.lower()
+      dataStr['DATA_START_DATE']         = file_idateStr
+      dataStr['DATA_STOP_DATE']          = file_fdateStr
+
+         
+      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+file_idateStr+'_'+file_fdateStr+'_'+dataStr['DATA_FILE_VERSION']+'.hdf'
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
-      # dataStr['FILE_ACCESS']             = 'NDACC'
-      # dataStr['FILE_PROJECT_ID']         = 'NSA007'
-      # dataStr['FILE_ASSOCIATION']        = 'NDACC'
-      # dataStr['FILE_META_VERSION']       = '04R010;CUSTOM'
-
-
+      print dataStr['FILE_NAME']
+      
       dataStr['PI_NAME']                 = '!!!CHANGE!!!'
       dataStr['PI_AFFILIATION']          = '!!!CHANGE!!!'
       dataStr['PI_ADDRESS']              = '!!!CHANGE!!!'
@@ -157,29 +117,21 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
                                            self.getAltitudeName()+';'+self.getAltitudeBoundariesName()+';'\
                                            +self.getPressureIndependentName()+';'+                 \
                                            self.getTemperatureIndependentName()+';'+\
+                                           self.getIntegrationTimeName()+';'+\
                                            self.gasName+'.'+self.getMixingRatioAbsorptionSolarName()+';'+\
-                                           self.gasName+'.'+                                     \
-                                           self.getMixingRatioAbsorptionSolarAprioriName()+';'+      \
+                                           self.gasName+'.'+self.getMixingRatioAbsorptionSolarAprioriName()+';'+      \
                                            self.gasName+'.'+self.getMixingRatioAbsorptionSolarAvkName()+';'+\
-                                           self.getIntegrationTimeName()+';'+               \
                                            self.gasName+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()+';'+\
                                            self.gasName+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()+';'+\
                                            self.gasName+'.'+self.getColumnPartialAbsorptionSolarName()+';'+           \
                                            self.gasName+'.'+self.getColumnPartialAbsorptionSolarAprioriName()+';'+\
-                                           self.gasName+'.'+self.getColumnAbsorptionSolarName()+';'+self.gasName+'.'+        \
-                                           self.getColumnAbsorptionSolarAprioriName()+';'+      \
+                                           self.gasName+'.'+self.getColumnAbsorptionSolarName()+';'+\
+                                           self.gasName+'.'+self.getColumnAbsorptionSolarAprioriName()+';'+      \
                                            self.gasName+'.'+self.getColumnAbsorptionSolarAvkName()+';'+\
                                            self.gasName+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName()+';'+\
-                                           self.gasName+'.'+  \
-                                           self.getColumnAbsorptionSolarUncertaintySystematicName()+';'+\
+                                           self.gasName+'.'+self.getColumnAbsorptionSolarUncertaintySystematicName()+';'+\
                                            self.getAngleSolarZenithAstronomicalName()+';'+self.getAngleSolarAzimuthName()+';'+\
                                            self.getH2oMixingRatioAbsorptionSolarName()+';'+self.getH2oColumnAbsorptionSolarName(),
-      dataStr['DATA_START_DATE']         = idateStr
-      dataStr['DATA_STOP_DATE']          = fdateStr
-      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+\
-                                           self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_002.hdf'
-      dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".\
-                                           format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
 
       
 
@@ -410,6 +362,29 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
       dataStr['VALID_RANGE']          = (0.0,500.0)
       dataStr['units']                = 'K'
+      dataStr['_FillValue']           = self.getFillValue()
+      
+      return dataStr
+
+
+   def airmassAttrbs(self,nlyrs,nsize,maxval):
+      ''' Attributes for airmass profile variable '''
+
+      dataStr = cl.OrderedDict()
+
+      dataStr['VAR_NAME']             = self.getAirmassName()
+      dataStr['VAR_DESCRIPTION']      = 'Airmass on retrieval grid layers'
+      dataStr['VAR_NOTES']            = 'The airmass is calculated on layers and represent the mass of air of the layer.'
+      dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
+      dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()
+      dataStr['VAR_DATA_TYPE']        = self.dTypeStr
+      dataStr['VAR_UNITS']            = 'TBD'
+      dataStr['VAR_SI_CONVERSION']    = '0.0;1.0;TBD'
+      dataStr['VAR_VALID_MIN']        = 0.0
+      dataStr['VAR_VALID_MAX']        = 1E25
+      dataStr['VAR_FILL_VALUE']       = self.getFillValue()
+      dataStr['VALID_RANGE']          = (0.0,1E25)
+      dataStr['units']                = 'TBD'
       dataStr['_FillValue']           = self.getFillValue()
       
       return dataStr
