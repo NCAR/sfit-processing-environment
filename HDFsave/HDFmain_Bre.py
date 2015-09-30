@@ -78,9 +78,16 @@ def main(args):
         attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
     elif loc1.lower() == 'pmb':    
         loc            = 'PARAMARIBO'
-        source         = 'AWI019'
-        attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
-        # source         = 'AWI028'
+        attribute_file = os.path.join(script_dir, 'paramaribo.txt')
+
+        if sdate.year < 2012 and edate.year > 2012:
+            print 'different containers during the envisaged time'
+            return
+        
+        if sdate.year < 2012:
+            source         = 'AWI019'
+        else:
+            source         = 'AWI028'
     if loc1.lower() == 'jfj':
         loc            = 'Jungfraujoch'
         source         = 'Jungfraujoch'
