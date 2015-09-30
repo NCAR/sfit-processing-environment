@@ -813,28 +813,6 @@ The following is a list of programs along with a description.
 \end{itemize}
 \end{itemize}
 
-
-\section{Tips \& Tricks }
-
-\subsection{HDF Creation}
-
-Copy a version of HDFmain.py to your local directory where the .sav file resides.  Update and run that copy. \\
-
-Copy data to anonymous ftp if needed eg. from otserver: 
-\begin{verbatim}
-%mkdir /net/acd.ucar.edu/ftp/user/jamesw/Corinne
-%chmod 777 /net/acd.ucar.edu/ftp/user/jamesw/Corinne
-%cp *.hdf /net/acd.ucar.edu/ftp/user/jamesw/Corinne
-\end{verbatim}
-
-\subsection{Retrieval List Updating}
-
-There is a program \texttt{mkListFile.py} that can make a listing of a set of retrievals from the output directory structure and the Layer1 input file.  This is necessary to do if you did not use the -l switch when running Layer1.  Failed on creating a date for the list from the daydir.time directory structure.  Use \texttt{mklist.k -i <Current>} where Current is the name of the directory where the retrieval day.tim directories are.  Then append this to the lst file header.
-
-Then run \texttt{gather4.pro}, repeated runs of \texttt{savefilter.pro} to remove outliers then \texttt{HDFmain.py}.
-
-
-
 \end{document}
 
 
