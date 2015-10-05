@@ -285,7 +285,7 @@ class show_tmph5:
                                 and self.res.c2y[x] < maxc2y
                                 and np.min(self.res.vmr_rt[:,x]) > minvmr
                                 and np.max(self.res.vmr_rt[:,x]) < maxvmr
-                                and self.res.err_tot[x] < errcol
+                                and self.res.err_tot[x] <= errcol
                                 and self.res.col_co2[x] > minco2
                                 and self.res.col_co2[x] < maxco2, range(0,len(self.res.dnum)))
 #        self.valid_ind = np.array(self.valid_ind)
