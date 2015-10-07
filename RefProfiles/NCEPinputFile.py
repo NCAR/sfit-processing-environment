@@ -25,12 +25,12 @@
 # Three letter station
 # location
 #---------------------
-loc = 'tab'                                    # Three letter station identifier
+loc = 'fl0'                                    # Three letter station identifier
 
 #----------------
 # Year to process
 #----------------
-years = [2013,2014]                                   # Year to process
+years = [2015]                                   # Year to process
 
 #------
 # Flags
@@ -42,15 +42,15 @@ NonIntrpFileFlg = True
 #--------------------
 # Base Data Directory
 #--------------------
-dataDir   = '/Volumes/data/tools/NCEP_NMC/'    # Base directory with all external station data
+dataDir   = '/data1/ancillary_data/NCEP_NMC/'    # Base directory with all external station data
 
 #------
 # Files
 #------
 #stationlyrs  = '/Users/ebaumer/Data/TestBed2/station.layers'                                # Station layers file
-HgtBaseDir      = '/Volumes/data/Campaign/'+loc.upper()+'/NCEP_nmc/'   # Height nmc data
-TempBaseDir     = '/Volumes/data/Campaign/'+loc.upper()+'/NCEP_nmc/'   # Temp nmc data
-IntrpBaseDir    = '/Volumes/data/Campaign/'+loc.upper()+'/NCEP_nmc/'   # Interpolated Temperatures
+HgtBaseDir      = '/data/Campaign/'+loc.upper()+'/NCEP_nmc/'   # Height nmc data
+TempBaseDir     = '/data/Campaign/'+loc.upper()+'/NCEP_nmc/'   # Temp nmc data
+IntrpBaseDir    = '/data/Campaign/'+loc.upper()+'/NCEP_nmc/'   # Interpolated Temperatures
 
 
 

@@ -34,6 +34,7 @@
 #----------------------------------------------------------------------------------------
 
 import datetime as dt
+import time
 import math
 import sys
 import numpy as np
@@ -45,6 +46,9 @@ import os
 from os import listdir
 from os.path import isfile, join
 import re
+#import statsmodels.api as sm
+from scipy.integrate import simps
+
 import matplotlib.dates as md
 from matplotlib.dates import DateFormatter, MonthLocator, YearLocator
 
@@ -240,6 +244,30 @@ def rmse(xData, yData):
     rmse = np.sqrt( SS_res / len(yData) )
 
     return rmse
+
+
+def toYearFraction(dates):
+    ''' Convert datetime to year and fraction of year'''
+
+    #def sinceEpoch(date): # returns seconds since epoch
+        #return time.mktime(date.timetuple())
+    #s = sinceEpoch
+    ep_fnc = lambda x: time.mktime(x.timetuple())
+    
+    retrnDates = np.zeros(len(dates))
+    
+    for i,sngDate in enumerate(dates):
+        year = sngDate.year
+        startOfThisYear = dt.datetime(year=year, month=1, day=1)
+        startOfNextYear = dt.datetime(year=year+1, month=1, day=1)
+    
+        yearElapsed = ep_fnc(sngDate) - ep_fnc(startOfThisYear)
+        yearDuration = ep_fnc(startOfNextYear) - ep_fnc(startOfThisYear)
+        fraction = yearElapsed/yearDuration
+        retrnDates[i] = sngDate.year + fraction
+
+    return retrnDates
+
 
 def dailyAvg(data, dates, dateAxis=1, meanAxis=0, quad=0):
     ''' Creates daily averages of specified quantity'''
@@ -548,6 +576,171 @@ def readCtlF(ctlF):
     else:           return ctl
     
 
+#---------------------------------
+# A simple code for finding linear 
+# trend with prediciton intervals
+#---------------------------------
+
+
+
+#-------------------------------------
+# Code to do boot strap trend analysis
+#-------------------------------------
+def fourier_basis(x, degree, half_period):
+    """Returns a 2-d array of fourier basis."""
+    A = np.ones((x.size, 2 * degree + 1))
+    
+    for d in range(1, degree + 1):
+        A[:, 2*d-1] = np.cos(d * np.pi * x / half_period)
+        A[:, 2*d] = np.sin(d * np.pi * x / half_period)
+    
+    return A
+
+
+def fit_driftfourier(x, data, weights, degree, half_period=0.5):
+    """
+    Fit y = f(x - x.min()) to data where f is given by
+    fourier series + drift.
+    
+    Parameters
+    ----------
+    x : 1-d array
+        x-coordinates
+    data : 1-d array
+        data values
+    weights : 1-d array
+        weights (>=0)
+    degree : int
+        degree of fourier series
+    half_period : float
+        half period
+    
+    Returns
+    -------
+    intercept : float
+        intercept at x.min()
+    slope : float
+        slope (drift) for the normalized data
+        (x - x.min())
+    pfourier : 1-d array
+        Fourier series parameters for the
+        normalized data
+    f_drift : callable
+        Can be used to calculate the drift
+        given any (non-normalized) x
+    f_fourier : callable
+        Can be used to calculate fourier series
+    f_driftfourier : callable
+        Can be used to calculate drift + fourier
+    residual_std : float
+        estimated standard deviation of residuals
+    A : 2-d array
+        matrix of "coefficients"
+    
+    """
+    xmin = x.min()
+    xnorm = x - xmin
+    
+    # coefficient matrix
+    A = np.ones((x.size, 2 * degree + 2))
+    A[:, 1] = xnorm
+    A[:, 2:] = fourier_basis(xnorm, degree, half_period)[:, 1:]
+    
+    # linear weighted least squares
+    results = np.linalg.lstsq(A * weights[:, np.newaxis],
+                              data * weights)
+    
+    params = results[0]
+    intercept = params[0]
+    slope = params[1]
+    pfourier = params[2:]
+    
+    f_drift = lambda t: slope * (t - xmin) + intercept
+    f_fourier = lambda t: np.sum(fourier_basis(t - xmin, degree,
+                                               half_period)[:, 1:]
+                                 * pfourier[np.newaxis, :],
+                                 axis=1) + intercept
+    f_driftfourier = lambda t: f_drift(t) + f_fourier(t) - intercept
+    
+    residual_std = np.sqrt(results[1][0] / (x.size - 2 * degree + 2)) 
+    
+    return (intercept, slope, pfourier,
+            f_drift, f_fourier, f_driftfourier,
+            residual_std, A)
+
+
+def cf_driftfourier(x, data, weights, degree,
+                    half_period=0.5, nboot=5000,
+                    percentiles=(2.5, 50., 97.5)):
+    """
+    Calculate confidence intervals for the fitted
+    parameters from fourier series + drift modelling,
+    using bootstrap resampling.
+    
+    Parameters
+    ----------
+    nboot : int
+        number of bootstrap replicates
+    percentiles : sequence of floats
+        percentiles of parameter estimate
+        distributions to return 
+    
+    Returns
+    -------
+    perc : dict
+        percentiles for of each parameter
+        distribution
+    intercept : 1-d array
+        intercept estimates from bootstraped
+        datasets.
+    slope : 1-d array
+        slope estimates
+    pfourier : 2-d array
+        fourier parameters estimates
+    
+    See Also
+    --------
+    :func:`fit_driftfourier`
+    """
+    
+    # 1st fit without bootstraping
+    results = fit_driftfourier(x, data, weights,
+                               degree, half_period)
+    f_driftfourier = results[5]
+    A = results[7]
+    model = f_driftfourier(x)
+    residuals = data - model
+    
+    # generate bootstrap resamples of residuals
+    # and new datasets from these resamples
+    boot_dataset = np.empty((x.size, nboot))
+    for i in range(nboot):
+        resample_i = np.floor(np.random.rand(x.size) * x.size).astype(int)
+        resample_residuals = residuals[resample_i]
+        boot_dataset[:, i] = model + resample_residuals
+    
+    # fit all bootstrap datasets
+    results_boot = np.linalg.lstsq(A * weights[:, np.newaxis],
+                                   boot_dataset * weights[:, np.newaxis])
+    
+    params_boot = results_boot[0]
+    
+    # compute percentiles
+    perc_boot = np.column_stack(np.percentile(params_boot,
+                                              percentiles, axis=1))
+    
+    perc = {'intercept' : perc_boot[0],
+            'slope' : perc_boot[1],
+            'pfourier' : perc_boot[2:]}
+    
+    intercept = params_boot[0]
+    slope = params_boot[1]
+    pfourier = params_boot[2:]
+    
+    return perc, intercept, slope, pfourier
+    
+    
+
                                                 #----------------#
                                                 # Define classes #
                                                 #----------------#
@@ -618,10 +811,11 @@ class ReadOutputData(_DateRange):
         # Set flags to indicate whether 
         # data has been read
         #------------------------------
-        self.readPbpFlg     = False
-        self.readSpectraFlg = False
-        self.readsummaryFlg = False
-        self.readRefPrfFlg  = False
+        self.readPbpFlg               = False
+        self.readSpectraFlg           = False
+        self.readsummaryFlg           = False
+        self.readRefPrfFlg            = False
+        self.readStateVecFlg          = False
         self.readErrorFlg             = {}
         self.readErrorFlg['totFlg']   = False
         self.readErrorFlg['sysFlg']   = False
@@ -751,6 +945,22 @@ class ReadOutputData(_DateRange):
         #------------
         nobs = len(np.asarray(self.summary[gasName+'_FITRMS']))
         print 'Number of total observations before filtering = {}'.format(nobs)
+                
+        #---------------------------------
+        # Filter based on specified months
+        #---------------------------------
+        if mnthFltFlg:
+            mnthFltr = np.asarray(mnthFltr)
+            rminds   = []
+            dates    = np.array(self.summary["date"])
+            months   = np.array([day.month for day in dates])
+            
+            for i,month in enumerate(months):
+                if month not in mnthFltr: rminds.append(i)
+            
+            rminds = np.asarray(rminds)
+            print ('Total number observations found outside of specified months = {}'.format(len(rminds)))
+            self.inds = np.union1d(rminds, self.inds)
         
         #-----------------------------
         # Find total column amount < 0
@@ -764,6 +974,21 @@ class ReadOutputData(_DateRange):
             print ('Total number observations found with negative total column amount = {}'.format(len(indsT)))
             self.inds = np.union1d(indsT, self.inds)
         
+        #---------------------------------------------
+        # Find total column amount < minTC and > maxTC
+        #---------------------------------------------
+        if tcMinMaxFlg:
+            if not gasName+'_RetColmn' in self.summary:
+                print 'TotColmn values do not exist...exiting..'
+                sys.exit()
+                
+            indsT1 = np.where(np.asarray(self.summary[gasName+'_RetColmn']) < minTC)[0]
+            indsT2 = np.where(np.asarray(self.summary[gasName+'_RetColmn']) > maxTC)[0]
+            indsT  = np.union1d(indsT1,indsT2)
+            print "Total number of observations found with total column < minTotalColumn = {}".format(len(indsT1))
+            print "Total number of observations found with total column > maxTotalColumn = {}".format(len(indsT2))
+            self.inds = np.union1d(indsT, self.inds)        
+                
         #-----------------------------
         # Find data with fit RMS > X
         #-----------------------------
@@ -775,7 +1000,19 @@ class ReadOutputData(_DateRange):
             indsT = np.where(np.asarray(self.summary[gasName+'_FITRMS']) >= mxrms)[0]
             print ('Total number observations found above max rms value = {}'.format(len(indsT)))
             self.inds = np.union1d(indsT, self.inds)
-        
+            
+        #------------------------------
+        # Find values above max chi_2_y
+        #------------------------------
+        if chiFlg:
+            if not gasName+"_CHI_2_Y" in self.summary:
+                print 'CHI_2_Y values do not exist...exiting..'
+                sys.exit()            
+                
+            indsT = np.where(np.asarray(self.summary[gasName+"_CHI_2_Y"]) >= maxCHI)[0]
+            print ('Total number observations found above max chi_2_y value = {}'.format(len(indsT)))
+            self.inds = np.union1d(indsT, self.inds)            
+                    
         #-----------------------------------
         # Find any partial column amount < 0
         #-----------------------------------
@@ -797,8 +1034,11 @@ class ReadOutputData(_DateRange):
                 print 'SZA not found.....exiting'
                 sys.exit()  
             
-            sza_inds = np.where(self.pbp['sza'] > mxsza)[0]
-            print 'Total number of observations with SZA greater than {0:} = {1:}'.format(mxsza,len(sza_inds))
+            sza_inds1 = np.where(self.pbp['sza'] > mxsza)[0]
+            sza_inds2 = np.where(self.pbp['sza'] < minsza)[0]
+            sza_inds  = np.union1d(sza_inds1, sza_inds2)
+            print 'Total number of observations with SZA greater than {0:} = {1:}'.format(mxsza,len(sza_inds1))
+            print 'Total number of observations with SZA less than    {0:} = {1:}'.format(minsza,len(sza_inds2))
             self.inds = np.union1d(sza_inds,self.inds)
 
         #-------------------------------------
@@ -1163,6 +1403,72 @@ class ReadOutputData(_DateRange):
         if self.dirFlg: del self.deflt
         else:           return self.deflt        
              
+    
+    def readStateVec(self,fname=""):
+        ''' Read retrieved parameters in state vector (not includinng profiles)'''
+        
+        if not fname: fname = "statevec"
+        self.statevec = {}
+        
+        #-----------------------------------
+        # Loop through collected directories
+        #-----------------------------------
+        for sngDir in self.dirLst:
+    
+            try:
+                with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
+        
+                #--------------------------------------------------
+                # Find location of non profile retrieved parameters
+                # These are burried near the end of the file
+                #--------------------------------------------------
+                # Determine number of layers
+                #---------------------------
+                nlyrs  = int(lines[1].strip().split()[0])
+                nlines = int(np.ceil(nlyrs/5.0))
+                
+                #------------------------------------
+                # Determine number of retrieved gases
+                #------------------------------------
+                nskip = nlines*3+6
+                ngas  = int(lines[nskip].strip().split()[0])
+                
+                #--------------------------------------------------------
+                # Finally find number of non profile retrieved parameters
+                #--------------------------------------------------------
+                nskip += 2*ngas*(3+nlines) + 2
+                nparms = int(lines[nskip].strip().split()[0])
+                
+                #----------------------------------------
+                # Get retrieved parameters (not a priori)
+                #----------------------------------------
+                nlines = int(np.ceil(nparms/5.0))
+                parms = []
+                vals  = []
+                
+                for lineNum in range(0,nlines):
+                    parms.extend(lines[nskip+lineNum+1].strip().split())
+                    skipVal = nskip + lineNum + nlines*3 - 1
+                    vals.extend(lines[skipVal].strip().split())
+                    
+                vals = [float(val) for val in vals]
+    
+                for key,val in zip(*(parms,vals)):
+                    self.statevec.setdefault(key,[]).append(val)
+                    
+            except Exception as errmsg:
+                print errmsg
+                continue            
+    
+        #------------------------
+        # Convert to numpy arrays
+        # and sort based on date
+        #------------------------
+        for k in self.statevec:
+            self.statevec[k] = np.asarray(self.statevec[k])    
+            
+        self.readStateVecFlg = True
+   
     
     def readError(self,totFlg=True,sysFlg=False,randFlg=False,vmrFlg=False,avkFlg=False,KbFlg=False):
         ''' Reads in error analysis data from Layer1 output '''
@@ -1730,7 +2036,7 @@ class DbInputFile(_DateRange):
 
 class GatherHDF(ReadOutputData,DbInputFile):
     
-    def __init__(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imnth,iday,fyear,fmnth,fday,incr=1):
+    def __init__(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imnth,iday,fyear,fmnth,fday,errFlg=True,incr=1):
         primGas = ''
 
         #-----------------------------------------
@@ -1755,8 +2061,12 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # entries for specDB data
         #-----------------------------------------------------------------------------
 
-        self.readprfs([self.PrimaryGas],retapFlg=1)                # Retrieved Profiles
-        self.readprfs([self.PrimaryGas,'H2O'],retapFlg=0)          # A priori Profiles
+        if "H2O" not in self.PrimaryGas:
+            self.readprfs([self.PrimaryGas,'H2O'],retapFlg=1)          # Retrieved Profiles
+        else:
+            self.readprfs([self.PrimaryGas],retapFlg=1)          # Retrieved Profiles
+        self.readprfs([self.PrimaryGas],retapFlg=0)                # A priori Profiles
+
         self.readsummary()                                         # Summary file information
         self.readError(totFlg=True,avkFlg=True,vmrFlg=True)        # Read Error Data
         self.readPbp()                                             # Read pbp file for sza
@@ -1779,11 +2089,27 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFaltBnds    = np.vstack((self.alt[:-1],self.alt[1:]))        
 
         # Error 
-        self.HDFak        = np.asarray(self.error['AVK_vmr'])                                          # Averaging Kernel [VMR/VMR]
-        self.HDFsysErr    = np.asarray(self.error['Total_Systematic_Error_VMR'])                       # Total Systematic error covariance matrix [VMR]
-        self.HDFrandErr   = np.asarray(self.error['Total_Random_Error_VMR'])                           # Total Random error covariance matrix [VMR]
-        self.HDFtcSysErr  = np.asarray(self.error['Total systematic uncertainty'])                     # Total column systematic error [mol cm^-2]
-        self.HDFtcRanErr  = np.asarray(self.error['Total random uncertainty'])                         # Total column random error [mol cm^-2]
+        if errFlg:
+            self.HDFak        = np.asarray(self.error['AVK_vmr'])                                          # Averaging Kernel [VMR/VMR]
+            self.HDFsysErr    = np.asarray(self.error['Total_Systematic_Error_VMR'])                       # Total Systematic error covariance matrix [VMR]
+            self.HDFrandErr   = np.asarray(self.error['Total_Random_Error_VMR'])                           # Total Random error covariance matrix [VMR]
+            self.HDFtcSysErr  = np.asarray(self.error['Total systematic uncertainty'])                     # Total column systematic error [mol cm^-2]
+            self.HDFtcRanErr  = np.asarray(self.error['Total random uncertainty'])                         # Total column random error [mol cm^-2]
+        else:
+            dim1 = np.shape(self.HDFtempPrf)[0]
+            dim2 = np.shape(self.HDFtempPrf)[1]
+            dim3 = np.shape(self.HDFtempPrf)[1]
+            self.HDFak        = np.empty([dim1,dim2,dim3])                                                # Averaging Kernel [VMR/VMR]
+            self.HDFsysErr    = np.empty([dim1,dim2,dim3])                                                # Total Systematic error covariance matrix [VMR]
+            self.HDFrandErr   = np.empty([dim1,dim2,dim3])                                                # Total Random error covariance matrix [VMR]
+            self.HDFtcSysErr  = np.empty([dim1])                                                          # Total column systematic error [mol cm^-2]
+            self.HDFtcRanErr  = np.empty([dim1])                                                          # Total column random error [mol cm^-2]
+            self.HDFak.fill(-9.0E4)
+            self.HDFsysErr.fill(-9.0E4)
+            self.HDFrandErr.fill(-9.0E4)
+            self.HDFtcSysErr.fill(-9.0E4)
+            self.HDFtcRanErr.fill(-9.0E4)
+            
                         
         # Total Column
         self.HDFretTC     = np.asarray(self.rprfs[self.PrimaryGas+'_tot_col'])                          # Primary gas retrieved total column
@@ -1840,6 +2166,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
             else:
                 self.HDFsurfT[i]      = np.array(-99999) 
             
+
     def fltrHDFdata(self,maxRMS,maxSZA,minDOF,dofF,rmsF,tcF,pcF,cnvF,szaF,maxCHI2,maxVMR,minVMR,co2F,minCO2, maxCO2, valF):
 
         #----------------------------------------------------
@@ -1916,7 +2243,8 @@ class PlotData(ReadOutputData):
     def closeFig(self):
         self.pdfsav.close()
     
-    def pltSpectra(self,fltr=False,maxRMS=1.0,minDOF=1.0,dofFlg=False):
+    def pltSpectra(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
+                   dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,szaFlg=False,chiFlg=False,cnvrgFlg=True,tcMMflg=False,mnthFltFlg=False):
         ''' Plot spectra and fit and Jacobian matrix '''
     
         print '\nPlotting Spectral Data...........\n'
@@ -1955,11 +2283,19 @@ class PlotData(ReadOutputData):
         
         if self.empty: return False
         
+        #---------------------
+        # Get SZA for Plotting
+        #---------------------
+        sza = np.delete(self.pbp["sza"],self.inds)
+        
         #------------
         # Get spectra
         #------------
-        dataSpec = OrderedDict()
-        gasSpec  = OrderedDict()
+        dataSpec  = OrderedDict()
+        gasSpec   = OrderedDict()
+        gasAbs    = OrderedDict()
+        gasAbsSNR = OrderedDict()
+        
         for x in mw:  # Loop through micro-windows
             dataSpec['Obs_'+x]        = np.delete(self.pbp['Obs_'+x],self.inds,axis=0)
             dataSpec['Fitted_'+x]     = np.delete(self.pbp['Fitted_'+x],self.inds,axis=0)
@@ -1967,6 +2303,19 @@ class PlotData(ReadOutputData):
             dataSpec['WaveN_'+x]      = self.spc['MW_'+x]
             dataSpec['All_'+x]        = np.delete(self.spc['All_'+x],self.inds,axis=0)
             if self.solarFlg: dataSpec['Sol_'+x]        = np.delete(self.spc['Solar_'+x],self.inds,axis=0)
+    
+        #------------------------------
+        # Get dates for timeseries plot
+        #------------------------------
+        if len(self.dirLst) > 1: 
+            dates = np.delete(self.pbp["date"],self.inds)
+        
+            #----------------------------
+            # Determine if multiple years
+            #----------------------------
+            years = [ singDate.year for singDate in dates]      # Find years for all date entries
+            if len(list(set(years))) > 1: yrsFlg = True         # Determine all unique years
+            else:                         yrsFlg = False        
     
         #----------------------------------------
         # Loop through gases and micro-windows
@@ -1983,6 +2332,13 @@ class PlotData(ReadOutputData):
         # Calculate Statistics
         #---------------------
         for x in mw:  # Loop through micro-windows
+
+            #-------------------------------------------------------------
+            # Calculate the total Observed absorption in micro-window
+            # This must be done first because below code modifies dataSpec
+            #-------------------------------------------------------------
+            gasAbs["Total_"+x] = simps(1.0 - dataSpec['Obs_'+x],x=dataSpec['WaveN_'+x],axis=1)               
+                        
             if len(self.dirLst) > 1:
                 dataSpec['Obs_'+x]        = np.mean(dataSpec['Obs_'+x],axis=0)
                 dataSpec['Fitted_'+x]     = np.mean(dataSpec['Fitted_'+x],axis=0)
@@ -1990,17 +2346,48 @@ class PlotData(ReadOutputData):
                 dataSpec['All_'+x]        = np.mean(dataSpec['All_'+x],axis=0)
                 if self.solarFlg:dataSpec['Sol_'+x]        = np.mean(dataSpec['Sol_'+x],axis=0)    
                 dataSpec['DifSTD_'+x]     = np.std(dataSpec['Difference_'+x],axis=0)
+                
             else:
                 dataSpec['Obs_'+x]        = dataSpec['Obs_'+x][0]
                 dataSpec['Fitted_'+x]     = dataSpec['Fitted_'+x][0]
                 dataSpec['Difference_'+x] = dataSpec['Difference_'+x][0]
                 dataSpec['All_'+x]        = dataSpec['All_'+x][0]
                 if self.solarFlg:dataSpec['Sol_'+x]        = dataSpec['Sol_'+x][0]
+                                
+            if len(self.dirLst) > 1:    
+                #---------------------------------------------------
+                # Calculate the integrate absorption for primary gas
+                #---------------------------------------------------                
+                gasAbs[self.PrimaryGas+"_"+x] = simps(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)       
+                
+                #-----------------------------------
+                # Calculate the peak absorption of 
+                # primary gas for each micro-window
+                #-----------------------------------
+                gasAbs[self.PrimaryGas+"_trans_"+x] = 1.0 - np.min(gasSpec[self.PrimaryGas+"_"+x],axis=1)
+                
+                #---------------------------------------------
+                # Determine product of SNR and Peak Absorption
+                #---------------------------------------------
+                tempSNR  = np.delete(self.summary["SNR_"+x],self.inds)
+                gasAbsSNR[self.PrimaryGas+"_"+x] = gasAbs[self.PrimaryGas+"_"+x] * tempSNR 
+                        
   
         if len(self.dirLst) > 1:
             gasSpec = {gas.upper()+'_'+x:np.mean(gasSpec[gas.upper()+'_'+x],axis=0) for x in mwList for gas in mwList[x]}   
         else:
             for x in gasSpec: gasSpec[x] = gasSpec[x][0]
+ 
+        #---------------------------
+        # Date locators for plotting
+        #---------------------------
+        clmap        = 'jet'
+        cm           = plt.get_cmap(clmap)              
+        yearsLc      = YearLocator()
+        monthsAll    = MonthLocator()
+        #months       = MonthLocator(bymonth=1,bymonthday=1)
+        months       = MonthLocator()
+        DateFmt      = DateFormatter('%m\n%Y')      
  
         #----------------------------------------
         # Plot Jacobian only if there are
@@ -2069,8 +2456,96 @@ class PlotData(ReadOutputData):
    
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)            
+            
+            
+            #---------------------------------------------------------------
+            # Plot time series of integrated absorption for each microwindow
+            # Colored by SZA if multiple directories
+            #---------------------------------------------------------------   
+            if len(self.dirLst) > 1:
+                fig,ax1  = plt.subplots()
+                tcks = range(np.int(np.floor(np.min(sza))),np.int(np.ceil(np.max(sza)))+2)
+                norm = colors.BoundaryNorm(tcks,cm.N)                        
+                sc1  = ax1.scatter(dates,gasAbs[self.PrimaryGas+"_"+x],c=sza,cmap=cm,norm=norm)
+                    
+                ax1.grid(True,which='both')
+                ax1.set_xlabel('Date')
+                ax1.set_ylabel('Integrated Spectral Absorption',fontsize=9)
+                ax1.set_title("Fractional Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')        
+                ax1.tick_params(axis='x',which='both',labelsize=8)
+                
+                fig.subplots_adjust(right=0.82)
+                cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+                    
+                cbar = fig.colorbar(sc1, cax=cax, format='%2i')
+                cbar.set_label('SZA')    
+                
+                if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                else:           plt.show(block=False)   
+    
+                
+                #--------------------------------------------------------------------------
+                # Plot time series of fractional integrated absorption for each microwindow
+                #---------------------------------------------------------------    
+                fig1,ax1 = plt.subplots()
+                ax1.plot(dates,gasAbs[self.PrimaryGas+"_"+x]/gasAbs["Total_"+x],'k.',markersize=4)
+                ax1.grid(True)
+                ax1.set_ylabel("Fractional Integrated Spectral Absorption")
+                ax1.set_xlabel('Date [MM]')
+                ax1.set_title("Fractional Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')
+                
+                if yrsFlg:
+                    #plt.xticks(rotation=45)
+                    ax1.xaxis.set_major_locator(yearsLc)
+                    ax1.xaxis.set_minor_locator(months)
+                    #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                    ax1.xaxis.set_major_formatter(DateFmt) 
+                    #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                    ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                    ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+                else:
+                    ax1.xaxis.set_major_locator(monthsAll)
+                    ax1.xaxis.set_major_formatter(DateFmt)
+                    ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                    ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                    fig1.autofmt_xdate()
+                
+                if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+                else:           plt.show(block=False)          
+                
+                #----------------------------------------------
+                # Plot time series of peak absorption times SNR
+                #----------------------------------------------
+                fig1,ax1 = plt.subplots()
+                ax1.plot(dates,gasAbsSNR[self.PrimaryGas+"_"+x],'k.',markersize=4)
+                ax1.grid(True)
+                ax1.set_ylabel("Peak Spectral Absorption * SNR")
+                ax1.set_xlabel('Date [MM]')
+                ax1.set_title("Peak Spectral Absorption * SNR\nMicro-window {}".format(x),multialignment='center')
+                
+                if yrsFlg:
+                    #plt.xticks(rotation=45)
+                    ax1.xaxis.set_major_locator(yearsLc)
+                    ax1.xaxis.set_minor_locator(months)
+                    #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                    ax1.xaxis.set_major_formatter(DateFmt) 
+                    #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                    ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                    ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+                else:
+                    ax1.xaxis.set_major_locator(monthsAll)
+                    ax1.xaxis.set_major_formatter(DateFmt)
+                    ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                    ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                    fig1.autofmt_xdate()
+                
+                if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+                else:           plt.show(block=False)               
+            
+            
         
-    def pltPrf(self,fltr=False,maxRMS=1.0,minDOF=1.0,dofFlg=False,allGas=True,sclfct=1.0,sclname='ppv',pltStats=True,errFlg=False):
+    def pltPrf(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,dofFlg=False,rmsFlg=True,tcFlg=True,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
+               pcFlg=True,cnvrgFlg=True,allGas=True,sclfct=1.0,sclname='ppv',pltStats=True,szaFlg=False,errFlg=False,chiFlg=False,tcMMflg=False,mnthFltFlg=False):
         ''' Plot retrieved profiles '''
         
         
@@ -2125,7 +2600,8 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,mnthFltFlg=mnthFltFlg)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False
@@ -2596,12 +3072,14 @@ class PlotData(ReadOutputData):
                 else:           plt.show(block=False)                 
                                    
 
-    def pltAvk(self,fltr=False,maxRMS=1.0,minDOF=1.0,dofFlg=False,errFlg=False,partialCols=False):
+    def pltAvk(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
+               dofFlg=False,errFlg=False,szaFlg=False,partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,chiFlg=False,tcMMflg=False,mnthFltFlg=False):
         ''' Plot Averaging Kernel. Only for single retrieval '''
         
         print '\nPlotting Averaging Kernel........\n'
         
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,mnthFltFlg=mnthFltFlg)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False    
@@ -2807,7 +3285,9 @@ class PlotData(ReadOutputData):
         else:           plt.show(block=False)                         
         
         
-    def pltTotClmn(self,fltr=False,maxRMS=1.0,minDOF=1.0,dofFlg=False,errFlg=False,sclfct=1.0,sclname='ppv',partialCols=False):
+    def pltTotClmn(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
+                   dofFlg=False,errFlg=False,szaFlg=False,sclfct=1.0,sclname='ppv',
+                   partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,chiFlg=False,tcMMflg=False,mnthFltFlg=False):
         ''' Plot Time Series of Total Column '''
         
         print '\nPrinting Total Column Plots.....\n'
@@ -2818,7 +3298,9 @@ class PlotData(ReadOutputData):
         #------------------------------------------
         if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
         if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
-        if not self.readPrfFlgApr['H2O']:           self.readprfs(['H2O'],retapFlg=0)             # Apriori H2O Profiles
+        try:    
+            if not self.readPrfFlgApr['H2O']:           self.readprfs(['H2O'],retapFlg=0)             # Apriori H2O Profiles
+        except: self.readprfs(['H2O'],retapFlg=0)
         if self.empty: return False
         if not self.readsummaryFlg:                 self.readsummary()                            # Summary File info
         if not self.readPbpFlg:                     self.readPbp()                                # Pbp file info
@@ -2838,7 +3320,8 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,mnthFltFlg=mnthFltFlg)     
         else:    self.inds = np.array([]) 
         
         if self.empty: return False          
@@ -2940,6 +3423,175 @@ class PlotData(ReadOutputData):
         
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
         else:           plt.show(block=False)  
+        
+                
+        #--------------------------------------
+        # Plot time series color coded with SZA
+        #--------------------------------------    
+        tcks = range(np.int(np.floor(np.min(sza))),np.int(np.ceil(np.max(sza)))+2)
+        norm = colors.BoundaryNorm(tcks,cm.N)   
+        
+        fig1,ax1 = plt.subplots()
+        sc1 = ax1.scatter(dates,totClmn,c=sza,cmap=cm,norm=norm)
+        ax1.grid(True)
+        ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+        ax1.set_xlabel('Date [MM]')
+        ax1.set_title('Time Series of Retrieved Total Column with SZA\n[molecules cm$^{-2}$]',multialignment='center')
+        
+        if yrsFlg:
+            #plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(yearsLc)
+            ax1.xaxis.set_minor_locator(months)
+            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+            ax1.xaxis.set_major_formatter(DateFmt) 
+            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            ax1.xaxis.set_tick_params(which='major',labelsize=8)
+            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+        else:
+            ax1.xaxis.set_major_locator(monthsAll)
+            ax1.xaxis.set_major_formatter(DateFmt)
+            ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+            ax1.xaxis.set_minor_locator(AutoMinorLocator())
+            fig1.autofmt_xdate()
+        
+        fig1.subplots_adjust(right=0.82)
+        cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
+            
+        cbar = fig1.colorbar(sc1, cax=cax, format='%2i')
+        cbar.set_label('SZA')    
+        
+        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+        else:           plt.show(block=False)           
+        
+        
+        #-----------------------------------
+        # Plot trend analysis of time series
+        #-----------------------------------
+        # Actual data
+        #------------
+        dateYearFrac = toYearFraction(dates)
+        weights      = np.ones_like(dateYearFrac)
+        res          = fit_driftfourier(dateYearFrac, totClmn, weights, 2)
+        f_drift, f_fourier, f_driftfourier = res[3:6]
+        
+        try:
+            fig1,ax1 = plt.subplots()
+            ax1.scatter(dates,totClmn,s=4,label='data')
+            ax1.plot(dates,f_drift(dateYearFrac),label='Fitted Anual Trend')
+            ax1.plot(dates,f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
+            ax1.grid(True)
+            ax1.set_ylim([np.min(totClmn)-0.1*np.min(totClmn), np.max(totClmn)+0.15*np.max(totClmn)])
+            ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel('Date [MM]')
+            ax1.set_title('Trend Analysis with Boot Strap Resampling\nIndividual Retrievals',multialignment='center')
+            ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(totClmn)*100.0),transform=ax1.transAxes)
+            ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
+            ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(totClmn)*100.0),transform=ax1.transAxes) 
+            
+            
+            if yrsFlg:
+                #plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(yearsLc)
+                ax1.xaxis.set_minor_locator(months)
+                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                ax1.xaxis.set_major_formatter(DateFmt) 
+                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(monthsAll)
+                ax1.xaxis.set_major_formatter(DateFmt)
+                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                fig1.autofmt_xdate()  
+                
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)          
+            
+            
+            #------
+            # Daily
+            #------
+            dailyVals = dailyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
+            dateYearFrac = toYearFraction(dailyVals['dates'])
+            weights      = np.ones_like(dateYearFrac)
+            res          = fit_driftfourier(dateYearFrac, dailyVals['dailyAvg'], weights, 2)
+            f_drift, f_fourier, f_driftfourier = res[3:6]
+            
+            fig1,ax1 = plt.subplots()
+            ax1.scatter(dailyVals['dates'],dailyVals['dailyAvg'],s=4,label='data')
+            ax1.plot(dailyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
+            ax1.plot(dailyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
+            ax1.grid(True)
+            ax1.set_ylim([np.min(dailyVals['dailyAvg'])-0.1*np.min(dailyVals['dailyAvg']), np.max(dailyVals['dailyAvg'])+0.15*np.max(dailyVals['dailyAvg'])])
+            ax1.set_ylabel('Daily Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel('Date [MM]')
+            ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
+            ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)
+            ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
+            ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)   
+        
+            if yrsFlg:
+                #plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(yearsLc)
+                ax1.xaxis.set_minor_locator(months)
+                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                ax1.xaxis.set_major_formatter(DateFmt) 
+                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(monthsAll)
+                ax1.xaxis.set_major_formatter(DateFmt)
+                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                fig1.autofmt_xdate()    
+                
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)            
+            
+            #--------
+            # Monthly
+            #--------
+            mnthlyVals = mnthlyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
+            dateYearFrac = toYearFraction(mnthlyVals['dates'])
+            weights      = np.ones_like(dateYearFrac)
+            res          = fit_driftfourier(dateYearFrac, mnthlyVals['mnthlyAvg'], weights, 2)
+            f_drift, f_fourier, f_driftfourier = res[3:6]
+            
+            fig1,ax1 = plt.subplots()
+            ax1.scatter(mnthlyVals['dates'],mnthlyVals['mnthlyAvg'],s=4,label='data')
+            ax1.plot(mnthlyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
+            ax1.plot(mnthlyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
+            ax1.grid(True)
+            ax1.set_ylim([np.min(mnthlyVals['mnthlyAvg'])-0.1*np.min(mnthlyVals['mnthlyAvg']), np.max(mnthlyVals['mnthlyAvg'])+0.15*np.max(mnthlyVals['mnthlyAvg'])])
+            ax1.set_ylabel('Monthly Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel('Date [MM]')
+            ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
+            ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)
+            ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
+            ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)  
+        
+            if yrsFlg:
+                #plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(yearsLc)
+                ax1.xaxis.set_minor_locator(months)
+                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                ax1.xaxis.set_major_formatter(DateFmt) 
+                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(monthsAll)
+                ax1.xaxis.set_major_formatter(DateFmt)
+                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                fig1.autofmt_xdate()        
+                
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)                 
+        
+        except: pass 
         
         #------------------------------------
         # Plot time series of partial columns
@@ -3131,6 +3783,36 @@ class PlotData(ReadOutputData):
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)               
             
+            
+        #----------------------------
+        # Plot time series of CHI_2_Y
+        #----------------------------
+        fig, ax = plt.subplots()           
+        ax.plot(dates,chi2y,'k.',markersize=4)
+        ax.grid(True)
+        ax.set_ylabel(r'$\chi_y^{2}$')
+        ax.set_xlabel('Date [MM]')
+        ax.set_title(r'$\chi_y^{2}$')
+        
+        if yrsFlg:
+            #plt.xticks(rotation=45)
+            ax.xaxis.set_major_locator(yearsLc)
+            ax.xaxis.set_minor_locator(months)
+            #ax.xaxis.set_minor_formatter(DateFormatter('%m'))
+            ax.xaxis.set_major_formatter(DateFmt) 
+            #ax.xaxis.set_tick_params(which='major', pad=15)  
+            ax.xaxis.set_tick_params(which='major',labelsize=8)
+            ax.xaxis.set_tick_params(which='minor',labelbottom='off')
+        else:
+            ax.xaxis.set_major_locator(monthsAll)
+            ax.xaxis.set_major_formatter(DateFmt)
+            ax.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+            ax1.xaxis.set_minor_locator(AutoMinorLocator())
+            fig.autofmt_xdate()
+        
+        if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+        else:           plt.show(block=False)          
+
         #--------------------------------------------
         # Plot Histograms (SZA,FITRMS, DOFS, Chi_2_Y)
         #--------------------------------------------

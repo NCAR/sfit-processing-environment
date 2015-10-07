@@ -18,7 +18,7 @@
 #
 #
 # Usage:
-#      ./mkListFile.py -i /data/ebaumer/MLO_input.py -N /data/ebaumer/2008.lst -d /data/ebaumer/2008/
+#      mkListFile.py -i /data/ebaumer/MLO_input.py -N /data/ebaumer/2008.lst -d /data/ebaumer/2008/
 #
 #
 #
@@ -46,7 +46,7 @@
 #
 #----------------------------------------------------------------------------------------
 
-        
+
                                 #-------------------------#
                                 # Import Standard modules #
                                 #-------------------------#
@@ -63,11 +63,11 @@ import datetime as dt
                                 #-------------------------#
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'mkListFile.py -i <file> -N <file> -?'
+    print 'mkListFile.py -i <file> -N <file> -d <dir> -?'
     print '  -i <file> : Path and file name of Layer1 input file'
     print '  -N <file> : Path and file name for output list file'
     print '  -d <dir>  : Base directory of data'
-    print '  -?        : Show all flags'                                
+    print '  -?        : Show all flags'
 
 def ckDir(dirName,exit=False):
     ''' '''
@@ -76,7 +76,7 @@ def ckDir(dirName,exit=False):
         if exit: sys.exit()
         return False
     else:
-        return True    
+        return True
 
 def ckFile(fName,exit=False):
     '''Check if a file exists'''
@@ -85,8 +85,8 @@ def ckFile(fName,exit=False):
         if exit: sys.exit()
         return False
     else:
-        return True    
-    
+        return True
+
 def sortDict(DataDict,keyval):
     ''' Sort all values of dictionary based on values of one key'''
     base = DataDict[keyval]
@@ -112,29 +112,29 @@ def main(argv):
         print str(err)
         usage()
         sys.exit()
-        
+
     #-----------------------------
     # Parse command line arguments
     #-----------------------------
     for opt, arg in opts:
-        
+
         # Layer1 input path and name
         if opt == '-i':
             inputFile = arg
-            
-        # Output list file name and directory    
+
+        # Output list file name and directory
         elif opt == '-N':
             outputFile = arg
-            
+
         # Base Directory for data
         elif opt == '-d':
             baseDir = arg
-                
+
         # Show all command line flags
         elif opt == '-?':
             usage()
             sys.exit()
-                                           
+
         else:
             print 'Unhandled option: ' + opt
             sys.exit()
@@ -148,21 +148,21 @@ def main(argv):
     hdlr1   = logging.FileHandler(outputFile, mode='w')
     fmt1    = logging.Formatter('')
     hdlr1.setFormatter(fmt1)
-    lstFile.addHandler(hdlr1)   
+    lstFile.addHandler(hdlr1)
 
     #----------------------------------
     # Check the existance of input file
     #----------------------------------
     ckFile(inputFile,exit=True)
-    
+
     #--------------------------------------
     # Check the existance of base directory
     #--------------------------------------
     ckDir(baseDir,exit=True)
     # check if '/' is included at end of path
     if not( baseDir.endswith('/') ):
-        baseDir = baseDir + '/'       
-    
+        baseDir = baseDir + '/'
+
     #-------------------------
     # Get data from input file
     #-------------------------
@@ -179,7 +179,7 @@ def main(argv):
     #------------------
     ctlData = sc.CtlInputFile(inVars.inputs['ctlList'][0][0])
     ctlData.getInputs()
-    
+
     #------------------------
     # Write data to list file
     #------------------------
@@ -208,8 +208,8 @@ def main(argv):
     lstFile.info('nbands         = ' + str(len(ctlData.inputs['band']))        )
     lstFile.info('# End List File Meta-Data')
     lstFile.info('')
-    lstFile.info('Date         TimeStamp    Directory ')        
-   
+    lstFile.info('Date         TimeStamp    Directory ')
+
     #-----------------------------------------------------
     # Loop through directory to find all valid retreivals.
     # Retrieval is valid when summary file exists.
@@ -220,16 +220,16 @@ def main(argv):
     lstDict = {}
     for drs in os.walk(baseDir).next()[1]:
         YYYYMMDD = drs[0:4]  + drs[4:6]   + drs[6:8]
-        hhmmss   = drs[9:11] + drs[11:13] + drs[13:]     
+        hhmmss   = drs[9:11] + drs[11:13] + drs[13:]
         if os.path.isfile(baseDir + drs + '/summary'):
             lstDict.setdefault('date',[]).append(dt.datetime(int(drs[0:4]), int(drs[4:6]), int(drs[6:8]), int(drs[9:11]), int(drs[11:13]), int(drs[13:]) ))
             lstDict.setdefault('YYYYMMDD',[]).append(YYYYMMDD)
             lstDict.setdefault('hhmmss',[]).append(hhmmss)
             lstDict.setdefault('directory',[]).append(baseDir + drs)
-        
+
     lstDict = sortDict(lstDict,'date')
     for ind,val in enumerate(lstDict['date']):
         lstFile.info("{0:<13}".format(lstDict['YYYYMMDD'][ind]) + "{0:6}".format(lstDict['hhmmss'][ind]) + '       ' + lstDict['directory'][ind]+'/')
-                
+
 if __name__ == "__main__":
     main(sys.argv[1:])
