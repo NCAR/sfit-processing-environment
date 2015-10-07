@@ -699,6 +699,7 @@ class ReadOutputData(_DateRange):
                     if drs[13:] == '60': ss = int(drs[13:]) - 1
                     else:                ss = int(drs[13:]) 
                     self.dirDateTime.append(dt.datetime(int(drs[0:4]), int(drs[4:6]), int(drs[6:8]), int(drs[9:11]), int(drs[11:13]), ss ) )
+
                     if not os.path.isfile(dataDir + drs +'/'+ self.ctl['file.out.summary'][0]):
                         continue
                     if not os.path.isfile(dataDir + drs +'/'+ self.ctl['file.out.pbpfile'][0]):
@@ -982,6 +983,7 @@ class ReadOutputData(_DateRange):
             #-----------------------------------
             # Loop through collected directories
             #-----------------------------------
+
             for sngDir in self.dirLst:
     
     
@@ -1036,7 +1038,7 @@ class ReadOutputData(_DateRange):
                     self.summary.setdefault(self.PrimaryGas.upper()+'_FITRMS'   ,[]).append( float( lines[ind2+1].strip().split()[indRMS]     ) )
                     self.summary.setdefault(self.PrimaryGas.upper()+'_CHI_2_Y'  ,[]).append( float( lines[ind2+1].strip().split()[indCHIY2]   ) )
                     self.summary.setdefault(self.PrimaryGas.upper()+'_DOFS_TRG' ,[]).append( float( lines[ind2+1].strip().split()[indDOFtrgt] ) )
-                    self.summary.setdefault(self.PrimaryGas.upper()+'_CONVERGED',[]).append(        lines[ind2+1].strip().split()[indCNVRG]     )                        
+                    self.summary.setdefault(self.PrimaryGas.upper()+'_CONVERGED',[]).append(        lines[ind2+1].strip().split()[indCNVRG]     )                  
                     if self.dirFlg: 
                         dirname = os.path.basename(os.path.normpath(sngDir)) 
                         self.summary.setdefault('date',[]).append( dt.datetime(int(dirname[0:4]), int(dirname[4:6]), int(dirname[6:8]), 

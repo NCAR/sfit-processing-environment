@@ -51,9 +51,9 @@ DATA_LEVEL  = 02
 !
 DATA_START_DATE = 
 DATA_STOP_DATE = 
-DATA_FILE_VERSION = 001
+DATA_FILE_VERSION = 003
 DATA_MODIFICATIONS = No modifications yet!
-DATA_QUALITY= FINAL
+DATA_QUALITY = RD
 DATA_CAVEATS = none
 DATA_RULES_OF_USE = Refer to data protocol, or contact jnotholt@iup.physik.uni-bremen.de (this is mandatory)
 DATA_ACKNOWLEDGEMENT = The measurements are supported by AWI Bremerhaven.
