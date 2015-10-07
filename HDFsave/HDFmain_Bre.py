@@ -32,6 +32,7 @@ def main(args):
         return()
         
     script_dir = os.path.dirname(sys.argv[0])
+    quality        = 'final'
     dataDir        = args[1]
     outDir         = args[2]
     loc1           = args[3]
@@ -67,18 +68,18 @@ def main(args):
     if loc1.lower() == 'bre':
         loc            = 'BREMEN'
         source         = 'IUP001'
-        attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
+        attribute_file = os.path.join(script_dir, 'bremen_attr.txt.%s'%quality)
     elif loc1.lower() == 'nya':    
         loc            = 'NY.ALESUND'
         source         = 'AWI001'
-        attribute_file = os.path.join(script_dir, 'nyalesund_attr.txt')
+        attribute_file = os.path.join(script_dir, 'nyalesund_attr.txt.%s'%quality)
     elif loc1.lower() == 'cruise':    
         loc            = 'POLARSTERN'
         source         = 'AWI027'
-        attribute_file = os.path.join(script_dir, 'bremen_attr.txt')
+        attribute_file = os.path.join(script_dir, 'bremen_attr.txt.%s'%quality)
     elif loc1.lower() == 'pmb':    
         loc            = 'PARAMARIBO'
-        attribute_file = os.path.join(script_dir, 'paramaribo.txt')
+        attribute_file = os.path.join(script_dir, 'paramaribo.txt.%s'%quality)
 
         if sdate.year < 2012 and edate.year > 2012:
             print 'different containers during the envisaged time'
