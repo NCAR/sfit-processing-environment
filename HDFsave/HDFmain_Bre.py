@@ -196,6 +196,21 @@ def main(args):
         cnvFlag        = True
         validFlag      = True
 
+    if gasName.lower() == 'n2o':
+        gasName        = 'N2O'
+        tcFlag         = False
+        pcFlag         = False
+        minDOFs        = 1.0
+        maxCHI2        = 2.0
+        maxVMR         = 1e-6
+        minVMR         = -1e-10
+        dofFlag        = True
+        cnvFlag        = True
+        validFlag      = True
+        minCO2         = 7.5e21
+        maxCO2         = 9.3e21
+        co2f           = True
+
     #---------------------
     # For python interface
     #---------------------
