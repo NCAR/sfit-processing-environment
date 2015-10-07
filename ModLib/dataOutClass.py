@@ -830,7 +830,7 @@ class ReadOutputData(_DateRange):
         if maxvmrFlg:
             maxvmr_inds = np.unique(np.where(self.rprfs[self.PrimaryGas]
                                              > maxVMR)[0])
-            print 'Total number of observations with SZA greater than {0:} = {1:}'.format(maxVMR,len(maxvmr_inds))
+            print 'Total number of observations with VMR greater than {0:} = {1:}'.format(maxVMR,len(maxvmr_inds))
             self.inds = np.union1d(maxvmr_inds,self.inds)
 
             

@@ -213,12 +213,16 @@ class load_hdf:
             src_hdf = self.h4
         dd = np.array([])
         colrt = np.array([])
+        coler = np.array([])
+        coles = np.array([])
         for hf in src_hdf:
             dd = np.hstack((dd,dates.date2num(hf.dates)))
             rt,ap,er,es = hf.get_columns(gas)
             colrt = np.hstack((colrt,rt))
-
-        return(dd, colrt)
+            coler = np.hstack((coler,er))
+            coles = np.hstack((coles,es))
+            
+        return(dd, colrt, coler, coles)
 
     def get_partial_columns(self,gas,zrange, src='GEOMS', diff=False):
         if src=='TMPH5':
@@ -396,6 +400,23 @@ class load_hdf:
         ax.xaxis.set_major_formatter(dates.DateFormatter('%Y-%m-%d'))
         ax.get_figure().colorbar(h, orientation='horizontal')
 
+    def get_auxilliary(self):
+        ps = []
+        ts = []
+        im = []
+        dd = []
+        asza = []
+        for hf in self.h4:
+            p_s, t_s, ms, sz = hf.get_misc()
+            dd.extend(dates.date2num(hf.dates))
+            ps.extend(p_s) # Surface pressure
+            ts.extend(t_s) # Surface temperature
+            im.extend(ms)  # integration time
+            asza.extend(sz) # solar zenith angle
+
+        return(dd,ps,ts,im,asza)
+            
+        
     def plot_auxilliary(self,ax11,ax21):
         ps = []
         ts = []
