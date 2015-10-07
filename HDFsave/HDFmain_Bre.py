@@ -196,6 +196,18 @@ def main(args):
         cnvFlag        = True
         validFlag      = True
 
+    if gasName.lower() == 'co':
+        gasName        = 'CO'
+        tcFlag         = False
+        pcFlag         = False
+        dofFlag        = True
+        minDOFs        = 0.8
+        maxCHI2        = 30.0
+        maxVMR         = 1e-4
+        minVMR         = -1e-7
+        cnvFlag        = True
+        validFlag      = True
+
     #---------------------
     # For python interface
     #---------------------
