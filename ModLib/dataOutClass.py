@@ -922,9 +922,9 @@ class ReadOutputData(_DateRange):
             
 
 
-    def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,
+    def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,minsza=0.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,
                  cnvrgFlg=True,szaFlg=False,maxCHI2=1000.0,maxVMR=-1e99,minVMR=1e99,valFlg=False,
-                 co2Flg=False, minCO2=0.0, maxCO2=1e99):
+                 co2Flg=False, minCO2=0.0, maxCO2=1e99, mnthFltFlg=False,tcMinMaxFlg=False):
 
         maxvmrFlg = True
         minvmrFlg = True
@@ -1001,17 +1001,6 @@ class ReadOutputData(_DateRange):
             print ('Total number observations found above max rms value = {}'.format(len(indsT)))
             self.inds = np.union1d(indsT, self.inds)
             
-        #------------------------------
-        # Find values above max chi_2_y
-        #------------------------------
-        if chiFlg:
-            if not gasName+"_CHI_2_Y" in self.summary:
-                print 'CHI_2_Y values do not exist...exiting..'
-                sys.exit()            
-                
-            indsT = np.where(np.asarray(self.summary[gasName+"_CHI_2_Y"]) >= maxCHI)[0]
-            print ('Total number observations found above max chi_2_y value = {}'.format(len(indsT)))
-            self.inds = np.union1d(indsT, self.inds)            
                     
         #-----------------------------------
         # Find any partial column amount < 0
@@ -2085,7 +2074,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFaGasPrfVMR = np.asarray(self.aprfs[self.PrimaryGas])                                    # A priori primary gas profile [VMR]
         self.HDFrGasPrfMol = self.HDFrGasPrfVMR * self.HDFairMass                                       # Retrieved primary gas profile [mol cm^-2]
         self.HDFaGasPrfMol = self.HDFaGasPrfVMR * self.HDFairMass                                       # A priori primary gas profile [mol cm^-2]
-        self.HDFh2oVMR     = np.asarray(self.aprfs['H2O'])                                              # Retrieved H2O profile [VMR]
+        self.HDFh2oVMR     = np.asarray(self.rprfs['H2O'])                                              # Retrieved H2O profile [VMR]
         self.HDFaltBnds    = np.vstack((self.alt[:-1],self.alt[1:]))        
 
         # Error 
@@ -2114,7 +2103,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # Total Column
         self.HDFretTC     = np.asarray(self.rprfs[self.PrimaryGas+'_tot_col'])                          # Primary gas retrieved total column
         self.HDFaprTC     = np.asarray(self.aprfs[self.PrimaryGas+'_tot_col'])                          # Primary gas a priori total column
-        self.HDFh2oTC     = np.asarray(self.aprfs['H2O_tot_col'])                                       # Primary gas a priori total column       
+        self.HDFh2oTC     = np.asarray(self.rprfs['H2O_tot_col'])                                       # Primary gas a priori total column       
         
         # Misc
         self.HDFdates     = np.asarray(self.rprfs['date'])                                              # Date stamp of retrieval
