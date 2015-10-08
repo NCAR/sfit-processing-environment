@@ -161,7 +161,7 @@ class HDFinitData(object):
         #---------------------------------------
         # Gather data using python read routines
         #---------------------------------------
-        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, statLyrFile, iyear, imonth, iday, fyear, fmonth, fday,errFlg=errFlg)
+        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, statLyrFile, iyear, imonth, iday, fyear, fmonth, fday,errFlg=True)
         
         #------------
         # Filter data

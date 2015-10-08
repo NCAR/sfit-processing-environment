@@ -151,6 +151,7 @@ def main(args):
     if gasName.lower() == 'hcn':
         gasName        = 'HCN'
         tcFlag         = False
+        pcFlag         = False
         minDOFs        = 1.0
         dofFlag        = True
         maxCHI2        = 5.0
