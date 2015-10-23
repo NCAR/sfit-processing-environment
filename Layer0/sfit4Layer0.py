@@ -1,5 +1,5 @@
-#! /usr/local/python-2.7/bin/python
-##! /usr/bin/python
+#! /usr/bin/python
+##! /usr/local/python-2.7/bin/python
 ##! /usr/bin/python
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
@@ -89,8 +89,8 @@ def usage(binDirVer):
         print '-f <str>     Run Flags: Necessary: h = hbin, p = pspec, s = sfit4, e = error analysis, c = clean'
         print '-b <dir/str> Binary sfit directory. Optional: default is hard-coded in main(). Also accepts v1, v2, etc.'
         for ver in binDirVer:
-                print '             {}: {}'.format(ver,binDirVer[ver])        
-        
+                print '             {}: {}'.format(ver,binDirVer[ver])
+
         sys.exit()
 
 
@@ -164,7 +164,7 @@ def main(argv):
                                 else: print '{} not an option for -f ... ignored'.format(f)
                 elif opt == '-?':
                         usage(binDirVer)
-                        sys.exit()                        
+                        sys.exit()
 
                 else:
                         print 'Unhandled option: {}'.format(opt)
