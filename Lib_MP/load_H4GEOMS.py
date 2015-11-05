@@ -493,7 +493,14 @@ class load_hdf:
 if __name__ == '__main__':
 #    load_H4GEOMS(sys.argv[1])
     import sys, os
+    if len(sys.argv) != 4:
+        print 'call as python <...>/sfit-processing-environment/Lib_MP/load_H4GEOMS.py hdf_dir location gas' 
+        exit()
+
+
     sys.path.append(os.path.dirname(sys.argv[0]))
     h4 = load_hdf()
-    h4.load_AllGeoms (sys.argv[1])
-    h4.plot_results('NH3')
+    h4.load_AllGeoms (sys.argv[1], sys.argv[2], sys.argv[3])
+    h4.plot_results(sys.argv[3])
+    print 'Hit any key in this window to terminate program'
+    raw_input()
