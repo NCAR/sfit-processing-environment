@@ -1245,7 +1245,11 @@ class ReadOutputData(_DateRange):
                     indFOV   = lines[ind2].strip().split().index('FOVDIA')
                     indSNR   = lines[ind2].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
                     # --- DIFFERENTLY NAMED IN MY SFIT4 ----
-                    indFitSNR= lines[ind2].strip().split().index('CALC_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
+                    if lines[ind2].strip().split().count('CALC_SNR') > 0:
+                        indFitSNR= lines[ind2].strip().split().index('CALC_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
+                    else:
+                        indFitSNR= lines[ind2].strip().split().index('FIT_SNR') - 9 
+                            
                     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
             
                     for lnum in range(ind2+1,lend,2):
