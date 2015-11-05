@@ -43,7 +43,7 @@ class show_tmph5:
                              command = self.quit)
         button_quit.grid(row=0, column=0, sticky=E+W)
 
-        options = list(set(('CHI_Y_2', 'DOFS', 'CO2', 'E_TOT', 'SNR')))
+        options = list(set(('CHI_Y_2', 'DOFS', 'CO2', 'E_TOT', 'SNR', 'SZA')))
         frame_show = Frame(main_frame_1)
         frame_show.grid(row=1,column=0)    
 
@@ -125,6 +125,17 @@ class show_tmph5:
         self.err_col.insert(10,np.max(self.res.err_tot))
         self.err_col.grid(row=4,column=2,sticky=E)
 
+        self.min_sza = Entry(frame_filter)
+        self.min_sza.insert(10,np.min(self.res.sza))
+        self.min_sza.grid(row=5,column=0,sticky=W)
+        filter_sza = Button(frame_filter, 
+                               text = 'SZA', 
+                               command = lambda:self.filter())
+        filter_sza.grid(row=5, column=1, sticky=E+W)
+        self.max_sza = Entry(frame_filter)
+        self.max_sza.insert(10,np.max(self.res.sza))
+        self.max_sza.grid(row=5,column=2,sticky=E)
+
         frame_check = Frame(main_frame_2)
         frame_check.grid(row=9,column=0)
         filter_errcol = Button(frame_check, 
@@ -188,7 +199,7 @@ class show_tmph5:
         self.columns.gca().errorbar(self.res.dnum[self.valid_ind],
                                     self.res.col_rt[self.valid_ind],
                                     self.res.err_tot[self.valid_ind],
-                                    color = 'b', fmt=None)        
+                                    color = 'b', fmt='none')        
         self.canvas.show()
 
     def save_values(self):
@@ -213,6 +224,8 @@ class show_tmph5:
     def plot_aux_val(self):
         aux = self.aux_val.get()
         self.aux.clf()
+        if aux == 'SZA':
+            self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.sza[self.valid_ind])
         if aux == 'CHI_Y_2':
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.c2y[self.valid_ind])
         elif aux == 'DOFS':
@@ -279,6 +292,19 @@ class show_tmph5:
         except:
             errcol = 1.0e99
 
+        minsza = self.min_sza.get()
+        maxsza = self.max_sza.get()
+        try:
+            minsza = string.atof(minsza)
+        except:
+            minsza = -1.0
+        try:
+            maxsza = string.atof(maxsza)
+        except:
+            maxsza = 1.0
+
+
+            
         self.valid_ind = filter(lambda x: self.res.dofs[x] > mindofs
                                 and self.res.dofs[x] < maxdofs
                                 and self.res.c2y[x] > minc2y
@@ -287,7 +313,9 @@ class show_tmph5:
                                 and np.max(self.res.vmr_rt[:,x]) < maxvmr
                                 and self.res.err_tot[x] <= errcol
                                 and self.res.col_co2[x] > minco2
-                                and self.res.col_co2[x] < maxco2, range(0,len(self.res.dnum)))
+                                and self.res.col_co2[x] < maxco2
+                                and self.res.sza[x] > minsza
+                                and self.res.sza[x] < maxsza, range(0,len(self.res.dnum)))
 #        self.valid_ind = np.array(self.valid_ind)
 
 

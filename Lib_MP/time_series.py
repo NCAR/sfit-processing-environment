@@ -38,14 +38,13 @@ def daily_mean(ds, cols, ecols, ts='daily'):
         if len(inds)>0:
 #            print col_mean.size, np.mean(cols[inds]).size
             col_mean = np.hstack((col_mean, np.mean(cols[inds])))
-        # if ecolsnum > 1:
-        #     for cols in range(0,ecolsnum):
-        #         ecol_mean[cols] = np.hstack((ecol_mean[cols], np.linalg.norm(ecols[cols,inds])/inds.size))
-        # else:
-        #     ecol_mean = np.hstack((ecol_mean, np.linalg.norm(ecols[inds])/in
-        #                                      ds.size))
+        if ecolsnum > 1:
+            for cols in range(0,ecolsnum):
+                ecol_mean[cols] = np.hstack((ecol_mean[cols], np.linalg.norm(ecols[cols,inds])/inds.size))
+        else:
+            ecol_mean = np.hstack((ecol_mean, np.linalg.norm(ecols[inds])/inds.size))
             dd = np.array(dd_mean).copy()
-
+            
     return(dd, col_mean, ecol_mean)
 
 

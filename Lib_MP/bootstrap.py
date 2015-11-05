@@ -12,11 +12,8 @@
 
 # Author: B. Bovy | GIRPAS, ULg
 # downloaded from http://nbviewer.ipython.org/github/girpas-ulg/nb_tseries/blob/master/Drift_Fourier_Analysis_Bootstrap.ipynb
-import pprint
 
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 def fourier_basis(x, degree, half_period):
     """Returns a 2-d array of fourier basis."""
@@ -82,7 +79,6 @@ def fit_driftfourier(x, data, weights, degree, half_period=0.5):
     results = np.linalg.lstsq(A * weights[:, np.newaxis],
                               data * weights)
 
-    print A.shape, results[2]
     params = results[0]
     intercept = params[0]
     slope = params[1]

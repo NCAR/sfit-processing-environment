@@ -121,7 +121,7 @@ class load_H4:
 
     def get_zpt(self):
         P = self.h4.select('PRESSURE_INDEPENDENT').get()
-        T = self.h4.select('PRESSURE_INDEPENDENT').get()
+        T = self.h4.select('TEMPERATURE_INDEPENDENT').get()
         Z = self.h4.select('ALTITUDE').get()
         Zb = self.h4.select('ALTITUDE.BOUNDARIES').get()
         return(Z,Zb,P,T)
@@ -186,6 +186,32 @@ class load_hdf:
             avmr = np.vstack((avmr,ap))
 
         return(rvmr,avmr,dd)
+        
+
+    def get_zpts(self, src='GEOMS'):
+        if src=='TMPH5':
+            src_hdf = self.h5
+        else:
+            src_hdf = self.h4
+        dd = np.array([])
+        for hf in src_hdf:
+            dd = np.hstack((dd,dates.date2num(hf.dates)))
+            z,zb,p,t = hf.get_zpt()
+            try:
+                Z
+            except:
+                import ipdb
+                ipdb.set_trace()
+                Z = np.ndarray((0,z.size))
+                Zb = np.ndarray((0,zb.size))
+                T = np.ndarray((0,t.shape[1]))
+                P = np.ndarray((0,p.shape[1]))
+            Z= np.vstack((Z,z))
+            Zb= np.vstack((Zb,zb))
+            T= np.vstack((T,t))
+            P= np.vstack((P,p))
+            
+        return(z,zb,p,t,dd)
         
     
     def get_avk_vmr(self, gas,src='GEOMS'):
@@ -414,7 +440,10 @@ class load_hdf:
             im.extend(ms)  # integration time
             asza.extend(sz) # solar zenith angle
 
-        return(dd,ps,ts,im,asza)
+        
+            
+        return(np.array(dd),np.array(ps),np.array(ts),
+               np.array(im),np.array(asza))
             
         
     def plot_auxilliary(self,ax11,ax21):
