@@ -71,10 +71,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       else:
          file_idateStr = idateStr
          file_fdateStr = fdateStr
-      file_idateStr = file_idateStr.lower()
-      file_fdateStr = file_fdateStr.lower()
       dataStr['DATA_START_DATE']         = file_idateStr
       dataStr['DATA_STOP_DATE']          = file_fdateStr
+      file_idateStr = file_idateStr.lower()
+      file_fdateStr = file_fdateStr.lower()
 
          
       dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+file_idateStr+'_'+file_fdateStr+'_'+dataStr['DATA_FILE_VERSION']+'.hdf'
@@ -402,10 +402,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = self.mxSclFctName
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.0E{};1'.format(int(math.log10(self.mxSclFctVal)))
-      dataStr['VAR_VALID_MIN']        = 0.0
+      dataStr['VAR_VALID_MIN']        = -maxval/10.0
       dataStr['VAR_VALID_MAX']        = maxval
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,maxval)
+      dataStr['VALID_RANGE']          = (-maxval/10.0,maxval)
       dataStr['units']                = self.mxSclFctName
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -538,12 +538,12 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = 'molec cm-2'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.66054E-20;mol m-2'
-      dataStr['VAR_VALID_MIN']        = 0.0
+      dataStr['VAR_VALID_MIN']        = -1.0E17
       dataStr['VAR_VALID_MAX']        = 1.0E20
-      dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,1.0E20)
+      dataStr['VAR_FILL_VALUE']       = self.getFillValue()*dataStr['VAR_VALID_MAX']
+      dataStr['VALID_RANGE']          = (-1.0E17,1.0E20)
       dataStr['units']                = 'molec cm-2'
-      dataStr['_FillValue']           = self.getFillValue()
+      dataStr['_FillValue']           = self.getFillValue()*dataStr['VAR_VALID_MAX']
       
       return dataStr
 
@@ -626,10 +626,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = '1'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.0;1'
-      dataStr['VAR_VALID_MIN']        = -3.0
-      dataStr['VAR_VALID_MAX']        =  3.0
+      dataStr['VAR_VALID_MIN']        = -10.0
+      dataStr['VAR_VALID_MAX']        =  10.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (-3.0,3.0)
+      dataStr['VALID_RANGE']          = (-10.0,10.0)
       dataStr['units']                = '1'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -759,11 +759,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = 'molec cm-2'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.66054E-20;mol m-2'
-      dataStr['VAR_VALID_MIN']        = 0
+      dataStr['VAR_VALID_MIN']        = -1.0E24
       dataStr['VAR_VALID_MAX']        = 1.0E25
-      dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0,1.0E25)
+      dataStr['VAR_FILL_VALUE']       = self.getFillValue()*dataStr['VAR_VALID_MAX']
+      dataStr['VALID_RANGE']          = (-1.0E24,1.0E25)
       dataStr['units']                = 'molec cm-2'
-      dataStr['_FillValue']           = self.getFillValue()
+      dataStr['_FillValue']           = self.getFillValue()*dataStr['VAR_VALID_MAX']
       
       return dataStr
