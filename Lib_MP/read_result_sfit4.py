@@ -118,15 +118,18 @@ class summary:
         sumf.skipline(nr_spc)
 
         nr_retgas = int(sumf.next(1).pop(0))
-        sumf.skipline(1)
+        head1 = sumf.get_line().split()
         self.gas = []
         self.prf = []
+        self.cell = []
         self.apriori = np.zeros(nr_retgas)
         self.retriev = np.zeros(nr_retgas)
         for nr in range(0,nr_retgas):
             int(sumf.next(1).pop(0))
             self.gas.extend(sumf.next(1))
             self.prf.extend(sumf.next(1))
+            if head1.count('IFCELL') > 0:
+                 self.cell.extend(sumf.next(1))
             self.apriori[nr] = sumf.next(1).pop(0)
             self.retriev[nr] = sumf.next(1).pop(0)
 
@@ -153,6 +156,7 @@ class summary:
                 sumf.next(3)
                 self.snr_apr[nr] = sumf.next(1).pop(0)
                 self.snr_ret[nr] = sumf.next(1).pop(0)
+                sumf.skip_reminder_of_line()
         except:
             pass
 
