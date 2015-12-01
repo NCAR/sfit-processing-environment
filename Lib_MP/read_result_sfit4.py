@@ -187,10 +187,18 @@ class error:
         # check if sd.ctl and direc are formally consistent
         self.total_vmr = direc+'/'+sbctl.get_value('file.out.total.vmr')
         self.total_col = direc+'/'+sbctl.get_value('file.out.total')
-#        self.shat = direc+'/'+sbctl.get_value('file.out.shat_matrix')
-        self.flag = True
-        if not os.path.isfile(self.total_vmr):
+        self.ran_vmr = direc+'/'+sbctl.get_value('file.out.srandom.vmr')
+        self.sys_vmr = direc+'/'+sbctl.get_value('file.out.ssystematic.vmr')
+
+        if os.path.exists(self.total_vmr) \
+           and os.path.exists(self.total_col) \
+           and os.path.exists(self.ran_vmr) \
+           and os.path.exists(self.sys_vmr):
+            self.flag = True
+        else:
             self.flag = False
+#        self.shat = direc+'/'+sbctl.get_value('file.out.shat_matrix')
+
             
 
     def read_total_vmr(self):
@@ -228,16 +236,26 @@ class error:
             return(np.nan,np.nan)
 
 
+    def read_matrix_random_vmr(self):
+        label, matrix = self.read_error_matrix(self.ran_vmr)
+        return(label,matrix)
+
+    def read_matrix_system_vmr(self):
+        label, matrix = self.read_error_matrix(self.sys_vmr)
+        return(label,matrix)
 
     def read_error_matrix(self, filename):
+        if not self.flag:
+            return(np.nan,np.nan)
         em = rn.read_from_file(filename)
-        label = em.get_line().strip('# ')
+        em.get_line()
         nr_mat = int(em.get_line().partition('=')[2])
         nr_rows = int(em.get_line().partition('=')[2])
         nr_cols = int(em.get_line().partition('=')[2])
         matrix = np.ndarray((nr_mat,nr_rows,nr_cols))
+        label = []
         for nmat in range(0,nr_mat):
-            em.get_line()
+            label.append(em.get_line())
             mat = em.next(nr_rows*nr_cols)
             matrix[nmat] = np.reshape(mat,(nr_cols, nr_rows))
 

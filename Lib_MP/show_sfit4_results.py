@@ -30,6 +30,8 @@ class show_results:
         self.winmw = plt.figure()#figsize=(24,12))
         # Find a free figure for AVK
         self.winavk = plt.figure()#figsize=(24,12))
+        # Find a free figure for ERROR
+        self.winerr = plt.figure()#figsize=(24,12))
 
         self.winpcol = plt.figure()#figsize=(24,12))
 
@@ -109,7 +111,10 @@ class show_results:
             button_spec.config(state=DISABLED)
         self.button_spec_by_gas = button_spec
 
-        options =  ('Profile', 'AVK')
+        if self.error.flag:
+            options =  ('Profile', 'AVK', 'ERR')
+        else:
+            options =  ('Profile', 'AVK')
         self.show_var = StringVar(self.tkroot)
         self.show_var.set(options[0])
         frame2 = Frame(self.tkroot)
@@ -131,6 +136,8 @@ class show_results:
                 self.show()
             if self.show_var.get() == 'AVK':
                 self.show(type='avk')
+            if self.show_var.get() == 'ERR':
+                self.show(type='err')
 
         button_profile = Button(self.tkroot, text = 'Profile', command = lambda: profile_show())
         button_profile.grid(row=3, column=0, sticky=E+W)
@@ -216,7 +223,8 @@ class show_results:
         pbp_m = ctl.get_value('file.out.pbpfile')
         if pbp_m == -1:
             self.sp = sfit4.pbp(direc+'/pbpfile')
-        else:            self.sp = sfit4.pbp(direc+'/'+pbp_m)
+        else:
+            self.sp = sfit4.pbp(direc+'/'+pbp_m)
         if os.path.exists(direc+'/'+ak_m):
             self.avk = sfit4.avk(direc+'/'+ak_m, direc+'/aprfs.table')
         elif os.path.exists(direc+'/ak.target'):
@@ -225,11 +233,12 @@ class show_results:
             self.avk = sfit4.avk(direc+'/avk.output', direc+'/aprfs.table')
         else:
             self.avk = -1
-#        self.error = sfit4.error(direc+'/smeas.target',direc+'/aprfs.table')
-        try:
-            self.error = sfit4.error(direc+'/smeas.target',direc+'/aprfs.table')
-        except:
-            pass
+        smeas_m = ctl.get_value('file.out.smeas_matrix')
+        if smeas_m == -1:
+            smeas_m = direc+'/smeas.target'
+        if os.path.exists(smeas_m):
+            print smeas_m
+            self.error = sfit4.error('sb.ctl','.')
 
         self.gas = sfit4.gasspectra(direc)
 
@@ -255,8 +264,11 @@ class show_results:
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             apr,z = self.aprprf.get_gas_vmr(self.gases[0])
             l = ax.plot(vmr,z,'-',label=self.gases[0])
-#            ax.plot(vmr+self.error.error_meas(),z,'.', color=l[0].get_color())
-#            ax.plot(vmr-self.error.error_meas(),z,'.', color=l[0].get_color())
+            e_ran, e_sys = self.error.read_total_vmr()
+            e_tot = np.sqrt(e_ran**2 + e_sys**2)
+            ax.plot(vmr+e_tot,z,'.', color=l[0].get_color())
+            ax.plot(vmr-e_tot,z,'.', color=l[0].get_color())
+
             ax.plot(apr,z,'--', color=l[0].get_color())
             ax.legend()
             if (type == 'vmr'):
@@ -290,7 +302,27 @@ class show_results:
             ax.plot(np.sum(self.avk.avk('col')[:-16,:],0), z)
             self.winavk.show()
 
-
+        if (type=='err'):
+            vmr,z = self.retprf.get_gas_vmr(self.gases[0])
+            self.winerr.clf()
+            ax = self.winerr.add_subplot(121)
+            label,matrix = self.error.read_matrix_random_vmr()
+            for l,m in zip(label,range(0,len(label))):
+                err = np.sqrt(np.diag(matrix[m,:,:]))
+                ax.plot(err,z,label=l)
+            ax.set_title('random')
+            ax.legend(fontsize=8)
+            ax.ticklabel_format(style='sci', scilimits=(0,0))
+            ax = self.winerr.add_subplot(122)
+            ax.set_title('systematic')
+            label,matrix = self.error.read_matrix_system_vmr()
+            for l,m in zip(label,range(0,len(label))):
+                err = np.sqrt(np.diag(matrix[m,:,:]))
+                ax.plot(err,z,label=l)
+            ax.legend(fontsize=8)
+            ax.ticklabel_format(style='sci', scilimits=(0,0))
+            self.winerr.show()
+            
     def show_pcol(self):
         self.winpcol.clf()
         ax = self.winpcol.add_subplot(111)
