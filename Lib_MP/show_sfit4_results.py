@@ -396,6 +396,8 @@ class show_results:
 
             ax1.xaxis.set_major_formatter(tkr.ScalarFormatter(useOffset=False))
             ax1.yaxis.set_major_formatter(tkr.ScalarFormatter(useOffset=False))
+            ax1.set_xticks([])
+            ax1.set_ylabel('Transmission [a.u.]')
             ax1.set_autoscaley_on(True)
             ax1.autoscale_view(True)                      
             ax1.legend(bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
@@ -406,6 +408,7 @@ class show_results:
             ax2.set_autoscalex_on(True)
             ax2.autoscale_view(True)
             ax2.plot(self.sp.nu[band_nr-1], self.sp.dif[band_nr-1])
+            ax2.set_xlabel('Wavelength [1/cm]')
             ax1.callbacks.connect('xlim_changed', oncall1)
             ax2.callbacks.connect('xlim_changed', oncall2)
             self.f = False
