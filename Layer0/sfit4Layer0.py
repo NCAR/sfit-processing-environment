@@ -1,4 +1,4 @@
-#! /usr/local/python-2.7/bin/python
+#! /usr/bin/python
 ##! /usr/bin/python
 ##! /usr/bin/python
 # Change the above line to point to the location of your python executable
@@ -68,16 +68,6 @@
 #----------------------------------------------------------------------------------------
 
 
-#---------------
-# Import modules
-#---------------
-import sys
-import os
-import getopt
-import sfitClasses as sc
-from Layer1Mods import errAnalysis
-from Tkinter import Tk
-from tkFileDialog import askopenfilename
 
 
 #------------------------
@@ -96,6 +86,16 @@ def usage(binDirVer):
 
 def main(argv):
 
+        #---------------
+        # Import modules
+        #---------------
+        import sys
+        import os
+        import getopt
+        import sfitClasses as sc
+        from Layer1Mods import errAnalysis
+        from Tkinter import Tk
+        from tkFileDialog import askopenfilename
         #----------------
         # Initializations
         #----------------
@@ -248,4 +248,8 @@ def main(argv):
 
 
 if __name__ == "__main__":
+        import os,sys
+        sys.path.append(os.path.dirname(sys.argv[0]))
+        sys.path.append(os.path.dirname(os.path.normpath(os.path.dirname(sys.argv[0])))+'/ModLib')
+        
         main(sys.argv[1:])
