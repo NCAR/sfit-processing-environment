@@ -233,12 +233,8 @@ class show_results:
             self.avk = sfit4.avk(direc+'/avk.output', direc+'/aprfs.table')
         else:
             self.avk = -1
-        smeas_m = ctl.get_value('file.out.smeas_matrix')
-        if smeas_m == -1:
-            smeas_m = direc+'/smeas.target'
-        if os.path.exists(smeas_m):
-            print smeas_m
-            self.error = sfit4.error('sb.ctl','.')
+
+        self.error = sfit4.error('sb.ctl','.')
 
         self.gas = sfit4.gasspectra(direc)
 
