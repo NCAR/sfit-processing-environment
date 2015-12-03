@@ -133,7 +133,7 @@ class load_tmph5:
         self.pcol_rt = pcol_mean.copy()
         self.Z = Z
 
-    def get_partial_columns(self,zrange):
+    def get_partial_columns(self,zrange,Xvar=False):
         ind1 = np.where(np.all((self.Z > zrange[0],self.Z < zrange[1]),axis=0))[0]
         a = self.h5f.root.pcol_rt[:]
         pcolrt = np.sum(a[np.ix_(ind1,self.valid)],axis=0)
@@ -142,6 +142,9 @@ class load_tmph5:
 #        import ipdb
 #        ipdb.set_trace()
         pcoltot = np.sqrt(np.sum(a[ind1,:]**2 + b[ind1,:]**2,axis=0))
+
+        if Xvar:
+            pcolrt = pcolrt/self.h5f.root.air_col[:,self.valid]
         
         return(self.dnum[self.valid], pcolrt, pcoltot)
 
