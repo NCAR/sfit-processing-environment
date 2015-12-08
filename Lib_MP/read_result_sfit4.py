@@ -37,7 +37,7 @@ class read_table:
         zb = np.vstack((self.table['Z'], 2.0*z - self.table['Z'])).T 
         p = self.table['PRESSURE']
         t = self.table['TEMPERATURE']
-        ac = sum(self.table['AIRMASS'])
+        ac = self.table['AIRMASS']
         return(z,zb, p,t,ac)
 
 
