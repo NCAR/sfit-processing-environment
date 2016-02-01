@@ -132,7 +132,6 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    i_col = np.array(i_col)
 
 	    z,zb,p,t,ac = rprf.get_atmosphere()
-	
 	    err = sfit4.error(sb_ctl,direc+'/'+dd)
 	    srvmr, ssvmr = err.read_total_vmr()
 	    srpcol, sspcol = err.read_total_pcol()
@@ -161,6 +160,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	        air_col=np.zeros(nr_entries) * np.nan
 	        P = np.zeros((len_vmr, nr_entries)) *np.nan
 	        T = np.zeros((len_vmr, nr_entries)) *np.nan
+	        airmass = np.zeros((len_vmr, nr_entries)) *np.nan
 		vmr_h2o_ap = np.zeros((len_vmr, nr_entries)) *np.nan
 
 	        h5file.createArray("/", 'Z', np.array(z), "Altitude levels (mid points)")
@@ -199,6 +199,8 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	                                (len_vmr,0), title="Pressure", expectedrows=nr_entries)
 	        T = h5file.createEArray("/", 'T', hdf5.Float32Atom(), 
 	                                (len_vmr,0), title="Temperature", expectedrows=nr_entries)
+	        air_mass = h5file.createEArray("/", 'air_mass', hdf5.Float32Atom(), 
+	                                     (len_vmr,0), title="AIRMASS", expectedrows=nr_entries)
 	
 	    akt_entry = akt_entry + 1
 	    if (~np.isfinite(summary.retriev[0])) :
@@ -244,7 +246,8 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    print 'akzepted'
 	    col_rt[:,nr_res] = summary.retriev
 	    col_ap[:,nr_res] = summary.apriori
-	    air_col[nr_res] = ac
+	    airmass[:,nr_res] = ac
+	    air_col[nr_res] = np.sum(ac)
 	    snr_clc.append(np.mean(summary.snr_ret))
 	    snr_the.append(np.mean(summary.snr_apr))
 	    dofs[nr_res] = summary.dofs
@@ -293,6 +296,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    pcol_ap.append(np.reshape(acol[0],(len_vmr, -1)))
 	    P.append(np.reshape(p,(len_vmr, -1)))
 	    T.append(np.reshape(t,(len_vmr, -1)))
+	    air_mass.append(np.reshape(ac,(len_vmr, -1)))
 
 	    h2o, z = aprf.get_gas_vmr('H2O')
 	    h2o_setup.append(np.reshape(h2o,(len_vmr, -1)))
