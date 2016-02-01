@@ -301,7 +301,8 @@ class show_results:
         if (type=='err'):
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             self.winerr.clf()
-            ax = self.winerr.add_subplot(121)
+
+            ax = self.winerr.add_subplot(221)
             label,matrix = self.error.read_matrix_random_vmr()
             for l,m in zip(label,range(0,len(label))):
                 err = np.sqrt(np.diag(matrix[m,:,:]))
@@ -309,7 +310,17 @@ class show_results:
             ax.set_title('random')
             ax.legend(fontsize=8)
             ax.ticklabel_format(style='sci', scilimits=(0,0))
-            ax = self.winerr.add_subplot(122)
+
+            ax = self.winerr.add_subplot(222)
+            label,matrix = self.error.read_matrix_random_pcol()
+            for l,m in zip(label,range(0,len(label))):
+                err = np.sqrt(np.diag(matrix[m,:,:]))
+                ax.plot(err,z,label=l)
+            ax.set_title('random')
+            ax.legend(fontsize=8)
+            ax.ticklabel_format(style='sci', scilimits=(0,0))
+
+            ax = self.winerr.add_subplot(223)
             ax.set_title('systematic')
             label,matrix = self.error.read_matrix_system_vmr()
             for l,m in zip(label,range(0,len(label))):
@@ -317,6 +328,16 @@ class show_results:
                 ax.plot(err,z,label=l)
             ax.legend(fontsize=8)
             ax.ticklabel_format(style='sci', scilimits=(0,0))
+
+            ax = self.winerr.add_subplot(224)
+            ax.set_title('systematic')
+            label,matrix = self.error.read_matrix_system_pcol()
+            for l,m in zip(label,range(0,len(label))):
+                err = np.sqrt(np.diag(matrix[m,:,:]))
+                ax.plot(err,z,label=l)
+            ax.legend(fontsize=8)
+            ax.ticklabel_format(style='sci', scilimits=(0,0))
+
             self.winerr.show()
             
     def show_pcol(self):

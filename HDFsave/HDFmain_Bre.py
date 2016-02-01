@@ -172,8 +172,8 @@ def main(args):
     if gasName.lower() == 'c2h6':
         gasName        = 'C2H6'
         tcFlag         = False
-        minDOFs        = 0.8
-        maxCHI2        = 20.0
+        minDOFs        = 0.5
+        maxCHI2        = 100.0
         maxVMR         = 5e-8
         minVMR         = -1e-9
 
@@ -189,6 +189,16 @@ def main(args):
 
     if gasName.lower() == 'chf2cl': # CFC-12
         gasName        = 'CHF2Cl'
+        tcFlag         = False
+        minDOFs        = 1.0
+        maxCHI2        = 20.0
+        maxVMR         = 3e-9
+        minVMR         = -1e-10
+        minCO2         = 1e22
+        maxCO2         = 10e22
+        
+    if gasName.lower() == 'ccl3f': # CFC-12
+        gasName        = 'CCl3F'
         tcFlag         = False
         minDOFs        = 1.0
         maxCHI2        = 20.0

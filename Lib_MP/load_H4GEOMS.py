@@ -48,8 +48,10 @@ class load_H4:
             ind = -1
         return(ind)
 
-    def get_partial_columns(self,gas):
+    def get_partial_columns(self,gas,xvar=False):
         rt = self.h4.select(gas+'.COLUMN.PARTIAL_ABSORPTION.SOLAR').get()
+        if xvar:
+            ac = self.h4.select(gas+'.COLUMN.PARTIAL_ABSORPTION.SOLAR').get()
         z = self.h4.select('ALTITUDE').get()
         return(rt,z)
 

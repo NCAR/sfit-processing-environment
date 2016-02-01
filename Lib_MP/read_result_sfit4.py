@@ -184,16 +184,20 @@ class error:
             self.flag = False
             return
         sbctl.read_ctl_file(sb_ctl)
-        # check if sd.ctl and direc are formally consistent
+        # check if sb.ctl and direc are formally consistent
         self.total_vmr = direc+'/'+sbctl.get_value('file.out.total.vmr')
         self.total_col = direc+'/'+sbctl.get_value('file.out.total')
         self.ran_vmr = direc+'/'+sbctl.get_value('file.out.srandom.vmr')
         self.sys_vmr = direc+'/'+sbctl.get_value('file.out.ssystematic.vmr')
+        self.ran_col = direc+'/'+sbctl.get_value('file.out.srandom')
+        self.sys_col = direc+'/'+sbctl.get_value('file.out.ssystematic')
 
         if os.path.exists(self.total_vmr) \
            and os.path.exists(self.total_col) \
            and os.path.exists(self.ran_vmr) \
-           and os.path.exists(self.sys_vmr):
+           and os.path.exists(self.sys_vmr) \
+           and os.path.exists(self.ran_col) \
+           and os.path.exists(self.sys_col):
             self.flag = True
         else:
             self.flag = False
@@ -242,6 +246,14 @@ class error:
 
     def read_matrix_system_vmr(self):
         label, matrix = self.read_error_matrix(self.sys_vmr)
+        return(label,matrix)
+
+    def read_matrix_random_pcol(self):
+        label, matrix = self.read_error_matrix(self.ran_col)
+        return(label,matrix)
+
+    def read_matrix_system_pcol(self):
+        label, matrix = self.read_error_matrix(self.sys_col)
         return(label,matrix)
 
     def read_error_matrix(self, filename):
