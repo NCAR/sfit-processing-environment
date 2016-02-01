@@ -233,12 +233,8 @@ class show_results:
             self.avk = sfit4.avk(direc+'/avk.output', direc+'/aprfs.table')
         else:
             self.avk = -1
-        smeas_m = ctl.get_value('file.out.smeas_matrix')
-        if smeas_m == -1:
-            smeas_m = direc+'/smeas.target'
-        if os.path.exists(smeas_m):
-            print smeas_m
-            self.error = sfit4.error('sb.ctl','.')
+
+        self.error = sfit4.error('sb.ctl','.')
 
         self.gas = sfit4.gasspectra(direc)
 
@@ -305,7 +301,8 @@ class show_results:
         if (type=='err'):
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             self.winerr.clf()
-            ax = self.winerr.add_subplot(121)
+
+            ax = self.winerr.add_subplot(221)
             label,matrix = self.error.read_matrix_random_vmr()
             for l,m in zip(label,range(0,len(label))):
                 err = np.sqrt(np.diag(matrix[m,:,:]))
@@ -313,7 +310,17 @@ class show_results:
             ax.set_title('random')
             ax.legend(fontsize=8)
             ax.ticklabel_format(style='sci', scilimits=(0,0))
-            ax = self.winerr.add_subplot(122)
+
+            ax = self.winerr.add_subplot(222)
+            label,matrix = self.error.read_matrix_random_pcol()
+            for l,m in zip(label,range(0,len(label))):
+                err = np.sqrt(np.diag(matrix[m,:,:]))
+                ax.plot(err,z,label=l)
+            ax.set_title('random')
+            ax.legend(fontsize=8)
+            ax.ticklabel_format(style='sci', scilimits=(0,0))
+
+            ax = self.winerr.add_subplot(223)
             ax.set_title('systematic')
             label,matrix = self.error.read_matrix_system_vmr()
             for l,m in zip(label,range(0,len(label))):
@@ -321,6 +328,16 @@ class show_results:
                 ax.plot(err,z,label=l)
             ax.legend(fontsize=8)
             ax.ticklabel_format(style='sci', scilimits=(0,0))
+
+            ax = self.winerr.add_subplot(224)
+            ax.set_title('systematic')
+            label,matrix = self.error.read_matrix_system_pcol()
+            for l,m in zip(label,range(0,len(label))):
+                err = np.sqrt(np.diag(matrix[m,:,:]))
+                ax.plot(err,z,label=l)
+            ax.legend(fontsize=8)
+            ax.ticklabel_format(style='sci', scilimits=(0,0))
+
             self.winerr.show()
             
     def show_pcol(self):
@@ -428,6 +445,8 @@ class show_results:
 
             ax1.xaxis.set_major_formatter(tkr.ScalarFormatter(useOffset=False))
             ax1.yaxis.set_major_formatter(tkr.ScalarFormatter(useOffset=False))
+            ax1.set_xticks([])
+            ax1.set_ylabel('Transmission [a.u.]')
             ax1.set_autoscaley_on(True)
             ax1.autoscale_view(True)                      
             ax1.legend(bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
@@ -438,6 +457,7 @@ class show_results:
             ax2.set_autoscalex_on(True)
             ax2.autoscale_view(True)
             ax2.plot(self.sp.nu[band_nr-1], self.sp.dif[band_nr-1])
+            ax2.set_xlabel('Wavelength [1/cm]')
             ax1.callbacks.connect('xlim_changed', oncall1)
             ax2.callbacks.connect('xlim_changed', oncall2)
             self.f = False
