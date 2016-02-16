@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/data/sfit-processing-environment/Lib_MP/')
+sys.path.append('/home/mathias/sfit-processing-environment/Lib_MP/')
 import read_result_sfit4 as sfit4
 from sfit4_ctl import *
 from Tkinter import *
@@ -439,7 +439,7 @@ class show_results:
                    and (self.gas.gas[x]==gas or gas == 'ALL')\
                    and self.gas.iteration[x] == itera,\
                    range(0,len(self.gas.band)))
-            
+
             for ind in inds:
                 ax1.plot(self.gas.nu[ind],self.gas.clc[ind],label=self.gas.gas[ind])
 

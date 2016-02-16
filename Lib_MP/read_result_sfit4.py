@@ -11,7 +11,7 @@ reload(rn) # because problem with dreload
 class read_table:
 
     def __init__(self, filename):
-        self.table = np.recfromtxt(filename, skiprows=3,names=True)
+        self.table = np.recfromtxt(filename, skip_header=3,names=True)
         self.names = self.table.dtype.names
     
         ll = linecache.getline(filename, 2).strip().split()
@@ -48,13 +48,13 @@ class read_table:
 class Kout:
     def __init__(self, filename):
     
-        self.K_frac = np.genfromtxt(filename,skiprows=4)
+        self.K_frac = np.genfromtxt(filename,skip_header=4)
         
 
 class Kbout:
     def __init__(self, filename):
     
-        self.K_frac = np.genfromtxt(filename,skiprows=2,names=True)
+        self.K_frac = np.genfromtxt(filename,skip_header=2,names=True)
 
     def get_keys(self):
         return(self.K_frac.dtype.names)
@@ -70,7 +70,7 @@ class avk:
 #        import ipdb
 #        ipdb.set_trace()
         if l1.find('SFIT4') > -1:
-            self.AK_frac = np.genfromtxt(filename,skiprows=2)
+            self.AK_frac = np.genfromtxt(filename,skip_header=2)
         else:
             nmat = int(avk.get_line().split('=')[1])
             nrow = int(avk.get_line().split('=')[1])
@@ -330,13 +330,21 @@ class pbp:
 class gasspectra:
     def __init__(self, direc):
 
+        
+        sum = summary(direc+'/summary')
+
         self.gas = []
         self.band = []
         self.scan = []
         self.iteration = []
         self.clc = []
         self.nu = []
-        files = glob.glob(direc + '/spc*')
+        files = []
+        for fn in sum.gas:
+            files.extend(glob.glob(direc + '/spc.' + fn + '*'))
+        files.extend(glob.glob(direc + '/spc.all*'))
+        files.extend(glob.glob(direc + '/spc.REST*'))
+        # Order gas files by target, interfering, ALL, REST 
         for ff in files:
             ascf = rn.read_from_file(ff)
             headerline = ascf.get_line().split()
