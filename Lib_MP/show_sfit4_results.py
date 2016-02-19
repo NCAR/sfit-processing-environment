@@ -113,7 +113,6 @@ class show_results:
             button_spec.config(state=DISABLED)
         self.button_spec_by_gas = button_spec
 
-
         if self.error.flag:
             options =  ('TARGET', 'INTERF', 'ERR')
         else:
@@ -391,7 +390,7 @@ class show_results:
 
             ax = self.winerr.add_subplot(223)
             ax.set_title('systematic')
-            label,matrix = self.error.read_matrix_system_vmr()
+#            label,matrix = self.error.read_matrix_system_vmr()
             for l,m in zip(label,range(0,len(label))):
                 if l=='smoothing':
                     continue
@@ -417,9 +416,15 @@ class show_results:
         self.winpcol.clf()
         ax = self.winpcol.add_subplot(111)
         vmr,z = self.retprf.get_gas_vmr(self.gases[0])
-        ax.plot(np.sum(self.avk.avk('col')[-10:,:],0), z)
-        ax.plot(np.sum(self.avk.avk('col')[-14:-11,:],0), z)
-        ax.plot(np.sum(self.avk.avk('col')[:-15,:],0), z)
+        pcol = [[-1,22],
+                [-23,0]]
+        ind = [[-20,len(z)], 
+               [0,-21]]
+        ax.plot(np.sum(self.avk.avk('col')[ind[0][0]:ind[0][1],:],0), z,
+                label='%0.2f-%0.2f'%(z[ind[0][1]-1],z[ind[0][0]]))
+        ax.plot(np.sum(self.avk.avk('col')[ind[1][0]:ind[1][1],:],0), z, 
+                label='%0.2f-%0.2f'%(z[ind[1][1]-1],z[ind[1][0]]))
+        ax.legend(fontsize=8)
         self.winpcol.show()
         
 

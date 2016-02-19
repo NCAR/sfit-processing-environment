@@ -662,7 +662,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         try:               ind = Kb_labels_orig.index(paramName)
         except ValueError: return paramName
 
-        if 'gas' in locals(): rtrnVal = Kb_labels[ind] + '_' + gas
+        if 'gas' in locals():
+            rtrnVal = Kb_labels[ind] + '_' + gas
         else:                 rtrnVal = Kb_labels[ind]
 
         return rtrnVal
