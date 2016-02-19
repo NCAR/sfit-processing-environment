@@ -111,10 +111,10 @@ class show_results:
             button_spec.config(state=DISABLED)
         self.button_spec_by_gas = button_spec
 
-        if self.error.flag:
-            options =  ('Profile', 'AVK', 'ERR')
-        else:
-            options =  ('Profile', 'AVK')
+#        if self.error.flag:
+#            options =  ('Profile', 'AVK', 'ERR')
+#        else:
+        options =  ('Profile', 'AVK')
         self.show_var = StringVar(self.tkroot)
         self.show_var.set(options[0])
         frame2 = Frame(self.tkroot)
@@ -264,10 +264,10 @@ class show_results:
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             apr,z = self.aprprf.get_gas_vmr(self.gases[0])
             l = ax.plot(vmr,z,'-',label=self.gases[0])
-            e_ran, e_sys = self.error.read_total_vmr()
-            e_tot = np.sqrt(e_ran**2 + e_sys**2)
-            ax.plot(vmr+e_tot,z,'.', color=l[0].get_color())
-            ax.plot(vmr-e_tot,z,'.', color=l[0].get_color())
+#            e_ran, e_sys = self.error.read_total_vmr()
+#            e_tot = np.sqrt(e_ran**2 + e_sys**2)
+            ax.plot(vmr,z,'.', color=l[0].get_color())
+            ax.plot(vmr,z,'.', color=l[0].get_color())
 
             ax.plot(apr,z,'--', color=l[0].get_color())
             ax.legend()
@@ -306,7 +306,7 @@ class show_results:
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             self.winerr.clf()
             ax = self.winerr.add_subplot(121)
-            label,matrix = self.error.read_matrix_random_vmr()
+#            label,matrix = self.error.read_matrix_random_vmr()
             for l,m in zip(label,range(0,len(label))):
                 err = np.sqrt(np.diag(matrix[m,:,:]))
                 ax.plot(err,z,label=l)
@@ -315,7 +315,7 @@ class show_results:
             ax.ticklabel_format(style='sci', scilimits=(0,0))
             ax = self.winerr.add_subplot(122)
             ax.set_title('systematic')
-            label,matrix = self.error.read_matrix_system_vmr()
+#            label,matrix = self.error.read_matrix_system_vmr()
             for l,m in zip(label,range(0,len(label))):
                 err = np.sqrt(np.diag(matrix[m,:,:]))
                 ax.plot(err,z,label=l)
@@ -327,9 +327,15 @@ class show_results:
         self.winpcol.clf()
         ax = self.winpcol.add_subplot(111)
         vmr,z = self.retprf.get_gas_vmr(self.gases[0])
-        ax.plot(np.sum(self.avk.avk('col')[-10:,:],0), z)
-        ax.plot(np.sum(self.avk.avk('col')[-14:-11,:],0), z)
-        ax.plot(np.sum(self.avk.avk('col')[:-15,:],0), z)
+        pcol = [[-1,22],
+                [-23,0]]
+        ind = [[-20,len(z)], 
+               [0,-21]]
+        ax.plot(np.sum(self.avk.avk('col')[ind[0][0]:ind[0][1],:],0), z,
+                label='%0.2f-%0.2f'%(z[ind[0][1]-1],z[ind[0][0]]))
+        ax.plot(np.sum(self.avk.avk('col')[ind[1][0]:ind[1][1],:],0), z, 
+                label='%0.2f-%0.2f'%(z[ind[1][1]-1],z[ind[1][0]]))
+        ax.legend(fontsize=8)
         self.winpcol.show()
         
 
