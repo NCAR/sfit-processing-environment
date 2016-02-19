@@ -330,13 +330,21 @@ class pbp:
 class gasspectra:
     def __init__(self, direc):
 
+        
+        sum = summary(direc+'/summary')
+
         self.gas = []
         self.band = []
         self.scan = []
         self.iteration = []
         self.clc = []
         self.nu = []
-        files = glob.glob(direc + '/spc*')
+        files = []
+        for fn in sum.gas:
+            files.extend(glob.glob(direc + '/spc.' + fn + '*'))
+        files.extend(glob.glob(direc + '/spc.all*'))
+        files.extend(glob.glob(direc + '/spc.REST*'))
+        # Order gas files by target, interfering, ALL, REST 
         for ff in files:
             ascf = rn.read_from_file(ff)
             headerline = ascf.get_line().split()
