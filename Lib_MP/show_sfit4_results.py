@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/data/sfit-processing-environment/Lib_MP/')
+sys.path.append('/home/mathias/sfit-processing-environment/Lib_MP/')
 import read_result_sfit4 as sfit4
 from sfit4_ctl import *
 from Tkinter import *
@@ -42,6 +42,8 @@ class show_results:
         self.tkroot = Tk()
         self.tkroot.wm_title('sfit4 result viewer')
 
+
+        
         self.entry = Entry(self.tkroot)
         self.entry.grid(row=0, column=1, sticky=E+W)
         self.entry.delete(0, END)
@@ -111,10 +113,10 @@ class show_results:
             button_spec.config(state=DISABLED)
         self.button_spec_by_gas = button_spec
 
-#        if self.error.flag:
-#            options =  ('Profile', 'AVK', 'ERR')
-#        else:
-        options =  ('Profile', 'AVK')
+        if self.error.flag:
+            options =  ('TARGET', 'INTERF', 'ERR')
+        else:
+            options =  ('TARGET', 'INTERF')
         self.show_var = StringVar(self.tkroot)
         self.show_var.set(options[0])
         frame2 = Frame(self.tkroot)
@@ -131,21 +133,56 @@ class show_results:
 #        self.menu1 = OptionMenu(self.tkroot,self.show_var, *options)
 #        self.menu1.grid(row=3,column=1,stick=E+W)
 
+        def avk_show():
+            self.winavk.clf()
+            vmr,z = self.retprf.get_gas_vmr(self.gases[0])
+            if self.avk_type.get() == 'FRAC':
+                self.winavk.gca().plot(self.avk.avk('frac').T, z)
+            elif self.avk_type.get() == 'VMR':
+                self.winavk.gca().plot(self.avk.avk('vmr').T, z)
+            elif self.avk_type.get() == 'COL':
+                self.winavk.gca().plot(np.sum(self.avk.avk('col')[:,:],0), z)
+            elif self.avk_type.get() == 'PCOL ALL':
+                self.winavk.gca().plot(self.avk.avk('col').T, z)
+            elif self.avk_type.get() == 'PCOL':
+                for i in range(0,self.nr_pcols):
+                    min_alt = float(self.min_pcv[i].get())
+                    max_alt = float(self.max_pcv[i].get())
+                    min_ind = np.max(np.where(np.array(z)>=min_alt))
+                    max_ind = np.min(np.where(np.array(z)<max_alt))
+                    self.winavk.gca().plot(np.sum(self.avk.avk('col')[max_ind:min_ind,:],0), z, label='PCOL from %.2f to %.2f km'%(min_alt,max_alt))
+            self.winavk.gca().set_ylabel('Altitude [km]')
+            self.winavk.gca().set_xlabel('Fraction of AVK [a.u.]')
+            self.winavk.gca().legend(fontsize=16)
+            self.winavk.show()
+
+
         def profile_show():
-            if self.show_var.get() == 'Profile':
-                self.show()
-            if self.show_var.get() == 'AVK':
-                self.show(type='avk')
+            if self.show_var.get() == 'TARGET':
+                self.show(type='target')
+            if self.show_var.get() == 'INTERF':
+                self.show(type='interf')
             if self.show_var.get() == 'ERR':
                 self.show(type='err')
 
         button_profile = Button(self.tkroot, text = 'Profile', command = lambda: profile_show())
         button_profile.grid(row=3, column=0, sticky=E+W)
 
-        frame3 = Frame(self.tkroot)
-        frame3.grid(row=4,column=0)
-                
+        button_avk = Button(self.tkroot, 
+                            text = 'AVK', 
+                            command = lambda: avk_show())
+        button_avk.grid(row=4, column=0, sticky=E+W)
+        avk_options=['FRAC', 'VMR', 'COL', 'PCOL ALL', 'PCOL']
+        self.avk_type = StringVar(self.tkroot)
+        self.avk_type.set(avk_options[0])
+        self.menu2 = OptionMenu(self.tkroot,self.avk_type, 
+                                *avk_options)
+        self.menu2.grid(row=4,column=1,stick=E+W)
 
+
+        frame3 = Frame(self.tkroot)
+        frame3.grid(row=5,column=0)
+                
         button_summary = Button(frame3, text = 'FFT',
                                 command = lambda: fft_show())
         button_summary.grid(row=2, column=0, sticky=E+W)
@@ -158,11 +195,57 @@ class show_results:
                              command = self.tkroot.quit)
         button_quit.grid(row=6, column=0, sticky=E+W)
 
+        frame4 = Frame(self.tkroot)
+        frame4.grid(row=5,column=1)
+        self.nr_pcols = 3
+        pc,z = self.retprf.get_gas_col(self.gases[0])
+        self.min_pcv = []
+        self.max_pcv = []
+        self.pcol1 = []
+
+        def modify_pc(event, nr):
+            min_alt = float(self.min_pcv[nr].get())
+            max_alt = float(self.max_pcv[nr].get())
+            min_ind = np.max(np.where(np.array(z)>=min_alt))
+            max_ind = np.min(np.where(np.array(z)<=max_alt))
+            self.pcol1[nr].set('%g'%np.sum(pc[max_ind:min_ind+1]))        
+
+        default = [[0.0, 10.0],
+                   [10.0, 120.0],
+                   [0.0, 120.0]]
+
+        for i in range(0,self.nr_pcols):
+            self.min_pcv.append(StringVar(frame4))
+            min_pc = Entry(frame4, width=5,textvariable=self.min_pcv[-1])
+            self.min_pcv[-1].set(default[i][0])
+            min_pc.grid(row = i, column=0)
+
+            self.max_pcv.append(StringVar(frame4))
+            max_pc = Entry(frame4, width=5,textvariable=self.max_pcv[-1])
+            self.max_pcv[-1].set(default[i][1])
+            max_pc.grid(row = i, column=1)
+
+            
+            self.pcol1.append(StringVar(frame4))
+            val_pc = Label(frame4, textvariable=self.pcol1[-1])
+            val_pc.grid(row = i, column=2)
+            modify_pc(0,i)
+            
+
+            min_pc.bind('<Return>', lambda ev, x=i: modify_pc(ev,x))
+            max_pc.bind('<Return>', lambda ev, x=i : modify_pc(ev,x))
+
+
+
+        
+        
+
 #        self.SummaryText()
 # #        self.mkOptionMenu1()
 
         
         self.tkroot.mainloop()
+        print 'bla'
 
     def quit(self):
         self.tkroot.destroy()
@@ -233,12 +316,8 @@ class show_results:
             self.avk = sfit4.avk(direc+'/avk.output', direc+'/aprfs.table')
         else:
             self.avk = -1
-        smeas_m = ctl.get_value('file.out.smeas_matrix')
-        if smeas_m == -1:
-            smeas_m = direc+'/smeas.target'
-        if os.path.exists(smeas_m):
-            print smeas_m
-            self.error = sfit4.error('sb.ctl','.')
+
+        self.error = sfit4.error('sb.ctl','.')
 
         self.gas = sfit4.gasspectra(direc)
 
@@ -264,12 +343,12 @@ class show_results:
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             apr,z = self.aprprf.get_gas_vmr(self.gases[0])
             l = ax.plot(vmr,z,'-',label=self.gases[0])
-#            e_ran, e_sys = self.error.read_total_vmr()
-#            e_tot = np.sqrt(e_ran**2 + e_sys**2)
-            ax.plot(vmr,z,'.', color=l[0].get_color())
-            ax.plot(vmr,z,'.', color=l[0].get_color())
+            e_ran, e_sys = self.error.read_total_vmr()
+            e_tot = np.sqrt(e_ran**2 + e_sys**2)
+            ax.plot(vmr+e_tot,z,'-.', color=l[0].get_color())
+            ax.plot(vmr-e_tot,z,'-.', color=l[0].get_color())
 
-            ax.plot(apr,z,'--', color=l[0].get_color())
+            ax.plot(apr,z,'--', label='a priori', color=l[0].get_color())
             ax.legend()
             if (type == 'vmr'):
                 ax = self.winprf.add_subplot(122)
@@ -286,41 +365,51 @@ class show_results:
         if(type=='mw'):
             self.show_spectra(nr)
 
-        if (type=='avk'):
-            self.winavk.clf()
-            ax = self.winavk.add_subplot(151)
-            vmr,z = self.retprf.get_gas_vmr(self.gases[0])
-            ax.plot(self.avk.avk('frac').T, z)
-            ax = self.winavk.add_subplot(152)
-            ax.plot(self.avk.avk('vmr').T, z)
-            ax = self.winavk.add_subplot(153)
-            ax.plot(self.avk.avk('col').T, z)
-            ax = self.winavk.add_subplot(154)
-            ax.plot(np.sum(self.avk.avk('col'),0), z)
-            ax = self.winavk.add_subplot(155)
-            ax.plot(np.sum(self.avk.avk('col')[-15:,:],0), z)
-            ax.plot(np.sum(self.avk.avk('col')[:-16,:],0), z)
-            self.winavk.show()
 
         if (type=='err'):
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             self.winerr.clf()
-            ax = self.winerr.add_subplot(121)
-#            label,matrix = self.error.read_matrix_random_vmr()
+
+            ax = self.winerr.add_subplot(221)
+            label,matrix = self.error.read_matrix_random_vmr()
             for l,m in zip(label,range(0,len(label))):
                 err = np.sqrt(np.diag(matrix[m,:,:]))
                 ax.plot(err,z,label=l)
             ax.set_title('random')
             ax.legend(fontsize=8)
             ax.ticklabel_format(style='sci', scilimits=(0,0))
-            ax = self.winerr.add_subplot(122)
+
+            ax = self.winerr.add_subplot(222)
+            label,matrix = self.error.read_matrix_random_pcol()
+            for l,m in zip(label,range(0,len(label))):
+                err = np.sqrt(np.diag(matrix[m,:,:]))
+                ax.plot(err,z,label=l)
+            ax.set_title('random')
+            ax.legend(fontsize=8)
+            ax.ticklabel_format(style='sci', scilimits=(0,0))
+
+            ax = self.winerr.add_subplot(223)
             ax.set_title('systematic')
 #            label,matrix = self.error.read_matrix_system_vmr()
             for l,m in zip(label,range(0,len(label))):
+                if l=='smoothing':
+                    continue
                 err = np.sqrt(np.diag(matrix[m,:,:]))
                 ax.plot(err,z,label=l)
             ax.legend(fontsize=8)
             ax.ticklabel_format(style='sci', scilimits=(0,0))
+
+            ax = self.winerr.add_subplot(224)
+            ax.set_title('systematic')
+            label,matrix = self.error.read_matrix_system_pcol()
+            for l,m in zip(label,range(0,len(label))):
+                if l=='smoothing':
+                    continue
+                err = np.sqrt(np.diag(matrix[m,:,:]))
+                ax.plot(err,z,label=l)
+            ax.legend(fontsize=8)
+            ax.ticklabel_format(style='sci', scilimits=(0,0))
+
             self.winerr.show()
             
     def show_pcol(self):
@@ -428,12 +517,14 @@ class show_results:
                    and (self.gas.gas[x]==gas or gas == 'ALL')\
                    and self.gas.iteration[x] == itera,\
                    range(0,len(self.gas.band)))
-            
+
             for ind in inds:
                 ax1.plot(self.gas.nu[ind],self.gas.clc[ind],label=self.gas.gas[ind])
 
             ax1.xaxis.set_major_formatter(tkr.ScalarFormatter(useOffset=False))
             ax1.yaxis.set_major_formatter(tkr.ScalarFormatter(useOffset=False))
+            ax1.set_xticks([])
+            ax1.set_ylabel('Transmission [a.u.]')
             ax1.set_autoscaley_on(True)
             ax1.autoscale_view(True)                      
             ax1.legend(bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.)
@@ -444,6 +535,7 @@ class show_results:
             ax2.set_autoscalex_on(True)
             ax2.autoscale_view(True)
             ax2.plot(self.sp.nu[band_nr-1], self.sp.dif[band_nr-1])
+            ax2.set_xlabel('Wavelength [1/cm]')
             ax1.callbacks.connect('xlim_changed', oncall1)
             ax2.callbacks.connect('xlim_changed', oncall2)
             self.f = False

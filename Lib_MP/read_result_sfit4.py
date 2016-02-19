@@ -11,7 +11,7 @@ reload(rn) # because problem with dreload
 class read_table:
 
     def __init__(self, filename):
-        self.table = np.recfromtxt(filename, skiprows=3,names=True)
+        self.table = np.recfromtxt(filename, skip_header=3,names=True)
         self.names = self.table.dtype.names
     
         ll = linecache.getline(filename, 2).strip().split()
@@ -48,13 +48,13 @@ class read_table:
 class Kout:
     def __init__(self, filename):
     
-        self.K_frac = np.genfromtxt(filename,skiprows=4)
+        self.K_frac = np.genfromtxt(filename,skip_header=4)
         
 
 class Kbout:
     def __init__(self, filename):
     
-        self.K_frac = np.genfromtxt(filename,skiprows=2,names=True)
+        self.K_frac = np.genfromtxt(filename,skip_header=2,names=True)
 
     def get_keys(self):
         return(self.K_frac.dtype.names)
@@ -70,7 +70,7 @@ class avk:
 #        import ipdb
 #        ipdb.set_trace()
         if l1.find('SFIT4') > -1:
-            self.AK_frac = np.genfromtxt(filename,skiprows=2)
+            self.AK_frac = np.genfromtxt(filename,skip_header=2)
         else:
             nmat = int(avk.get_line().split('=')[1])
             nrow = int(avk.get_line().split('=')[1])
@@ -184,16 +184,20 @@ class error:
             self.flag = False
             return
         sbctl.read_ctl_file(sb_ctl)
-        # check if sd.ctl and direc are formally consistent
+        # check if sb.ctl and direc are formally consistent
         self.total_vmr = direc+'/'+sbctl.get_value('file.out.total.vmr')
         self.total_col = direc+'/'+sbctl.get_value('file.out.total')
         self.ran_vmr = direc+'/'+sbctl.get_value('file.out.srandom.vmr')
         self.sys_vmr = direc+'/'+sbctl.get_value('file.out.ssystematic.vmr')
+        self.ran_col = direc+'/'+sbctl.get_value('file.out.srandom')
+        self.sys_col = direc+'/'+sbctl.get_value('file.out.ssystematic')
 
         if os.path.exists(self.total_vmr) \
            and os.path.exists(self.total_col) \
            and os.path.exists(self.ran_vmr) \
-           and os.path.exists(self.sys_vmr):
+           and os.path.exists(self.sys_vmr) \
+           and os.path.exists(self.ran_col) \
+           and os.path.exists(self.sys_col):
             self.flag = True
         else:
             self.flag = False
@@ -242,6 +246,14 @@ class error:
 
     def read_matrix_system_vmr(self):
         label, matrix = self.read_error_matrix(self.sys_vmr)
+        return(label,matrix)
+
+    def read_matrix_random_pcol(self):
+        label, matrix = self.read_error_matrix(self.ran_col)
+        return(label,matrix)
+
+    def read_matrix_system_pcol(self):
+        label, matrix = self.read_error_matrix(self.sys_col)
         return(label,matrix)
 
     def read_error_matrix(self, filename):
@@ -318,13 +330,21 @@ class pbp:
 class gasspectra:
     def __init__(self, direc):
 
+        
+        sum = summary(direc+'/summary')
+
         self.gas = []
         self.band = []
         self.scan = []
         self.iteration = []
         self.clc = []
         self.nu = []
-        files = glob.glob(direc + '/spc*')
+        files = []
+        for fn in sum.gas:
+            files.extend(glob.glob(direc + '/spc.' + fn + '*'))
+        files.extend(glob.glob(direc + '/spc.all*'))
+        files.extend(glob.glob(direc + '/spc.REST*'))
+        # Order gas files by target, interfering, ALL, REST 
         for ff in files:
             ascf = rn.read_from_file(ff)
             headerline = ascf.get_line().split()
