@@ -23,7 +23,7 @@ class show_results:
 #        plt.rc('text', usetex=True)
 
         self.load_result()
-
+        
         # Find a free figure for profile
         self.winprf = plt.figure()#figsize=(24,12))
         # Find a free figure for microwindow
@@ -198,18 +198,28 @@ class show_results:
         frame4 = Frame(self.tkroot)
         frame4.grid(row=5,column=1)
         self.nr_pcols = 3
+        self.label_repc,self.repc = self.error.read_matrix_random_pcol()
         pc,z = self.retprf.get_gas_col(self.gases[0])
+        #sepc,z = self.error.read_total_col(self.gases[0])
         self.min_pcv = []
         self.max_pcv = []
         self.pcol1 = []
+        self.epcol1 = []
 
         def modify_pc(event, nr):
-            min_alt = float(self.min_pcv[nr].get())
-            max_alt = float(self.max_pcv[nr].get())
-            min_ind = np.max(np.where(np.array(z)>=min_alt))
-            max_ind = np.min(np.where(np.array(z)<=max_alt))
-            self.pcol1[nr].set('%g'%np.sum(pc[max_ind:min_ind+1]))        
-
+            try:
+                min_alt = float(self.min_pcv[nr].get())
+                max_alt = float(self.max_pcv[nr].get())
+                min_ind = np.max(np.where(np.array(z)>=min_alt))
+                max_ind = np.min(np.where(np.array(z)<=max_alt))
+                pcol = pc[max_ind:min_ind+1]
+                self.pcol1[nr].set('%g'%np.sum(pcol))
+                col_ran = np.sum(self.repc,0)[max_ind:min_ind+1,max_ind:min_ind+1]
+                self.epcol1[nr].set('%g'%np.sqrt(np.sum(np.diag(col_ran))))
+            except:
+                print 'fail'
+                pass
+            
         default = [[0.0, 10.0],
                    [10.0, 120.0],
                    [0.0, 120.0]]
@@ -227,8 +237,11 @@ class show_results:
 
             
             self.pcol1.append(StringVar(frame4))
+            self.epcol1.append(StringVar(frame4))
             val_pc = Label(frame4, textvariable=self.pcol1[-1])
             val_pc.grid(row = i, column=2)
+            err_pc = Label(frame4, textvariable=self.epcol1[-1])
+            err_pc.grid(row = i, column=3)
             modify_pc(0,i)
             
 
@@ -245,7 +258,6 @@ class show_results:
 
         
         self.tkroot.mainloop()
-        print 'bla'
 
     def quit(self):
         self.tkroot.destroy()
@@ -317,7 +329,7 @@ class show_results:
         else:
             self.avk = -1
 
-        self.error = sfit4.error('sb.ctl','.')
+        self.error = sfit4.error('sb.ctl','.',rprfs=direc+'/rprfs.table')
 
         self.gas = sfit4.gasspectra(direc)
 

@@ -17,7 +17,7 @@ class read_table:
         ll = linecache.getline(filename, 2).strip().split()
         self.retgas = ll[3:]
         self.nr_retgas = string.atoi(ll[2])
-
+        
     def get_gas_vmr(self, gasname=None):
         if gasname == None:
             gasname = self.retgas[0]
@@ -177,8 +177,8 @@ class summary:
 
             
         
-class error:
-    def __init__(self, sb_ctl, direc):
+class error(read_table):
+    def __init__(self, sb_ctl, direc, rprfs='rprfs.table'):
         sbctl = sfit4_ctl()
         if not os.path.isfile(sb_ctl):
             self.flag = False
@@ -191,14 +191,17 @@ class error:
         self.sys_vmr = direc+'/'+sbctl.get_value('file.out.ssystematic.vmr')
         self.ran_col = direc+'/'+sbctl.get_value('file.out.srandom')
         self.sys_col = direc+'/'+sbctl.get_value('file.out.ssystematic')
-
+        self.rprfs = direc+'/'+rprfs
+        
         if os.path.exists(self.total_vmr) \
            and os.path.exists(self.total_col) \
            and os.path.exists(self.ran_vmr) \
            and os.path.exists(self.sys_vmr) \
            and os.path.exists(self.ran_col) \
-           and os.path.exists(self.sys_col):
+           and os.path.exists(self.sys_col)\
+           and os.path.exists(self.rprfs):
             self.flag = True
+            read_table.__init__(self, self.rprfs)
         else:
             self.flag = False
 #        self.shat = direc+'/'+sbctl.get_value('file.out.shat_matrix')
