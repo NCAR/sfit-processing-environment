@@ -2144,10 +2144,10 @@ class GatherHDF(ReadOutputData,DbInputFile):
             if i == 0:
                 self.HDFlat     = np.array(tempSpecDB['N_Lat'])
                 if tempSpecDB.has_key('W_Lon'):
-                    self.HDFlon     = np.array(tempSpecDB['W_Lon'])
+                    self.HDFlon     = -np.array(tempSpecDB['W_Lon'])
                 else:
-                    self.HDFlon     = -np.array(tempSpecDB['E_Lon'])
-                self.HDFinstAlt = np.array(tempSpecDB['Alt'] / 1000.0)
+                    self.HDFlon     = np.array(tempSpecDB['E_Lon'])
+                self.HDFinstAlt = np.array(tempSpecDB['Alt'])
             self.HDFintT[i] = tempSpecDB['Dur']
             self.HDFazi[i]  = tempSpecDB['SAzm']
             if tempSpecDB.has_key('S_PRES'):

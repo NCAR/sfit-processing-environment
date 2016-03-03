@@ -23,6 +23,7 @@
 #    You should have received a copy of the GNU General Public License
 #    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #----------------------------------------------------------------------------------------                              
+
 if __name__ != "__main__":
     import hdfsave as hdfsave
                             
@@ -33,8 +34,8 @@ def main(args):
         
     script_dir = os.path.dirname(sys.argv[0])
     quality        = 'final'
-    dataDir        = args[1]
-    outDir         = args[2]
+    dataDir        = args[1]+'/'
+    outDir         = args[2]+'/'
     loc1           = args[3]
     gasName        = args[4]  # This is the target gas for retrieval
     version        = 'Current'
@@ -96,7 +97,6 @@ def main(args):
 
     if gasName.lower() == 'o3':
         gasName        = 'O3'
-        maxRMS         = 5.0 # in percent
         maxSZA         = 90.0
         rmsFlag        = True
         tcFlag         = False
