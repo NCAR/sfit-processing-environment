@@ -43,7 +43,7 @@ class show_tmph5:
                              command = self.quit)
         button_quit.grid(row=0, column=0, sticky=E+W)
 
-        options = list(set(('CHI_Y_2', 'DOFS', 'CO2', 'E_TOT', 'SNR', 'SZA')))
+        options = list(set(('CHI_Y_2', 'DOFS', 'CO2', 'E_TOT', 'SNR', 'SZA', 'H2O_TOT')))
         frame_show = Frame(main_frame_1)
         frame_show.grid(row=1,column=0)    
 
@@ -237,6 +237,8 @@ class show_tmph5:
         elif aux == 'SNR':
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.snr_clc[self.valid_ind], label='SNR CLC')
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.snr_the[self.valid_ind], label='SNR THE')
+        elif aux == 'H2O_TOT':
+            self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.col_h2o[self.valid_ind])
         self.canvas2.show()
 
     def filter(self):

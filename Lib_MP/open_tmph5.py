@@ -137,18 +137,15 @@ class load_tmph5:
         ind1 = np.where(np.all((self.Z > zrange[0],self.Z < zrange[1]),axis=0))[0]
         a = self.h5f.root.pcol_rt[:]
         pcolrt = np.sum(a[np.ix_(ind1,self.valid)],axis=0)
-        err_ran = self.h5f.root.pcol_ran[:,self.valid]
-        err_sys = self.h5f.root.pcol_sys[:,self.valid]
+        tmp = self.h5f.root.pcol_ran[:]
+        err_ran = np.sum(tmp[np.ix_(ind1,self.valid)],axis=0)
+        tmp = self.h5f.root.pcol_ran[:]
+        err_sys = np.sum(tmp[np.ix_(ind1,self.valid)],axis=0)
+        pcoltot = np.sqrt(err_ran*err_ran + err_sys*err_sys)
         if Xvar:
             ac = self.h5f.root.air_mass[:]
             pcolrt = pcolrt/np.sum(ac[np.ix_(ind1,self.valid)],axis=0)
-            err_ran = err_ran/np.sum(ac[np.ix_(ind1,self.valid)],axis=0)
-            err_sys = err_sys/np.sum(ac[np.ix_(ind1,self.valid)],axis=0)
-
-        pcoltot = np.sqrt(np.sum(err_ran[ind1,:]**2 + err_sys[ind1,:]**2,axis=0))
-
-
-        
+            pcoltot = pcoltot/np.sum(ac[np.ix_(ind1,self.valid)],axis=0)
         return(self.dnum[self.valid], pcolrt, pcoltot)
 
     def get_partial_avk(self,zrange,norm=False):
