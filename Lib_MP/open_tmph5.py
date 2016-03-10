@@ -139,7 +139,7 @@ class load_tmph5:
         pcolrt = np.sum(a[np.ix_(ind1,self.valid)],axis=0)
         tmp = self.h5f.root.pcol_ran[:]
         err_ran = np.sum(tmp[np.ix_(ind1,self.valid)],axis=0)
-        tmp = self.h5f.root.pcol_ran[:]
+        tmp = self.h5f.root.pcol_sys[:]
         err_sys = np.sum(tmp[np.ix_(ind1,self.valid)],axis=0)
         pcoltot = np.sqrt(err_ran*err_ran + err_sys*err_sys)
         if Xvar:
