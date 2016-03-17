@@ -12,7 +12,7 @@ import os, pdb
 
 class show_results:
 
-    def __init__(self,direc='.', ctlfile='sfit4.ctl'):
+    def __init__(self,direc='.', sb_ctl = 'sb.ctl', ctlfile='sfit4.ctl'):
 
         self.direc = direc
         self.ctlfile = ctlfile
@@ -22,7 +22,8 @@ class show_results:
         plt.rcParams['font.size'] = 18
 #        plt.rc('text', usetex=True)
 
-        self.load_result()
+        self.sb_ctl = sb_ctl
+        self.load_result(sb_ctl)
         
         # Find a free figure for profile
         self.winprf = plt.figure()#figsize=(24,12))
@@ -161,7 +162,7 @@ class show_results:
             if self.show_var.get() == 'TARGET':
                 self.show(type='target')
             if self.show_var.get() == 'INTERF':
-                self.show(type='interf')
+                self.show(type='vmr')
             if self.show_var.get() == 'ERR':
                 self.show(type='err')
 
@@ -298,7 +299,7 @@ class show_results:
 
 
     def update_result(self):
-        self.load_result()
+        self.load_result(self.sb_ctl)
         options = list(set(self.gas.gas[:]))
         if len(options) == 0:
             self.button_spec_by_gas.config(state=DISABLED)
@@ -313,7 +314,7 @@ class show_results:
             self.menu1.grid(row=2,column=1,stick=E+W)
         
 
-    def load_result(self):
+    def load_result(self, sb_ctl = 'sb.ctl'):
         direc = self.direc
         ctlfile = self.ctlfile
         ctl = sfit4_ctl()
@@ -338,7 +339,7 @@ class show_results:
         else:
             self.avk = -1
 
-        self.error = sfit4.error('sb.ctl','.',rprfs=direc+'/rprfs.table')
+        self.error = sfit4.error('.', sb_ctl=sb_ctl,rprfs=direc+'/rprfs.table')
 
         self.gas = sfit4.gasspectra(direc)
 
@@ -570,4 +571,9 @@ class show_results:
 												
 
 if __name__ == '__main__':
-    show_results()
+    import sys
+    print len(sys.argv)
+    if len(sys.argv) == 2:
+        show_results(sb_ctl=sys.argv[1])
+    else:
+        show_results()

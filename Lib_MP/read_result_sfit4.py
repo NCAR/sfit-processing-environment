@@ -178,8 +178,9 @@ class summary:
             
         
 class error(read_table):
-    def __init__(self, sb_ctl, direc, rprfs='rprfs.table'):
+    def __init__(self, direc, sb_ctl='sb.ctl', rprfs='rprfs.table'):
         sbctl = sfit4_ctl()
+        print sb_ctl
         if not os.path.isfile(sb_ctl):
             self.flag = False
             return
