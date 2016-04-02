@@ -904,6 +904,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #                    T
     #  Sm = Dx * Se * Dx
     #----------------------------------
+
     S_ran['measurement'] = calcCoVar(se,Dx,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
 
     #---------------------
