@@ -164,10 +164,10 @@ def main(args):
         gasName        = 'ClONO2'
         tcFlag         = False
         dofFlag        = True
-        minDOFs        = 1.0
         maxCHI2        = 2.0
         maxVMR         = 5e-9
         minVMR         = -1e-10
+        minDOFs        = 1.0
 
     if gasName.lower() == 'c2h6':
         gasName        = 'C2H6'
@@ -246,7 +246,29 @@ def main(args):
         maxCO2         = 9.3e21
         co2f           = True
 
+    if gasName.lower() == 'hno3':
+        gasName        = 'HNO3'
+        tcFlag         = False
+        pcFlag         = False
+        minDOFs        = 1.0
+        maxCHI2        = 5.0
+        maxVMR         = 1e-6
+        minVMR         = -1e-9
+        dofFlag        = True
+        cnvFlag        = True
+        validFlag      = True
+        minCO2         = -3e23
+        maxCO2         = 3e23
+        co2f           = True
 
+    if gasName.lower() == 'no2':
+        gasName        = 'NO2'
+        maxCHI2        = 5.0
+        minDOFs        = 0.1
+        minVMR         = -1e-10
+        dofFlag        = True
+        cnvFlag        = True
+        validFlag      = True
     #---------------------
     # For python interface
     #---------------------

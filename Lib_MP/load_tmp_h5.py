@@ -137,7 +137,7 @@ class load_tmph5:
         self.pcol_rt = pcol_mean.copy()
         self.Z = Z
 
-    def get_partial_columns(self,zrange, apriori=false):
+    def get_partial_columns(self,zrange, apriori=False):
         ind1 = np.where(np.all((self.Z > zrange[0],self.Z < zrange[1]),axis=0))[0]
         if apriori:
             pcolrt = np.sum(self.pcol_ap[ind1,:],axis=0)

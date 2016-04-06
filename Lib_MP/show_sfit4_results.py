@@ -201,13 +201,14 @@ class show_results:
         self.nr_pcols = 3
         pc,z = self.retprf.get_gas_col(self.gases[0])
 #        ap = np.linalg.inv(np.diag(pc))
-        self.label_repc,repc = self.error.read_matrix_random_pcol()
-        self.label_sepc,sepc = self.error.read_matrix_system_pcol()
-        # Error matrices must be normalized in order to take correlation into account
-#        self.repc = np.dot(ap,np.dot(np.sum(repc,0),ap))
-#        self.sepc = np.dot(ap,np.dot(np.sum(sepc,0),ap))
-        self.repc = np.sum(repc,0)
-        self.sepc = np.sum(sepc,0)
+        if self.error.flag:
+            self.label_repc,repc = self.error.read_matrix_random_pcol()
+            self.label_sepc,sepc = self.error.read_matrix_system_pcol()
+            # Error matrices must be normalized in order to take correlation into account
+            #        self.repc = np.dot(ap,np.dot(np.sum(repc,0),ap))
+            #        self.sepc = np.dot(ap,np.dot(np.sum(sepc,0),ap))
+            self.repc = np.sum(repc,0)
+            self.sepc = np.sum(sepc,0)
         self.min_pcv = []
         self.max_pcv = []
         self.pcol1 = []
@@ -223,8 +224,9 @@ class show_results:
                 ap[max_ind:min_ind+1] = 1.0
                 pcol = pc[max_ind:min_ind+1]
                 self.pcol1[nr].set('%g'%np.sum(pcol))
-                col_ran = self.repc + self.sepc
-                self.epcol1[nr].set('%g'%np.sqrt(np.dot(np.dot(ap.T,col_ran),ap)))
+                if self.error.flag:
+                    col_ran = self.repc + self.sepc
+                    self.epcol1[nr].set('%g'%np.sqrt(np.dot(np.dot(ap.T,col_ran),ap)))
 #                self.epcol1[nr].set('%g'%np.sqrt(np.sum(col_ran)))
             except:
                 print 'fail'

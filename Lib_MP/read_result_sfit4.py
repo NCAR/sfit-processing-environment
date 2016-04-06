@@ -253,8 +253,11 @@ class error(read_table):
         return(label,matrix)
 
     def read_matrix_random_pcol(self):
-        label, matrix = self.read_error_matrix(self.ran_col)
-        return(label,matrix)
+        try:
+            label, matrix = self.read_error_matrix(self.ran_col)
+            return(label,matrix)
+        except:
+            (-1,-1)
 
     def read_matrix_system_pcol(self):
         label, matrix = self.read_error_matrix(self.sys_col)
