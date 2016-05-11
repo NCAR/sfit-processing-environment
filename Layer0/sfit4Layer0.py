@@ -71,8 +71,8 @@
 #---------------
 # Import modules
 #---------------
-import sys
-import os
+import sys,os
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)),'ModLib'))
 import getopt
 import sfitClasses as sc
 from Layer1Mods import errAnalysis
@@ -193,9 +193,9 @@ def main(argv):
         #------------------------
         if errFlg:
                 if sc.ckFile(wrkDir+'sb.ctl'): sbCtlFileName = wrkDir + 'sb.ctl'
-                else:
-                        TK().withdraw()
-                        sbCtlFileName = askopenfilename(initialdir=wrkDir,message='Please select sb ctl file')
+                else: sbCtlFileName=None #allow no sb.ctl input file, use defaults...
+                        #TK().withdraw()
+                        #sbCtlFileName = askopenfilename(initialdir=wrkDir,message='Please select sb ctl file')
 
                 sbCtlFile = sc.CtlInputFile(sbCtlFileName)
                 sbCtlFile.getInputs()

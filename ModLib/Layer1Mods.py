@@ -58,7 +58,7 @@ import shutil
 import re
 from sfitClasses  import ExitError
 from numpy        import diag, inf
-from numpy        import copy, dot
+from numpy        import copy, dot, interp
 from numpy.linalg import norm, cholesky
 import sfitClasses       as sc
 import numpy             as np
@@ -66,7 +66,140 @@ import itertools         as it
 import printStatmnts     as ps
 import datetime          as dt
 import h5py
+import fnmatch
 
+
+                                #----------------------------#
+                                #                            #
+                                # --SFIT4 labels, defaults-- #
+                                #                            #
+                                #----------------------------#
+#               ctl label        SFIT4 output label                      unit               retrievable
+Kb_info=\
+"""           temperature                  TEMPERAT                fractional                      True
+                  solshft                 SolLnShft                      cm-1                      True
+                solstrnth                 SolLnStrn                fractional                      True
+                    phase                   SPhsErr                   radians                      True
+                   wshift                 SWNumShft                fractional                      True
+                   wshift                 IWNumShft                fractional                      True
+                  dwshift                 DWNumShft units_of_point_calc_space                      True
+                      sza                       SZA                fractional                     False
+                  lineInt                   LineInt                fractional                     False
+                 lineTAir                  LineTAir                fractional                     False
+                 linePAir                  LinePAir                fractional                     False
+                    slope                 BckGrdSlp                    1/cm-1                      True
+                curvature                 BckGrdCur                    1/cm-2                      True
+                 apod_fcn                 EmpApdFcn                fractional                      True
+                phase_fcn                 EmpPhsFcn                fractional                      True
+                phase_fcn                 EmpPhsFnc                fractional                      True
+                    omega                       FOV                fractional                     False
+                  max_opd                       OPD                fractional                     False
+                   zshift                   ZeroLev                       0-1                      True
+                  beamamp                  PEAK_AMP                         ?                      True
+               beamperiod                  CHAN_SEP                         ?                      True
+                beamphase               ZERO_PH_REF                         ?                      True
+                beamslope            DELTA_PEAK_AMP                         ?                      True"""
+Kb_labels=dict(map(lambda x: x.split()[:2],Kb_info.split('\n')))
+sbctldefaults=\
+"""VMRoutFlg                  = T              
+MolsoutFlg                 = T              
+out.total                  = T              
+out.srandom                = T              
+out.ssystematic            = T              
+SeInputFlg = T                             
+sb.sza.random.scaled                        = T
+sb.sza.systematic.scaled                    = T
+sb.omega.random.scaled                      = T
+sb.omega.systematic.scaled                  = T
+file.out.total                        = Stotal.output
+file.out.total.vmr                    = Stotal.vmr.output
+file.out.srandom                      = Srandom.output   
+file.out.srandom.vmr                  = Srandom.vmr.output
+file.out.ssystematic                  = Ssystematic.output
+file.out.ssystematic.vmr              = Ssystematic.vmr.output
+file.out.error.summary                = Errorsummary.output   
+file.out.avk                          = avk.output  
+sb.temperature.random.scaled                = F #in Kelvin
+sb.temperature.systematic.scaled            = F #in Kelvin
+sb.temperature.grid               =-0.020    4     6    10   13     25     40    120
+sb.temperature.correlation.width  =2
+sb.temperature.random             =  2       2     4     4    2      3      6      1 
+sb.temperature.systematic         =  1       1     1     2    2      2      4      5
+sb.profile.H2O.grid               =-0.020   1     6    10    13    25    40    120
+sb.profile.H2O.correlation.width  =4
+sb.profile.H2O.random             = 0.10 0.30  0.60  0.50  0.30  0.10  0.10   0.10  #relative units
+sb.profile.H2O.systematic         = 0.10  0.4  0.20  0.20  0.20  0.20  0.20   0.20 
+sb.profile.*.grid= -0.02 120
+sb.profile.*.correlation.width=4
+sb.profile.*.random =.10 .10 #relative units
+sb.profile.*.systematic =.5 .5 #relative units
+sb.omega.*              = 0.001
+sb.sza.random           = 0.005
+sb.sza.systematic       = 0.001
+sb.phase.*              = 0.001
+sb.wshift.*             = 0.001
+sb.slope.*              = 0.001
+sb.curvature.*          = 0.001
+sb.max_opd.*            = 0.0
+sb.band.*.zshift.*      = 0.01                                   
+sb.solshft.*            = 0.005                                       
+sb.solstrnth.*          = 0.01                                       
+sb.apod_fcn.*           = 0.05
+sb.phase_fcn.*          = 0.05
+sb.line*_*.random       = 0.
+sb.lineInt_CH4.systematic            = 0.03     
+sb.lineInt_CO.systematic             = 0.02
+sb.lineInt_NO2.systematic            = 0.10     
+sb.lineInt_HNO3.systematic           = 0.1     
+sb.lineInt_O3.systematic             = 0.05 
+sb.lineInt_N2O.systematic            = 0.02     
+sb.lineInt_HCl.systematic            = 0.05
+sb.lineInt_O3.systematic             = 0.05     
+sb.lineInt_HF.systematic             = 0.05     
+sb.lineInt_OCS.systematic            = 0.02
+sb.lineInt_NO.systematic             = 0.05     
+sb.lineInt_C2H6.systematic           = 0.05
+sb.lineInt_HCN.systematic            = 0.1     
+sb.lineInt_ClONO2.systematic         = 0.1     
+sb.lineInt_H2O.systematic            = 0.15
+
+sb.lineTAir_*.systematic              = 0.05 
+sb.linePAir_*.systematic              = 0.05 
+
+#include everything in the error budget, except smoothing!!
+sb.total.smoothing  =F
+sb.total.*          =T
+"""
+sbctldefaults=sc.CtlInputFile(sbctldefaults.split('\n'))
+sbctldefaults.getInputs()
+#Sb_defaults=filter(lambda x: len(x)>2,[map(str.strip,l.strip('#').split('=')) for l in sbctldefaults.split('\n')])
+
+
+class DictWithDefaults(dict):
+  """dict class with modified getitem to match items to a default"""
+  def __init__(self,arg={},defaults={}):
+    self.default=defaults.copy()
+    dict.__init__(self,arg)
+  
+  def __getitem__(self,key):
+    #print self.default.keys()
+    if dict.has_key(self,key): return dict.__getitem__(self,key)
+    else: 
+      matches=sorted([k for k in self.default if fnmatch.fnmatch(key,k)],key=lambda x: x==key)[::-1]
+      if len(matches): 
+        #print '%s->%s'%(key,matches);
+        return self.default[matches[0]]
+      else: raise KeyError(key)
+
+  def __contains__(self,key):
+    if dict.has_key(self,key): return dict.__contains__(self,key)
+    else: 
+      matches=sorted([k for k in self.default if fnmatch.fnmatch(key,k)],key=lambda x: x==key)[::-1]
+      if len(matches): 
+        #print '%s->%s'%(key,matches);
+        return True
+      else: False
+  
 
                                 #--------------------------#
                                 #                          #
@@ -449,7 +582,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     Return: (val1,val2,val3) where:
          val1 is boolean 
     """
-
+    def getSFITversion():
+      """retrieves the version of sfit4 as a 4tuple from the output file"""
+      with open('sfit4.dtl','r') as fid: header=fid.readline().strip()
+      # first integer found is SFIT 4: ('SFIT4:V')
+      return tuple(map(int,re.sub('\D','',header)[1:5]))
+    
+     
     def matPosDefTest(mat):
         ''' Test if matrix is positive definite'''
         
@@ -530,27 +669,27 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
            file variable names to what is used in ctl file. Kb_labels are the 
            parameter names as they appear in the ctl file'''
 
+        Kb_rev=dict(map(lambda x: x[::-1],Kb_labels.items()))
         #----------------------------------
         # Split parameter name if necessary
         #----------------------------------
-        if len(paramName.split('_')) == 2: paramName,gas = paramName.split('_')
+        
+        if len(paramName.split('_')) ==2: paramName,gas = paramName.split('_')[:2];#print paramName
 
         #--------------------------------------------------------
         # List of parameters as they appear in the Kb.output file 
         #--------------------------------------------------------
-        Kb_labels_orig = ['TEMPERAT','SolLnShft','SolLnStrn','SPhsErr','IWNumShft','DWNumShft','SZA','LineInt','LineTAir','LinePAir','BckGrdSlp','BckGrdCur','EmpApdFcn','EmpPhsFnc','FOV','OPD','ZeroLev']
+        #Kb_labels_orig = ['TEMPERAT','SolLnShft','SolLnStrn','SPhsErr','IWNumShft','DWNumShft','SZA','LineInt','LineTAir','LinePAir','BckGrdSlp','BckGrdCur','EmpApdFcn','EmpPhsFnc','FOV','OPD','ZeroLev']
 
         #------------------------------------------------------
         # Find index of input paramName. If this is not matched
         # then program returns original paramName. This is for
         # kb.profile.gases
         #------------------------------------------------------
-        try:               ind = Kb_labels_orig.index(paramName)
-        except ValueError: return paramName
+        if paramName not in Kb_rev: return paramName
 
-        if 'gas' in locals(): rtrnVal = Kb_labels[ind] + '_' + gas
-        else:                 rtrnVal = Kb_labels[ind]
-
+        if 'gas' in locals(): rtrnVal = Kb_rev[paramName] + '_' + gas
+        else:                 rtrnVal = Kb_rev[paramName]
         return rtrnVal
 
     def readCovarFile(params,Errtype):
@@ -578,12 +717,22 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         return sbCovar
 
 
+    version=getSFITversion()
+    print 'SFIT4 Version=%s'%(version,)
+    
+    #----------------------------------
+    # Adapt label definitions according to version
+    #----------------------------------
+
+    if version>(0,9,5,0): 
+      for label in ('dwshift','maxopd'): #only these 2?? TODO
+        if label in Kb_labels: del Kb_labels[label]
+
 
     #----------------------------------------------
     # List of parameters as they appear in ctl file 
     #----------------------------------------------   
-    Kb_labels = ['temperature', 'solshft','solstrnth','phase','wshift','dwshift','sza','lineInt','lineTAir','linePAir','slope','curvature','apod_fcn','phase_fcn','omega','max_opd','zshift'] 
-
+    #Kb_labels = ['temperature', 'solshft','solstrnth','phase','wshift','dwshift','sza','lineInt','lineTAir','linePAir','slope','curvature','apod_fcn','phase_fcn','omega','max_opd','zshift'] 
     #------------------------------------------------------
     # Determine number of microwindows and retrieved gasses
     #------------------------------------------------------
@@ -617,7 +766,21 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     sumVars.readPbp(ctlFileVars.inputs['file.out.pbpfile'][0])                                 # Read pbpfile (to get sza)
     sumVars.readPrf(ctlFileVars.inputs['file.out.retprofiles'][0], primgas)                    # Read retreived profile file
     sumVars.readPrf(ctlFileVars.inputs['file.out.aprprofiles'][0], primgas, retapFlg=0)        # Read a priori profile file
-    
+
+    #----------------------------------
+    # Insert retrieval grid in sbctldefaults and substitute default values for SbctlFileVars
+    #----------------------------------
+    z=sumVars.aprfs['Z']
+    gridvars=filter(lambda k: fnmatch.fnmatch(k,'sb.*.grid'),sbctldefaults.inputs.keys())
+    for gk in gridvars:
+      grid=sbctldefaults.inputs[gk]
+      for ErrType in ('random','systematic'):
+        defk=gk.replace('grid',ErrType)
+        sbctldefaults.inputs[defk]=interp(z,*zip(*sorted(zip(grid,sbctldefaults.inputs[defk]),key=lambda x: x[0])))
+      del sbctldefaults.inputs[gk]
+    SbDict=DictWithDefaults(SbctlFileVars.inputs,defaults=sbctldefaults.inputs)
+
+
     #------------------------------------------------------------------------------
     # Read in output files from sfit4 run
     #  -- k.output to calculate averaging kernel
@@ -660,8 +823,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #se  = np.zeros((np.sum(sumVars.summary['nptsb'],dtype=int),np.sum(sumVars.summary['nptsb'],dtype=int)), float)
     
 
-    if SbctlFileVars.inputs['seinputflg'][0].upper() == 'F':
-        #BAVO: Does this takes into account deweighing??????
+    if SbDict['seinputflg'][0].upper() == 'F':
         snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(sumVars.summary['SNR'],sumVars.summary['nptsb'])]))
         snrList[:] = [val**-2 for val in snrList]
     else:
@@ -724,14 +886,15 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Some parameter names in the Kb file are appended by either 
     # micro-window or gas name. If they are appended by micro-window
     # strip this and just keep parameter name so that we may group
-    # the micro-windows under one key
+    # the micro-windows under one key (so no grouping for eg lineint,...)
     #---------------------------------------------------------------
     for ind,val in enumerate(Kb_param):
         if len(val.split('_')) == 2:
             pname,appnd = val.split('_')
-            try:               int(appnd); val = pname
+            try:               int(appnd); val = pname #remove the mw index from the labels...
             except ValueError: pass
-        Kb_param[ind] = val
+            else: pass #print pname,appnd
+        Kb_param[ind] = val 
 
     Kb_unsrt = np.array([[float(x) for x in row.split()] for row in lines[3:]])
 
@@ -744,7 +907,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     for k in set(Kb_param):
         inds = [i for i, val in enumerate(Kb_param) if val == k]
         Kb.setdefault(paramMap(k,Kb_labels).lower(),[]).append(Kb_unsrt[:,inds])
-
+    #print Kb_param,map(lambda x: (x[0],x[1][0].shape),Kb.items()),Kb_labels
 
     #--------------------------------------
     # Un-nest numpy arrays in Kb dictionary
@@ -815,7 +978,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     mat1               = sa[x_start:x_stop,x_start:x_stop]
     mat2               = AKx - np.identity( AKx.shape[0] )
     #print 'systematic smoothing',
-    S_sys['smoothing'] = calcCoVar(mat1,mat2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
+    S_ran['smoothing'] = calcCoVar(mat1,mat2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
+    #TODO: mat1 is taken as the regularization matrix... better to use the users settings... not done yet, becuase smoothing is not important..
 
     #----------------------------------
     # Calculate Measurement error using 
@@ -874,7 +1038,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         test1 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper()
         try:    test2 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]            # This parameter might not exist in the ctl file if zshift = false
         except: test2 = 1 
-        if (test1 == 'F' or test2 == 1): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
+        if (test1 == 'F' and test2 == 1): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
 
     #--------------------------------------------------------------------
     # Set band ordering for micro-window dependent Sb's other than zshift
@@ -888,7 +1052,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     try:             kb_profile_gas = ctlFileVars.inputs['kb.profile.gas']
     except KeyError: kb_profile_gas = []
     
-    print 'Profile uncertainty for %s'%','.join(kb_profile_gas)
+    #print 'Profile uncertainty for %s'%','.join(kb_profile_gas)
 
     #----------------------------------------------------------------
     # If file exists that has full covariances of Sb's read this file
@@ -902,7 +1066,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     if "sb.file.systematic" in SbctlFileVars.inputs:
         sbCovarSys = readCovarFile(SbctlFileVars.inputs["sb.file.systematic"],'systematic')        
         if not sbCovarSys: return False # Critical file missing terminate program
-    print 'Found covariance matrices for %s (random) and %s (systematic)'%(', '.join(sbCovarRand.keys()),', '.join(sbCovarSys.keys()))
+    if sbCovarSys or sbCovarRand: 'Found covariance matrices for %s (random) and %s (systematic)'%(', '.join(sbCovarRand.keys()),', '.join(sbCovarSys.keys()))
     #--------------------------------
     # Loop through parameter list and
     # determine errors
@@ -944,13 +1108,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                     # Zshift
                     #-------
                     if Kbl.lower() == 'zshift':	
-                        diagFill = np.array( [ SbctlFileVars.inputs['sb.band.'+str(x)+'.zshift.'+ErrType][0]  for x in bands['zshift'] ])
+                        diagFill = np.array( [ SbDict['sb.band.'+str(x)+'.zshift.'+ErrType][0]  for x in bands['zshift'] ])
     
                     #---------------------------------
                     # Temperature (in case of scaling)
                     #---------------------------------
-                    elif (Kbl.lower() == 'temperature') and (SbctlFileVars.inputs['sb.temperature.'+ErrType+'.scaled'][0].upper() == 'F'):
-                        diagFill = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
+                    elif (Kbl.lower() == 'temperature') and (SbDict['sb.temperature.'+ErrType+'.scaled'][0].upper() == 'F'):
+                        diagFill = np.array(SbDict['sb.temperature.'+ErrType])
                         if len(diagFill) != len(sumVars.aprfs['TEMPERATURE']): raise ExitError('Number of Sb for temperature, type:'+ErrType+' does not match atmospheric layers!!')
                         diagFill = diagFill / sumVars.aprfs['TEMPERATURE']
 
@@ -959,37 +1123,48 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                     # Profile Gas
                     #------------
                     elif Kbl.upper() in [x.upper() for x in kb_profile_gas]:
-                        diagFill = np.array(SbctlFileVars.inputs['sb.profile.'+Kbl+'.'+ErrType])
+                        diagFill = np.array(SbDict['sb.profile.'+Kbl+'.'+ErrType])
     
                     #-------------------------
                     # SZA (in case of scaling)
                     #-------------------------
-                    elif (Kbl.lower() == 'sza') and (SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'][0].upper() == 'F'):
-                        if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for SZA, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
-                        diagFill = np.array(SbctlFileVars.inputs['sb.sza.'+ErrType]) / sumVars.pbp['sza']
+                    elif (Kbl.lower() == 'sza') and (SbDict['sb.sza.'+ErrType+'.scaled'][0].upper() == 'F'):
+                        if len(SbDict['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for SZA, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
+                        diagFill = np.array(SbDict['sb.sza.'+ErrType]) / sumVars.pbp['sza']
     
                     #---------------------------------
                     # Omega (FOV) (in case of scaling)
                     #---------------------------------
-                    elif (Kbl.lower() == 'omega') and (SbctlFileVars.inputs['sb.omega.'+ErrType+'.scaled'][0].upper() == 'F'):
-                        if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for omega, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
-                        diagFill = np.array(SbctlFileVars.inputs['sb.omega.'+ErrType]) / sumVars.summary['FOV']
+                    elif (Kbl.lower() == 'omega') and (SbDict['sb.omega.'+ErrType+'.scaled'][0].upper() == 'F'):
+                        if len(SbDict['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for omega, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
+                        diagFill = np.array(SbDict['sb.omega.'+ErrType]) / sumVars.summary['FOV']
     
                     #----------------
                     # All other cases
                     #----------------
                     else: 
                         #--------------------------------------------------------------------
-                        # Catch errors where number of specified Sb does not match Kb columns
+                        # Catch errors where number of specified Sb does not match Kb columns (in a flexible way)
                         #--------------------------------------------------------------------
-                        #print Kbl,SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType],DK.shape
-                        if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for '+Kbl+', type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
-                        diagFill = np.array(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) 
+                        #print type(Kbl),Kbl,'onee',type(SbDict['sb.'+Kbl+'.'+ErrType]),DK.shape,'ole'
+                        #print 'aaaa','sb.'+Kbl+'.'+ErrType,test['sb.'+Kbl+'.'+ErrType],'bbb'
+                        sbsize=len(SbDict['sb.'+Kbl+'.'+ErrType])
+                        kbsize=DK.shape[1]
+                        if sbsize != 1 and sbsize<kbsize: raise ExitError('Number of specified Sb for '+Kbl+', type:'+ErrType+'(=%s) does not match number of Kb columns=%s!! Check Sb.ctl file.'%(sbsize,kbsize,))
+                        diagFill = np.array((SbDict['sb.'+Kbl+'.'+ErrType]*(kbsize if sbsize==1 else 1))[:kbsize]) 
+                        
     
                     #--------------------------------------
                     # Fill Sb matrix with diagonal elements
                     #--------------------------------------
-                    np.fill_diagonal(Sb,diagFill**2)
+                    sbcorkey='sb.%s.correlation.width'%Kbl if Kbl.upper() not in map(str.upper,kb_profile_gas) else 'sb.profile.%s.correlation.width'%Kbl
+                    corwidthinv=1./SbDict[sbcorkey][0] if sbcorkey in SbDict else 0.
+                    Sb=np.tensordot(diagFill,diagFill,0)
+                    if ErrType=='random': 
+                      deltaz=np.tensordot(z,np.ones(z.shape),0)
+                      deltaz=np.exp(-abs(deltaz-deltaz.T)*corwidthinv)
+                      if Sb.shape==deltaz.shape: Sb*=np.ma.array(deltaz,mask=deltaz<.01).filled(0)
+                      #Sb= np.fill_diagonal(Sb,diagFill**2)
                     
                 #do some post calibration when matrices are read from input files: input files are assumed in SI units (as the data in sumVars.aprfs)... ok?     
                 elif Kbl=='temperature' or (Kbl.upper() in kb_profile_gas): 
@@ -1015,7 +1190,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             # Catch instances where DK exists for parameter; 
             # however, no Sb is specified
             #-----------------------------------------------
-            except KeyError:
+            except KeyError as kerr:
+                print repr(kerr)
                 if logFile: logFile.error('Covariance matrix for '+Kbl+': Error type -- ' + ErrType+' not calculated. Sb does not exist\n')
 
             #-----------------------------------
@@ -1053,7 +1229,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                 else:                   S_sys[Kbl] = calcCoVar(Sb,DK,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
                 if Kbl.lower() in ('temperature','h2o'): 
                     appc=sumVars.aprfs[primgas.upper()]*sumVars.aprfs['AIRMASS']
-                    print 'TC error for ',Kbl,ErrType,np.sqrt(appc.dot(DK.dot(Sb).dot(DK.T)).dot(appc))
+                    rtpc=sumVars.rprfs[primgas.upper()]*sumVars.aprfs['AIRMASS']
+                    tce=np.sqrt(appc.dot(DK.dot(Sb).dot(DK.T)).dot(appc))
+                    print 'TC error for %-22s: %4.3e[molec/cm^2]\t%4.2f%%'%('%s.%s'%(Kbl,ErrType),tce,tce/rtpc.sum()*100)
                     
                  
 
@@ -1065,35 +1243,35 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     S_tot_rndm_err       = 0
     S_tot_systematic_err = 0
 
-    if  SbctlFileVars.inputs['vmroutflg'][0].upper() == 'T': 
+    if  SbDict['vmroutflg'][0].upper() == 'T': 
         S_tot_ran_vmr   = np.zeros((n_layer,n_layer))
         S_tot_sys_vmr   = np.zeros((n_layer,n_layer))
 
-    if  SbctlFileVars.inputs['molsoutflg'][0].upper() =='T': 
+    if  SbDict['molsoutflg'][0].upper() =='T': 
         S_tot_ran_molcs = np.zeros((n_layer,n_layer))
         S_tot_sys_molcs = np.zeros((n_layer,n_layer))
 
     # Get a list of parameters to include in total error from sb.ctl file
-    sbTotParms      = [val.strip().split('.')[-1] for val in SbctlFileVars.inputs.keys() if 'sb.total.' in val.lower()]
-    
     # Random
     for k in S_ran:
-        if (k in sbTotParms) and SbctlFileVars.inputs['sb.total.'+k][0].upper() == 'T' :
+        totkey='sb.total.'+k
+        if (totkey in SbDict) and SbDict[totkey][0].upper() == 'T':
             S_tot_rndm_err  += S_ran[k][2]**2 #this is the uncertainty on the total column
-            if  SbctlFileVars.inputs['vmroutflg'][0].upper()  =='T': S_tot_ran_vmr   += S_ran[k][0]
+            if  SbDict['vmroutflg'][0].upper()  =='T': S_tot_ran_vmr   += S_ran[k][0]
             else:						     S_tot_ran_vmr    = 0
-            if  SbctlFileVars.inputs['molsoutflg'][0].upper() =='T': S_tot_ran_molcs += S_ran[k][1]
+            if  SbDict['molsoutflg'][0].upper() =='T': S_tot_ran_molcs += S_ran[k][1]
             else:                                                    S_tot_ran_molcs  = 0
 
     S_tot_rndm_err  = np.sqrt(S_tot_rndm_err)
 
     # Systematic
     for k in S_sys:
-        if (k in sbTotParms) and SbctlFileVars.inputs['sb.total.'+k][0].upper() == 'T' :
+        totkey='sb.total.'+k
+        if (totkey in SbDict) and SbDict[totkey][0].upper() == 'T' :
             S_tot_systematic_err += S_sys[k][2]**2
-            if  SbctlFileVars.inputs['vmroutflg'][0].upper()  =='T': S_tot_sys_vmr   += S_sys[k][0]
+            if  SbDict['vmroutflg'][0].upper()  =='T': S_tot_sys_vmr   += S_sys[k][0]
             else:						     S_tot_sys_vmr    = 0
-            if  SbctlFileVars.inputs['molsoutflg'][0].upper() =='T': S_tot_sys_molcs += S_sys[k][1]
+            if  SbDict['molsoutflg'][0].upper() =='T': S_tot_sys_molcs += S_sys[k][1]
             else:						     S_tot_sys_molcs  = 0 
 
     S_tot_systematic_err = np.sqrt(S_tot_systematic_err)
@@ -1107,18 +1285,20 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #--------------------------
     # Error summary information
     #--------------------------      
-    with open(wrkingDir+SbctlFileVars.inputs['file.out.error.summary'][0], 'w') as fout:
+    with open(wrkingDir+SbDict['file.out.error.summary'][0], 'w') as fout:
         fout.write('sfit4 ERROR SUMMARY\n\n')
         fout.write('Primary gas                                   = {0:>15s}\n'.format(primgas.upper())                                  )
         fout.write('Total column amount                           = {0:15.5E} [molecules cm^-2]\n'.format(retdenscol)                    )
         fout.write('DOFs (total column)                           = {0:15.3f}\n'.format(col_dofs)                                        )
-        fout.write('Smoothing error (Ss)                          = {0:15.3f} [%]\n'.format(S_sys['smoothing'][2]        /retdenscol*100))
+        fout.write('Smoothing error (Ss, using sa)                = {0:15.3f} [%]\n'.format(S_ran['smoothing'][2]        /retdenscol*100))
         fout.write('Measurement error (Sm)                        = {0:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
         fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
         fout.write('Interference error (interfering spcs)         = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
         
         fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
-        fout.write('Water Vapor                                   = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
+        fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
+        fout.write('Water Vapor (Random)                          = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
+        fout.write('Water Vapor (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['h2o'][2]/retdenscol*100)              )
         
         fout.write('Total random error                            = {0:15.3f} [%]\n'.format(S_tot['Random'][2]           /retdenscol*100))
         fout.write('Total systematic error                        = {0:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
@@ -1132,50 +1312,50 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #-----------------------------------
     # Write to file covariance matricies
     #-----------------------------------
-    if SbctlFileVars.inputs['out.total'][0].upper() == 'T':
-        if SbctlFileVars.inputs['molsoutflg'][0].upper() == 'T':
+    if SbDict['out.total'][0].upper() == 'T':
+        if SbDict['molsoutflg'][0].upper() == 'T':
             # molecules cm^-2
-            fname  = wrkingDir+SbctlFileVars.inputs['file.out.total'][0]
+            fname  = wrkingDir+SbDict['file.out.total'][0]
             header = 'TOTAL RANDOM ERROR COVARIANCE MATRIX IN (MOL CM^-2)^2'
             writeCoVar(fname,header,S_tot,1) 
 
-        if SbctlFileVars.inputs['vmroutflg'][0].upper() == 'T':
+        if SbDict['vmroutflg'][0].upper() == 'T':
             # vmr
-            fname  = wrkingDir+SbctlFileVars.inputs['file.out.total.vmr'][0]
+            fname  = wrkingDir+SbDict['file.out.total.vmr'][0]
             header = 'TOTAL RANDOM ERROR COVARIANCE MATRICES IN (VMR)^2 UNITS'
             writeCoVar(fname,header,S_tot,0) 	
 
-    if SbctlFileVars.inputs['out.srandom'][0].upper() == 'T':
-        if SbctlFileVars.inputs['molsoutflg'][0].upper() == 'T':
+    if SbDict['out.srandom'][0].upper() == 'T':
+        if SbDict['molsoutflg'][0].upper() == 'T':
             # molecules cm^-2
-            fname  = wrkingDir+SbctlFileVars.inputs['file.out.srandom'][0]
+            fname  = wrkingDir+SbDict['file.out.srandom'][0]
             header = 'RANDOM ERROR COVARIANCE MATRIX IN (MOL CM^-2)^2'
             writeCoVar(fname,header,S_ran,1)
 
-        if SbctlFileVars.inputs['vmroutflg'][0].upper() == 'T':
+        if SbDict['vmroutflg'][0].upper() == 'T':
             # vmr
-            fname  = wrkingDir+SbctlFileVars.inputs['file.out.srandom.vmr'][0]
+            fname  = wrkingDir+SbDict['file.out.srandom.vmr'][0]
             header = 'RANDOM ERROR COVARIANCE MATRICES IN (VMR)^2 UNITS'
             writeCoVar(fname,header,S_ran,0)	
 
-    if SbctlFileVars.inputs['out.ssystematic'][0].upper() == 'T':
+    if SbDict['out.ssystematic'][0].upper() == 'T':
 
-        if SbctlFileVars.inputs['molsoutflg'][0].upper() == 'T':
+        if SbDict['molsoutflg'][0].upper() == 'T':
             # molecules cm^-2
-            fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic'][0]
+            fname  = wrkingDir+SbDict['file.out.ssystematic'][0]
             header = 'SYSTEMATIC ERROR COVARIANCE MATRIX IN (MOL CM^-2)^2'
             writeCoVar(fname,header,S_sys,1)
 
-        if SbctlFileVars.inputs['vmroutflg'][0].upper() == 'T':
+        if SbDict['vmroutflg'][0].upper() == 'T':
             # vmr
-            fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic.vmr'][0]
+            fname  = wrkingDir+SbDict['file.out.ssystematic.vmr'][0]
             header = 'SYSTEMATIC ERROR COVARIANCE MATRICES IN (VMR)^2 UNITS'
             writeCoVar(fname,header,S_sys,0)	
 
     #-----------------------
     # Write Averaging Kernel
     #-----------------------
-    fname      = wrkingDir+SbctlFileVars.inputs['file.out.avk'][0]    
+    fname      = wrkingDir+SbDict['file.out.avk'][0]    
     header     = 'Averaging Kernel for '+ primgas.upper()
     AVK        = {}
     AVK['AVK_scale_factor'] = (AKx,[],[])

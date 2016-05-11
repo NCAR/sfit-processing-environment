@@ -125,8 +125,8 @@ sb.profile.H2O.systematic   =
 sb.omega.random         = 0.001 0.001 0.001 0.001 0.001
 sb.omega.systematic     = 0.001 0.001 0.001 0.001 0.001
 
-sb.sza.random           = 0.05  0.05  0.05  0.05  0.05
-sb.sza.systematic       = 0.01  0.01  0.01  0.01  0.01
+#sb.sza.random           = 0.05  0.05  0.05  0.05  0.05
+#sb.sza.systematic       = 0.01  0.01  0.01  0.01  0.01
 
 sb.phase.random         = 0.001 0.001 0.001 0.001 0.001
 sb.phase.systematic     = 0.001 0.001 0.001 0.001 0.001
