@@ -1297,8 +1297,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         
         fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
         fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
-        fout.write('Water Vapor (Random)                          = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
-        fout.write('Water Vapor (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['h2o'][2]/retdenscol*100)              )
+        if 'h2o' in S_ran: fout.write('Water Vapor (Random)                          = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
+        if 'h2o' in S_sys: fout.write('Water Vapor (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['h2o'][2]/retdenscol*100)              )
         
         fout.write('Total random error                            = {0:15.3f} [%]\n'.format(S_tot['Random'][2]           /retdenscol*100))
         fout.write('Total systematic error                        = {0:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
