@@ -1130,7 +1130,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                     #-------------------------
                     elif (Kbl.lower() == 'sza') and (SbDict['sb.sza.'+ErrType+'.scaled'][0].upper() == 'F'):
                         if len(SbDict['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for SZA, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
-                        diagFill = np.array(SbDict['sb.sza.'+ErrType]) / sumVars.pbp['sza']
+                        diagFill = np.array(SbDict['sb.sza.'+ErrType]) / sumVars.pbp['sza'][:Sb.shape[0]] #the shape of the sza in the summary is mw dependent...
     
                     #---------------------------------
                     # Omega (FOV) (in case of scaling)
