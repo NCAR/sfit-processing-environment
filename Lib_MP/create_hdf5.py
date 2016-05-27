@@ -9,8 +9,33 @@ import read_result_sfit4 as sfit4
 from sfit4_ctl import sfit4_ctl
 import read_misc
 
-def create_hdf5(sb_ctl, direc, start_date, end_date):
+def create_hdf5(**kwargs):
 	
+
+
+	if not kwargs.has_key('dir'):
+		print 'Please provide the path to the results (dir=...)'
+		exit()
+
+	if not kwargs.has_key('sbctl'):
+		print 'Please provide the path to the sb.ctl (sbctl=...'
+		exit()
+
+	if kwargs.has_key('start_date'):
+		start_date=dt.datetime.strptime(kwargs['start_date'],'%Y%m%d')
+		
+	else:
+		start_date = dt.datetime.strptime('19900101', '%Y%m%d')
+	if kwargs.has_key('end_date'):
+		end_date=dt.datetime.strptime(kwargs['end_date'],'%Y%m%d')
+	else:
+		end_date=dt.datetime.today()
+
+		
+
+	direc = kwargs['dir']
+	sb_ctl = kwargs['sbctl']
+
 	filename = direc+'/'+'tmp.h5'
 #	filename = direc+'/'+site+'_'+target+'_'+str(end_date)+'_tmp.h5'
 
@@ -18,7 +43,7 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 	    print 'SB %s control file not found'%sb_ctl
 	    return
 	dirs = os.listdir(direc)
-	dirs = filter(lambda x: os.path.isdir(direc+'/'+x) and end_date > dt.date(int(x[0:4]),int(x[4:6]),int(x[6:8])) > start_date, dirs)
+	dirs = filter(lambda x: os.path.isdir(direc+'/'+x) and end_date > dt.datetime(int(x[0:4]),int(x[4:6]),int(x[6:8])) > start_date, dirs)
 	if dirs == []:
 		print 'no matching results found in '+direc
 		return
@@ -369,33 +394,31 @@ def create_hdf5(sb_ctl, direc, start_date, end_date):
 
 if __name__ == '__main__':
 
-        import os,sys
+        import os,sys, getopt
         sys.path.append(os.path.dirname(sys.argv[0]))
         
-	print 'Arguments: path to sb.ctl-file (mandatory), directory containing results, start-date(yyyymmdd), end-date(yyyymmdd)'
+	print 'Arguments: --sbctl= : path to sb.ctl-file (mandatory), --dir= : directory containing results, --start_date=yyyymmdd, --end_date=yyyymmdd'
 
-	if len(sys.argv)==1:
-		print 'path to sb.ctl is missing'
+	
+	try:
+		opts,arg = getopt.getopt(sys.argv[1:], [], ["dir=","sbctl=","start_date=","end_date="])
+	except:
+		print 'error in arguments'
 		exit()
-	if len(sys.argv)>=2:
-		sb_ctl = sys.argv[1]
-		if not os.path.isfile(sb_ctl):
-			print 'SB %s control file not found'%sb_ctl
-			exit()
-	if len(sys.argv)>=3:
-		direc =  sys.argv[2]
-	else:
-		direc = '.'
-	if len(sys.argv)>=4:
-		start_date = dt.date(int(sys.argv[3][0:4]),int(sys.argv[3][4:6]), int(sys.argv[3][6:8]))
-	else:
-		start_date = dt.date(1970,01,01)
-	if len(sys.argv)>=5:
-		end_date = dt.date(int(sys.argv[4][0:4]),int(sys.argv[4][4:6]), int(sys.argv[4][6:8]))
-	else:
-		end_date = dt.date.today ()
 
-	create_hdf5(sb_ctl, direc, start_date, end_date)
+	args= 'create_hdf5('
+	for opt,arg in opts:
+		if opt == '--dir':
+			args = args + 'dir="' + arg + '",'
+		if opt == '--sbctl':
+			args = args + 'sbctl="' + arg + '",'
+		if opt == '--start_date':
+			args = args + 'start_date="' + arg + '",'
+		if opt == '--end_date':
+			args = args + 'end_date="' + arg + '",'
+	args=args+')'
+	eval(args)
+
 
 ##################
 
