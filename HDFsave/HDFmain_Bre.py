@@ -225,7 +225,7 @@ def main(args):
         pcFlag         = False
         dofFlag        = True
         minDOFs        = 0.8
-        maxCHI2        = 30.0
+        maxCHI2        = 100.0
         maxVMR         = 1e-4
         minVMR         = -1e-7
         cnvFlag        = True
@@ -236,14 +236,17 @@ def main(args):
         tcFlag         = False
         pcFlag         = False
         minDOFs        = 1.0
-        maxCHI2        = 2.0
+        if loc == 'BREMEN':
+            maxCHI2        = 10.0
+        else:
+            maxCHI2        = 2.0
         maxVMR         = 1e-6
         minVMR         = -1e-10
         dofFlag        = True
         cnvFlag        = True
         validFlag      = True
         minCO2         = 7.5e21
-        maxCO2         = 9.3e21
+        maxCO2         = 10.0e21
         co2f           = True
 
     if gasName.lower() == 'hno3':
