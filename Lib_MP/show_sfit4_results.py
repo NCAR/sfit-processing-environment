@@ -150,7 +150,7 @@ class show_results:
                     max_alt = float(self.max_pcv[i].get())
                     min_ind = np.max(np.where(np.array(z)>=min_alt))
                     max_ind = np.min(np.where(np.array(z)<max_alt))
-                    self.winavk.gca().plot(np.sum(self.avk.avk('col')[max_ind:min_ind,:],0), z, label='PCOL from %.2f to %.2f km'%(min_alt,max_alt))
+                    self.winavk.gca().plot(np.sum(self.avk.avk('frac')[max_ind:min_ind,:],0), z, label='PCOL from %.2f to %.2f km'%(min_alt,max_alt))
             self.winavk.gca().set_ylabel('Altitude [km]')
             self.winavk.gca().set_xlabel('Fraction of AVK [a.u.]')
             self.winavk.gca().legend(fontsize=16)
@@ -198,8 +198,9 @@ class show_results:
         frame4 = Frame(self.tkroot)
         frame4.grid(row=5,column=1)
         self.nr_pcols = 3
-        self.label_repc,self.repc = self.error.read_matrix_random_pcol()
-        pc,z = self.retprf.get_gas_col(self.gases[0])
+        if self.error.flag:
+            self.label_repc,self.repc = self.error.read_matrix_random_pcol()
+            pc,z = self.retprf.get_gas_col(self.gases[0])
         #sepc,z = self.error.read_total_col(self.gases[0])
         self.min_pcv = []
         self.max_pcv = []
