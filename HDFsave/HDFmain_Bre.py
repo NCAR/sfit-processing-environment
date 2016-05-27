@@ -250,7 +250,10 @@ def main(args):
         gasName        = 'HNO3'
         tcFlag         = False
         pcFlag         = False
-        minDOFs        = 1.0
+        if loc == 'PARAMARIBO':
+            minDOFs        = 0.0
+        else:
+            minDOFs        = 1.0
         maxCHI2        = 5.0
         maxVMR         = 1e-6
         minVMR         = -1e-9
@@ -269,6 +272,15 @@ def main(args):
         dofFlag        = True
         cnvFlag        = True
         validFlag      = True
+        
+    if gasName.lower() == 'h2co':
+        gasName        = 'H2CO'
+        maxCHI2        = 10.0
+        minVMR         = -1e-11
+        dofFlag        = False
+        cnvFlag        = True
+        validFlag      = True
+
     #---------------------
     # For python interface
     #---------------------
