@@ -504,6 +504,6 @@ if __name__ == '__main__':
     h4 = load_hdf()
     h4.load_AllGeoms (sys.argv[1], sys.argv[2], sys.argv[3])
     h4.plot_results(sys.argv[3])
-    h4.save_columns()
+#    h4.save_columns()
     print 'Hit any key in this window to terminate program'
     raw_input()

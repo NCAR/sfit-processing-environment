@@ -12,7 +12,7 @@ import os, pdb
 
 class show_results:
 
-    def __init__(self,direc='.', ctlfile='sfit4.ctl'):
+    def __init__(self,direc='.', sb_ctl = 'sb.ctl', ctlfile='sfit4.ctl'):
 
         self.direc = direc
         self.ctlfile = ctlfile
@@ -22,7 +22,8 @@ class show_results:
         plt.rcParams['font.size'] = 18
 #        plt.rc('text', usetex=True)
 
-        self.load_result()
+        self.sb_ctl = sb_ctl
+        self.load_result(sb_ctl)
         
         # Find a free figure for profile
         self.winprf = plt.figure()#figsize=(24,12))
@@ -161,7 +162,7 @@ class show_results:
             if self.show_var.get() == 'TARGET':
                 self.show(type='target')
             if self.show_var.get() == 'INTERF':
-                self.show(type='interf')
+                self.show(type='vmr')
             if self.show_var.get() == 'ERR':
                 self.show(type='err')
 
@@ -198,10 +199,16 @@ class show_results:
         frame4 = Frame(self.tkroot)
         frame4.grid(row=5,column=1)
         self.nr_pcols = 3
+        pc,z = self.retprf.get_gas_col(self.gases[0])
+#        ap = np.linalg.inv(np.diag(pc))
         if self.error.flag:
-            self.label_repc,self.repc = self.error.read_matrix_random_pcol()
-            pc,z = self.retprf.get_gas_col(self.gases[0])
-        #sepc,z = self.error.read_total_col(self.gases[0])
+            self.label_repc,repc = self.error.read_matrix_random_pcol()
+            self.label_sepc,sepc = self.error.read_matrix_system_pcol()
+            # Error matrices must be normalized in order to take correlation into account
+            #        self.repc = np.dot(ap,np.dot(np.sum(repc,0),ap))
+            #        self.sepc = np.dot(ap,np.dot(np.sum(sepc,0),ap))
+            self.repc = np.sum(repc,0)
+            self.sepc = np.sum(sepc,0)
         self.min_pcv = []
         self.max_pcv = []
         self.pcol1 = []
@@ -213,10 +220,14 @@ class show_results:
                 max_alt = float(self.max_pcv[nr].get())
                 min_ind = np.max(np.where(np.array(z)>=min_alt))
                 max_ind = np.min(np.where(np.array(z)<=max_alt))
+                ap = np.zeros(pc.size)
+                ap[max_ind:min_ind+1] = 1.0
                 pcol = pc[max_ind:min_ind+1]
                 self.pcol1[nr].set('%g'%np.sum(pcol))
-                col_ran = np.sum(self.repc,0)[max_ind:min_ind+1,max_ind:min_ind+1]
-                self.epcol1[nr].set('%g'%np.sqrt(np.sum(np.diag(col_ran))))
+                if self.error.flag:
+                    col_ran = self.repc + self.sepc
+                    self.epcol1[nr].set('%g'%np.sqrt(np.dot(np.dot(ap.T,col_ran),ap)))
+#                self.epcol1[nr].set('%g'%np.sqrt(np.sum(col_ran)))
             except:
                 print 'fail'
                 pass
@@ -290,7 +301,7 @@ class show_results:
 
 
     def update_result(self):
-        self.load_result()
+        self.load_result(self.sb_ctl)
         options = list(set(self.gas.gas[:]))
         if len(options) == 0:
             self.button_spec_by_gas.config(state=DISABLED)
@@ -305,7 +316,7 @@ class show_results:
             self.menu1.grid(row=2,column=1,stick=E+W)
         
 
-    def load_result(self):
+    def load_result(self, sb_ctl = 'sb.ctl'):
         direc = self.direc
         ctlfile = self.ctlfile
         ctl = sfit4_ctl()
@@ -330,7 +341,7 @@ class show_results:
         else:
             self.avk = -1
 
-        self.error = sfit4.error('sb.ctl','.',rprfs=direc+'/rprfs.table')
+        self.error = sfit4.error('.', sb_ctl=sb_ctl,rprfs=direc+'/rprfs.table')
 
         self.gas = sfit4.gasspectra(direc)
 
@@ -355,25 +366,27 @@ class show_results:
                 ax = self.winprf.add_subplot(111)
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             apr,z = self.aprprf.get_gas_vmr(self.gases[0])
-            l = ax.plot(vmr,z,'-',label=self.gases[0])
+            l = ax.plot(vmr,z,'-',lw=3,label=self.gases[0])
             e_ran, e_sys = self.error.read_total_vmr()
             e_tot = np.sqrt(e_ran**2 + e_sys**2)
-            ax.plot(vmr+e_tot,z,'-.', color=l[0].get_color())
-            ax.plot(vmr-e_tot,z,'-.', color=l[0].get_color())
+            ax.plot(vmr+e_tot,z,'--', color=l[0].get_color())
+            ax.plot(vmr-e_tot,z,'--', color=l[0].get_color())
 
-            ax.plot(apr,z,'--', label='a priori', color=l[0].get_color())
+            ax.plot(apr,z,'-', lw=1, label='a priori', color=l[0].get_color())
             ax.legend()
             if (type == 'vmr'):
                 ax = self.winprf.add_subplot(122)
                 for n in range(0,len(self.gases)):
                     vmr,z = self.retprf.get_gas_vmr(self.gases[n])
-                    l = ax.plot(vmr,z,'-',label=self.gases[n])
+                    l = ax.plot(vmr,z,lw=2,label=self.gases[n])
                     apr,z = self.aprprf.get_gas_vmr(self.gases[n])
-                    ax.plot(apr,z,'--', color=l[0].get_color())
+                    ax.plot(apr,z,'--',lw=1, color=l[0].get_color())
                     ax.legend()
-
+            ax.set_ylabel('altitude [km]')
+            ax.set_xlabel('VMR [ppt]')
+            ax.set_xticklabels(ax.get_xticks()/1.0e-9)
             self.winprf.show()
-            
+
                 
         if(type=='mw'):
             self.show_spectra(nr)
@@ -560,4 +573,9 @@ class show_results:
 												
 
 if __name__ == '__main__':
-    show_results()
+    import sys
+    print len(sys.argv)
+    if len(sys.argv) == 2:
+        show_results(sb_ctl=sys.argv[1])
+    else:
+        show_results()

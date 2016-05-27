@@ -178,8 +178,9 @@ class summary:
             
         
 class error(read_table):
-    def __init__(self, sb_ctl, direc, rprfs='rprfs.table'):
+    def __init__(self, direc, sb_ctl='sb.ctl', rprfs='rprfs.table'):
         sbctl = sfit4_ctl()
+        print sb_ctl
         if not os.path.isfile(sb_ctl):
             self.flag = False
             return
@@ -252,8 +253,11 @@ class error(read_table):
         return(label,matrix)
 
     def read_matrix_random_pcol(self):
-        label, matrix = self.read_error_matrix(self.ran_col)
-        return(label,matrix)
+        try:
+            label, matrix = self.read_error_matrix(self.ran_col)
+            return(label,matrix)
+        except:
+            (-1,-1)
 
     def read_matrix_system_pcol(self):
         label, matrix = self.read_error_matrix(self.sys_col)

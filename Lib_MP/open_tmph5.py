@@ -133,13 +133,17 @@ class load_tmph5:
         self.pcol_rt = pcol_mean.copy()
         self.Z = Z
 
-    def get_partial_columns(self,zrange,Xvar=False):
+    def get_partial_columns(self,zrange,Xvar=False, apriori=False):
         ind1 = np.where(np.all((self.Z > zrange[0],self.Z < zrange[1]),axis=0))[0]
-        a = self.h5f.root.pcol_rt[:]
+        if apriori:
+            a = self.h5f.root.pcol_ap[:]
+        else:
+            a = self.h5f.root.pcol_rt[:]
+
         pcolrt = np.sum(a[np.ix_(ind1,self.valid)],axis=0)
         tmp = self.h5f.root.pcol_ran[:]
         err_ran = np.sum(tmp[np.ix_(ind1,self.valid)],axis=0)
-        tmp = self.h5f.root.pcol_ran[:]
+        tmp = self.h5f.root.pcol_sys[:]
         err_sys = np.sum(tmp[np.ix_(ind1,self.valid)],axis=0)
         pcoltot = np.sqrt(err_ran*err_ran + err_sys*err_sys)
         if Xvar:
