@@ -65,7 +65,7 @@ import numpy             as np
 import itertools         as it
 import printStatmnts     as ps
 import datetime          as dt
-#import h5py
+import h5py
 import fnmatch
 
 
