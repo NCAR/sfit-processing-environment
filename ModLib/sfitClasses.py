@@ -216,7 +216,8 @@ class CtlInputFile():
     '''
 
     def __init__(self,fname,logFile=False):
-        ckFile(fname, logFlg=logFile, exitFlg=True)
+        if isinstance(fname,list): pass
+        elif isinstance(fname,str): ckFile(fname, logFlg=logFile, exitFlg=True)
         self.fname = fname
         self.inputs  = {}
         
@@ -243,11 +244,13 @@ class CtlInputFile():
     def getInputs(self):
         '''Ingests ctl file inputs to a dictionary with the ctl file
            parameter as the key'''
-        with open(self.fname) as fopen:
-
+        if isinstance(self.fname,str):
+          with open(self.fname) as fopen: lines=fopen.readlines()
+        else: lines=self.fname
+        if lines:
             gas_flg = True
 
-            for line in fopen:
+            for line in lines:
 
                 line = line.strip()  
 
