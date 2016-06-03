@@ -204,14 +204,17 @@ class show_tmph5:
 
     def save_values(self):
         fid = open('columns_show_and_filter.dat', 'write')
-        fid.write('date dnum retr apr ran, sys\n')
-        for d,r,a,rr,ss in zip(self.res.dnum[self.valid_ind],
-                               self.res.col_rt[self.valid_ind],
-                               self.res.col_ap[self.valid_ind],
-                               self.res.err_ran[self.valid_ind],
-                               self.res.err_sys[self.valid_ind]):
+        fid.write('date dnum retr apr ran, sys, aircol, P_S, T_S\n')
+        for d,r,a,rr,ss,ac,ps,ts in zip(self.res.dnum[self.valid_ind],
+                                     self.res.col_rt[self.valid_ind],
+                                     self.res.col_ap[self.valid_ind],
+                                     self.res.err_ran[self.valid_ind],
+                                     self.res.err_sys[self.valid_ind],
+                                     self.res.aircol[self.valid_ind],
+                                     self.res.P_surface[self.valid_ind],
+                                     self.res.T_surface[self.valid_ind]):
             dstring = dates.num2date(d).strftime('%Y%m%d%H%M%S')
-            fid.write('%s %d %g %g %g %g\n'%(dstring, d, r, a, rr, ss))
+            fid.write('%s %d %g %g %g %g %g %g %g\n'%(dstring, d, r, a, rr, ss, ac, ps, ts))
         fid.close()
             
 

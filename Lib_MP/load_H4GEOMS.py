@@ -50,10 +50,11 @@ class load_H4:
 
     def get_partial_columns(self,gas,xvar=False):
         rt = self.h4.select(gas+'.COLUMN.PARTIAL_ABSORPTION.SOLAR').get()
+        ap = self.h4.select(gas+'.COLUMN.PARTIAL_ABSORPTION.SOLAR_APRIORI').get()
         if xvar:
             ac = self.h4.select(gas+'.COLUMN.PARTIAL_ABSORPTION.SOLAR').get()
         z = self.h4.select('ALTITUDE').get()
-        return(rt,z)
+        return(rt,ap,z)
 
     def get_diff_partial_columns(self,gas):
         # for old sfit4 data which have been saved wrongly
@@ -95,6 +96,16 @@ class load_H4:
     def get_avk_column(self, gas):
         avk_col = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_AVK').get()
         z = self.h4.select('ALTITUDE').get()
+        return(avk_col,z)
+
+    def get_avk_pcol(self, gas):
+        avk_vmr,z = self.get_avk_vmr(gas)
+        ret,apr,z=self.get_profile(gas)
+        pret,papr,pz = self.get_partial_columns(gas)
+        avk_col = np.zeros((apr.shape[0],apr.shape[1],apr.shape[1]))
+        for nr in range(0,apr.shape[0]):
+            ap = np.diag(papr[nr,:]/apr[nr,:])
+            avk_col[nr,:,:] = np.dot(ap,np.dot(avk_vmr[nr,:,:],np.linalg.inv(ap)))
         return(avk_col,z)
 
     def get_avk_vmr(self, gas):
@@ -202,14 +213,12 @@ class load_hdf:
             try:
                 Z
             except:
-                import ipdb
-                ipdb.set_trace()
                 Z = np.ndarray((0,z.size))
-                Zb = np.ndarray((0,zb.size))
+                Zb = np.ndarray((0,zb.shape[1]))
                 T = np.ndarray((0,t.shape[1]))
                 P = np.ndarray((0,p.shape[1]))
             Z= np.vstack((Z,z))
-            Zb= np.vstack((Zb,zb))
+#            Zb= np.vstack((Zb,zb))
             T= np.vstack((T,t))
             P= np.vstack((P,p))
             
@@ -225,6 +234,23 @@ class load_hdf:
         for hf in src_hdf:
             dd = np.hstack((dd,dates.date2num(hf.dates)))
             ak,z = hf.get_avk_vmr(gas)
+            try:
+                avk
+            except:
+                avk = np.ndarray((0,ak.shape[1],ak.shape[2]))
+            avk = np.vstack((avk,ak))
+            
+        return(avk,dd)
+
+    def get_avk_pcol(self, gas,src='GEOMS'):
+        if src=='TMPH5':
+            src_hdf = self.h5
+        else:
+            src_hdf = self.h4
+        dd = np.array([])
+        for hf in src_hdf:
+            dd = np.hstack((dd,dates.date2num(hf.dates)))
+            ak,z = hf.get_avk_pcol(gas)
             try:
                 avk
             except:
@@ -264,7 +290,7 @@ class load_hdf:
             if diff:
                 rt,z = hf.get_diff_partial_columns(gas)
             else:
-                rt,z = hf.get_partial_columns(gas)
+                rt,ap,z = hf.get_partial_columns(gas)
             ind1 = np.where(np.all((z > zrange[0],z < zrange[1]),axis=0))[0]
             # if diff:
             #     min_ind = np.max(ind1)
