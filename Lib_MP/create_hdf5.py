@@ -156,8 +156,9 @@ def create_hdf5(**kwargs):
 	        i_col.append(sum(col))
 	    i_col = np.array(i_col)
 
+
 	    z,zb,p,t,ac = rprf.get_atmosphere()
-	    err = sfit4.error(sb_ctl,direc+'/'+dd)
+	    err = sfit4.error(sbctl=sb_ctl,dir=direc+'/'+dd)
 	    srvmr, ssvmr = err.read_total_vmr()
 	    srpcol, sspcol = err.read_total_pcol()
 	    srcol, sscol = err.read_total_col()
@@ -249,15 +250,15 @@ def create_hdf5(**kwargs):
 		avk_vmr = ak.avk(type='vmr')
 
 	    akfile =  string.join([direc, '/', dd, '/', sbctl.get_value('file.out.avk')], '')
-	    if not os.path.isfile(akfile):
-		print 'no error avk'
-	    else:
-		print 'read error avk'
-                ak_flag = True
-		ak = sfit4.avk(akfile,aprfsfile)    
-		avk = ak.avk()
-		avk_col = ak.avk(type='column')
-		avk_vmr = ak.avk(type='vmr')
+#	    if not os.path.isfile(akfile):
+#		print 'no error avk'
+#	    else:
+#		print 'read error avk'
+#                ak_flag = True
+#		ak = sfit4.avk(akfile,aprfsfile)    
+#		avk = ak.avk()
+#		avk_col = ak.avk(type='column')
+#		avk_vmr = ak.avk(type='vmr')
 	    try:
 	        chi_2_y[nr_res] = summary.chi_y_2
 	    except:

@@ -178,22 +178,24 @@ class summary:
             
         
 class error(read_table):
-    def __init__(self, direc, sb_ctl='sb.ctl', rprfs='rprfs.table'):
-        sbctl = sfit4_ctl()
-        print sb_ctl
-        if not os.path.isfile(sb_ctl):
+    def __init__(self, dir, sbctl='sb.ctl', rprfs='rprfs.table'):
+        direc = dir
+        sb_ctl = sfit4_ctl()
+        print sbctl
+        if not os.path.isfile(sbctl):
             self.flag = False
             return
-        sbctl.read_ctl_file(sb_ctl)
+        sb_ctl.read_ctl_file(sbctl)
         # check if sb.ctl and direc are formally consistent
-        self.total_vmr = direc+'/'+sbctl.get_value('file.out.total.vmr')
-        self.total_col = direc+'/'+sbctl.get_value('file.out.total')
-        self.ran_vmr = direc+'/'+sbctl.get_value('file.out.srandom.vmr')
-        self.sys_vmr = direc+'/'+sbctl.get_value('file.out.ssystematic.vmr')
-        self.ran_col = direc+'/'+sbctl.get_value('file.out.srandom')
-        self.sys_col = direc+'/'+sbctl.get_value('file.out.ssystematic')
+        self.total_vmr = direc+'/'+sb_ctl.get_value('file.out.total.vmr')
+        self.total_col = direc+'/'+sb_ctl.get_value('file.out.total')
+        self.ran_vmr = direc+'/'+sb_ctl.get_value('file.out.srandom.vmr')
+        self.sys_vmr = direc+'/'+sb_ctl.get_value('file.out.ssystematic.vmr')
+        self.ran_col = direc+'/'+sb_ctl.get_value('file.out.srandom')
+        self.sys_col = direc+'/'+sb_ctl.get_value('file.out.ssystematic')
         self.rprfs = direc+'/'+rprfs
         
+
         if os.path.exists(self.total_vmr) \
            and os.path.exists(self.total_col) \
            and os.path.exists(self.ran_vmr) \
@@ -214,8 +216,8 @@ class error(read_table):
             label, matrix = self.read_error_matrix(self.total_vmr)
             self.S_vmr_ran = matrix[0]
             self.S_vmr_sys = matrix[1]
-            self.vmr_ran = np.sqrt(np.diag(matrix[0]))
-            self.vmr_sys = np.sqrt(np.diag(matrix[1]))
+            self.vmr_ran = np.sqrt(np.abs(np.diag(matrix[0])))
+            self.vmr_sys = np.sqrt(np.abs(np.diag(matrix[1])))
             return(self.vmr_ran, self.vmr_sys)
         else:
             return(np.nan,np.nan)
@@ -225,8 +227,8 @@ class error(read_table):
             label, matrix = self.read_error_matrix(self.total_col)
             self.S_col_ran = matrix[0]
             self.S_col_sys = matrix[1]
-            self.col_ran = np.sqrt(np.diag(matrix[0]))
-            self.col_sys = np.sqrt(np.diag(matrix[1]))
+            self.col_ran = np.sqrt(np.abs(np.diag(matrix[0])))
+            self.col_sys = np.sqrt(np.abs(np.diag(matrix[1])))
             return(self.col_ran, self.col_sys)
         else:
             return(np.nan,np.nan)
@@ -237,8 +239,8 @@ class error(read_table):
             self.S_col_ran = matrix[0]
             self.S_col_sys = matrix[1]
             ll = np.ones((matrix[0].shape[0],1))
-            self.col_ran = np.sqrt(np.dot(ll.T,np.dot(self.S_col_ran,ll)))
-            self.col_sys = np.sqrt(np.dot(ll.T,np.dot(self.S_col_sys,ll)))
+            self.col_ran = np.sqrt(np.abs(np.dot(ll.T,np.dot(self.S_col_ran,ll))))
+            self.col_sys = np.sqrt(np.abs(np.dot(ll.T,np.dot(self.S_col_sys,ll))))
             return(self.col_ran, self.col_sys)
         else:
             return(np.nan,np.nan)
