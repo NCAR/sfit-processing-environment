@@ -63,7 +63,7 @@ def main(args):
     maxCO2         = 1e26
     minVMR         = -1.0e-7
     maxVMR         = 2.0e-5
-    maxCHI2        = 100.0
+    maxCHI2        = 9e99
     granularity    = 'yearly'
     
     if loc1.lower() == 'bre':
@@ -110,9 +110,9 @@ def main(args):
     if gasName.lower() == 'ccl4':
         gasName        = 'CCl4'
         maxSZA         = 90.0
-        maxCHI2        = 200.0
+        maxCHI2        = 20.0
         maxVMR         = 4.0e-9
-        minVMR         = -1.0e-9
+        minVMR         = -1.0e-11
         rmsFlag        = False
         tcFlag         = False
         pcFlag         = False
@@ -120,7 +120,7 @@ def main(args):
         szaFlag        = True
         validFlag      = True
         minDOFs        = 0.8
-        dofFlag        = True
+        dofFlag        = False
         co2Flag        = False
         
     if gasName.lower() == 'hf':
@@ -225,7 +225,7 @@ def main(args):
         pcFlag         = False
         dofFlag        = True
         minDOFs        = 0.8
-        maxCHI2        = 30.0
+#        maxCHI2        = 100.0
         maxVMR         = 1e-4
         minVMR         = -1e-7
         cnvFlag        = True
@@ -236,14 +236,17 @@ def main(args):
         tcFlag         = False
         pcFlag         = False
         minDOFs        = 1.0
-        maxCHI2        = 2.0
+        if loc == 'BREMEN':
+            maxCHI2        = 10.0
+        else:
+            maxCHI2        = 2.0
         maxVMR         = 1e-6
         minVMR         = -1e-10
         dofFlag        = True
         cnvFlag        = True
         validFlag      = True
         minCO2         = 7.5e21
-        maxCO2         = 9.3e21
+        maxCO2         = 10.0e21
         co2f           = True
 
     if gasName.lower() == 'hno3':

@@ -14,6 +14,7 @@ class load_tmph5:
                      'col_ap':'col_ap',    
                      'c2y':'chi_2_y',
                      'vmr_rt': 'vmr_rt',
+                     'vmr_ap': 'vmr_ap',
                      'err_ran':'col_ran',   
                      'err_sys':'col_sys',   
                      'err_tot':'',
@@ -35,7 +36,8 @@ class load_tmph5:
                      'aux_ap':'aux_ap',
                      'aux_rt': 'aux_rt',
                      'iter':'iter',
-                     'itmx':'itmx'}
+                     'itmx':'itmx',
+                     'avk_col':'avk_col'}
 
         self.h5f = h5.File(filename)
         self.dnum = self.h5f.root.mdate[:]
@@ -70,6 +72,8 @@ class load_tmph5:
             return(self.h5f.root.icol_rt[igasnames.index('HDO')-1,self.valid])
         if value == 'auxnames':
             return(self.h5f.root.auxnames)
+        if value == 'Z':
+            return(self.h5f.root.Z)
         
         val = self.vars[value]
         exec('dims = self.h5f.root.'+val+'[:].shape')
@@ -79,6 +83,7 @@ class load_tmph5:
             str = 'valb = self.h5f.root.'+val+'[:,self.valid]'
         elif len(dims) == 3:
             str = 'valb = self.h5f.root.'+val+'[:,:,self.valid]'
+        print str
         exec(str)
         return(valb)
             
@@ -92,48 +97,25 @@ class load_tmph5:
         self.valid = ind
 
         
-    def average(self):
-        dd_mean = list(set(self.dnum.round()))
-        col_mean = np.zeros(0)
-        pcol_mean = np.zeros((self.pcol_rt.shape[0],0))
-        ac_mean = np.zeros(0)
-        esys_mean = np.zeros(0)
-        eran_mean = np.zeros(0)
-        lat_mean = np.zeros(0)
-        lon_mean = np.zeros(0)
-        Z = self.Z
+    def average(self, dnum, val, err_val):
+        dd_mean = list(set(dnum.round()))
+        val_mean = np.zeros(0)
+        val_error = np.zeros(0)
 
         for ndd in dd_mean:
-            inds = np.int16(np.nonzero(abs(ndd - self.dnum[self.valid])<1))
-            inds = self.valid[inds]
-            col_mean = np.hstack((col_mean, np.mean(self.col_rt[inds], axis=1)))
-            ac_mean =  np.hstack((ac_mean, np.mean(self.aircol[inds], axis=1)))
-            esys_mean = np.hstack((esys_mean, np.linalg.norm(self.err_sys[inds])/inds.size))
-            eran_mean = np.hstack((esys_mean, np.linalg.norm(self.err_ran[inds])/inds.size))
-            lat_mean = np.hstack((lat_mean, np.mean(self.latitude[inds], axis=1)))
-            lon_mean = np.hstack((lon_mean, np.mean(self.longitude[inds], axis=1)))
-            pcol_mean = np.hstack((pcol_mean, np.mean(self.pcol_rt[:,inds[0]], axis=1,keepdims=True)))
-
-            
-        # Delete all other entries
-        for i in self.vars.keys():
-            try:
-                exec('del self.'+i)
-            except:
-                continue
+            inds = np.int16(np.nonzero(abs(ndd - dnum)<1))
+            val_mean = np.hstack((val_mean, np.mean(val[inds])))
+            val_error = np.hstack((val_error, np.std(val[inds])))
 
         # set entries which are calculated
-        self.dnum = np.array(dd_mean).copy()
-        self.col_rt = col_mean.copy()
-        self.aircol = ac_mean.copy()
-        self.err_sys = esys_mean.copy()
-        self.err_ran = eran_mean.copy()
-        self.latitude = lat_mean.copy()
-        self.longitude = lon_mean.copy()
-        self.pcol_rt = pcol_mean.copy()
-        self.Z = Z
+        dnum = np.array(dd_mean).copy()
+        val_mean = val_mean.copy()
+        val_error = val_error.copy()
 
-    def get_partial_columns(self,zrange,Xvar=False, apriori=False):
+        return (dnum,val_mean,val_error)
+
+    def get_partial_columns(self,zrange,Xvar=False, apriori=False,
+                            average='none'):
         ind1 = np.where(np.all((self.Z > zrange[0],self.Z < zrange[1]),axis=0))[0]
         if apriori:
             a = self.h5f.root.pcol_ap[:]
@@ -150,7 +132,12 @@ class load_tmph5:
             ac = self.h5f.root.air_mass[:]
             pcolrt = pcolrt/np.sum(ac[np.ix_(ind1,self.valid)],axis=0)
             pcoltot = pcoltot/np.sum(ac[np.ix_(ind1,self.valid)],axis=0)
-        return(self.dnum[self.valid], pcolrt, pcoltot)
+
+        if average == 'none':
+            return(self.dnum[self.valid], pcolrt, pcoltot)
+        else:
+            dnum, pcolrt, pcoltot = self.average(self.dnum[self.valid], pcolrt, pcoltot)
+            return(dnum, pcolrt, pcoltot)
 
     def get_partial_avk(self,zrange,norm=False):
         ind1 = np.where(np.all((self.Z > zrange[0],self.Z < zrange[1]),axis=0))[0]
