@@ -657,7 +657,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                 fout.write('{0}\n'.format(k))
 
                 for row in var[k][ind]:
-                    strformat = ' '.join('{0:>12.4E}' for i in row) + ' \n'
+                    strformat = ' '.join('{%d:>12.4E}'%i for i in range(len(row))) + ' \n'
                     fout.write( strformat.format(*row) )
 
                 fout.write('\n\n')    
@@ -925,27 +925,28 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #    AK = D*K
     #-----------------------------------------
     try: AK = np.dot(D,K)
-    except ValueError:
+    except ValueError as ve:
         print 'Unable to multiply Gain and K matrix '
         print 'Gain matrix shape: %s, K matrix shape: %s' %(str(D.shape),str(K.shape))
         if logFile: logFile.error('Unable to multiple Gain and K matrix; Gain matrix shape: %s, K matrix shape: %s' %(str(D.shape),str(K.shape)) ) 
+        raise ve
 
     #-------------------------------
     # Calculate AVK in VMR/VMR units
     #-------------------------------
     Kx          = K[:,x_start:x_stop]
-    Iapriori    = np.zeros((n_layer,n_layer))
-    IaprioriInv = np.zeros((n_layer,n_layer))
-    np.fill_diagonal(Iapriori,sumVars.aprfs[primgas.upper()])
-    np.fill_diagonal(IaprioriInv, 1.0 / (sumVars.aprfs[primgas.upper()]))
-    AKxVMR      = np.dot(np.dot(Iapriori,Dx),np.dot(Kx,IaprioriInv)) #TODO
+    #Iapriori    = np.zeros((n_layer,n_layer))
+    #IaprioriInv = np.zeros((n_layer,n_layer))
+    #np.fill_diagonal(Iapriori,sumVars.aprfs[primgas.upper()])
+    #np.fill_diagonal(IaprioriInv, 1.0 / (sumVars.aprfs[primgas.upper()]))
+    AKxVMR      =  AK[x_start:x_stop,x_start:x_stop]*np.tensordot(sumVars.aprfs[primgas.upper()],sumVars.aprfs[primgas.upper()]**-1,0) #np.dot(np.dot(Iapriori,Dx),np.dot(Kx,IaprioriInv)) #
+    #print np.allclose(AKxVMR,AK[x_start:x_stop,x_start:x_stop]*np.tensordot(sumVars.aprfs[primgas.upper()],sumVars.aprfs[primgas.upper()]**-1,0))
 
     #-----------------------------------------------
     # Get unscaled Averaging Kernel for the 
     # retrieved profile of the gas in questions only
     #-----------------------------------------------
     AKx = AK[x_start:x_stop,x_start:x_stop]
-
     #----------------------------------
     # Calculate retrieved total column:
     # molec/cm**2
