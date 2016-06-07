@@ -99,7 +99,6 @@ Kb_info=\
                beamperiod                  CHAN_SEP                         ?                      True
                 beamphase               ZERO_PH_REF                         ?                      True
                 beamslope            DELTA_PEAK_AMP                         ?                      True"""
-Kb_labels=dict(map(lambda x: x.split()[:2],Kb_info.split('\n')))
 sbctldefaults=\
 """VMRoutFlg                  = T              
 MolsoutFlg                 = T              
@@ -587,6 +586,21 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
       with open('sfit4.dtl','r') as fid: header=fid.readline().strip()
       # first integer found is SFIT 4: ('SFIT4:V')
       return tuple(map(int,re.sub('\D','',header)[1:5]))
+    version=getSFITversion()
+    print 'SFIT4 Version=%s'%(version,)
+    
+    
+    
+    Kb_labels=dict(map(lambda x: x.split()[:2],Kb_info.split('\n')))
+    #----------------------------------
+    # Adapt label definitions according to version
+    #----------------------------------
+    if version>=(0,9,6,2): Kb_labels['phase_fcn']='EmpPhsFcn'
+    if version>(0,9,5,0): 
+      for label in ('dwshift','maxopd'): #only these 2?? TODO
+        if label in Kb_labels: del Kb_labels[label]
+    
+
     
      
     def matPosDefTest(mat):
@@ -674,7 +688,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         # Split parameter name if necessary
         #----------------------------------
         
-        if len(paramName.split('_')) ==2: paramName,gas = paramName.split('_')[:2];#print paramName
+        if len(paramName.split('_')) >=2: paramName,gas = paramName.split('_')[:2];#print paramName
 
         #--------------------------------------------------------
         # List of parameters as they appear in the Kb.output file 
@@ -717,18 +731,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         return sbCovar
 
 
-    version=getSFITversion()
-    print 'SFIT4 Version=%s'%(version,)
     
-    #----------------------------------
-    # Adapt label definitions according to version
-    #----------------------------------
-
-    if version>(0,9,5,0): 
-      for label in ('dwshift','maxopd'): #only these 2?? TODO
-        if label in Kb_labels: del Kb_labels[label]
-
-
+ 
     #----------------------------------------------
     # List of parameters as they appear in ctl file 
     #----------------------------------------------   
@@ -881,7 +885,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         return False    # Critical file, if missing terminate program   
     else: print '... done'
 
-    Kb_param = lines[2].strip().split()
+    Kb_param = list(map(lambda x: x.replace('PROFILE_',''),lines[2].strip().split()))
     #---------------------------------------------------------------
     # Some parameter names in the Kb file are appended by either 
     # micro-window or gas name. If they are appended by micro-window
@@ -889,11 +893,11 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # the micro-windows under one key (so no grouping for eg lineint,...)
     #---------------------------------------------------------------
     for ind,val in enumerate(Kb_param):
-        if len(val.split('_')) == 2:
-            pname,appnd = val.split('_')
-            try:               int(appnd); val = pname #remove the mw index from the labels...
+        if len(val.split('_')) >=2:
+            pname,appnd = val.split('_')[:2]
+            try: int(appnd)
             except ValueError: pass
-            else: pass #print pname,appnd
+            else: val = pname #remove the mw index from the labels if integer
         Kb_param[ind] = val 
 
     Kb_unsrt = np.array([[float(x) for x in row.split()] for row in lines[3:]])
@@ -1038,12 +1042,12 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     for k in ctlFileVars.inputs['band']:
         test1 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper()
         try:    test2 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]            # This parameter might not exist in the ctl file if zshift = false
-        except: test2 = 1 
+        except KeyError: test2 = 1 
         if (test1 == 'F' and test2 == 1): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
 
-    #--------------------------------------------------------------------
-    # Set band ordering for micro-window dependent Sb's other than zshift
-    #--------------------------------------------------------------------
+        #--------------------------------------------------------------------
+        # Set band ordering for micro-window dependent Sb's other than zshift
+        #--------------------------------------------------------------------
         bands.setdefault('other',[]).append(int(k))
 
     #-------------------------------------------------------------------
