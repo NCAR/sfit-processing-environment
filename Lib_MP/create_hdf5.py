@@ -250,15 +250,15 @@ def create_hdf5(**kwargs):
 		avk_vmr = ak.avk(type='vmr')
 
 	    akfile =  string.join([direc, '/', dd, '/', sbctl.get_value('file.out.avk')], '')
-#	    if not os.path.isfile(akfile):
-#		print 'no error avk'
-#	    else:
-#		print 'read error avk'
-#                ak_flag = True
-#		ak = sfit4.avk(akfile,aprfsfile)    
-#		avk = ak.avk()
-#		avk_col = ak.avk(type='column')
-#		avk_vmr = ak.avk(type='vmr')
+	    if not os.path.isfile(akfile):
+		print 'no error avk'
+	    else:
+		print 'read error avk'
+                ak_flag = True
+		ak = sfit4.avk(akfile,aprfsfile)    
+		avk = ak.avk()
+		avk_col = ak.avk(type='column')
+		avk_vmr = ak.avk(type='vmr')
 	    try:
 	        chi_2_y[nr_res] = summary.chi_y_2
 	    except:
