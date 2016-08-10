@@ -1043,7 +1043,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         test1 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper()
         try:    test2 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]            # This parameter might not exist in the ctl file if zshift = false
         except KeyError: test2 = 1 
-        if (test1 == 'F' and test2 == 1): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
+        if (test1 == 'F' and True+(test2 == 1)): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
 
         #--------------------------------------------------------------------
         # Set band ordering for micro-window dependent Sb's other than zshift
@@ -1142,7 +1142,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                     #---------------------------------
                     elif (Kbl.lower() == 'omega') and (SbDict['sb.omega.'+ErrType+'.scaled'][0].upper() == 'F'):
                         if len(SbDict['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for omega, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
-                        diagFill = np.array(SbDict['sb.omega.'+ErrType]) / sumVars.summary['FOV']
+                        diagFill = np.array(SbDict['sb.omega.'+ErrType]) / sumVars.summary['FOVDIA']
     
                     #----------------
                     # All other cases
@@ -1152,7 +1152,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                         # Catch errors where number of specified Sb does not match Kb columns (in a flexible way)
                         #--------------------------------------------------------------------
                         #print type(Kbl),Kbl,'onee',type(SbDict['sb.'+Kbl+'.'+ErrType]),DK.shape,'ole'
-                        #print 'aaaa','sb.'+Kbl+'.'+ErrType,test['sb.'+Kbl+'.'+ErrType],'bbb'
+                        #print 'aaaa','sb.'+Kbl+'.'+ErrType,'bbb'
                         sbsize=len(SbDict['sb.'+Kbl+'.'+ErrType])
                         kbsize=DK.shape[1]
                         if sbsize != 1 and sbsize<kbsize: raise ExitError('Number of specified Sb for '+Kbl+', type:'+ErrType+'(=%s) does not match number of Kb columns=%s!! Check Sb.ctl file.'%(sbsize,kbsize,))
@@ -1163,7 +1163,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                     # Fill Sb matrix with diagonal elements
                     #--------------------------------------
                     sbcorkey='sb.%s.correlation.width'%Kbl if Kbl.upper() not in map(str.upper,kb_profile_gas) else 'sb.profile.%s.correlation.width'%Kbl
-                    corwidthinv=1./SbDict[sbcorkey][0] if sbcorkey in SbDict else 0.
+                    corwidthinv=1./SbDict[sbcorkey][0] if (sbcorkey in SbDict and SbDict[sbcorkey][0]!=0.) else 0.
                     Sb=np.tensordot(diagFill,diagFill,0)
                     if ErrType=='random': 
                       deltaz=np.tensordot(z,np.ones(z.shape),0)
@@ -1213,7 +1213,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                 errmsg = sys.exc_info()[1]
                 print 'Error calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType 
                 print errmsg
-                if logFile: logFile.error('Error calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType+'\n')	
+                if logFile: logFile.error('Error calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType+'\n')
 
             #----------------------------------------------------------------------
             # Check if Error covariance matrix has not been filled from sb.ctl file
