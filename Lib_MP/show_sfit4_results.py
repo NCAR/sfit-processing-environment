@@ -341,7 +341,7 @@ class show_results:
         else:
             self.avk = -1
 
-        self.error = sfit4.error('.', sb_ctl=sb_ctl,rprfs=direc+'/rprfs.table')
+        self.error = sfit4.error('.', sbctl=sb_ctl,rprfs=direc+'/rprfs.table')
 
         self.gas = sfit4.gasspectra(direc)
 

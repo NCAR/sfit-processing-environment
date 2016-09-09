@@ -389,7 +389,12 @@ def create_hdf5(**kwargs):
 	fid.write('FileName Date Time Dur SZA SAzm N_Lat E_Lon Alt S_PRES S_TEMP\n')
 	for nr in range(0,len(mdate)):
 		ddate = mdt.num2date(mdate[nr])
-		fid.write('%s %s %s %f %f %f %f %f %f %f %f\n'%(spectra[nr], ddate.strftime('%Y%m%d'), ddate.strftime('%H:%M:%S'), dur[nr], sza[nr], azi[nr], lat[nr], lon[nr], alt[nr], p_surface[nr], t_surface[nr]))
+                # Azimuth angle in hdf: 0 is south, clockwise increase, i.e. west is positive.
+		fid.write('%s %s %s %f %f %f %f %f %f %f
+		%f\n'%(spectra[nr], ddate.strftime('%Y%m%d'),
+		       ddate.strftime('%H:%M:%S'), dur[nr], (90.0-sza[nr]),
+		       np.mod(180.0+azi[nr],360), lat[nr], lon[nr], alt[nr],
+		       p_surface[nr], t_surface[nr]))
 	fid.close()
 
 

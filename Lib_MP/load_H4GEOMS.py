@@ -98,15 +98,18 @@ class load_H4:
         z = self.h4.select('ALTITUDE').get()
         return(avk_col,z)
 
-    def get_avk_pcol(self, gas):
+    def get_avk_pcol(self, gas, zrange):
         avk_vmr,z = self.get_avk_vmr(gas)
         ret,apr,z=self.get_profile(gas)
         pret,papr,pz = self.get_partial_columns(gas)
-        avk_col = np.zeros((apr.shape[0],apr.shape[1],apr.shape[1]))
+        avk_col = np.zeros((apr.shape[1],apr.shape[1]))
+        avk_pcol = np.zeros((apr.shape[0],apr.shape[1]))
+        ind = np.where(np.all((z > zrange[0],z < zrange[1]),axis=0))[0]
         for nr in range(0,apr.shape[0]):
             ap = np.diag(papr[nr,:]/apr[nr,:])
-            avk_col[nr,:,:] = np.dot(ap,np.dot(avk_vmr[nr,:,:],np.linalg.inv(ap)))
-        return(avk_col,z)
+            avk_col[:,:] = np.dot(ap,np.dot(avk_vmr[nr,:,:],np.linalg.inv(ap)))
+            avk_pcol[nr,:] = np.sum(avk_col[ind,:],axis=0)
+        return(avk_pcol,z)
 
     def get_avk_vmr(self, gas):
         if self.data_template == 'GEOMS-TE-FTIR-001':
@@ -145,7 +148,8 @@ class load_H4:
         t_s = self.h4.select('SURFACE.TEMPERATURE_INDEPENDENT').get()
         dnum = self.h4.select('INTEGRATION.TIME').get()
         asza = self.h4.select('ANGLE.SOLAR_ZENITH.ASTRONOMICAL').get()
-        return(p_s, t_s, dnum, asza)
+        azi = self.h4.select('ANGLE.SOLAR_AZIMUTH').get()
+        return(p_s, t_s, dnum, asza, azi)
 
 
 class load_hdf:
@@ -155,6 +159,8 @@ class load_hdf:
         self.f1.clf()
         self.f2 = plt.figure(2)
         self.f2.clf()
+        self.f3 = plt.figure(3)
+        self.f3.clf()
 
     def load_tmph5(self,tmph5):
         self.h5 = [load_h5(tmph5)]
@@ -242,7 +248,7 @@ class load_hdf:
             
         return(avk,dd)
 
-    def get_avk_pcol(self, gas,src='GEOMS'):
+    def get_avk_column(self, gas, src='GEOMS'):
         if src=='TMPH5':
             src_hdf = self.h5
         else:
@@ -250,14 +256,31 @@ class load_hdf:
         dd = np.array([])
         for hf in src_hdf:
             dd = np.hstack((dd,dates.date2num(hf.dates)))
-            ak,z = hf.get_avk_pcol(gas)
+            ak,z = hf.get_avk_column(gas)
             try:
                 avk
             except:
-                avk = np.ndarray((0,ak.shape[1],ak.shape[2]))
+                avk = np.ndarray((0,ak.shape[1]))
             avk = np.vstack((avk,ak))
             
-        return(avk,dd)
+        return(dd,avk)
+
+    def get_avk_pcol(self, gas, zrange, src='GEOMS'):
+        if src=='TMPH5':
+            src_hdf = self.h5
+        else:
+            src_hdf = self.h4
+        dd = np.array([])
+        for hf in src_hdf:
+            dd = np.hstack((dd,dates.date2num(hf.dates)))
+            ak,z = hf.get_avk_pcol(gas, zrange)
+            try:
+                avk
+            except:
+                avk = np.ndarray((0,ak.shape[1]))
+            avk = np.vstack((avk,ak))
+            
+        return(dd,avk)
 
             
     def get_columns(self,gas,src='GEOMS'):
@@ -460,33 +483,37 @@ class load_hdf:
         im = []
         dd = []
         asza = []
+        azi = []
         for hf in self.h4:
-            p_s, t_s, ms, sz = hf.get_misc()
+            p_s, t_s, ms, sz, az = hf.get_misc()
             dd.extend(dates.date2num(hf.dates))
             ps.extend(p_s) # Surface pressure
             ts.extend(t_s) # Surface temperature
             im.extend(ms)  # integration time
             asza.extend(sz) # solar zenith angle
+            azi.extend(az)
 
         
             
         return(np.array(dd),np.array(ps),np.array(ts),
-               np.array(im),np.array(asza))
+               np.array(im),np.array(asza), np.array(azi))
             
         
-    def plot_auxilliary(self,ax11,ax21):
+    def plot_auxilliary(self,ax11,ax21, ax31):
         ps = []
         ts = []
         im = []
         dd = []
         asza = []
+        azi = []
         for hf in self.h4:
-            p_s, t_s, ms, sz = hf.get_misc()
+            p_s, t_s, ms, sz, az = hf.get_misc()
             dd.extend(dates.date2num(hf.dates))
             ps.extend(p_s) # Surface pressure
             ts.extend(t_s) # Surface temperature
             im.extend(ms)  # integration time
             asza.extend(sz) # solar zenith angle
+            azi.extend(az)
             
         ax12 = ax11.twinx()
         ax11.plot_date(dd,ps,'bx')
@@ -500,11 +527,14 @@ class load_hdf:
         ax22.plot_date(dd,asza,'rx')
         ax22.set_ylabel('SZA (red)')
 
+        ax31.plot(np.mod((360.0 - (180.0 - np.array(azi))),360)/180.0*np.pi,(90.0 - np.array(asza))/180.0*np.pi,'+')
 
+        
 
     def plot_results(self,gas,src='GEOMS'):
         self.f1.clf()
         self.f2.clf()
+        self.f3.clf()
         ax1 = self.f1.add_subplot(311)
         self.plot_columns(gas, ax1, src)
         ax2 = self.f1.add_subplot(312)
@@ -514,9 +544,13 @@ class load_hdf:
 
         ax11 = self.f2.add_subplot(211)
         ax21 = self.f2.add_subplot(212)
-        self.plot_auxilliary(ax11,ax21)
+        ax31 = self.f3.add_subplot(111, projection='polar')
+        self.plot_auxilliary(ax11,ax21,ax31)
+
+        
         self.f1.show()
         self.f2.show()
+        self.f3.show()
 
 if __name__ == '__main__':
 #    load_H4GEOMS(sys.argv[1])

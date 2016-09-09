@@ -22,6 +22,6 @@ DATA_RULES_OF_USE       = Contact Mathias Palm or Justus Notholt
 DATA_ACKNOWLEDGEMENT    = The measurements are supported by AWI Bremerhaven.
 FILE_DOI                = None 
 FILE_ACCESS             = NDACC;EVDC
-FILE_PROJECT_ID         = AOID331
+FILE_PROJECT_ID         = AOID331;QA4ECV
 FILE_ASSOCIATION        = NDACC
 FILE_META_VERSION       = 04R014;CUSTOM

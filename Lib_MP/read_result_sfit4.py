@@ -181,7 +181,6 @@ class error(read_table):
     def __init__(self, dir, sbctl='sb.ctl', rprfs='rprfs.table'):
         direc = dir
         sb_ctl = sfit4_ctl()
-        print sbctl
         if not os.path.isfile(sbctl):
             self.flag = False
             return
