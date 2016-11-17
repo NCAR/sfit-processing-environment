@@ -77,9 +77,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       file_fdateStr = file_fdateStr.lower()
 
          
-      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+file_idateStr+'_'+file_fdateStr+'_'+dataStr['DATA_FILE_VERSION']+'.hdf'
+
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
-      print dataStr['FILE_NAME']
       
       dataStr['PI_NAME']                 = '!!!CHANGE!!!'
       dataStr['PI_AFFILIATION']          = '!!!CHANGE!!!'
@@ -141,6 +140,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
          dataStr[val[0].strip()] = str(val[1].strip())
       fid.close()
 
+      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+file_idateStr+'_'+file_fdateStr+'_'+dataStr['DATA_FILE_VERSION']+'.hdf'
+      print dataStr['FILE_NAME']
+
+      
       return dataStr
 
    def datetimeAttrbs(self,nsize):
@@ -708,7 +711,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.getAngleSolarAzimuthName()
       dataStr['VAR_DESCRIPTION']      = 'Astronomical azimuth angle of the sun (zero at South neg. to East pos. to West)'
-      dataStr['VAR_NOTES']            = 'Due South is defined as 0 degrees. Values increase CLOCKWISE (e.g. Due West is 90 deg)'
+      dataStr['VAR_NOTES']            = 'Due North is defined as 0 degrees. Values increase CLOCKWISE (e.g. Due East is 90 deg)'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -731,7 +734,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       
       dataStr['VAR_NAME']             = self.getH2oMixingRatioAbsorptionSolarName()
       dataStr['VAR_DESCRIPTION']      = 'Final vertical profile of H2O in VMR units'
-      dataStr['VAR_NOTES']            = 'Daily averages derived from 6 hourly ERA-Interim re-analysis data'
+      dataStr['VAR_NOTES']            = 'Daily averages derived from daily NCEP re-analysis data'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -753,7 +756,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.getH2oColumnAbsorptionSolarName()
       dataStr['VAR_DESCRIPTION']      = 'Total vertical column of final H2O'
-      dataStr['VAR_NOTES']            = 'Daily averages derived from 6 hourly ERA-Interim re-analysis data'
+      dataStr['VAR_NOTES']            = 'Daily averages derived from daily NCEP re-analysis data'
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr

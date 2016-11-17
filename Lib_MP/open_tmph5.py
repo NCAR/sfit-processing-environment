@@ -9,6 +9,7 @@ class load_tmph5:
     def __init__(self, filename):
         self.vars = {'dnum':'mdate',
                      'Z': 'Z',
+                     'T': 'T',
                      'col_rt':'col_rt',
                      'pcol_rt':'pcol_rt',
                      'col_ap':'col_ap',    

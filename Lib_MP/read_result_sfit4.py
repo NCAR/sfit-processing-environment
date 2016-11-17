@@ -181,7 +181,6 @@ class error(read_table):
     def __init__(self, dir, sbctl='sb.ctl', rprfs='rprfs.table'):
         direc = dir
         sb_ctl = sfit4_ctl()
-        print sbctl
         if not os.path.isfile(sbctl):
             self.flag = False
             return
@@ -195,7 +194,7 @@ class error(read_table):
         self.sys_col = direc+'/'+sb_ctl.get_value('file.out.ssystematic')
         self.rprfs = direc+'/'+rprfs
         
-
+        
         if os.path.exists(self.total_vmr) \
            and os.path.exists(self.total_col) \
            and os.path.exists(self.ran_vmr) \
