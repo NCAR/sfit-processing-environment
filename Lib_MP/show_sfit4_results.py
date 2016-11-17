@@ -316,7 +316,7 @@ class show_results:
             self.menu1.grid(row=2,column=1,stick=E+W)
         
 
-    def load_result(self, sb_ctl = 'sb.ctl'):
+    def load_result(self, sbctl = 'sb.ctl'):
         direc = self.direc
         ctlfile = self.ctlfile
         ctl = sfit4_ctl()
@@ -341,7 +341,7 @@ class show_results:
         else:
             self.avk = -1
 
-        self.error = sfit4.error('.', sb_ctl=sb_ctl,rprfs=direc+'/rprfs.table')
+        self.error = sfit4.error('.', sbctl=sbctl,rprfs=direc+'/rprfs.table')
 
         self.gas = sfit4.gasspectra(direc)
 

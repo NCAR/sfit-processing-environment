@@ -268,7 +268,7 @@ def create_hdf5(**kwargs):
             if not ak_flag:
                 print 'no avk found'
                 continue    
-        
+
 	    print 'akzepted'
 	    col_rt[:,nr_res] = summary.retriev
 	    col_ap[:,nr_res] = summary.apriori
