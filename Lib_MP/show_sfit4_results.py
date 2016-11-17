@@ -416,7 +416,7 @@ class show_results:
 
             ax = self.winerr.add_subplot(223)
             ax.set_title('systematic')
-#            label,matrix = self.error.read_matrix_system_vmr()
+            label,matrix = self.error.read_matrix_system_vmr()
             for l,m in zip(label,range(0,len(label))):
                 if l=='smoothing':
                     continue

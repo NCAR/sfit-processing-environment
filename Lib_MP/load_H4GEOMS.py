@@ -527,7 +527,8 @@ class load_hdf:
         ax22.plot_date(dd,asza,'rx')
         ax22.set_ylabel('SZA (red)')
 
-        ax31.plot(np.mod((360.0 - (180.0 - np.array(azi))),360)/180.0*np.pi,(90.0 - np.array(asza))/180.0*np.pi,'+')
+        ax31.plot(np.array(azi)/180.0*np.pi,(90.0 - np.array(asza))/180.0*np.pi,'+')
+#        ax31.plot(np.mod((360.0 - (180.0 - np.array(azi))),360)/180.0*np.pi,(90.0 - np.array(asza))/180.0*np.pi,'+')
 
         
 

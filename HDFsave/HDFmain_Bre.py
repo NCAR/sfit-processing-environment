@@ -92,8 +92,8 @@ def main(args):
             source         = 'AWI028'
     if loc1.lower() == 'jfj':
         loc            = 'Jungfraujoch'
-        source         = 'Jungfraujoch'
-        attribute_file = os.path.join(script_dir, 'external.txt')
+        source         = 'ULG002'
+        attribute_file = os.path.join(script_dir, 'jungfraujoch_final.txt')
 
     if gasName.lower() == 'o3':
         gasName        = 'O3'

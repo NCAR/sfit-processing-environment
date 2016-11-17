@@ -98,7 +98,8 @@ class load_tmph5:
                 except:
                     continue
 
-    def average(self):
+    def average(self, range='daily'):
+
         dd_mean = list(set(self.dnum.round()))
         col_mean = np.zeros(0)
         pcol_mean = np.zeros((self.pcol_rt.shape[0],0))

@@ -194,7 +194,7 @@ class error(read_table):
         self.sys_col = direc+'/'+sb_ctl.get_value('file.out.ssystematic')
         self.rprfs = direc+'/'+rprfs
         
-
+        
         if os.path.exists(self.total_vmr) \
            and os.path.exists(self.total_col) \
            and os.path.exists(self.ran_vmr) \

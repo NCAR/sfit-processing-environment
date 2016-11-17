@@ -2150,6 +2150,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
                 self.HDFinstAlt = np.array(tempSpecDB['Alt'])
             self.HDFintT[i] = tempSpecDB['Dur']
             self.HDFazi[i]  = tempSpecDB['SAzm']
+            self.HDFazi[i] = self.HDFazi[i] + 180
             if tempSpecDB.has_key('S_PRES'):
                 self.HDFsurfP[i]      = np.array(tempSpecDB['S_PRES'])    # Surface Pressure
             else:
