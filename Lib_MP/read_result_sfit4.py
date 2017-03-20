@@ -192,6 +192,7 @@ class error(read_table):
         self.sys_vmr = direc+'/'+sb_ctl.get_value('file.out.ssystematic.vmr')
         self.ran_col = direc+'/'+sb_ctl.get_value('file.out.srandom')
         self.sys_col = direc+'/'+sb_ctl.get_value('file.out.ssystematic')
+        self.avk = direc+'/'+sb_ctl.get_value('file.out.avk')
         self.rprfs = direc+'/'+rprfs
         
         
@@ -201,7 +202,8 @@ class error(read_table):
            and os.path.exists(self.sys_vmr) \
            and os.path.exists(self.ran_col) \
            and os.path.exists(self.sys_col)\
-           and os.path.exists(self.rprfs):
+           and os.path.exists(self.rprfs)\
+           and os.path.exists(self.avk):
             self.flag = True
             read_table.__init__(self, self.rprfs)
         else:
