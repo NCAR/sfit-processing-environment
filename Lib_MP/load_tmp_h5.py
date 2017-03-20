@@ -14,6 +14,7 @@ class load_tmph5:
                      'col_ap':'col_ap',    
                      'c2y':'chi_2_y',
                      'vmr_rt': 'vmr_rt',
+                     'vmr_ap': 'vmr_ap',
                      'err_ran':'col_ran',   
                      'err_sys':'col_sys',   
                      'err_tot':'',
@@ -35,12 +36,14 @@ class load_tmph5:
                      'auxname':'auxnames',
                      'aux_ap':'aux_ap',
                      'aux_rt': 'aux_rt',
+                     'P': 'P',
                      'iter':'iter',
                      'itmx':'itmx',
+                     'avk_vmr':'avk_vmr',
                      'gasnames':'gasnames'}
 
         h5f = h5.File(filename)
-        for i in self. vars.keys():
+        for i in self.vars.keys():
             if len(self.vars[i]) > 0:
                 val = self.vars[i]
                 str = 'self.'+i+' = h5f.root.'+val+'[:]'
@@ -103,11 +106,14 @@ class load_tmph5:
         dd_mean = list(set(self.dnum.round()))
         col_mean = np.zeros(0)
         pcol_mean = np.zeros((self.pcol_rt.shape[0],0))
+        vmr_ap_mean = np.zeros((self.vmr_ap.shape[0],0))
         ac_mean = np.zeros(0)
         esys_mean = np.zeros(0)
         eran_mean = np.zeros(0)
         lat_mean = np.zeros(0)
         lon_mean = np.zeros(0)
+        P_mean = np.zeros((self.P.shape[0],0))
+        avk_vmr_mean = np.zeros((self.avk_vmr.shape[0], self.avk_vmr.shape[1],0))
         Z = self.Z
 
         for ndd in dd_mean:
@@ -115,10 +121,13 @@ class load_tmph5:
             col_mean = np.hstack((col_mean, np.mean(self.col_rt[inds], axis=1)))
             ac_mean =  np.hstack((ac_mean, np.mean(self.aircol[inds], axis=1)))
             esys_mean = np.hstack((esys_mean, np.linalg.norm(self.err_sys[inds])/inds.size))
-            eran_mean = np.hstack((esys_mean, np.linalg.norm(self.err_ran[inds])/inds.size))
+            eran_mean = np.hstack((eran_mean, np.linalg.norm(self.err_ran[inds])/inds.size))
             lat_mean = np.hstack((lat_mean, np.mean(self.latitude[inds], axis=1)))
             lon_mean = np.hstack((lon_mean, np.mean(self.longitude[inds], axis=1)))
             pcol_mean = np.hstack((pcol_mean, np.mean(self.pcol_rt[:,inds[0]], axis=1,keepdims=True)))
+            vmr_ap_mean = np.hstack((vmr_ap_mean, np.mean(self.vmr_ap[:,inds[0]], axis=1,keepdims=True)))
+            P_mean = np.hstack((P_mean, np.mean(np.log(self.P[:,inds[0]]), axis=1,keepdims=True)))
+            avk_vmr_mean = np.dstack((avk_vmr_mean, np.mean(self.avk_vmr[:,:,inds[0]], axis=2,keepdims=True)))
 
             
         # Delete all other entries
@@ -137,6 +146,9 @@ class load_tmph5:
         self.latitude = lat_mean.copy()
         self.longitude = lon_mean.copy()
         self.pcol_rt = pcol_mean.copy()
+        self.vmr_ap_mean = vmr_ap_mean.copy()
+        self.P_mean = np.exp(P_mean.copy())
+        self.avk_vmr_mean = avk_vmr_mean.copy()
         self.Z = Z
 
     def get_partial_columns(self,zrange, apriori=False):
