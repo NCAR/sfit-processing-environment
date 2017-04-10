@@ -855,6 +855,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         if gas=='TEMPERATURE': print 'WARNING !! Temperature Sb substitution in regul matrix sa is not yet implemented for type 5 sainv input';continue
         if sbkey not in SbDict and sbinputforsa: print 'Error !! The sb.ctl file must contain information on random profile uncertainty for %s'%gas;raise ValueError('Missing input in sb.ctl for profile uncertainty for %s'%gas)
         if sbkey in SbDict: #prefer the sb information above the sa matrix...
+            #if gas in ('CH4','HDO'): continue #for debugging .... 
+            #else: print gas
             sa_idx=np.where(np.array(K_param)==gas)[0]
             #get the Sb for this gas
             sbcorkey=sbkey.replace('.random','.correlation.width')
@@ -1349,10 +1351,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         fout.write('Total systematic error                        = {0:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
         fout.write('Total random uncertainty                      = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Random'][2])            )
         fout.write('Total systematic uncertainty                  = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Systematic'][2])        )
-        for k in S_ran:
-            fout.write('Total random uncertainty {0:<20s} = {1:15.3E} [molecules cm^-2]\n'.format(k,S_ran[k][2]))
+        for k in S_ran: 
+            fout.write('Total random uncertainty {0:<20s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_ran[k][2],S_ran[k][2]/retdenscol*100))
         for k in S_sys:
-            fout.write('Total systematic uncertainty {0:<16s} = {1:15.3E} [molecules cm^-2]\n'.format(k,S_sys[k][2])) 
+            fout.write('Total systematic uncertainty {0:<16s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_sys[k][2],S_sys[k][2]/retdenscol*100)) 
 
     #-----------------------------------
     # Write to file covariance matricies
