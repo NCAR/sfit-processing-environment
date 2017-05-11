@@ -194,6 +194,8 @@ class DictWithDefaults(dict):
         #print '%s->%s'%(key,matches);
         return self.default[matches[0]]
       else: raise KeyError(key)
+      
+  def __len__(self): return dict.__len__(self)+dict.__len__(self.default)
 
   def __contains__(self,key):
     if dict.has_key(self,key): return dict.__contains__(self,key)
@@ -1300,6 +1302,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 
     # Get a list of parameters to include in total error from sb.ctl file
     # Random
+    print '---random---'
     for k in S_ran:
         totkey='sb.total.'+k
         if (totkey in SbDict) and SbDict[totkey][0].upper() == 'T':
@@ -1310,7 +1313,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             else:                                                    S_tot_ran_molcs  = 0
 
     S_tot_rndm_err  = np.sqrt(S_tot_rndm_err)
-    print '-----'
+    print '---system---'
     # Systematic
     for k in S_sys:
         totkey='sb.total.'+k
