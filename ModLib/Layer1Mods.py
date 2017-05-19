@@ -585,7 +585,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
       """retrieves the version of sfit4 as a 4tuple from the output file"""
       with open(wrkingDir+'/sfit4.dtl','r') as fid: header=fid.readline().strip()
       # first integer found is SFIT 4: ('SFIT4:V')
-      return tuple(map(int,re.sub('\D','',header)[1:5]))
+      return tuple(map(int,header.split(':')[1][1:].split('.'))) # tuple(map(int,re.sub('\D','',header)[1:5]))
     version=getSFITversion()
     print 'SFIT4 Version=%s'%(version,)
     
@@ -599,9 +599,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     if version>(0,9,5,0): 
       for label in ('dwshift','maxopd'): #only these 2?? TODO
         if label in Kb_labels: del Kb_labels[label]
-    
 
-    
      
     def matPosDefTest(mat):
         ''' Test if matrix is positive definite'''
@@ -1043,7 +1041,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         test1 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper()
         try:    test2 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]            # This parameter might not exist in the ctl file if zshift = false
         except KeyError: test2 = 1 
-        if (test1 == 'F' and test2 == 1): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
+        if (test1 == 'F' or (test1 == 'T' and test2 == 1)): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
 
         #--------------------------------------------------------------------
         # Set band ordering for micro-window dependent Sb's other than zshift
