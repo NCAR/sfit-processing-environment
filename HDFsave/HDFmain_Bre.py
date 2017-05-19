@@ -64,6 +64,7 @@ def main(args):
     minVMR         = -1.0e-7
     maxVMR         = 2.0e-5
     maxCHI2        = 9e99
+    maxTCTotErr    = 9e99
     granularity    = 'yearly'
     
     if loc1.lower() == 'bre':
@@ -106,7 +107,21 @@ def main(args):
         validFlag      = True
         maxCHI2        = 6.0
         minVMR         = -1e-7
-        
+
+    if gasName.lower() == 'ch4':
+        gasName        = 'CH4'
+        maxSZA         = 90.0
+        rmsFlag        = True
+        tcFlag         = False
+        pcFlag         = False
+        cnvFlag        = True
+        szaFlag        = True
+        validFlag      = True
+        maxCHI2        = 20.0
+        maxTCTotErr    = 1.0e19
+        minVMR         = -1e-7
+        maxVMR         = 2.0e-5
+
     if gasName.lower() == 'ccl4':
         gasName        = 'CCl4'
         maxSZA         = 90.0
@@ -128,7 +143,10 @@ def main(args):
         tcFlag         = False
         minDOFs        = 1.0
         dofFlag        = True
-        maxCHI2        = 10.0
+        if loc == 'BREMEN':
+            maxCHI2        = 100.0
+        else:
+            maxCHI2        = 10.0
         maxVMR         = 6e-9
         minVMR         = -1e-10
         minCO2         = 6.5e21
@@ -210,7 +228,7 @@ def main(args):
     if gasName.lower() == 'ocs':
         gasName        = 'OCS'
         tcFlag         = False
-        minDOFs        = 1.0
+        minDOFs        = 0.8
         maxCHI2        = 4.0
         maxVMR         = 1e-6
         minVMR         = -1e-11
@@ -240,14 +258,11 @@ def main(args):
             maxCHI2        = 10.0
         else:
             maxCHI2        = 2.0
-        maxVMR         = 1e-6
+            maxVMR         = 1e-6
         minVMR         = -1e-10
         dofFlag        = True
         cnvFlag        = True
         validFlag      = True
-        minCO2         = 7.5e21
-        maxCO2         = 10.0e21
-        co2f           = True
 
     if gasName.lower() == 'hno3':
         gasName        = 'HNO3'
@@ -270,7 +285,7 @@ def main(args):
     if gasName.lower() == 'no2':
         gasName        = 'NO2'
         maxCHI2        = 5.0
-        minDOFs        = 0.1
+        minDOFs        = 0.5
         minVMR         = -1e-10
         dofFlag        = True
         cnvFlag        = True
@@ -315,7 +330,8 @@ def main(args):
                  rmsFlg=rmsFlag, tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,
                  szaFlg=szaFlag, validFlg=validFlag,maxCHI2=maxCHI2,
                  minVMR=minVMR,maxVMR=maxVMR,dofFlg=dofFlag,minDOF=minDOFs,
-                 co2Flag=co2Flag,minCO2=minCO2,maxCO2=maxCO2)
+                 co2Flag=co2Flag,minCO2=minCO2,maxCO2=maxCO2,
+                 maxTCTotErr=maxTCTotErr)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.
