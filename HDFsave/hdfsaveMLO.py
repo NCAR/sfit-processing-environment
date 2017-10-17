@@ -32,15 +32,15 @@ from sys import exit
 
 class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
-   def __init__(self,gasNameStr,outputDir,processingSfitVer,location,dType):
+   def __init__(self,gasNameStr,outputDir,processingSfitVer,location, fileVersion, projectID, dType):
       super(HDFsave, self).__init__(gasNameStr)
       self.dType               = dType
       if   dType.lower() == 'float32': self.dTypeStr = 'REAL'
       elif dType.lower() == 'float64': self.dTypeStr = 'DOUBLE'       
       self.outDir              = outputDir
       self.gasName             = gasNameStr     
-      if     self.gasName == 'hcl':    self.gasNameUpper  = 'HCl'
-      elif   self.gasName == 'clono2': self.gasNameUpper = 'ClONO2'
+      if     self.gasName.lower() == 'hcl':    self.gasNameUpper  = 'HCl'
+      elif   self.gasName.lower() == 'clono2': self.gasNameUpper = 'ClONO2'
       else:  self.gasNameUpper  = gasNameStr.upper()
       self.sfitVer             = processingSfitVer
       self.loc                 = location
@@ -48,9 +48,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.mxSclFctVal         = 1E-6                   
       self.mxSclFct2Name       = 'ppmv2'
       self.mxSclFct2Val        = 1E-12
-      self.fver                = '003'
-      if location.lower() == 'thule': self.locID = 'NCAR001'
-      else:                           self.locID = 'NCAR002'
+      self.fver                = fileVersion   #'003'
+      self.projectID           = projectID
+      self.locID               = 'NCAR002'
+      
 
 
    def glblAttrbs(self,fDOI,idate,fdate):
@@ -112,7 +113,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_'+self.fver+'.hdf'
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
       dataStr['FILE_ACCESS']             = 'NDACC'
-      dataStr['FILE_PROJECT_ID']         = ' '
+      dataStr['FILE_PROJECT_ID']         = self.projectID
       #dataStr['FILE_PROJECT_ID']         = 'QA4ECV'   #TEMPORAL
       dataStr['FILE_ASSOCIATION']        = 'NDACC'
       dataStr['FILE_META_VERSION']       = '04R010;CUSTOM'

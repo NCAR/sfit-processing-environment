@@ -1,18 +1,24 @@
-#----------------------------#
-#			Readme
-#----------------------------#
+#--------------------------------------------------------------------------------------------------------------------------------------------
+#			                                                    Readme
+#--------------------------------------------------------------------------------------------------------------------------------------------
 
 Purpose: Log File for any changes related to the python Scripts Eric developed
 
-Created: Auguts, 2017; Ivan Ortega (iortega@ucar.edu)
+Created: August, 2017; Ivan Ortega (iortega@ucar.edu)
  
-#----------------------------#
-
-- Aug 9 2017
-
+#----------------------------
+#Aug 9 2017
+#----------------------------
 The ERAwaterPrf.py was modified to save 6-hourly profiles in the data directory. We assumed the 6-hourly Prfs were created but they were not.
 v66 --> are for 6-hourly ERA profiles
 v4  --> Daily average ERA profiles
 
 The Layer1Mods.py was modified to use the closest in time ERA-Profile
 
+#----------------------------
+#Sep 08 2017
+#----------------------------
+- Sfit4Layer1.py was modified to accept monthly mean profiles generated with WACCM
+- Initially created for CO
+- The WACCMprfMonthlyMean.py is used to create the monthly mean profiles
+- Ini py file now also accepts the waccmMon flag, se for example CO at TAB

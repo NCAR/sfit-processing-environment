@@ -31,7 +31,7 @@ import hdfInitData
 
 class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
-   def __init__(self,gasNameStr,outputDir,processingSfitVer,location,dType):
+   def __init__(self,gasNameStr,outputDir,processingSfitVer,location, fileVersion, projectID, dType):
       super(HDFsave, self).__init__(gasNameStr)
       self.dType               = dType
       if   dType.lower() == 'float32': self.dTypeStr = 'REAL'
@@ -47,9 +47,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.mxSclFctVal         = 1E-6                   
       self.mxSclFct2Name       = 'ppmv2'
       self.mxSclFct2Val        = 1E-12
-      self.fver                = '003'
-      if location.lower() == 'thule': self.locID = 'NCAR001'
-      else:                           self.locID = 'NCAR002'
+      self.fver                = fileVersion   #'003'
+      self.projectID           = projectID
+      self.locID               = 'NCAR001'
+      
 
 
    def glblAttrbs(self,fDOI,idate,fdate):
@@ -111,8 +112,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_'+self.fver+'.hdf'
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
       dataStr['FILE_ACCESS']             = 'NDACC'
-      dataStr['FILE_PROJECT_ID']         = ' '
-      #dataStr['FILE_PROJECT_ID']         = 'QA4ECV'   #TEMPORAL
+      #dataStr['FILE_PROJECT_ID']         = ' '
+      dataStr['FILE_PROJECT_ID']         = 'QA4ECV'   #TEMPORAL
       dataStr['FILE_ASSOCIATION']        = 'NDACC'
       dataStr['FILE_META_VERSION']       = '04R010;CUSTOM'
       
@@ -387,7 +388,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarAprioriName()
       dataStr['VAR_DESCRIPTION']      = 'A priori mixing ratio profile of {}'.format(self.gasNameUpper)
-      dataStr['VAR_NOTES']            = 'The same a priori vertical profile is used for all days in the present datafile and is based on WACCM 1980-2020 output'
+      dataStr['VAR_NOTES']            = 'The same a priori vertical profile is used for all days in the present datafile and is based on WACCM 1980-2020 output. ' +\
+                                        'Except for CO, where changing monthly mean WACCM 1980-2020 are used.'
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr

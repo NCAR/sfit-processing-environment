@@ -84,7 +84,7 @@ def main():
     #-------
     # Inputs
     #-------
-    loc     = 'tab'
+    loc     = 'mlo'
     inPath  = '/ya4/id/' + loc.lower() + '/'     # Input directory
     outPath = '/data1/' + loc.lower() + '/'       # Working directory
 
@@ -93,7 +93,7 @@ def main():
     iday    = 1
 
     fyear   = 2017
-    fmonth  = 7
+    fmonth  = 8
     fday    = 31
 
     #-------------------

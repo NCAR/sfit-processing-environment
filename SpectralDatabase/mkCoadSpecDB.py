@@ -333,7 +333,7 @@ def main(argv):
             if not dayDir == os.getcwd():
                 os.chdir(dayDir)            
             
-            paramList = [DBinputs.inputs['coaddex'],'-S' + DBinputs.inputs['loc'],'-TOPU']
+            paramList = [DBinputs.inputs['coaddex'],'-S' + DBinputs.inputs['loc'],'-TOPU', '-c']
             rtn       = sp.Popen(paramList, stdout=sp.PIPE, stderr=sp.PIPE)
             stdoutCom, stderrCom = rtn.communicate()
             

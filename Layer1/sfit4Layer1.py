@@ -653,12 +653,24 @@ def main(argv):
                         #-------------
                         # Run Refmaker
                         #-------------
+                        if mainInF.inputs['waccmFlg']:
+                            ckDir( mainInF.inputs['WACCMfolder'], logFlg=logFile, exit=True )
+                            waccmFile = mainInF.inputs['WACCMfolder'] + 'WACCMref_V6-'+mnthstr+'.dat'
+
+                        else:
+                            waccmFile = mainInF.inputs['WACCMfile']
+
                         print '*****************************************************'
                         print 'Running REFMKRNCAR for ctl file: %s' % msgstr1
+                        if mainInF.inputs['waccmFlg']:
+                            print 'Using ' + waccmFile + ' WACCM Monthly Profile'
                         print 'Processing spectral observation date: %s' % msgstr2
                         print '*****************************************************'
 
-                        rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMfile'], wrkOutputDir3, \
+                        
+
+
+                        rtn = refMkrNCAR(wrkInputDir2, waccmFile, wrkOutputDir3, \
                                          mainInF.inputs['refMkrLvl'], mainInF.inputs['wVer'], mainInF.inputs['zptFlg'],\
                                          dbFltData_2, spcDBind, logFile)
                         if logFile: 

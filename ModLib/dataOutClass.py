@@ -1281,7 +1281,7 @@ class ReadOutputData(_DateRange):
 
         #retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS','H2O']   # These profiles will always be read
         if rtrvGasList[0].upper() == 'H2O': retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be read
-        else: retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']
+        else: retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']
 
         if not fname: 
             if   retapFlg == 1: fname = 'rprfs.table'
@@ -1801,11 +1801,14 @@ class ReadOutputData(_DateRange):
        #--------------------------
        #Convert SAA to 0.0- North
        #--------------------------
+
         for i, az in enumerate(self.pbp['saa']):
            if az >= 180.0:
                self.pbp['saa'][i] = np.abs(360. - az  - 180.)
            elif az < 180.0:
                self.pbp['saa'][i] = 180.0 + az
+
+
         
         #------------------------
         # Convert to numpy arrays
@@ -2560,7 +2563,7 @@ class PlotData(ReadOutputData):
         if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
         if self.empty: return False
         if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
-        aprPrf[self.PrimaryGas] = np.asarray(self.aprfs[self.PrimaryGas][0,:]) * sclfct
+        aprPrf[self.PrimaryGas] = np.asarray(self.aprfs[self.PrimaryGas]) * sclfct
         rPrf[self.PrimaryGas]   = np.asarray(self.rprfs[self.PrimaryGas]) * sclfct
         rPrfMol                 = np.asarray(self.rprfs[self.PrimaryGas]) * np.asarray(self.rprfs['AIRMASS'])
         if len(self.dirLst) > 1: dates                   = self.rprfs['date'] 
@@ -2618,7 +2621,7 @@ class PlotData(ReadOutputData):
             for gas in nonPgas:
                 if not self.readPrfFlgRet[gas.upper()]: self.readprfs([gas.upper()],retapFlg=1)   # Retrieved Profiles
                 if not self.readPrfFlgApr[gas.upper()]: self.readprfs([gas.upper()],retapFlg=0)   # Apriori Profiles
-                aprPrf[gas.upper()] = np.asarray(self.aprfs[gas.upper()][0,:]) * sclfct
+                aprPrf[gas.upper()] = np.asarray(self.aprfs[gas.upper()]) * sclfct
                 rPrf[gas.upper()]   = np.asarray(self.rprfs[gas.upper()]) * sclfct
                 localGasList.append(gas)
                 
@@ -2636,7 +2639,8 @@ class PlotData(ReadOutputData):
         totClmn = np.delete(totClmn,self.inds)
         rPrfMol = np.delete(rPrfMol,self.inds,axis=0)
         for gas in rPrf:
-            rPrf[gas]  = np.delete(rPrf[gas],self.inds,axis=0)
+            rPrf[gas]    = np.delete(rPrf[gas],self.inds,axis=0)
+            aprPrf[gas]  = np.delete(aprPrf[gas],self.inds,axis=0)
             
         if errFlg:
             rand_err = np.delete(rand_err,self.inds,axis=0)
@@ -2653,8 +2657,11 @@ class PlotData(ReadOutputData):
         # Calculate statistics
         #---------------------
         if len(self.dirLst) > 1:
-            prfMean = {gas:np.mean(rPrf[gas],axis=0) for gas in rPrf}
-            prfSTD  = {gas:np.std(rPrf[gas],axis=0) for gas in rPrf}
+            prfMean    = {gas:np.mean(rPrf[gas],axis=0) for gas in rPrf}
+            prfSTD     = {gas:np.std(rPrf[gas],axis=0) for gas in rPrf}
+
+            aprPrfMean = {gas:np.mean(aprPrf[gas],axis=0) for gas in rPrf}
+            aprPrfSTD  = {gas:np.std(aprPrf[gas],axis=0) for gas in rPrf}
         
         #----------------------------
         # Determine if multiple years
@@ -2662,8 +2669,7 @@ class PlotData(ReadOutputData):
         if len(self.dirLst) > 1:
             years = [ singDate.year for singDate in dates]      # Find years for all date entries
             if len(list(set(years))) > 1: yrsFlg = True         # Determine all unique years
-            else:                         yrsFlg = False 
-
+            else:                         yrsFlg = False
         
         #---------------------------
         # Plot Profiles for each gas
@@ -2676,14 +2682,21 @@ class PlotData(ReadOutputData):
             if len(self.dirLst) > 1:
                 ax1.plot(prfMean[gas],alt,color='k',label=gas+' Retrieved Profile Mean')
                 ax1.fill_betweenx(alt,prfMean[gas]-prfSTD[gas],prfMean[gas]+prfSTD[gas],alpha=0.5,color='0.75')
+
+                ax1.plot(aprPrfMean[gas],alt,color='r',label='A priori')
+                ax1.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.2,color='r')
+               
                 ax2.plot(prfMean[gas],alt,color='k',label=gas+' Retrieved Profile Mean')
-                ax2.fill_betweenx(alt,prfMean[gas]-prfSTD[gas],prfMean[gas]+prfSTD[gas],alpha=0.5,color='0.75')   
+                ax2.fill_betweenx(alt,prfMean[gas]-prfSTD[gas],prfMean[gas]+prfSTD[gas],alpha=0.5,color='0.75')
+
+                ax2.plot(aprPrfMean[gas],alt,color='r',label='A priori')
+                ax2.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.2,color='r')   
             else:
                 ax1.plot(rPrf[gas][0],alt,color='k',label=gas)
                 ax2.plot(rPrf[gas][0],alt,color='k',label=gas)
-                 
-            ax1.plot(aprPrf[gas],alt,color='r',label='A priori')
-            ax2.plot(aprPrf[gas],alt,color='r',label='A priori')
+
+                ax1.plot(aprPrf[gas][0],alt, color='r',label='A priori')
+                ax2.plot(aprPrf[gas][0],alt, color='r',label='A priori')
             
             ax1.grid(True,which='both')
             ax2.grid(True,which='both')
@@ -2733,9 +2746,13 @@ class PlotData(ReadOutputData):
                 for i in range(len(rms)):
                     ax1.plot(rPrf[gas][i,:],alt,linewidth=0.75)
                     ax2.plot(rPrf[gas][i,:],alt,linewidth=0.75)
+
                     
-                ax1.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
-                ax2.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
+                ax1.plot(aprPrfMean[gas],alt,'k--',linewidth=4,label='A priori')
+                ax1.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.25,color='0.75')
+
+                ax2.plot(aprPrfMean[gas],alt,'k--',linewidth=4,label='A priori')
+                ax2.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.25,color='0.75')
                 
                 ax1.set_ylabel('Altitude [km]')
                 ax1.set_xlabel('VMR ['+sclname+']')
@@ -2774,9 +2791,15 @@ class PlotData(ReadOutputData):
                 for i in range(len(sza)):
                     ax1.plot(rPrf[gas][i,:],alt,linewidth=0.75)
                     ax2.plot(rPrf[gas][i,:],alt,linewidth=0.75)
+
+                ax1.plot(aprPrfMean[gas],alt,'k--',linewidth=4,label='A priori')
+                ax1.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.5,color='0.75')
+
+                ax2.plot(aprPrfMean[gas],alt,'k--',linewidth=4,label='A priori')
+                ax2.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.5,color='0.75')
                     
-                ax1.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
-                ax2.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
+                #ax1.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
+                #ax2.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
                 
                 ax1.set_ylabel('Altitude [km]')
                 ax1.set_xlabel('VMR ['+sclname+']')
@@ -2817,8 +2840,14 @@ class PlotData(ReadOutputData):
                     ax1.plot(rPrf[gas][i,:],alt,linewidth=0.75)
                     ax2.plot(rPrf[gas][i,:],alt,linewidth=0.75)
                 
-                ax1.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
-                ax2.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
+                
+                ax1.plot(aprPrfMean[gas],alt,'k--',linewidth=4,label='A priori')
+                ax1.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.5,color='0.75')
+
+                ax2.plot(aprPrfMean[gas],alt,'k--',linewidth=4,label='A priori')
+                ax2.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.5,color='0.75')
+                #ax1.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
+                #ax2.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
                 
                 ax1.set_ylabel('Altitude [km]')
                 ax1.set_xlabel('VMR ['+sclname+']')
@@ -2850,16 +2879,38 @@ class PlotData(ReadOutputData):
                     inds     = np.where(months == m)[0]
                     mnthMean = np.mean(rPrf[gas][inds,:],axis=0)
                     mnthSTD  = np.std(rPrf[gas][inds,:],axis=0)
+
+                    mnthMeanApr = np.mean(aprPrf[gas][inds,:],axis=0)
+                    mnthSTDApr  = np.std(aprPrf[gas][inds,:],axis=0)
+
                 
-                    fig,ax1  = plt.subplots()
+                    fig,(ax1,ax2)  = plt.subplots(1,2,sharey=True)
                     ax1.plot(mnthMean,alt,color='k',label='Monthly Mean Profile, Nobs = '+str(len(inds)))
-                    ax1.fill_betweenx(alt,mnthMean-mnthSTD,mnthMean+mnthSTD,alpha=0.5,color='0.75')  
-                    ax1.plot(aprPrf[gas],alt,color='r',label='A Priori Profile')
-                    ax1.set_title('Month = '+str(m))
+                    ax1.fill_betweenx(alt,mnthMean-mnthSTD,mnthMean+mnthSTD,alpha=0.5,color='0.75')
+
+                    ax1.plot(mnthMeanApr,alt,color='r',label='Monthly Mean A priori Profile')
+                    ax1.fill_betweenx(alt,mnthMeanApr-mnthSTDApr,mnthMeanApr+mnthSTDApr,alpha=0.25,color='r')  
+
+                    ax2.plot(mnthMean,alt,color='k',label='Monthly Mean Profile, Nobs = '+str(len(inds)))
+                    ax2.fill_betweenx(alt,mnthMean-mnthSTD,mnthMean+mnthSTD,alpha=0.5,color='0.75')
+
+                    ax2.plot(mnthMeanApr,alt,color='r',label='Monthly Mean A priori Profile')
+                    ax2.fill_betweenx(alt,mnthMeanApr-mnthSTDApr,mnthMeanApr+mnthSTDApr,alpha=0.25,color='r')    
+                    
+                    #ax1.plot(aprPrf[gas],alt,color='r',label='A Priori Profile')
+
+                    plt.suptitle('Month = '+str(m), fontsize=16)
+                    
+                    #ax1.set_title('Month = '+str(m))
                     ax1.set_ylabel('Altitude [km]')
                     ax1.set_xlabel('VMR ['+sclname+']')    
                     ax1.grid(True,which='both')
                     ax1.legend(prop={'size':9})
+
+                    ax2.set_xlabel('VMR ['+sclname+']')    
+                    ax2.grid(True,which='both')
+                    ax2.legend(prop={'size':9})
+                    ax2.set_xscale('log')
                     
                     if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
                     else:           plt.show(block=False)
@@ -3380,7 +3431,8 @@ class PlotData(ReadOutputData):
         axb.tick_params(axis='x',which='both',labelsize=8)        
 
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-        else:           plt.show(block=False)    
+        else:           plt.show(block=False)
+
 
         #--------------------------------------
         # Plot cumulative sum of DOFs with user 

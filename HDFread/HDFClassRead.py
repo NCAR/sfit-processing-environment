@@ -953,16 +953,17 @@ class ReadHDFData():
 
                 try:
                     data  = hdfid.select(var)
-                    units       = data.units
+                    #units       = data.units
+                    units       = data.VAR_UNITS
                     conv        = data.VAR_SI_CONVERSION.strip().split(';')
 
                     self.HDF.setdefault(var,[]).append(data)
                     self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
-                    self.HDF.setdefault(var+'UNITS',[]).append(units)
+                    self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
                 
                 except Exception as errmsg:
                     print errmsg, ' : ', var
-                    continue
+                    exit()
         #---------------------------------
         #FLATTENED THE ARRAYS
         #---------------------------------

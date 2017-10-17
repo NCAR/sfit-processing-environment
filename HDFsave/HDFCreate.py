@@ -129,7 +129,11 @@ def main(argv):
     #------------------
     if Inputs['pyFlg'] == False:
         ckFile(Inputs['idlFname'], exit=True)
+    #------------------
     
+    #------------------
+    # IMPORT SPECIFIC CLASS AND DEFINE ID IN HDF FILES
+    #------------------
     if Inputs['loc'].lower() == 'tab':
         loc            = 'THULE'
         import hdfsaveTAB as hdfsave
@@ -140,7 +144,6 @@ def main(argv):
         loc            = "BOULDER.COLORADO"
         import hdfsaveFL0 as hdfsave
 
-    sfitVer        = Inputs['sfitVer']                      # This is the version of sfit4 used for the retrievals
     
     for year in years:
     
@@ -161,7 +164,7 @@ def main(argv):
         # specified in GEOMS: http://avdc.gsfc.nasa.gov/index.php?site=1989220925
         #------------------------------------------------------------
         
-        myhdf = hdfsave.HDFsave(Inputs['gasName'],Inputs['outDir'],sfitVer,loc,dType='float32')
+        myhdf = hdfsave.HDFsave(Inputs['gasName'],Inputs['outDir'], Inputs['sfitVer'], loc, Inputs['fileVer'], Inputs['projectID'], dType='float32')
 
         #------------------------------------------------
         # Here we initialize the HDF object with our data

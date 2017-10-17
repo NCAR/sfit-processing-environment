@@ -102,10 +102,10 @@ def main():
     # Date Range of interest
     #-----------------------
     iyear          = 2017
-    imnth          = 1
+    imnth          = 8
     iday           = 1
     fyear          = 2017
-    fmnth          = 12
+    fmnth          = 8
     fday           = 31
 
     #---------------------

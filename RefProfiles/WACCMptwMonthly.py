@@ -1,3 +1,4 @@
+#! /usr/bin/python2.7
 #----------------------------------------------------------------------------------------
 # Name:
 #        WACCMptwMonthly.py
@@ -32,6 +33,7 @@ import datetime as dt
 import numpy as np
 import sys
 import os
+import matplotlib.pyplot as plt
 
 #-------------------------#
 # Define helper functions #
@@ -44,7 +46,12 @@ def ckFile(fName,logFlg=False,exit=False):
         if logFlg: logFlg.error('Unable to find file: %s' % fName)
         if exit: sys.exit()
         return False
-    else: return True    
+    else: return True
+
+def segmnt(seq,n):
+    '''Yeilds successive n-sized segments from seq'''
+    for i in xrange(0,len(seq),n):
+        yield seq[i:i+n] 
       
 
 
@@ -57,11 +64,11 @@ def ckFile(fName,logFlg=False,exit=False):
                             
                             
 def main():
-    station    = 'Boulder'
-    inputDir   = '/data/Campaign/FL0/waccm/Boulder.V6/'
-    outputFile = '/data/Campaign/FL0/waccm/WACCM_pTW-meanV6-TEST.FL0'
-    allFiles   = ['T.refprfs','P.refprfs','H2O.refprfs']
-    typeList   = ['Temperature','Pressure','Water']
+    station    = 'Thule'
+    inputDir   = '/data/Campaign/TAB/waccm/Thule.V6/'
+    outputFile = '/data/Campaign/TAB/waccm/WACCM_pTW-meanV6-TEST.TAB'
+    allFiles   = ['T.refprfs','P.refprfs','H2O.refprfs', 'CO.refprfs']
+    typeList   = ['Temperature','Pressure','Water', 'CO']
 
 
     #-----------------
@@ -123,6 +130,46 @@ def main():
             strformat = ''.join(strformat).lstrip() + '\n'  
             for indW in range(0,len(alt)):
                 fout.write(strformat.format(alt[indW],*data_mean[indW,:]))
+
+
+            fig, ax = plt.subplots()
+
+            with open('/data/Campaign/TAB/waccm/'+typeList[indF]+'_MonthlyMean.TAB','w') as Dout:
+
+                for mnth in range(1,13):
+                    Dout.write('Month '+ str(mnth)+' '+ typeList[indF]+' WACCM V4 CESM REFC1.3 1980-2020 CCMVal/CCMI, 2012\n')
+                    d2p = data_mean[:, mnth-1]
+                    d2p[:] = np.flipud(d2p) 
+
+            
+                    for row in segmnt(d2p, 5):
+                        strformat = ','.join('{:>12.3E}' for i in row) + ', \n'
+                        Dout.write(strformat.format(*row))
+
+
+                    ax.plot(d2p, np.flipud(alt), marker ='o', markersize=6, label=str(mnth))
+
+            ax.xaxis.set_tick_params(which='major',labelsize=12)
+            ax.set_ylabel('Altitude [km]', fontsize=16)
+            ax.set_xlabel('Mixing Ratio ' + typeList[indF], fontsize=16, color='b')
+            ax.tick_params(axis='both', which='major', labelsize=14)
+            ax.grid(True)
+            ax.set_xscale('log')
+            ax.legend(prop={'size':12})
+            
+
+            #-----------------------------------------------
+            #plots
+            #-----------------------------------------------
+            
+            
+            fig.subplots_adjust(left = 0.12, bottom=0.1, top=0.9, right = 0.95)
+          
+            plt.show(block= False)
+            user_input = raw_input('Press any key to exit >>> ')
+            #sys.exit()   
+             
+
     
 if __name__ == "__main__":
     main()

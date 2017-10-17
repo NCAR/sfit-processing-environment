@@ -34,13 +34,13 @@ loc = 'tab'                                    # Three letter station identifier
 #----------------------------------
 # Starting
 iyear = 2017               # Year
-imnth = 1                 # Month
-iday  = 1                  # Day
+imnth = 7                 # Month
+iday  = 21                  # Day
 
 # Ending
 fyear = 2017               # Year
 fmnth = 7                 # Month
-fday  = 31                # Day
+fday  = 21                # Day
 
 #------
 # Flags
@@ -56,7 +56,8 @@ mvOld    = False           # Flag to rename previous water profile files. (Files
 #NCEPDir     = '/Users/ebaumer/Data/TestBed2/'
 #outBaseDir  = '/Users/ebaumer/Data/TestBed2/'
 NCEPDir    = '/data/Campaign/' + loc.upper() + '/NCEP_nmc/'                                # Directory of NCEP nmc data
-outBaseDir = '/data1/' + loc.lower() + '/'                                                 # Base directory for output
+outBaseDir = '/data1/' + loc.lower() + '/'
+#outBaseDir = '/data1/iortega/WYO/'                                                 # Base directory for output
 
 
 #------
@@ -64,6 +65,7 @@ outBaseDir = '/data1/' + loc.lower() + '/'                                      
 #------
 #WACCMfile = '/Users/ebaumer/Data/TestBed2/WACCM_pTW-meanV5.MLO'
 WACCMfile = '/data/Campaign/' + loc.upper() + '/waccm/WACCM_pTW-meanV6.' + loc.upper()     # WACCM monthly mean file
+#WACCMfile = '/data/Campaign/FL0/waccm/WACCM_pTW-meanV6.FL0'
 
 
 

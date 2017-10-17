@@ -107,12 +107,12 @@ def main():
     #-----------------------
     # Date Range of interest
     #-----------------------
-    iyear          = 2014
-    imnth          = 1
+    iyear          = 2016
+    imnth          = 5
     iday           = 1
-    fyear          = 2014
-    fmnth          = 12
-    fday           = 31
+    fyear          = 2016
+    fmnth          = 6
+    fday           = 30
     
     #-----------------------
     # File name for log file
@@ -130,7 +130,7 @@ def main():
     # ERA Reanalysis data directory
     #------------------------------
     #ERAdir = '/Volumes/data1/ebaumer/ERAdata/'
-    ERAdir = '/data1/ancillary_data/ERAdata/'
+    ERAdir = '/data1/ancillary_data/ERAdata/wind/'
 
         
     #----------------------------
@@ -159,10 +159,17 @@ def main():
         #------------------------------
         # Name of ERA Interim GRIB file
         #------------------------------
-        fName1 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'00'
-        fName2 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'06'
-        fName3 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'12'
-        fName4 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'18'
+        #fName1 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'00'
+        #fName2 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'06'
+        #fName3 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'12'
+        #fName4 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'18'
+
+        fName1 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'00'
+        fName2 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'06'
+        fName3 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'12'
+        fName4 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'18'
+
+
 
         ckFile(fName1, exitFlg=True)
         ckFile(fName2, exitFlg=True)

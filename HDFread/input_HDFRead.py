@@ -19,9 +19,9 @@
 #locID      = 'paris'                                   # LOCATION ID IN THE HDF FILE
 #gasName    = 'ocs'                                        # NAME OF GAS
 
-dataDir    = '/data1/ebaumer/tab/nh3/HDF_Current_v2/'             # DIRECTORY
+dataDir    = '/data1/ebaumer/tab/co/HDF_Current_B3/'             # DIRECTORY
 locID      = 'thule'                                   # LOCATION ID IN THE HDF FILE
-gasName    = 'nh3'                                         # NAME OF GAS
+gasName    = 'co'                                         # NAME OF GAS
 
 
 #------
@@ -52,7 +52,7 @@ sclfctName = 'ppbv'                 # Name of scale factor for labeling plots
 iyear      = 1999	
 imonth     = 1
 iday       = 1
-fyear      = 2016
+fyear      = 2017
 fmonth     = 12
 fday       = 31
 

@@ -71,12 +71,12 @@ def main():
     #------------------------------
     # Starting 
     iyear = 2017               # Year
-    imnth = 1                  # Month
+    imnth = 8                  # Month
     iday  = 1                  # Day
     
     # Ending
     fyear = 2017               # Year
-    fmnth = 7                 # Month
+    fmnth = 8                 # Month
     fday  = 31                 # Day
     
     #-------------------
@@ -96,7 +96,7 @@ def main():
         #------------------------
         # Name of house data file
         #------------------------
-        houseFileNew = outDataDir + statstr.upper() + '_HouseData_' + str(indvYear) + '.dat'
+        houseFileNew = outDataDir + statstr.upper() + '_HouseData_' + str(indvYear) + '2.dat'
         
         #---------------------------------------------------
         # Determine if yearly house data file already exists

@@ -92,7 +92,7 @@ def main():
     #---------
     # Location
     #---------
-    loc = 'tab'
+    loc = 'fl0'
     #loc = 'mlo'
 
     #------------------------------------
@@ -117,11 +117,11 @@ def main():
     # Date Range of interest
     #-----------------------
     iyear          = 2017
-    imnth          = 1
-    iday           = 1
+    imnth          = 8
+    iday           = 21
     fyear          = 2017
-    fmnth          = 7
-    fday           = 31
+    fmnth          = 8
+    fday           = 21
 
     #-------------------------------
     # NCEP Reanalysis data directory
@@ -133,6 +133,7 @@ def main():
     # Data Directory
     #---------------
     dataDir  = '/data1/'+loc.lower()+'/'
+    #dataDir  = '/data1/iortega/WYO/'
 
 
     #-------------------------
@@ -188,6 +189,9 @@ def main():
         sLat = 40.4
         sLon = 254.76                # 105.24 W = (360 - 105.24) = 254.76 E
 
+        ###sLat = 42.73
+        ###sLon = 253.68               #WYOBA
+
 
     #----------------------------
     # File and directory checking
@@ -219,6 +223,8 @@ def main():
     #--------------------------------------------
     dirLst = []
     for drs in os.walk(dataDir).next()[1]:
+
+        print drs
 
         #-------------------------------------------
         # Test directory to make sure it is a number
