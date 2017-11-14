@@ -847,6 +847,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         return False    # Critical file, if missing terminate program    
 
     sa = np.array( [ [ float(x) for x in row.split()] for row in lines[3:] ] )
+    sa_syst=np.zeros(sa.shape) #create an empty analogue of the sa matrix for systematic contributions
 
     for gas in ctlFileVars.inputs['gas.profile.list']:
         sbinputforsa=False
@@ -863,10 +864,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             #get the Sb for this gas
             sbcorkey=sbkey.replace('.random','.correlation.width')
             #only take correlation into account if random and if it is a profile (gas or temperature) in KB!!
-            Sb=createCovar(SbDict[sbkey],**(dict(sbcorkey=sbcorkey,z=z,Sbctldict=SbDict))) #if temperature...need to check rel/abs unit TODOD
+            Sb=createCovar(SbDict[sbkey],**(dict(sbcorkey=sbcorkey,z=z,Sbctldict=SbDict))) #if temperature...need to check rel/abs unit TODO
+            Sb_syst=createCovar(SbDict[sbkey.replace('.random','.systematic')]) #if temperature...need to check rel/abs unit TODO
             if np.array_equal(Sb,None): print 'Error building covariance matrix for %s'%sbcorkey;raise ValueError('Bad setting for %s'%sbcorkey)
+            if np.array_equal(Sb_syst,None): print 'Error building systematic covariance matrix for %s'%sbcorkey;raise ValueError('Bad setting for %s'%sbcorkey)
             #fill the sb in the inintial sa
             sa[np.meshgrid(sa_idx,sa_idx,indexing='ij')]=Sb
+            sa_syst[np.meshgrid(sa_idx,sa_idx,indexing='ij')]=Sb_syst
 
     
     #-----------------------------------------------------
@@ -1030,9 +1034,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #---------------------------------
     mat1               = sa[x_start:x_stop,x_start:x_stop]
     mat2               = AKx - np.identity( AKx.shape[0] )
-    #print 'systematic smoothing',
+    #print 'systematic smoothing'
     S_ran['smoothing'] = calcCoVar(mat1,mat2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
-    #TODO: mat1 is taken as the regularization matrix... better to use the users settings... not done yet, becuase smoothing is not important..
+    S_sys['smoothing'] = calcCoVar(sa_syst[x_start:x_stop,x_start:x_stop],mat2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
+   
 
     #----------------------------------
     # Calculate Measurement error using 
