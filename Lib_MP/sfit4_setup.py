@@ -112,7 +112,7 @@ class reference_prf:
 #             vmr = np.interp(self.z[::-1],np.array(x.Z[::-1]), np.array(x.rt_vmr[n][::-1]))
 #             self.vmr[ind,:] = vmr[::-1]
 
-    def read_reference_prf(self, reffile):
+    def read_reference_prf(self, reffile, nopt=False):
         reff = rn.read_from_file(reffile)
         tmp_nr = reff.next(1).pop(0)
         nr_layers = reff.next(1).pop(0)
@@ -121,10 +121,12 @@ class reference_prf:
         self.nr_gas = nr_gas
         reff.skipline(1)
         self.z = np.array(reff.next(nr_layers))
-        reff.skipline(1)
-        self.p = np.array(reff.next(nr_layers))
-        reff.skipline(1)
-        self.t = np.array(reff.next(nr_layers))
+        #        header = reff.next(1)
+        if not nopt:
+            reff.skipline(1)
+            self.p = np.array(reff.next(nr_layers))
+            reff.skipline(1)
+            self.t = np.array(reff.next(nr_layers))
         
         self.gas_nr = np.zeros(nr_gas)
         self.gasname = []
@@ -132,13 +134,14 @@ class reference_prf:
         self.vmr = np.zeros((nr_gas, nr_layers))
         
         for n in range(0,nr_gas):
-#            pdb.set_trace()
+#            import ipdb
+#            ipdb.set_trace()
             self.gas_nr[n] = reff.next(1).pop(0)
             self.gasname.extend(reff.next(1))
-#            self.notes.extend(reff.get_line().join(''))
-            reff.skip_reminder_of_line()
+            self.notes.append(reff.get_line())
+#            reff.skip_reminder_of_line()
             self.vmr[n,0:nr_layers] = np.array(reff.next(nr_layers))
-            reff.skip_reminder_of_line()
+#            reff.skip_reminder_of_line()
 
         del reff
         
@@ -152,7 +155,7 @@ class reference_prf:
         return(list(vmr))
 
 
-    def write_reference_prf(self, prffile):
+    def write_reference_prf(self, prffile, nopt=False):
         
         fid = open(prffile, 'w')
         line = '%5d%6d%6d\n' % (1,self.nr_layers,self.nr_gas)
@@ -162,16 +165,17 @@ class reference_prf:
         for n in range(0,self.nr_layers,5):
             line = string.join(map (lambda x:'%11.3e,'%x, self.z[n:np.min((n+5,self.nr_layers))]))
             fid.write(' '+line+'\n')
-        line = '    PRESSURE\n'
-        fid.write(line)
-        for n in range(0,self.nr_layers,5):
-            line = string.join(map (lambda x:'%11.3e,'%x, self.p[n:np.min((n+5,self.nr_layers))]))
-            fid.write(' '+line+'\n')
-        line = '    TEMPERATURE\n'
-        fid.write(line)
-        for n in range(0,self.nr_layers,5):
-            line = string.join(map (lambda x:'%11.3e,'%x, self.t[n:np.min((n+5,self.nr_layers))]))
-            fid.write(' '+line+'\n')
+        if not nopt:
+            line = '    PRESSURE\n'
+            fid.write(line)
+            for n in range(0,self.nr_layers,5):
+                line = string.join(map (lambda x:'%11.3e,'%x, self.p[n:np.min((n+5,self.nr_layers))]))
+                fid.write(' '+line+'\n')
+            line = '    TEMPERATURE\n'
+            fid.write(line)
+            for n in range(0,self.nr_layers,5):
+                line = string.join(map (lambda x:'%11.3e,'%x, self.t[n:np.min((n+5,self.nr_layers))]))
+                fid.write(' '+line+'\n')
 
         for gas in range(0,self.nr_gas):
             line = '%5d%8s %s' %(self.gas[gas],self.gasname[gas],self.notes[gas])
@@ -190,7 +194,7 @@ class reference_prf:
         gas_default = ['H2O',     'CO2',     'O3',     'N2O',     'CO',     
                        'CH4',     'O2',      'NO',     'SO2',     'NO2',      
                        'NH3',     'HNO3',    'OH',     'HF',      'HCL',     
-                       'HBR',     'HI',      'CLO',    'OCS',     'H2CO',     
+                       'HBR',     'HI',      'CLO',    'OCS',     'CH2O',     
                        'HOCL',    'HO2',     'H2O2',   'HONO',    'HO2NO2',  
                        'N2O5',    'CLONO2',  'HCN',    'CH3F',    'CH3CL',    
                        'CF4',     'CCL2F2',  'CCL3F',  'CH3CCL3', 'CCL4',    
@@ -229,6 +233,8 @@ class reference_prf:
         for nr in range(0,self.nr_gas):
             waccm_file = '%s/%s.txt'%(direc,gas_default[nr])
             self.gas_nr[nr] = nr + 1
+            if gas_default[nr] == 'CH2O':
+                gas_default[nr] = 'H2CO'
             self.gasname.append(gas_default[nr])
             self.notes.append('created by sfit4_setup')
             if os.path.exists(waccm_file):
@@ -241,7 +247,7 @@ class reference_prf:
                     self.vmr[nr,0:self.nr_layers] = defref.get_gas_from_refprofile(gas_default[nr], z=self.z)
                     self.notes[-1] = 'copied from default.ref'
                 else:
-                    self.notes[-1] = 'created by sfit4_setup'
+                    self.notes[-1] = 'create by sfit4_setup'
 
     def load_waccmfile(self, filename):
         # loads the second block formatted for reference.prf from the respective file

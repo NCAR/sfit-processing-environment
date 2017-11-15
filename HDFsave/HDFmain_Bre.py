@@ -67,7 +67,7 @@ def main(args):
     maxTCTotErr    = 9e99
     granularity    = 'yearly'
     
-    if loc1.lower() == 'bre':
+    if loc1.lower() == 'bre' or loc1.lower() == 'bremen':
         loc            = 'BREMEN'
         source         = 'IUP001'
         attribute_file = os.path.join(script_dir, 'bremen_attr.txt.%s'%quality)
@@ -91,10 +91,30 @@ def main(args):
             source         = 'AWI019'
         else:
             source         = 'AWI028'
-    if loc1.lower() == 'jfj':
+    elif loc1.lower() == 'ispra':
+        loc = 'ISPRA'
+        source        = 'iup003'
+        attribute_file = os.path.join(script_dir, 'bremen_attr.txt.%s'%quality)
+    elif loc1.lower() == 'jfj':
         loc            = 'Jungfraujoch'
         source         = 'ULG002'
         attribute_file = os.path.join(script_dir, 'jungfraujoch_final.txt')
+
+
+    if gasName.lower() == 'nh3':
+        gasName        = 'NH3'
+        maxSZA         = 90.0
+        maxCHI2        = 50.0
+        minVMR         = -1e-9
+        minDOFs        = 0.8
+        rmsFlag        = True
+        tcFlag         = False
+        pcFlag         = False
+        cnvFlag        = True
+        szaFlag        = True
+        validFlag      = True
+
+
 
     if gasName.lower() == 'o3':
         gasName        = 'O3'
@@ -195,19 +215,21 @@ def main(args):
         maxVMR         = 5e-8
         minVMR         = -1e-9
 
-    if gasName.lower() == 'ccl2f2': # CFC-12
-        gasName        = 'CCl2F2'
+    if gasName.lower() == 'ccl2f2' or gasName.lower() == 'cfc12' : # CFC-12
+        gasName        = 'CFC12'
+        tcFlag         = False
         tcFlag         = False
         minDOFs        = 1.0
         maxCHI2        = 20.0
         maxVMR         = 3e-9
         minVMR         = -1e-10
         minCO2         = 1e22
-        maxCO2         = 10e22
+        maxCO2         = 2e23
 
-    if gasName.lower() == 'chf2cl': # CFC-12
-        gasName        = 'CHF2Cl'
+    if gasName.lower() == 'chf2cl' or gasName.lower() == 'cfc22': # CFC-22
+        gasName        = 'CFC22'
         tcFlag         = False
+        pcFlag         = False
         minDOFs        = 1.0
         maxCHI2        = 20.0
         maxVMR         = 3e-9
@@ -215,13 +237,14 @@ def main(args):
         minCO2         = 1e22
         maxCO2         = 10e22
         
-    if gasName.lower() == 'ccl3f': # CFC-12
-        gasName        = 'CCl3F'
+    if gasName.lower() == 'ccl3f' or gasName.lower() == 'cfc11': # CFC-11
+        gasName        = 'CFC11'
         tcFlag         = False
+        pcFlag         = False
         minDOFs        = 1.0
         maxCHI2        = 20.0
         maxVMR         = 3e-9
-        minVMR         = -1e-10
+        minVMR         = -2e-10
         minCO2         = 1e22
         maxCO2         = 10e22
 

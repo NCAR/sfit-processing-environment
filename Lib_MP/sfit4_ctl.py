@@ -5,6 +5,7 @@ class sfit4_ctl:
     def __init(self):
         pass
 
+
     def read_ctl_file(self, ctlfile):
 
         fid = open(ctlfile, 'r')
