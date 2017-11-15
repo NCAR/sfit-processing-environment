@@ -55,24 +55,32 @@ class reference_prf:
         files = os.listdir(refdir)
         files.sort()
 
+        self.z = z
         self.nr_gas = len(files)
         self.nr_layers = z.size
-        self.nr_gas=np.zeros(self.nr_gas)
+        self.gas=np.zeros(self.nr_gas)
         self.gasname = []
+        self.notes = []
         self.vmr = np.zeros((self.nr_gas, self.nr_layers))
 
         for file in files:
             if os.path.isdir(file):
                 continue
-            t = np.loadtxt(file)
+            t = np.loadtxt(refdir+'/'+file)
             nr_gas = string.atoi(file[0:2])
-            self.nr_gas[nr_gas] = nr_gas
-            self.gasname.extend(file[3:5])
-            self.vmr[nr_gas,:] = np.interp(t[:,0], t[:,1], z)
+            self.gas[nr_gas-1] = nr_gas
+            self.gasname.append(file[3:].rstrip())
+            self.notes.append('created by sfit4_setup.py')            
+            if not np.all(np.diff(t[:,0]) > 0):
+                t = np.flipud(t)
+            self.vmr[nr_gas-1,:] = np.interp(z, t[:,0], t[:,1])
 
     def insert_pt(self, zpt):
         # interpolates the in columns 2 and 3 of zpt given pressure and temperature
         # to the grid used here
+
+        if not np.all(np.diff(zpt[:,0]) > 0):
+            zpt = np.flipud(zpt)
         self.t = np.interp(self.z, zpt[:,0], zpt[:,2])
         self.p = np.exp(np.interp(self.z, zpt[:,0], np.log(zpt[:,1])))
     
@@ -166,7 +174,7 @@ class reference_prf:
             fid.write(' '+line+'\n')
 
         for gas in range(0,self.nr_gas):
-            line = '%5d%8s %s' %(self.gas_nr[gas],self.gasname[gas],self.notes[gas])
+            line = '%5d%8s %s' %(self.gas[gas],self.gasname[gas],self.notes[gas])
             fid.write(line+'\n')
             for n in range(0,self.nr_layers,5):
                 line = string.join(map (lambda x:'%11.3e,'%x, 

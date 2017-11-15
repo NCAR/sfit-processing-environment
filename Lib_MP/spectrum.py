@@ -117,6 +117,7 @@ class spectrum:
         fid.close()
 
     def plot_spectrum(self):
-        f = plt.figure()
+        f = plt.figure('Spectrum')
+        f.clf()
         plt.plot(self.nu[0], self.spectrum[0])
         f.show()
