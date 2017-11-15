@@ -40,6 +40,8 @@ class load_tmph5:
                      'iter':'iter',
                      'itmx':'itmx',
                      'avk_vmr':'avk_vmr',
+                     'avk_pcol':'avk_col',
+                     'avk_col':'',
                      'gasnames':'gasnames'}
 
         h5f = h5.File(filename)
@@ -65,9 +67,12 @@ class load_tmph5:
 
         if 'HDO' in igasnames:
             self.col_hdo = h5f.root.icol_rt[igasnames.index('HDO')-1,:]
-
+        self.get_column_avk()
+            
         h5f.close()
 
+
+        
 
     def valid(self, ind):
         # keeps only entries which are in ind. This may be used to 
@@ -151,6 +156,10 @@ class load_tmph5:
         self.avk_vmr_mean = avk_vmr_mean.copy()
         self.Z = Z
 
+    def get_column_avk(self):
+        self.avk_col = np.sum(self.avk_pcol,axis=1)
+
+        
     def get_partial_columns(self,zrange, apriori=False):
         ind1 = np.where(np.all((self.Z > zrange[0],self.Z < zrange[1]),axis=0))[0]
         if apriori:

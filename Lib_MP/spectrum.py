@@ -105,10 +105,13 @@ class spectrum:
             fid.write(dt.num2date(self.meas_date[nr]).strftime('%Y %d %d %H %M %S')+'\n')
             fid.write(self.comment[nr]+'\n')
 
-            fid.write('%.10f %.10f %.10f %d \n'% 
-                      (self.nu_start[nr], self.nu_stop[nr], self.nu_res[nr], self.nr_nu[nr]))
+            res = np.abs(self.nu[nr][0] - self.nu[nr][-1])/(self.nu[nr].size-1)
+            nr_sp = self.nu[nr].size
+            print self.nu[nr][0], self.nu[nr][-1], res, nr_sp
+            fid.write('%.10f %.10f %.20f %d \n'% 
+                      (self.nu[nr][0], self.nu[nr][-1], res, nr_sp))
 
-            for n in range(0,self.nr_nu[nr]):
+            for n in range(0,nr_sp):
                 fid.write('%.6f\n'%self.spectrum[nr][n])
 
         fid.close()

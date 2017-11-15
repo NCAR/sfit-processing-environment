@@ -352,6 +352,10 @@ class gasspectra:
             files.extend(glob.glob(direc + '/spc.' + fn + '*'))
         files.extend(glob.glob(direc + '/spc.all*'))
         files.extend(glob.glob(direc + '/spc.REST*'))
+        if os.path.exists(direc+'/spc.CON.01.01.final'):
+            files.extend(glob.glob(direc + '/spc.CON*'))
+        if os.path.exists(direc+'/spc.MTCKD.01.01.final'):
+            files.extend(glob.glob(direc + '/spc.MTCKD*'))
         # Order gas files by target, interfering, ALL, REST 
         for ff in files:
             ascf = rn.read_from_file(ff)
