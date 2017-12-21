@@ -963,7 +963,7 @@ class ReadHDFData():
                 
                 except Exception as errmsg:
                     print errmsg, ' : ', var
-                    exit()
+                    #exit()
         #---------------------------------
         #FLATTENED THE ARRAYS
         #---------------------------------

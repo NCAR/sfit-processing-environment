@@ -3497,18 +3497,18 @@ class PlotData(ReadOutputData):
                 if 'Total random uncertainty' in k: randErrs[k] = np.array(self.error[k])
 
 
-            print '***********************'
-            print '   Mean Total Errors   '
-            print '***********************'
-            tempKeys.sort()
+            # print '***********************'
+            # print '   Mean Total Errors   '
+            # print '***********************'
+            # tempKeys.sort()
 
-            ind = np.where(np.asarray(self.error['Measurement error (Sm)']) < 300.0)[0]
+            # ind = np.where(np.asarray(self.error['Measurement error (Sm)']) < 300.0)[0]
     
-            for k in tempKeys: 
-                if not ('Primary gas') in k:
-                    if not ('date') in k: 
+            # for k in tempKeys: 
+            #     if not ('Primary gas') in k:
+            #         if not ('date') in k: 
                         
-                        print '{:50s}  = {:15.3E}'.format(k, np.mean(np.array(self.error[k])[ind]))
+            #             print '{:50s}  = {:15.3E}'.format(k, np.mean(np.array(self.error[k])[ind]))
         
         #--------------------
         # Call to filter data

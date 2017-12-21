@@ -92,7 +92,7 @@ def main():
     #---------
     # Location
     #---------
-    loc = 'fl0'
+    loc = 'tab'
     #loc = 'mlo'
 
     #------------------------------------
@@ -117,11 +117,11 @@ def main():
     # Date Range of interest
     #-----------------------
     iyear          = 2017
-    imnth          = 8
-    iday           = 21
+    imnth          = 9
+    iday           = 1
     fyear          = 2017
-    fmnth          = 8
-    fday           = 21
+    fmnth          = 12
+    fday           = 31
 
     #-------------------------------
     # NCEP Reanalysis data directory
@@ -223,8 +223,6 @@ def main():
     #--------------------------------------------
     dirLst = []
     for drs in os.walk(dataDir).next()[1]:
-
-        print drs
 
         #-------------------------------------------
         # Test directory to make sure it is a number

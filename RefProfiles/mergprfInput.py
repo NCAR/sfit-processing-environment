@@ -34,13 +34,13 @@ loc = 'tab'                                    # Three letter station identifier
 #----------------------------------
 # Starting
 iyear = 2017               # Year
-imnth = 7                 # Month
-iday  = 21                  # Day
+imnth = 9                 # Month
+iday  = 1                  # Day
 
 # Ending
 fyear = 2017               # Year
-fmnth = 7                 # Month
-fday  = 21                # Day
+fmnth = 12                 # Month
+fday  = 31                # Day
 
 #------
 # Flags

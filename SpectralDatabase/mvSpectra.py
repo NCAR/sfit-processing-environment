@@ -21,7 +21,7 @@ import sys
 import os
 from os import walk
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, isdir
 import shutil
 import datetime as dt
 import DateRange as dr
@@ -93,8 +93,8 @@ def main():
     iday    = 1
 
     fyear   = 2017
-    fmonth  = 8
-    fday    = 31
+    fmonth  = 12
+    fday    = 4
 
     #-------------------
     # Call to date class
@@ -127,19 +127,40 @@ def main():
         # Check if output directory exists
         #---------------------------------
         ckDirMk(outDir)
-            
+
         #-----------------------------------------
         # Get a list of files from input directory
         #-----------------------------------------
-        fnames = [ f for f in listdir(inDir) if ( isfile(join(inDir,f)) and not f.startswith('.') ) ]
+        #fnames = [ f for f in listdir(inDir) if ( isfile(join(inDir,f)) and not f.startswith('.') ) ]
+        fnames = [ f for f in listdir(inDir) if (join(inDir,f) and not f.startswith('.') ) ]
         
         #----------------------------------------------------
         # Copy files from input directory to output directory
         #----------------------------------------------------
         for f in fnames:
-            try: shutil.copy(join(inDir,f),join(outDir,f))
-            except IOError: print 'Unable to move file: {} to {}'.format(join(inDir,f),join(outDir,f))
-            os.chmod(join(outDir,f), 0o766)
+
+            #----------------------------------------------------
+            #Copy Folders, i.e. deleted folder
+            #----------------------------------------------------
+            
+            if isdir(join(inDir,f)):
+                ckDirMk(join(outDir,f))
+
+                fnamesDel = [ k for k in listdir(join(inDir,f)) if (join(join(inDir,k),k) and not k.startswith('.') ) ]
+
+                for k in fnamesDel:
+                    shutil.copy(join(join(inDir,f),k),join(join(outDir,f),k))
+                    os.chmod(join(join(outDir,f),k), 0o766)
+
+            #----------------------------------------------------
+            #Copy files
+            #----------------------------------------------------
+
+            else:  
+ 
+                try: shutil.copy(join(inDir,f),join(outDir,f))
+                except IOError: print 'Unable to move file: {} to {}'.format(join(inDir,f),join(outDir,f))
+                os.chmod(join(outDir,f), 0o766)
 
 if __name__ == "__main__":
     main()

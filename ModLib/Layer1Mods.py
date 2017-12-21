@@ -65,6 +65,10 @@ import itertools         as it
 import printStatmnts     as ps
 import datetime          as dt
 
+from scipy import interpolate
+
+import matplotlib.pyplot as plt
+
 
                                 #--------------------------#
                                 #                          #
@@ -350,6 +354,7 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
     print 'Using water file: {}'.format(waterFile)
     print '\n'
 
+
     #----------------------------------
     # Concate ZPT, water, and WACCM  
     # profiles to produce reference.prf
@@ -488,8 +493,156 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
     with open( refFile, 'w' ) as fout:
         for line in lines:
             fout.write(line)
+    
+    #-------------------------#
+    #Auto-Update isotope Prf in the isotope.input --> Initially created and tested for HDO at MLO
+    #-------------------------#
+    isotopePrep(refFile)
+    
 
-    return True    
+    return True
+
+                        #-------------------------#
+                        #                         #
+                        #    -- isotopePrep --     #
+                        #                         #
+                        #-------------------------#    
+
+def isotopePrep(refFile):
+
+    print '*****************************************************'
+    print                'Running isotopePrep'
+    print '*****************************************************'
+
+    parms   = ['ALTITUDE', 'H2O']
+    refPrf  = {}
+
+    with open(refFile,'r') as fopen: lines = fopen.readlines()
+
+    #----------------------------------------
+    # Get Altitude, Pressure, and Temperature
+    # from reference.prf file
+    #----------------------------------------
+    nlyrs  = int(lines[0].strip().split()[1])
+    nlines = int(np.ceil(nlyrs/5.0))
+        
+    for ind,line in enumerate(lines):
+        if any(p in line.strip().split() for p in parms):
+            val = [x for x in parms if x in line][0]
+            refPrf.setdefault(val,[]).append([float(x[:-1]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
+
+    for p in parms:
+        refPrf[p] = np.asarray(refPrf[p])
+
+    #--------------------------------------
+    # Un-nest numpy arrays in parm dictionary
+    #--------------------------------------
+    for k in parms: refPrf[k] = refPrf[k][0]   
+
+    #--------------
+    # Read dD - Matthias
+    #--------------
+    dDFile='/data1/ebaumer/mlo/hdo/dD_CRprior_ext.txt'
+
+    with open(dDFile, 'r' ) as fopen:
+        lines = fopen.readlines()
+
+    altdD     = np.array([[float(x) for x in row.split()[0:1]] for row in lines[1:]])
+    dDPrf     = np.array([[float(x) for x in row.split()[1:2]] for row in lines[1:]])
+
+    dDPrf = np.flipud(dDPrf.flatten())
+    altdD = np.flipud(altdD.flatten())
+
+    #--------------
+    # Read H2O - Matthias
+    #--------------
+    wpFile='/data1/ebaumer/mlo/hdo/H2O_CRprior_ext.txt'
+
+    with open(wpFile, 'r' ) as fopen:
+        lines = fopen.readlines()
+
+    altwp     = np.array([[float(x) for x in row.split()[0:1]] for row in lines[1:]])
+    wpPrf      = np.array([[float(x) for x in row.split()[1:2]] for row in lines[1:]])
+   
+    wpPrf = np.flipud(wpPrf.flatten())
+    altwp = np.flipud(altwp.flatten())
+
+    #--------------------------------------
+    # Interpolate dDPrf to Ref Prf Altitude
+    #--------------------------------------
+
+    dDPrfInt  = interpolate.interp1d(altdD, dDPrf, bounds_error=False, fill_value=(dDPrf[-1], dDPrf[0]))(refPrf[parms[0]])
+    wpPrfInt  = interpolate.interp1d(altwp, wpPrf, bounds_error=False, fill_value=(dDPrf[-1], dDPrf[0]))(refPrf[parms[0]])*1e-6
+
+    #--------------------------------------
+    # Calculate HDO Prf
+    #--------------------------------------
+    hdoPrf_1 = (3.1152e-4)*(wpPrfInt)*( (dDPrfInt/1000.0) + 1)
+    hdoPrf_1 = hdoPrf_1/3.107e-4
+
+    hdoPrf_2 = (3.1152e-4)*(refPrf[parms[1]])*( (dDPrfInt/1000.0) + 1)
+    hdoPrf_2 = hdoPrf_2/3.107e-4
+
+    
+    isoFile = '/data1/ebaumer/mlo/hdo/x.hdo/isotope.input2'
+
+    with open(isoFile, 'r+' ) as fout:
+        lines    = fout.readlines()
+        
+        nisot    = int(lines[0].split()[0])
+        nlyrs    = int(lines[0].split()[1])
+        nlines   = int(np.ceil(nlyrs/5.0))
+
+        for linenum,line in enumerate(lines):
+            if (linenum >= 6) & (linenum < 6 + nlyrs):
+                nlnum        = linenum + nlyrs
+                #oldPrf       = lines[linenum:nlnum]
+                #oldPrf       = np.asarray(oldPrf, dtype=float)
+
+                lines[linenum] = str('{0:.4e}'.format(hdoPrf_2[linenum - 6]))+'\n'       
+
+
+    with open('/data1/ebaumer/mlo/hdo/x.hdo/isotope.input3', 'w' ) as fout:
+        for line in lines:
+            fout.write(line)
+
+    #---------------------------------
+    #Error plots of dD - FTIR
+    #---------------------------------
+    # fig, ax1 = plt.subplots(1, 2, figsize=(10,7), sharey=True)
+
+    # ax1[0].plot(refPrf[parms[1]]*1e6, refPrf[parms[0]], linewidth=2.0, color='b', label= 'H20 (ERA-I)')
+    # ax1[0].plot(hdoPrf_2*1e6, refPrf[parms[0]], linewidth=2.0, color='r', label= 'HDO (scaled)')
+
+    # ax1[0].plot(wpPrfInt*1e6, refPrf[parms[0]], linewidth=2.0, linestyle='--' ,color='b', label='H2O (CRprior)')
+    # ax1[0].plot(hdoPrf_1*1e6, refPrf[parms[0]], linewidth=2.0, linestyle='--', color='r', label='HDO (CRprior)')
+    
+    # ax1[1].plot(refPrf[parms[1]]*1e6, refPrf[parms[0]], linewidth=2.0, color='b')
+    # ax1[1].plot(hdoPrf_2*1e6, refPrf[parms[0]], linewidth=2.0, color='r')
+
+    # ax1[1].plot(wpPrfInt*1e6, refPrf[parms[0]], linewidth=2.0, linestyle='--' ,color='b')
+    # ax1[1].plot(hdoPrf_1*1e6, refPrf[parms[0]], linewidth=2.0, linestyle='--', color='r')
+
+    # ax1[0].legend(prop={'size':11}, loc=1)
+
+    # ax1[0].set_ylabel('Altitude [km]', fontsize=14)           
+    # ax1[0].grid(True,which='both')
+    # ax1[0].set_ylim(3, 20)
+    # ax1[0].set_xlim(xmin=0)
+    # ax1[0].tick_params(which='both',labelsize=14)
+    # ax1[0].set_xlabel('VMR [ppm]', fontsize=14)   
+
+    # ax1[1].grid(True,which='both')
+    # ax1[1].tick_params(which='both',labelsize=14)
+    # ax1[1].set_xscale('log')
+    # ax1[1].set_xlabel('VMR [ppm]', fontsize=14)  
+         
+    # plt.show(block=False)
+
+    #user_input = raw_input('Press any key to exit >>> ')
+    #exit()
+
+    return True
 
 
                         #-------------------------#

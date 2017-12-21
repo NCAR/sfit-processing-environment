@@ -15,13 +15,13 @@
 #gasName    = 'ocs'                                      # NAME OF GAS
                                    # NAME OF GAS
 
-#dataDir    = '/data1/projects/ocs/par/'                    # DIRECTORY
-#locID      = 'paris'                                   # LOCATION ID IN THE HDF FILE
-#gasName    = 'ocs'                                        # NAME OF GAS
+dataDir    = '/data1/projects/ocs/tor/OCS'                    # DIRECTORY
+locID      = 'eureka'                                   # LOCATION ID IN THE HDF FILE
+gasName    = 'ocs'                                       # NAME OF GAS
 
-dataDir    = '/data1/ebaumer/tab/co/HDF_Current_B3/'             # DIRECTORY
-locID      = 'thule'                                   # LOCATION ID IN THE HDF FILE
-gasName    = 'co'                                         # NAME OF GAS
+# dataDir    = '/data1/ebaumer/tab/co/HDF_Current_B3/'             # DIRECTORY
+# locID      = 'thule'                                   # LOCATION ID IN THE HDF FILE
+# gasName    = 'co'                                         # NAME OF GAS
 
 
 #------

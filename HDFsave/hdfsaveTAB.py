@@ -113,7 +113,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
       dataStr['FILE_ACCESS']             = 'NDACC'
       #dataStr['FILE_PROJECT_ID']         = ' '
-      dataStr['FILE_PROJECT_ID']         = 'QA4ECV'   #TEMPORAL
+      dataStr['FILE_PROJECT_ID']         = self.projectID
       dataStr['FILE_ASSOCIATION']        = 'NDACC'
       dataStr['FILE_META_VERSION']       = '04R010;CUSTOM'
       

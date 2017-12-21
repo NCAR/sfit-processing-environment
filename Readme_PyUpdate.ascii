@@ -22,3 +22,17 @@ The Layer1Mods.py was modified to use the closest in time ERA-Profile
 - Initially created for CO
 - The WACCMprfMonthlyMean.py is used to create the monthly mean profiles
 - Ini py file now also accepts the waccmMon flag, se for example CO at TAB
+
+#----------------------------
+#Oct 2017
+#----------------------------
+- Modify HDFCreate and input to gather HDF global attributes
+- cnvrtNC.py contains example of Winds, e.g., for TAB 
+
+#----------------------------
+#Dec 2017
+#----------------------------
+- mvSpectra.py was modified to copy also deleted folders
+- HouseReaderC.py was modified to handle errors in house.log files, before just crashed
+
+

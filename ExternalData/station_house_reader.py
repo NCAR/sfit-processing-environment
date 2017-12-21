@@ -49,6 +49,7 @@ def ckFile(fName):
         print 'File %s does not exist' % (fName)
         sys.exit()
 
+
          
                                     #----------------------------#
                                     #                            #
@@ -71,12 +72,12 @@ def main():
     #------------------------------
     # Starting 
     iyear = 2017               # Year
-    imnth = 8                  # Month
+    imnth = 1                 # Month
     iday  = 1                  # Day
     
     # Ending
     fyear = 2017               # Year
-    fmnth = 8                 # Month
+    fmnth = 12                 # Month
     fday  = 31                 # Day
     
     #-------------------
@@ -96,7 +97,7 @@ def main():
         #------------------------
         # Name of house data file
         #------------------------
-        houseFileNew = outDataDir + statstr.upper() + '_HouseData_' + str(indvYear) + '2.dat'
+        houseFileNew = outDataDir + statstr.upper() + '_HouseData_' + str(indvYear) + '.dat'
         
         #---------------------------------------------------
         # Determine if yearly house data file already exists
@@ -184,6 +185,7 @@ def main():
         #------------------------
         # Sort data based on date
         #------------------------
+
         houseData.sortData()
         
         #-----------------------------------------

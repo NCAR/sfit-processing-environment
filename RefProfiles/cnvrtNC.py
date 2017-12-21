@@ -107,20 +107,18 @@ def main():
     #-----------------------
     # Date Range of interest
     #-----------------------
-    iyear          = 2016
-    imnth          = 5
+    iyear          = 2017
+    imnth          = 6
     iday           = 1
-    fyear          = 2016
-    fmnth          = 6
-    fday           = 30
+    fyear          = 2017
+    fmnth          = 8
+    fday           = 31
     
     #-----------------------
     # File name for log file
     #-----------------------
-    #logFname = '/Volumes/data1/ebaumer/ERAdata/ncLog.log'
     logFname = '/data1/ancillary_data/ERAdata/ncLog4.log'
 
-    
     #---------------------
     # Establish date range
     #---------------------
@@ -129,8 +127,8 @@ def main():
     #------------------------------
     # ERA Reanalysis data directory
     #------------------------------
-    #ERAdir = '/Volumes/data1/ebaumer/ERAdata/'
-    ERAdir = '/data1/ancillary_data/ERAdata/wind/'
+    ERAdir = '/data1/ancillary_data/ERAdata/'
+    #ERAdir = '/data1/ancillary_data/ERAdata/wind/'   ->Use for Wind in TAB
 
         
     #----------------------------
@@ -159,16 +157,18 @@ def main():
         #------------------------------
         # Name of ERA Interim GRIB file
         #------------------------------
-        #fName1 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'00'
-        #fName2 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'06'
-        #fName3 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'12'
-        #fName4 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'18'
+        fName1 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'00'
+        fName2 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'06'
+        fName3 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'12'
+        fName4 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'18'
 
-        fName1 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'00'
-        fName2 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'06'
-        fName3 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'12'
-        fName4 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'18'
-
+        #------------------------------------
+        #Use for Wind in TAB
+        #------------------------------------
+        #fName1 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'00'
+        #fName2 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'06'
+        #fName3 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'12'
+        #fName4 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'18'
 
 
         ckFile(fName1, exitFlg=True)
