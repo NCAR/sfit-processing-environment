@@ -166,6 +166,7 @@ def create_hdf5(**kwargs):
 	    err_flag = err.flag
 	    if not err.flag:
 		 print 'No Error matrices'
+		 continue
 
 	    if err_flag:
 		    cov_srvmr = err.S_vmr_ran;
@@ -268,7 +269,7 @@ def create_hdf5(**kwargs):
             if not ak_flag:
                 print 'no avk found'
                 continue    
-        
+
 	    print 'akzepted'
 	    col_rt[:,nr_res] = summary.retriev
 	    col_ap[:,nr_res] = summary.apriori
@@ -390,8 +391,7 @@ def create_hdf5(**kwargs):
 	for nr in range(0,len(mdate)):
 		ddate = mdt.num2date(mdate[nr])
                 # Azimuth angle in hdf: 0 is south, clockwise increase, i.e. west is positive.
-		fid.write('%s %s %s %f %f %f %f %f %f %f
-		%f\n'%(spectra[nr], ddate.strftime('%Y%m%d'),
+		fid.write('%s %s %s %f %f %f %f %f %f %f %f\n'%(spectra[nr], ddate.strftime('%Y%m%d'),
 		       ddate.strftime('%H:%M:%S'), dur[nr], (90.0-sza[nr]),
 		       np.mod(180.0+azi[nr],360), lat[nr], lon[nr], alt[nr],
 		       p_surface[nr], t_surface[nr]))
