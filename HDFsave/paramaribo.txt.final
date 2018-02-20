@@ -6,8 +6,7 @@ DO_NAME                 = Warneke;Thorsten
 DO_AFFILIATION          = Institut fuer Umweltphysik, Universitaet Bremen;IUP
 DO_ADDRESS              = Otto-Hahn-Allee 1;D-28334 Bremen;GERMANY
 DO_EMAIL                = warneke@iup.physik.uni-bremen.de
-DS_NAME                 = Palm;Mathias						   
-DS_AFFILIATION          = Institut fuer Umweltphysik, Universitaet Bremen;IUP
+DS_NAME                 = Palm;Mathias						DS_AFFILIATION          = Institut fuer Umweltphysik, Universitaet Bremen;IUP
 DS_ADDRESS              = Otto-Hahn-Allee 1;D-28334 Bremen;GERMANY
 DS_EMAIL                = mathias@iup.physik.uni-bremen.de                  
 DATA_DISCIPLINE         = ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED
@@ -20,6 +19,7 @@ DATA_QUALITY            = FINAL
 DATA_CAVEATS            = Irregular HBR cell measurements analysed with linefit 12 and linefit 14
 DATA_RULES_OF_USE       = Contact Thorsten Warneke or Justus Notholt
 DATA_ACKNOWLEDGEMENT    = Contact Thorsten Warneke or Justus Notholt
+DATA_FILE_VERSION       = 005
 FILE_DOI                = None 
 FILE_ACCESS             = NDACC;EVDC
 FILE_PROJECT_ID         = AOID331;QA4ECV

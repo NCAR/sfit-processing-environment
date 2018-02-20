@@ -120,3 +120,8 @@ class spectrum:
         f = plt.figure()
         plt.plot(self.nu[0], self.spectrum[0])
         f.show()
+
+
+
+
+    
