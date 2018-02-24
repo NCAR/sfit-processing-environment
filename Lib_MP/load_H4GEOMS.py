@@ -4,6 +4,7 @@ import sys, re, os
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates
 import numpy as np
+import string
 
 class load_h5:
     def __init__(self, h5_file):
@@ -83,11 +84,15 @@ class load_H4:
 
     def get_profile(self,gas):
         if self.data_template == 'GEOMS-TE-FTIR-001':
-            vmrt = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR').get()
-            vmap = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_APRIORI').get()
+            unit = string.atof(self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR').attributes()['VAR_SI_CONVERSION'].split(';')[1])
+            vmrt = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR').get()*unit
+            unit = string.atof(self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_APRIORI').attributes()['VAR_SI_CONVERSION'].split(';')[1])
+            vmap = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_APRIORI').get()*unit
         else:
-            vmrt = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR').get()
-            vmap = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI').get()
+            unit = string.atof(self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR').attributes()['VAR_SI_CONVERSION'].split(';')[1])
+            vmrt = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR').get()*unit
+            unit = string.atof(self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI').attributes()['VAR_SI_CONVERSION'].split(';')[1])
+            vmap = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI').get()*unit
         z = self.h4.select('ALTITUDE').get()
         return(vmrt,vmap,z)
 
@@ -409,18 +414,36 @@ class load_hdf:
         ax.set_xlim((dd_min,dd_max))
         ax.get_figure().canvas.mpl_connect('pick_event', oncall)
 
-    def save_smoothingerrors(self, asmooth):
-        
+    def save_smoothing_col(self, gas, sm, file, src='GEOMS'):
+    # Calculate and save smooting errors. asmooth is a two column matrix:
+    # 1 - altitude in km
+    # 2 - std of the gas in question in reality
+    # See also Rodgers, 2000, page 48, 'Error Analysis
+
+        if src=='TMPH5':
+            src_hdf = self.h5
+        else:
+            src_hdf = self.h4
+        fid = open(file, 'write')
+        fid.write('Date Smoothing_error total_Column')
         for hf in src_hdf:
-            ind = hf.get_ind_from_date(dnum)
-            if ind > -1:
-                avk_vmr,z = hf.get_avk_vmr(gas)
-                for i2 in range(0,ind):
-                    esmooth = np.dot(asmooth,np.dot(avk_vmr[ind,:,:],asmooth))
-                    esmooth_diag = np.diag(esmooth)
-                    
+            dd = []
+            dd.extend(dates.date2num(hf.dates))
+            avk,z = hf.get_avk_vmr(gas)
+            pret,papr, z = hf.get_partial_columns('H2CO')
+            ret,apr, z = hf.get_profile('H2CO')
+            for nr in range(0,ret.shape[0]):
+                ap = np.diag(papr[nr,:]/apr[nr,:])
+                avk_col = np.dot(ap,np.dot(avk[nr,:,:],np.linalg.inv(ap)))
+                sm_col = np.dot(ap,np.dot(sm,ap.T))
+                sm_avk = avk_col - np.eye(z.shape[0])
+                s_sm = np.dot(sm_avk,np.dot(sm_col,sm_avk.T))
+                s_sm_col =  np.sqrt(np.sum(np.diag(s_sm)))
+                fid.write('%s %g %g\n'%(dates.num2date(dd[nr]).strftime('%Y%m%d%H%M%S'), s_sm_col, np.sum(pret[nr,:])))
+        fid.close()
+
                 
-    def save_all_columns(self, gas, src='GEOMS'):
+    def save_all_columns(self, gas, file='columns.dat', src='GEOMS'):
     
         if src=='TMPH5':
             src_hdf = self.h5
@@ -449,7 +472,7 @@ class load_hdf:
         er = np.array(err)[ind]
         es = np.array(ess)[ind]
 
-        fid = open('columns.dat', 'write')
+        fid = open(file, 'write')
         fid.write('date dnum retr apr ran, sys\n')
         for d,r,a,rr,ss in zip(dd,rt,ap,er,es):
             dstring = dates.num2date(d).strftime('%Y%m%d%H%M%S')

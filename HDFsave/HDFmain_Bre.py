@@ -318,7 +318,8 @@ def main(args):
         gasName        = 'H2CO'
         maxCHI2        = 10.0
         minVMR         = -1e-11
-        dofFlag        = False
+        maxDOFs        = 2.0
+        dofFlag        = True
         cnvFlag        = True
         validFlag      = True
 
