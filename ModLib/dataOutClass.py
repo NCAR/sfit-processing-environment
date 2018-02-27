@@ -922,13 +922,16 @@ class ReadOutputData(_DateRange):
             
 
 
-    def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,minsza=0.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,
-                 cnvrgFlg=True,szaFlg=False,maxCHI2=1000.0,maxVMR=-1e99,minVMR=1e99,valFlg=False,
-                 co2Flg=False, minCO2=0.0, maxCO2=1e99, mnthFltFlg=False,tcMinMaxFlg=False):
+    def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,minsza=0.0,minDOF=1.0,
+                 dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,
+                 szaFlg=False,maxCHI2=1000.0,maxVMR=-1e99,minVMR=1e99,
+                 valFlg=False,co2Flg=False, minCO2=0.0, maxCO2=1e99,
+                 mnthFltFlg=False,tcMinMaxFlg=False,maxTCTotErr=1e99):
 
         maxvmrFlg = True
         minvmrFlg = True
         chi2Flg = True
+        errFlg = True
         
         #------------------------------------------
         # If filtering has already been done return
@@ -1014,6 +1017,22 @@ class ReadOutputData(_DateRange):
             indsT = np.where( np.sum(rprf_neg,axis=1) > 0 )[0]
             print ('Total number observations found with negative partial column = {}'.format(len(indsT)))
             self.inds = np.union1d(indsT, self.inds)
+
+        #-----------------------------------
+        # Find error > maxTcTotError
+        #-----------------------------------
+        if errFlg:
+            if not gasName in self.rprfs:
+                print 'Profile values do not exist...exiting..'
+                sys.exit()   
+            err_max = (np.asarray(self.error['Total_Systematic_Error'])
+            +np.asarray(self.error['Total_Random_Error']))
+            indsE = np.where(err_max >= maxTCTotErr**2)[0]
+            print ('Total number observations found with error > {}'.format(len(indsE)))
+            self.inds = np.union1d(indsE, self.inds)
+            
+
+
             
         #-------------------------------------
         # Find observations with SZA > max SZA
@@ -2150,7 +2169,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
                 self.HDFinstAlt = np.array(tempSpecDB['Alt'])
             self.HDFintT[i] = tempSpecDB['Dur']
             self.HDFazi[i]  = tempSpecDB['SAzm']
-            self.HDFazi[i] = self.HDFazi[i] + 180
+            self.HDFazi[i] = np.mod(self.HDFazi[i] + 180,360.0)
             if tempSpecDB.has_key('S_PRES'):
                 self.HDFsurfP[i]      = np.array(tempSpecDB['S_PRES'])    # Surface Pressure
             else:
@@ -2161,7 +2180,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
                 self.HDFsurfT[i]      = np.array(-99999) 
             
 
-    def fltrHDFdata(self,maxRMS,maxSZA,minDOF,dofF,rmsF,tcF,pcF,cnvF,szaF,maxCHI2,maxVMR,minVMR,co2F,minCO2, maxCO2, valF):
+    def fltrHDFdata(self,maxRMS,maxSZA,minDOF,dofF,rmsF,tcF,pcF,cnvF,szaF,maxCHI2,maxVMR,minVMR,co2F,minCO2, maxCO2, valF, maxTCTotErr):
 
         #----------------------------------------------------
         # Print total number of observations before filtering
@@ -2172,9 +2191,10 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # Call to filter data
         #--------------------
         self.fltrData(self.PrimaryGas, mxrms=maxRMS, mxsza=maxSZA, rmsFlg=rmsF,
-                      minDOF=minDOF,dofFlg=dofF,tcFlg=tcF,pcFlg=pcF,cnvrgFlg=cnvF,szaFlg=szaF,
-                      maxCHI2=maxCHI2, maxVMR=maxVMR,minVMR=minVMR,valFlg=valF,
-                      co2Flg=co2F,minCO2=minCO2, maxCO2=maxCO2)
+                      minDOF=minDOF,dofFlg=dofF,tcFlg=tcF,pcFlg=pcF,
+                      cnvrgFlg=cnvF,szaFlg=szaF,maxCHI2=maxCHI2, maxVMR=maxVMR,
+                      minVMR=minVMR,valFlg=valF,co2Flg=co2F,minCO2=minCO2,
+                      maxCO2=maxCO2,maxTCTotErr=maxTCTotErr)
         
         #------------
         # Remove data
@@ -2205,6 +2225,9 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFsza         = np.delete(self.HDFsza,self.inds)
    
         print 'Number of observations after filtering = {}'.format(len(self.HDFdates))   
+
+
+
         
         #-------------------------------------------
         # Determine if there are any negative TC H2O
@@ -2219,7 +2242,6 @@ class GatherHDF(ReadOutputData,DbInputFile):
                 print self.HDFdates[i]
             print '***********************************\n\n'
 
-        
 #------------------------------------------------------------------------------------------------------------------------------        
 class PlotData(ReadOutputData):
 
@@ -2237,8 +2259,7 @@ class PlotData(ReadOutputData):
     def closeFig(self):
         self.pdfsav.close()
     
-    def pltSpectra(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
-                   dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,szaFlg=False,chiFlg=False,cnvrgFlg=True,tcMMflg=False,mnthFltFlg=False):
+    def pltSpectra(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,szaFlg=False,chiFlg=False,cnvrgFlg=True,tcMMflg=False,mnthFltFlg=False):
         ''' Plot spectra and fit and Jacobian matrix '''
     
         print '\nPlotting Spectral Data...........\n'
@@ -2272,7 +2293,7 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,valFlg=True)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,valFlg=True,maxTCTotErr=maxTCTotErr)
         else: self.inds = np.array([]) 
         
         if self.empty: return False
@@ -2572,8 +2593,11 @@ class PlotData(ReadOutputData):
                  
         if errFlg:                                    # Error info
             
-            if not all((self.readErrorFlg['totFlg'],self.readErrorFlg['sysFlg'],self.readErrorFlg['randFlg'])):
-                self.readError(totFlg=True,sysFlg=True,randFlg=True,vmrFlg=False,avkFlg=False,KbFlg=False) 
+            if not all((self.readErrorFlg['totFlg'],
+                        self.readErrorFlg['sysFlg'],
+                        self.readErrorFlg['randFlg'])):
+                self.readError(totFlg=True,sysFlg=True,randFlg=True,
+                               vmrFlg=False,avkFlg=False,KbFlg=False) 
             
             npnts    = np.shape(self.error['Total_Random_Error'])[0]
             nlvls    = np.shape(alt)[0]
@@ -2594,8 +2618,13 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
-                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,mnthFltFlg=mnthFltFlg)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,
+                               mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,
+                               minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,
+                               pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,
+                               chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,
+                               mnthFltFlg=mnthFltFlg,maxTCTotErr=maxTCTotErr)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False
@@ -3072,8 +3101,13 @@ class PlotData(ReadOutputData):
         
         print '\nPlotting Averaging Kernel........\n'
         
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
-                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,mnthFltFlg=mnthFltFlg)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,
+                               mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,
+                               minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,
+                               pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,
+                               chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,
+                               mnthFltFlg=mnthFltFlg,maxTCTotErr=maxTCTotErr)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False    
@@ -3279,9 +3313,11 @@ class PlotData(ReadOutputData):
         else:           plt.show(block=False)                         
         
         
-    def pltTotClmn(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
+    def pltTotClmn(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,
+                   minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
                    dofFlg=False,errFlg=False,szaFlg=False,sclfct=1.0,sclname='ppv',
-                   partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,chiFlg=False,tcMMflg=False,mnthFltFlg=False):
+                   partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,
+                   chiFlg=False,tcMMflg=False,mnthFltFlg=False):
         ''' Plot Time Series of Total Column '''
         
         print '\nPrinting Total Column Plots.....\n'
@@ -3314,8 +3350,13 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
-                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,mnthFltFlg=mnthFltFlg)     
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,
+                               mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,
+                               minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,
+                               pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,
+                               chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,
+                               mnthFltFlg=mnthFltFlg,maxTCTotErr=maxTCTotErr)     
         else:    self.inds = np.array([]) 
         
         if self.empty: return False          

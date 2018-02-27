@@ -117,25 +117,40 @@ class show_tmph5:
         self.max_vmr.insert(10,np.max(self.res.vmr_rt))
         self.max_vmr.grid(row=3,column=2,sticky=E)
 
+
+        
+        self.min_avkc = Entry(frame_filter)
+        self.min_avkc.insert(10,np.min(self.res.avk_col))
+        self.min_avkc.grid(row=4,column=0,sticky=W)
+        filter_avkc = Button(frame_filter, 
+                             text = 'AVK COL', 
+                             command = lambda:self.filter())
+        filter_avkc.grid(row=4, column=1, sticky=E+W)
+        self.max_avkc = Entry(frame_filter)
+        self.max_avkc.insert(10,np.max(self.res.avk_col))
+        self.max_avkc.grid(row=4,column=2,sticky=E)
+
         filter_errcol = Button(frame_filter, 
                              text = 'Err Col Tot', 
                              command = lambda:self.filter())
-        filter_errcol.grid(row=4, column=1, sticky=E+W)
+        filter_errcol.grid(row=5, column=1, sticky=E+W)
         self.err_col = Entry(frame_filter)
         self.err_col.insert(10,np.max(self.res.err_tot))
-        self.err_col.grid(row=4,column=2,sticky=E)
+        self.err_col.grid(row=5,column=2,sticky=E)
 
         self.min_sza = Entry(frame_filter)
         self.min_sza.insert(10,np.min(self.res.sza))
-        self.min_sza.grid(row=5,column=0,sticky=W)
+        self.min_sza.grid(row=6,column=0,sticky=W)
         filter_sza = Button(frame_filter, 
                                text = 'SZA', 
                                command = lambda:self.filter())
-        filter_sza.grid(row=5, column=1, sticky=E+W)
+        filter_sza.grid(row=6, column=1, sticky=E+W)
         self.max_sza = Entry(frame_filter)
         self.max_sza.insert(10,np.max(self.res.sza))
-        self.max_sza.grid(row=5,column=2,sticky=E)
+        self.max_sza.grid(row=6,column=2,sticky=E)
 
+
+        
         frame_check = Frame(main_frame_2)
         frame_check.grid(row=9,column=0)
         filter_errcol = Button(frame_check, 
@@ -294,6 +309,17 @@ class show_tmph5:
         except:
             maxvmr = 1.0
 
+        minavkc = self.min_avkc.get()
+        maxavkc = self.max_avkc.get()
+        try:
+            minavkc = string.atof(minavkc)
+        except:
+            minavkc = -10.0
+        try:
+            maxavkc = string.atof(maxavkc)
+        except:
+            maxavkc = 10.0
+
         errcol = self.err_col.get()
         try:
             errcol = string.atof(errcol)
@@ -319,6 +345,8 @@ class show_tmph5:
                                 and self.res.c2y[x] < maxc2y
                                 and np.min(self.res.vmr_rt[:,x]) > minvmr
                                 and np.max(self.res.vmr_rt[:,x]) < maxvmr
+                                and np.min(self.res.avk_col[:,x]) > minavkc
+                                and np.max(self.res.avk_col[:,x]) < maxavkc
                                 and self.res.err_tot[x] <= errcol
                                 and self.res.col_co2[x] > minco2
                                 and self.res.col_co2[x] < maxco2

@@ -4,6 +4,7 @@ import sys, re, os
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates
 import numpy as np
+import string
 
 class load_h5:
     def __init__(self, h5_file):
@@ -70,10 +71,9 @@ class load_H4:
         rt = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR').get()
         er=es=ap = []
         try:
+            rt = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR').get()
             ap = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_APRIORI').get()
-        except:
-            pass
-        try:
+
             if self.data_template == 'GEOMS-TE-FTIR-001':
                 er = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM').get()
                 es = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC').get()
@@ -86,11 +86,15 @@ class load_H4:
 
     def get_profile(self,gas):
         if self.data_template == 'GEOMS-TE-FTIR-001':
-            vmrt = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR').get()
-            vmap = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_APRIORI').get()
+            unit = string.atof(self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR').attributes()['VAR_SI_CONVERSION'].split(';')[1])
+            vmrt = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR').get()*unit
+            unit = string.atof(self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_APRIORI').attributes()['VAR_SI_CONVERSION'].split(';')[1])
+            vmap = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_APRIORI').get()*unit
         else:
-            vmrt = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR').get()
-            vmap = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI').get()
+            unit = string.atof(self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR').attributes()['VAR_SI_CONVERSION'].split(';')[1])
+            vmrt = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR').get()*unit
+            unit = string.atof(self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI').attributes()['VAR_SI_CONVERSION'].split(';')[1])
+            vmap = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI').get()*unit
         z = self.h4.select('ALTITUDE').get()
         return(vmrt,vmap,z)
 
@@ -112,6 +116,15 @@ class load_H4:
             avk_pcol[nr,:] = np.sum(avk_col[ind,:],axis=0)
         return(avk_pcol,z)
 
+    def get_dofs(self, gas):
+        if self.data_template == 'GEOMS-TE-FTIR-001':
+            avk_vmr = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_AVK').get()
+        else:
+            avk_vmr = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_AVK').get()
+        dofs = avk_vmr.trace(axis1=1,axis2=2)
+        return(dofs)
+        
+            
     def get_avk_vmr(self, gas):
         if self.data_template == 'GEOMS-TE-FTIR-001':
             avk_vmr = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_AVK').get()
@@ -327,7 +340,7 @@ class load_hdf:
         return(dd, colrt)
 
     
-    def plot_columns(self, gas, ax, src='GEOMS'):
+    def plot_columns(self, gas, ax, errax, src='GEOMS'):
 
         if src=='TMPH5':
             src_hdf = self.h5
@@ -335,17 +348,19 @@ class load_hdf:
             src_hdf = self.h4
 
         def oncall(event):
-            f3 = plt.figure(3)
+            f3 = plt.figure('RESULTS')
             f3.clf()
-            a1 = f3.add_subplot(321)
+            a1 = f3.add_subplot(611)
             a1.set_title('VMR')
-            a3 = f3.add_subplot(323)
+            a2 = f3.add_subplot(612)
+            a2.set_title('Error')
+            a3 = f3.add_subplot(613)
             a3.set_title('AVK [VMR]')
-            a4 = f3.add_subplot(324)
+            a4 = f3.add_subplot(614)
             a4.set_title('AVK [total column]')
-            a5 = f3.add_subplot(325)
+            a5 = f3.add_subplot(615)
             a5.set_title('COV Systematic')
-            a6 = f3.add_subplot(326)
+            a6 = f3.add_subplot(616)
             a6.set_title('COV Random')
             dnum = event.artist.get_xdata()
             mdnum = event.mouseevent.xdata
@@ -361,6 +376,8 @@ class load_hdf:
                     a1.plot(rvmr[ind,:],z,'b')
                     a1.plot(avmr[ind,:],z,'r')
                     avk_vmr,z = hf.get_avk_vmr(gas)
+                    a2.plot(avk_vmr[ind,:,:].T, z)
+                    avk_col,z = hf.get_avk_column(gas)
                     a3.plot(avk_vmr[ind,:,:].T, z)
                     avk_col,z = hf.get_avk_column(gas)
                     a4.plot(avk_col[ind,:], z)
@@ -384,20 +401,51 @@ class load_hdf:
             rt2,ap,er,es = hf.get_columns('H2O')
  #           ax2.plot(dd, rt2,'go',)
             rt,ap,er,es = hf.get_columns(gas)
+            print dates.num2date(dd[0])
             ax.plot(dd, rt,'bx',picker=5)
             dd_min = np.min(np.hstack((dd_min, dd)))
             dd_max = np.max(np.hstack((dd_max, dd)))
-            if len(er) == len(rt):
-                ax.errorbar(dd,rt,er,ecolor='b', fmt='none')
             if len(ap) == len(rt):
                 ax.plot(dd, ap,'ro')
-  #      plt.sca(ax)
+            errax.plot(dd, er,'bx')
+            errax.plot(dd, es,'gx')
+                #      plt.sca(ax)
+        errax.xaxis.set_major_formatter(dates.DateFormatter('%Y-%m-%d'))
+        errax.set_xlim((dd_min,dd_max))
         ax.xaxis.set_major_formatter(dates.DateFormatter('%Y-%m-%d'))
         ax.set_xlim((dd_min,dd_max))
         ax.get_figure().canvas.mpl_connect('pick_event', oncall)
 
+    def save_smoothing_col(self, gas, sm, file, src='GEOMS'):
+    # Calculate and save smooting errors. asmooth is a two column matrix:
+    # 1 - altitude in km
+    # 2 - std of the gas in question in reality
+    # See also Rodgers, 2000, page 48, 'Error Analysis
 
-    def save_all_columns(self, gas, src='GEOMS'):
+        if src=='TMPH5':
+            src_hdf = self.h5
+        else:
+            src_hdf = self.h4
+        fid = open(file, 'write')
+        fid.write('Date Smoothing_error total_Column')
+        for hf in src_hdf:
+            dd = []
+            dd.extend(dates.date2num(hf.dates))
+            avk,z = hf.get_avk_vmr(gas)
+            pret,papr, z = hf.get_partial_columns('H2CO')
+            ret,apr, z = hf.get_profile('H2CO')
+            for nr in range(0,ret.shape[0]):
+                ap = np.diag(papr[nr,:]/apr[nr,:])
+                avk_col = np.dot(ap,np.dot(avk[nr,:,:],np.linalg.inv(ap)))
+                sm_col = np.dot(ap,np.dot(sm,ap.T))
+                sm_avk = avk_col - np.eye(z.shape[0])
+                s_sm = np.dot(sm_avk,np.dot(sm_col,sm_avk.T))
+                s_sm_col =  np.sqrt(np.sum(np.diag(s_sm)))
+                fid.write('%s %g %g\n'%(dates.num2date(dd[nr]).strftime('%Y%m%d%H%M%S'), s_sm_col, np.sum(pret[nr,:])))
+        fid.close()
+
+                
+    def save_all_columns(self, gas, file='columns.dat', src='GEOMS'):
     
         if src=='TMPH5':
             src_hdf = self.h5
@@ -426,7 +474,7 @@ class load_hdf:
         er = np.array(err)[ind]
         es = np.array(ess)[ind]
 
-        fid = open('columns.dat', 'write')
+        fid = open(file, 'write')
         fid.write('date dnum retr apr ran, sys\n')
         for d,r,a,rr,ss in zip(dd,rt,ap,er,es):
             dstring = dates.num2date(d).strftime('%Y%m%d%H%M%S')
@@ -449,6 +497,7 @@ class load_hdf:
         ax.xaxis.set_major_formatter(dates.DateFormatter('%Y-%m-%d'))
         ax.set_xlim((dd_min,dd_max))
         ax.get_figure().colorbar(h, orientation='horizontal')
+
 
     def plot_avk_column(self,gas,ax):
         dd_min = 9e99
@@ -473,11 +522,26 @@ class load_hdf:
             dd_min = np.min(np.hstack((dd_min, dd)))
             dd_max = np.max(np.hstack((dd_max, dd)))
             h = ax.pcolor(dd,z,avk.T)
-
+            
         ax.set_xlim((dd_min,dd_max))
         ax.xaxis.set_major_formatter(dates.DateFormatter('%Y-%m-%d'))
         ax.get_figure().colorbar(h, orientation='horizontal')
 
+        
+    def plot_dofs(self,gas,ax):
+        dd_min = 9e99
+        dd_max = 0
+        for hf in self.h4:
+            dofs = hf.get_dofs(gas)
+            dd = dates.date2num(hf.dates)
+            dd_min = np.min(np.hstack((dd_min, dd)))
+            dd_max = np.max(np.hstack((dd_max, dd)))
+            h = ax.plot(dd,dofs)
+            
+        ax.set_xlim((dd_min,dd_max))
+        ax.xaxis.set_major_formatter(dates.DateFormatter('%Y-%m-%d'))
+
+        
     def get_auxilliary(self):
         ps = []
         ts = []
@@ -537,12 +601,15 @@ class load_hdf:
         self.f1.clf()
         self.f2.clf()
         self.f3.clf()
-        ax1 = self.f1.add_subplot(311)
-        self.plot_columns(gas, ax1, src)
-        ax2 = self.f1.add_subplot(312)
+        ax1 = self.f1.add_subplot(511)
+        ax11 = self.f1.add_subplot(512)
+        self.plot_columns(gas, ax1, ax11, src)
+        ax2=  self.f1.add_subplot(513)
         self.plot_profiles(gas, ax2)
-        ax3 = self.f1.add_subplot(313)
+        ax3 = self.f1.add_subplot(514)
         self.plot_avk_column(gas, ax3)
+        ax4 = self.f1.add_subplot(515)
+        self.plot_dofs(gas, ax4)
 
         ax11 = self.f2.add_subplot(211)
         ax21 = self.f2.add_subplot(212)
