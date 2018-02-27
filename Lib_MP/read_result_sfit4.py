@@ -45,13 +45,40 @@ class read_table:
         return self.retgas
 
 
-class Kout:
-    def __init__(self, filename):
-    
-        self.K_frac = np.genfromtxt(filename,skip_header=4)
-        
+class calc_diagnostics():
 
-class Kbout:
+    def __init__(self):
+        self.F_K = False
+        self.F_SA = False
+        self.F_SE = False
+        
+    def read_Kmatrix(self, filename):
+    
+        self.K_frac = np.genfromtxt(filename,skip_header=3)
+        self.F_K = True
+        
+    def read_sa_matrix(self, filename):
+        self.sa = np.genfromtxt(filename,skip_header=3)
+        self.sainv = np.linalg.inv(self.sa)
+        self.F_SA = True
+        
+    def read_se_matrix(self, filename):
+        self.seinv = np.genfromtxt(filename,skip_header=2)
+        self.F_SE = True
+        
+    def calc_AVK(self):
+        if self.F_K and self.F_SE and self.F_SA:
+            KS = np.dot(self.K_frac.T,np.diag(self.seinv))
+            KSK = np.dot(KS, self.K_frac)
+
+            self.AK_frac = np.dot(np.linalg.inv(self.sainv + KSK), KSK)
+
+        else:
+            print 'read K, SA and SE matrix first'
+            
+                    
+class Kout:
+    # read K and Kb matrix. the keys are the names of the statevector entries the column resonds to.
     def __init__(self, filename):
     
         self.K_frac = np.genfromtxt(filename,skip_header=2,names=True)
@@ -62,6 +89,18 @@ class Kbout:
     def get_data(self, key):
         return(self.K_frac[key])
 
+    def get_alldata(self, keyroot):
+        keys = self.get_keys()
+        data = np.zeros((0,self.K_frac[keys[0]].size))
+        for kk in keys:
+            if kk.find(keyroot) == -1:
+                continue
+            data=np.vstack((data,self.K_frac[kk]))
+
+        return(data)
+
+
+    
 class avk:
     def __init__(self, filename, prfsfile):
     

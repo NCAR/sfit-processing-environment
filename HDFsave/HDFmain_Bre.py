@@ -28,16 +28,16 @@ if __name__ != "__main__":
     import hdfsave as hdfsave
                             
 def main(args):
-    if len(args) != 7:
-        print 'call as HDFmain_Bre Datadir HDFDir location gas YYYYMMDD (start) YYYYMMDD (end)'
+    if len(args) != 8:
+        print 'call as HDFmain_Bre Datadir HDFDir location gas YYYYMMDD (start) YYYYMMDD (end) quality'
         return()
         
     script_dir = os.path.dirname(sys.argv[0])
-    quality        = 'final'
     dataDir        = args[1]+'/'
     outDir         = args[2]+'/'
     loc1           = args[3]
     gasName        = args[4]  # This is the target gas for retrieval
+    quality        = args[7].lower()
     version        = 'Current'
     sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
     sdate = datetime.datetime.strptime(args[5],'%Y%m%d')
@@ -66,6 +66,11 @@ def main(args):
     maxCHI2        = 9e99
     maxTCTotErr    = 9e99
     granularity    = 'yearly'
+
+    if quality != 'nrt' and quality !='final':
+        print 'quality has to be nrt or final, not %s'%quality
+        exit()
+
     
     if loc1.lower() == 'bre' or loc1.lower() == 'bremen':
         loc            = 'BREMEN'
