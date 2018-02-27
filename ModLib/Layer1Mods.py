@@ -146,6 +146,7 @@ sb.solstrnth.*          = 0.01
 sb.apod_fcn.*           = 0.05
 sb.phase_fcn.*          = 0.05
 sb.line*_*.random       = 0.
+sb.line*_*.systematic       = 0.
 sb.lineInt_CH4.systematic            = 0.03     
 sb.lineInt_CO.systematic             = 0.02
 sb.lineInt_NO2.systematic            = 0.10     
