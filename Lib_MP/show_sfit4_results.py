@@ -26,17 +26,17 @@ class show_results:
         self.load_result(sb_ctl)
         
         # Find a free figure for profile
-        self.winprf = plt.figure()#figsize=(24,12))
+        self.winprf = plt.figure('Profile')#figsize=(24,12))
         # Find a free figure for microwindow
-        self.winmw = plt.figure()#figsize=(24,12))
+        self.winmw = plt.figure('Spectrum')#figsize=(24,12))
         # Find a free figure for AVK
-        self.winavk = plt.figure()#figsize=(24,12))
+        self.winavk = plt.figure('AVK')#figsize=(24,12))
         # Find a free figure for ERROR
-        self.winerr = plt.figure()#figsize=(24,12))
+        self.winerr = plt.figure('Error')#figsize=(24,12))
 
-        self.winpcol = plt.figure()#figsize=(24,12))
+        self.winpcol = plt.figure('Partial column')#figsize=(24,12))
 
-        self.winfft = plt.figure()#figsize=(24,12))
+        self.winfft = plt.figure('FFT')#figsize=(24,12))
 
     
 
