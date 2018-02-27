@@ -869,8 +869,6 @@ class ReadOutputData(_DateRange):
             self.dirDateTime = []
             self.dirFlg      = True
 
-            import ipdb
-            ipdb.set_trace()
             _DateRange.__init__(self, iyear, imnth, iday, fyear, fmnth, fday, incr=1)
             
             #--------------------------------------------
@@ -882,6 +880,7 @@ class ReadOutputData(_DateRange):
                 #-------------------------------------------
                 # Test directory to make sure it is a number
                 #-------------------------------------------
+
                 try:    int(drs[0:4])
                 except: continue
 

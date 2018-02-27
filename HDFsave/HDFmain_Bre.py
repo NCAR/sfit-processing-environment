@@ -70,12 +70,9 @@ def main(args):
     maxTCTotErr    = 9e99
     granularity    = 'yearly'
 
-<<<<<<< HEAD
-=======
     if quality != 'nrt' and quality !='final':
         print 'quality has to be nrt or final, not %s'%quality
         exit()
->>>>>>> 08febc5065817b18954848ad666b59378bc0cb4a
 
     
     if loc1.lower() == 'bre' or loc1.lower() == 'bremen':
