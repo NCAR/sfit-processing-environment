@@ -67,7 +67,9 @@ class load_H4:
         return(rt,z)
 
     def get_columns(self,gas):
-        rt=er=es=ap = []
+        self.h4
+        rt = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR').get()
+        er=es=ap = []
         try:
             rt = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR').get()
             ap = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_APRIORI').get()

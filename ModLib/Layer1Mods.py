@@ -1041,7 +1041,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         test1 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper()
         try:    test2 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]            # This parameter might not exist in the ctl file if zshift = false
         except KeyError: test2 = 1 
-        if (test1 == 'F' or (test1 == 'T' and test2 == 1)): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
+        if (test1 == 'F' or (test1 == 'T' and test2 == 2)): 
+          bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
 
         #--------------------------------------------------------------------
         # Set band ordering for micro-window dependent Sb's other than zshift

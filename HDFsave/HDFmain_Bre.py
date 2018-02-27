@@ -89,7 +89,7 @@ def main(args):
         attribute_file = os.path.join(script_dir, 'paramaribo.txt.%s'%quality)
 
         if sdate.year < 2012 and edate.year > 2012:
-            print 'different containers during the envisaged time'
+            print 'different PMB containers during the envisaged time'
             return
         
         if sdate.year < 2012:
@@ -224,6 +224,7 @@ def main(args):
         gasName        = 'CFC12'
         tcFlag         = False
         tcFlag         = False
+        pcFlag         = False
         minDOFs        = 1.0
         maxCHI2        = 20.0
         maxVMR         = 3e-9
