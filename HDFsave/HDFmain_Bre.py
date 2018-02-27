@@ -40,7 +40,7 @@ def main(args):
     outDir         = args[2]+'/'
     loc1           = args[3]
     gasName        = args[4]  # This is the target gas for retrieval
-    quality        = args[7]
+    quality        = args[7].lower()
     version        = 'Current'
     sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
     sdate = datetime.datetime.strptime(args[5],'%Y%m%d')
@@ -70,6 +70,12 @@ def main(args):
     maxTCTotErr    = 9e99
     granularity    = 'yearly'
 
+<<<<<<< HEAD
+=======
+    if quality != 'nrt' and quality !='final':
+        print 'quality has to be nrt or final, not %s'%quality
+        exit()
+>>>>>>> 08febc5065817b18954848ad666b59378bc0cb4a
 
     
     if loc1.lower() == 'bre' or loc1.lower() == 'bremen':

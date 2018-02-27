@@ -47,14 +47,19 @@ class sfit4_ctl:
         # get_keys('file.out') it returns ['summary']
         # if level is not given, it returns all keys
         res = []
-        if level.endwith('.'):
+        if level.endswith('.'):
             level = level[0:-1]
-        for v in value.keys():
-            key = v.partition(level)[2]
+        else:
+            level = level+'.'            
+        for v in self.value.keys():
+            if level == '.':
+                key = v
+            else:
+                key = v.partition(level)[2]
             if key != '':
                 res.append(key)
+        return(res)
         
-
     def replace(self, tag, value):
 
         tag = tag.strip()

@@ -45,8 +45,11 @@ def error_calc(**kwargs):
         except:
             print 'failed in path: '+direc
             pass
+#        import ipdb
+#        ipdb.set_trace()
         shutil.copy(kwargs['dir']+'/'+direc+'/sfit4.ctl',kwargs['dir'])
-        shutil.copy(kwargs['dir']+'/'+direc+'/station.layers', kwargs['dir'])
+        shutil.copy(kwargs['dir']+'/'+direc+'/'+ctl.inputs['file.in.stalayers'][0],
+                    kwargs['dir']+'/'+'station.layers')
         
 if __name__ == '__main__':
     import os,sys, getopt
