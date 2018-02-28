@@ -351,7 +351,6 @@ def main(args):
     # variable DATETIME will always be written as a DOUBLE as 
     # specified in GEOMS: http://avdc.gsfc.nasa.gov/index.php?site=1989220925
     #------------------------------------------------------------
-    print 'bla2', attribute_file
     myhdf = hdfsave.HDFsave(gasName,outDir,sfitVer,loc,source,attribute_file,granularity,dType='float32')
     
     #------------------------------------------------
@@ -371,15 +370,15 @@ def main(args):
     # Here we are actually creating the HDF file.
     # We can create either and HDF4 or HDF5 file
     #--------------------------------------------
-    myhdf.createHDF4()
+    filename = myhdf.createHDF4()
     #myhdf.createHDF5()
     
     print 'Finished creating HDF file'
-    
+    return(filename)
     
 if __name__ == "__main__":
     import sys, os
     import datetime
     sys.path.append(os.path.join(os.path.dirname(sys.argv[0]),'..','ModLib'))
     import hdfsave as hdfsave
-    main(sys.argv)
+    filename = main(sys.argv)
