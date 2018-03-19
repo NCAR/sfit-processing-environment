@@ -1,5 +1,9 @@
+<<<<<<< HEAD
 #!/usr/bin/python
 ##! /usr/local/python-2.7/bin/python
+=======
+#! /usr/local/python-2.7/bin/python
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
 # Name:
@@ -76,6 +80,7 @@ import getopt
 import datetime as dt
 import glob
 import re
+<<<<<<< HEAD
 import sfitClasses as sc  
 ####import sfitClasses_B2 as sc
 import dataOutClass as dc
@@ -84,6 +89,11 @@ from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis
 ####from Layer1Mods_B2 import refMkrNCAR, t15ascPrep, errAnalysis   
 import matplotlib.pyplot as plt
 
+=======
+import sfitClasses as sc
+import shutil
+from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 
 
 
@@ -116,7 +126,11 @@ def ckDirMk(dirName,logFlg=False):
         return False
     else:
         return True
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 def ckDir(dirName,logFlg=False,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
@@ -136,6 +150,11 @@ def ckFile(fName,logFlg=False,exit=False):
         return False
     else:
         return True    
+<<<<<<< HEAD
+=======
+        
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 
                             #----------------------------#
                             #                            #
@@ -151,7 +170,11 @@ def main(argv):
     logFile  = False
     lstFlg   = False
     pauseFlg = False
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
     #--------------------------------
     # Retrieve command line arguments
     #--------------------------------
@@ -162,7 +185,11 @@ def main(argv):
         print str(err)
         usage()
         sys.exit()
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
     #-----------------------------
     # Parse command line arguments
     #-----------------------------
@@ -172,7 +199,11 @@ def main(argv):
 
             # Input file instance
             mainInF = sc.Layer1InputFile(arg)
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         # Pause after skip option
         elif opt == '-P':
             if not arg or arg.startswith('-'):
@@ -185,16 +216,28 @@ def main(argv):
             except ValueError:
                 print 'Argument for -P flag: %s, needs to be an integer > 0' % arg
                 sys.exit()
+<<<<<<< HEAD
 
+=======
+                
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         # Show all command line flags
         elif opt == '-?':
             usage()
             sys.exit()
+<<<<<<< HEAD
 
         # Option for Log File
         elif opt == '-l':
             logFile = True
 
+=======
+            
+        # Option for Log File
+        elif opt == '-l':
+            logFile = True
+            
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         # Option for List file
         elif opt == '-L':
             if not arg or arg.startswith('-'):
@@ -202,31 +245,52 @@ def main(argv):
                 sys.exit()
             lstFlg      = True
             lstFnameFlg = int(arg)
+<<<<<<< HEAD
 
         else:
             print 'Unhandled option: ' + opt
             sys.exit()
 
 
+=======
+                                           
+        else:
+            print 'Unhandled option: ' + opt
+            sys.exit()
+ 
+ 
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
     #----------------------------------------------
     # Initialize main input variables as dicitonary
     #----------------------------------------------           
     mainInF.getInputs()    
+<<<<<<< HEAD
 
+=======
+                                                 
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
     #--------------------
     # Initialize log file
     #--------------------
     # Write initial log data  
     if logFile:
         log_fpath = mainInF.inputs['logDirOutput']
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         # check if '/' is included at end of path
         if not( log_fpath.endswith('/') ):
             log_fpath = log_fpath + '/'
 
         # check if path is valide
         ckDir(log_fpath)   
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         logFile = logging.getLogger('1')
         logFile.setLevel(logging.INFO)
         hdlr1   = logging.FileHandler(log_fpath + mainInF.inputs['ctlList'][0][2] + '.log',mode='w')
@@ -237,14 +301,22 @@ def main(argv):
         logFile.info('Input data file:        ' + mainInF.fname )
         logFile.info('Log file path:          ' + log_fpath     )
         logFile.info('Station location:       ' + mainInF.inputs['loc'])
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 
     #---------------------
     # Initialize list file
     #---------------------
     if lstFlg:
         lst_fpath = mainInF.inputs['logDirOutput']
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         # check if '/' is included at end of path
         if not( lst_fpath.endswith('/') ):
             lst_fpath = lst_fpath + '/'
@@ -258,12 +330,17 @@ def main(argv):
         fmt2    = logging.Formatter('')
         hdlr2.setFormatter(fmt2)
         lstFile.addHandler(hdlr2)   
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
     #-----------------------------
     # Check the existance of files
     #-----------------------------
     # Spectral Database file
     ckFile(mainInF.inputs['spcdbFile'],logFlg=logFile,exit=True)
+<<<<<<< HEAD
 
     # WACCM profile file
     #ckFile(mainInF.inputs['WACCMfile'],logFlg=logFile,exit=True)
@@ -272,6 +349,16 @@ def main(argv):
     for ctlFile in mainInF.inputs['ctlList']:
         ckFile(ctlFile[0],logFlg=logFile,exit=True)
 
+=======
+    
+    # WACCM profile file
+    #ckFile(mainInF.inputs['WACCMfile'],logFlg=logFile,exit=True)
+    
+    # ctl files
+    for ctlFile in mainInF.inputs['ctlList']:
+        ckFile(ctlFile[0],logFlg=logFile,exit=True)
+    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
     #--------------------------------------------
     # Program Looping structure. See Notes
     #      Level1 - LOC             (Input/Output)
@@ -279,6 +366,7 @@ def main(argv):
     #        Level3 - Spectral db     (Output)
     #          --Check I/O directory structure
     #--------------------------------------------
+<<<<<<< HEAD
 
     # Establish Date Range
     inDateRange = sc.DateRange(mainInF.inputs['iyear'],mainInF.inputs['imnth'],mainInF.inputs['iday'],
@@ -286,13 +374,27 @@ def main(argv):
 
 
 
+=======
+    
+    # Establish Date Range
+    inDateRange = sc.DateRange(mainInF.inputs['iyear'],mainInF.inputs['imnth'],mainInF.inputs['iday'],
+                               mainInF.inputs['fyear'],mainInF.inputs['fmnth'],mainInF.inputs['fday'])
+        
+    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
     #--------------------
     # Level 1 -- LOC
     #--------------------
     if not( isinstance(mainInF.inputs['loc'], list) ): mainInF.inputs['loc'] = [mainInF.inputs['loc']]
+<<<<<<< HEAD
 
     for loc in mainInF.inputs['loc']:
 
+=======
+        
+    for loc in mainInF.inputs['loc']:
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         #-------------------------------------------
         # Check for existance of Input folder. Also,
         # check if '/' is included at end of path
@@ -301,9 +403,15 @@ def main(argv):
             wrkInputDir1 = mainInF.inputs['BaseDirInput'] + '/'+ loc + '/' 
         else:
             wrkInputDir1 = mainInF.inputs['BaseDirInput'] + loc + '/'
+<<<<<<< HEAD
 
         ckDir( wrkInputDir1, logFlg=logFile, exit=True )
 
+=======
+                 
+        ckDir( wrkInputDir1, logFlg=logFile, exit=True )
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         #-----------------------------------------------------------   
         # Check for the existance of Output folder and create if DNE
         # Also, check if '/' is included at end of path
@@ -312,22 +420,36 @@ def main(argv):
             wrkOutputDir1 = mainInF.inputs['BaseDirOutput'] + '/'
         else:
             wrkOutputDir1 = mainInF.inputs['BaseDirOutput'] 
+<<<<<<< HEAD
 
         ckDirMk( wrkOutputDir1, logFile )
 
+=======
+            
+        ckDirMk( wrkOutputDir1, logFile )
+                 
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         #--------------------------------------
         # Find spectral db file and initialize
         # instance and get inputs
         #--------------------------------------                       
         dbData = sc.DbInputFile(mainInF.inputs['spcdbFile'],logFile)
         dbData.getInputs()
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         #-----------------------------
         # Initial filter of data based
         # on input date range
         #-----------------------------
         dbFltData_1 = dbData.dbFilterDate(inDateRange)
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         #---------------------------------
         # Initialize error control file
         # instance and get inputs (sb.ctl)
@@ -336,12 +458,20 @@ def main(argv):
             ckFile(mainInF.inputs['sbCtlFile'],logFlg=logFile,exit=True)
             SbctlFileVars = sc.CtlInputFile(mainInF.inputs['sbCtlFile'])
             SbctlFileVars.getInputs()            
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         #--------------------------------------
         # Level 2 -- Loop through control files
         #--------------------------------------
         for ctl_ind,ctlFileList in enumerate(mainInF.inputs['ctlList']):
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
             #-----------------------------
             # Initialize ctl file instance
             # and get inputs
@@ -349,7 +479,11 @@ def main(argv):
             ctlFile   = ctlFileList[0]
             ctlFileGlb = sc.CtlInputFile(ctlFile,logFile)
             ctlFileGlb.getInputs() 
+<<<<<<< HEAD
 
+=======
+            
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
             #-----------------------------
             # Write Meta-data to list file
             #-----------------------------
@@ -376,6 +510,7 @@ def main(argv):
                 lstFile.info('zptFlg         = ' + str(mainInF.inputs['zptFlg'])            )
                 lstFile.info('refMkrLvl      = ' + str(mainInF.inputs['refMkrLvl'])         )
                 lstFile.info('wVer           = ' + str(mainInF.inputs['wVer'])              )
+<<<<<<< HEAD
                 lstFile.info('nbands         = ' + str(len(ctlFileGlb.inputs['band']))      )
                 lstFile.info('# End List File Meta-Data')
                 lstFile.info('')
@@ -384,6 +519,12 @@ def main(argv):
             #----------------------
             # Filtering spectral DB
             #----------------------
+=======
+                lstFile.info('# End List File Meta-Data')
+                lstFile.info('')
+                lstFile.info('Date         TimeStamp    Directory ')            
+                                               
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
             #-------------------------
             # Filter spectral db based
             # on wavenumber bounds in
@@ -395,6 +536,7 @@ def main(argv):
                 bandstr = str(int(band))
                 nu.append(ctlFileGlb.inputs['band.'+bandstr+'.nu_start'][0])
                 nu.append(ctlFileGlb.inputs['band.'+bandstr+'.nu_stop'][0] )
+<<<<<<< HEAD
 
             nu.sort()                                    # Sort wavenumbers
             nuUpper = nu[-1]                             # Get upper wavenumber
@@ -406,6 +548,18 @@ def main(argv):
             
             if not(dbFltData_2): continue                # Test for empty dicitonary (i.e. no data)
 
+=======
+            
+            nu.sort()                                    # Sort wavenumbers
+            nuUpper = nu[-1]                             # Get upper wavenumber
+            nuLower = nu[0]                              # Get lower wavenumber
+                       
+            # Filter spectral DB based on wave number
+            dbFltData_2 = dbData.dbFilterNu(nuUpper,nuLower,dbFltData_1)
+            
+            if not(dbFltData_2): continue                # Test for empty dicitonary (i.e. no data)
+            
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
             #------------------------------------------------------------------------------------------------
             # In addition to filtering db based on wavenumbers in ctl file one can filter spectral db based
             # on filter ID. Using this can help avoid the bug when pspec tries to apply a filter band outside
@@ -414,6 +568,7 @@ def main(argv):
             if mainInF.inputs['ctlList'][ctl_ind][1]:
                 dbFltData_2 = dbData.dbFilterFltrID(mainInF.inputs['ctlList'][ctl_ind][1], dbFltData_2)                
                 if not(dbFltData_2): continue                # Test for empty dicitonary (i.e. no data)
+<<<<<<< HEAD
 
             #--------------------------------------------------------
             # Filter database based on forward and backward scan flag
@@ -421,6 +576,9 @@ def main(argv):
             if mainInF.inputs['scnFlg'] > 0:
                 dbFltData_2 = dbData.dbFilterScn(mainInF.inputs['scnFlg'], dbFltData_2 )
 
+=======
+                         
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
             #---------------------------------------------------------------------             
             # Check for the existance of Output folder <Version> and create if DNE
             #---------------------------------------------------------------------
@@ -429,13 +587,18 @@ def main(argv):
                 ckDirMk( wrkOutputDir2, logFile )             
             else:
                 wrkOutputDir2 = wrkOutputDir1   
+<<<<<<< HEAD
 
+=======
+                      
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
             #-----------------------------------------------
             # Create a folder within the output directory to 
             # store various input files: ctl, hbin, isotope
             #-----------------------------------------------
             ctlPath,ctlFname = os.path.split(mainInF.inputs['ctlList'][ctl_ind][0])                    
             archDir          = wrkOutputDir2 + 'inputFiles' + '/'
+<<<<<<< HEAD
 
             if ckDirMk(archDir, logFile):
                 for f in glob.glob(archDir + '*'): os.remove(f)
@@ -448,12 +611,30 @@ def main(argv):
             for file in glob.glob(ctlPath + '/isotope*'):                     # Copy isotope file
                 shutil.copy(file,archDir)            
 
+=======
+            
+            if ckDirMk(archDir, logFile):
+                for f in glob.glob(archDir + '*'): os.remove(f)
+            
+            shutil.copy(mainInF.inputs['ctlList'][ctl_ind][0], archDir)       # Copy ctl file
+            
+            for file in glob.glob(ctlPath + '/*hbin*'):                       # Copy hbin files
+                shutil.copy(file, archDir)
+            
+            for file in glob.glob(ctlPath + '/isotope*'):                     # Copy isotope file
+                shutil.copy(file,archDir)            
+                         
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
             #------------------------------------------
             # Level 3 -- Loop through spectral db lines
             #------------------------------------------
             nobs = len(dbFltData_2['Date'])
             for spcDBind in range(0, nobs):  
+<<<<<<< HEAD
 
+=======
+                
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                 #-----------------------------------------------------------
                 # Grab spectral data base information for specific retrieval
                 #-----------------------------------------------------------
@@ -462,6 +643,7 @@ def main(argv):
                 currntDay    = dt.datetime(int(currntDayStr[0:4]),int(currntDayStr[4:6]),int(currntDayStr[6:]),int(dbFltData_2['Time'][spcDBind][0:2]),int(dbFltData_2['Time'][spcDBind][3:5]),int(dbFltData_2['Time'][spcDBind][6:]) )
                 # Get dictionary with specific date
                 specDBone    = dbData.dbFindDate(currntDay,fltDict=dbFltData_2)                
+<<<<<<< HEAD
 
                 brkFlg = True    # Flag to break out of while statement
                 while True:      # While statement is for the repeat function 
@@ -469,6 +651,11 @@ def main(argv):
                     print '*************************************************'
                     print '*************Begin New Retrieval*****************'
                     print '*************************************************'                    
+=======
+                
+                brkFlg = True    # Flag to break out of while statement
+                while True:      # While statement is for the repeat function 
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                     #-------------------------------------------------------------
                     # If pause after skip flag is initialized, do several things:
                     # 1) Check if number of skips exceeds total number of filtered
@@ -480,6 +667,7 @@ def main(argv):
                         print 'Specified starting point in -P option (%d) is greater than number of observations in filtered database (%d)' %(nskips,nobs)
                         if logFile: logFile.critical('Specified starting point in -P option (%d) is greater than number of observations in filtered database (%d)' %(nskips,nobs))
                         sys.exit()
+<<<<<<< HEAD
 
                     if pauseFlg and (spcDBind < nskips): break
 
@@ -487,6 +675,15 @@ def main(argv):
                     daystr = str(int(dbFltData_2['Date'][spcDBind]))
                     obsDay = dt.datetime(int(daystr[0:4]),int(daystr[4:6]),int(daystr[6:]))
 
+=======
+                    
+                    if pauseFlg and (spcDBind < nskips): break
+                                     
+                    # Get date of observations
+                    daystr = str(int(dbFltData_2['Date'][spcDBind]))
+                    obsDay = dt.datetime(int(daystr[0:4]),int(daystr[4:6]),int(daystr[6:]))
+                                
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                     #----------------------------------------
                     # Check the existance of input and output 
                     # directory structure
@@ -496,23 +693,39 @@ def main(argv):
                     mnthstr = "{0:02d}".format(obsDay.month)
                     daystr  = "{0:02d}".format(obsDay.day)  
                     datestr = yrstr + mnthstr + daystr
+<<<<<<< HEAD
 
+=======
+                    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                     # Check for existance of YYYYMMDD Input folder
                     # If this folder does not exist => there is no 
                     # Data for this day
                     wrkInputDir2 = wrkInputDir1 + yrstr + mnthstr + daystr + '/'               
                     ckDir( wrkInputDir2, logFlg=logFile, exit=True )                       
+<<<<<<< HEAD
 
+=======
+                    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                     #-----------------------------------------
                     # Check for the existance of Output folder 
                     # <Date>.<TimeStamp> and create if DNE
                     #-----------------------------------------
                     wrkOutputDir3 = wrkOutputDir2 + datestr + '.' + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '/' 
+<<<<<<< HEAD
 
                     if ckDirMk( wrkOutputDir3, logFile ):
                         # Remove all files in Output directory if previously exists!!
                         for f in glob.glob(wrkOutputDir3 + '*'): os.remove(f)   
 
+=======
+                    
+                    if ckDirMk( wrkOutputDir3, logFile ):
+                        # Remove all files in Output directory if previously exists!!
+                        for f in glob.glob(wrkOutputDir3 + '*'): os.remove(f)   
+                    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                     #-------------------------------
                     # Copy relavent files from input
                     # directory to output directoy
@@ -528,7 +741,11 @@ def main(argv):
                         print 'Unable to copy template ctl file to working directory: %s' % wrkOutputDir3
                         if logFile: logFile.critical('Unable to copy template ctl file to working directory: %s' % wrkOutputDir3)
                         sys.exit()
+<<<<<<< HEAD
 
+=======
+                    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                     #-------------------------------------
                     # Copy sb.ctl file to output directory
                     # if error analysis is chosen
@@ -540,7 +757,11 @@ def main(argv):
                             print 'Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3
                             if logFile: logFile.critical('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
                             sys.exit()                    
+<<<<<<< HEAD
 
+=======
+                                           
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                     #----------------------------------
                     # Copy hbin details to output folder
                     # ** Assuming that the hbin.dtl and
@@ -552,17 +773,29 @@ def main(argv):
                     except IOError:
                         print 'Unable to copy file: %s' % (ctlPath + '/hbin.dtl')
                         if logFile: logFile.error(IOError)
+<<<<<<< HEAD
 
+=======
+                        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                     try:
                         shutil.copyfile(ctlPath + '/hbin.input', wrkOutputDir3 + '/hbin.input')          # Copy hbin.input file
                     except IOError:
                         print 'Unable to copy file: %s' % (ctlPath + '/hbin.input')
                         if logFile: logFile.error(IOError)
+<<<<<<< HEAD
 
 
                     # Create instance of local control file (ctl file in working directory)
                     ctlFileLcl = sc.CtlInputFile(wrkOutputDir3 + 'sfit4.ctl',logFile)
 
+=======
+                                       
+                          
+                    # Create instance of local control file (ctl file in working directory)
+                    ctlFileLcl = sc.CtlInputFile(wrkOutputDir3 + 'sfit4.ctl',logFile)
+                             
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                     #-------------------------------------------------
                     # Determine whether to use ILS file. Empty string
                     # '' => no ILS file.
@@ -574,26 +807,43 @@ def main(argv):
                         #-------------------------------------------
                         # If directory.....
                         if os.path.isdir(mainInF.inputs['ilsDir']):
+<<<<<<< HEAD
 
                             # Determine which ILS file to use 
                             ilsFileList = glob.glob(mainInF.inputs['ilsDir'] + 'ils*')
 
+=======
+                        
+                            # Determine which ILS file to use 
+                            ilsFileList = glob.glob(mainInF.inputs['ilsDir'] + 'ils*')
+                
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                             # Create a date list of ils files present
                             ilsYYYYMMDD = []
                             for ilsFile in ilsFileList:
                                 ilsFileNpath = os.path.basename(ilsFile)
                                 match = re.match(r'\s*ils(\d\d\d\d)(\d\d)(\d\d).*',ilsFileNpath)
                                 ilsYYYYMMDD.append([int(match.group(1)),int(match.group(2)),int(match.group(3))])
+<<<<<<< HEAD
 
                             ilsDateList = [ dt.date(ilsyear,ilsmonth,ilsday) for ilsyear, ilsmonth, ilsday in ilsYYYYMMDD ]
 
+=======
+                                                
+                            ilsDateList = [ dt.date(ilsyear,ilsmonth,ilsday) for ilsyear, ilsmonth, ilsday in ilsYYYYMMDD ]
+                            
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                             # Find the ils date nearest to the current day
                             nearstDay     = sc.nearestDate(ilsDateList,obsDay.year,obsDay.month,obsDay.day)
                             nearstDayMnth = "{0:02d}".format(nearstDay.month)
                             nearstDayYr   = "{0:02d}".format(nearstDay.year)
                             nearstDayDay  = "{0:02d}".format(nearstDay.day)
                             nearstDaystr  = nearstDayYr + nearstDayMnth + nearstDayDay
+<<<<<<< HEAD
 
+=======
+                            
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                             # Get File path and name for nearest ils file
                             for ilsFile in ilsFileList:
                                 if nearstDaystr in os.path.basename(ilsFile):
@@ -602,21 +852,35 @@ def main(argv):
                         # If file.....
                         elif os.path.isfile(mainInF.inputs['ilsDir']):
                             ilsFname = mainInF.inputs['ilsDir']
+<<<<<<< HEAD
 
                         if logFile: logFile.info('Using ils file: ' + ilsFname)
 
+=======
+                                                          
+                        if logFile: logFile.info('Using ils file: ' + ilsFname)
+                        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                         # Replace ils file name in local ctl file (within working directory)
                         teststr = [r'file.in.modulation_fcn', r'file.in.phase_fcn']
                         repVal  = [ilsFname        , ilsFname   ]
                         ctlFileLcl.replVar(teststr,repVal)
+<<<<<<< HEAD
 
                     # Write FOV from spectral database file to ctl file (within working directory)
                     ctlFileLcl.replVar([r'band\.\d+\.omega'],[str(specDBone['FOV'])])
 
+=======
+                    
+                    # Write FOV from spectral database file to ctl file (within working directory)
+                    ctlFileLcl.replVar([r'band\.\d+\.omega'],[str(specDBone['FOV'])])
+                    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                     #---------------------------
                     # Message strings for output
                     #---------------------------    
                     msgstr1 = mainInF.inputs['ctlList'][ctl_ind][0]
+<<<<<<< HEAD
                     msgstr2 = datestr+'.'+"{0:06}".format(int(dbFltData_2['TStamp'][spcDBind]))
 
                     #---------------------------
@@ -626,6 +890,10 @@ def main(argv):
                     #ctlFileLcl.replVar([r'band\.\d+\.max_opd'],[str(1.0/specDBone['Reso']*0.9)])
 
 
+=======
+                    msgstr2 = datestr+'.'+"{0:06}".format(int(dbFltData_2['TStamp'][spcDBind]))                
+                        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                                         #----------------------------#
                                         #                            #
                                         #      --- Run pspec---      #
@@ -636,6 +904,7 @@ def main(argv):
                         print 'Running PSPEC for ctl file: %s' % msgstr1
                         print 'Processing spectral observation date: %s' % msgstr2
                         print '*****************************************************'
+<<<<<<< HEAD
 
                         rtn = t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir3, mainInF, spcDBind, ctl_ind, logFile)
 
@@ -644,6 +913,16 @@ def main(argv):
                             logFile.info('Processed spectral observation date: %s' % msgstr2)                    
 
 
+=======
+                        
+                        rtn = t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir3, mainInF, spcDBind, ctl_ind, logFile)
+                        
+                        if logFile: 
+                            logFile.info('Ran PSPEC for ctl file: %s' % msgstr1)
+                            logFile.info('Processed spectral observation date: %s' % msgstr2)                    
+                                            
+                                            
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                                         #----------------------------#
                                         #                            #
                                         #    --- Run Refmaker---     #
@@ -653,6 +932,7 @@ def main(argv):
                         #-------------
                         # Run Refmaker
                         #-------------
+<<<<<<< HEAD
                         if mainInF.inputs['waccmFlg']:
                             ckDir( mainInF.inputs['WACCMfolder'], logFlg=logFile, exit=True )
                             waccmFile = mainInF.inputs['WACCMfolder'] + 'WACCMref_V6-'+mnthstr+'.dat'
@@ -671,19 +951,36 @@ def main(argv):
 
 
                         rtn = refMkrNCAR(wrkInputDir2, waccmFile, wrkOutputDir3, \
+=======
+                        print '*****************************************************'
+                        print 'Running REFMKRNCAR for ctl file: %s' % msgstr1
+                        print 'Processing spectral observation date: %s' % msgstr2
+                        print '*****************************************************'
+                        
+                        rtn = refMkrNCAR(wrkInputDir2, mainInF.inputs['WACCMfile'], wrkOutputDir3, \
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                                          mainInF.inputs['refMkrLvl'], mainInF.inputs['wVer'], mainInF.inputs['zptFlg'],\
                                          dbFltData_2, spcDBind, logFile)
                         if logFile: 
                             logFile.info('Ran REFMKRNCAR for ctl file: %s' % msgstr1)
                             logFile.info('Processed spectral observation date: %s' % msgstr2)                    
+<<<<<<< HEAD
 
 
+=======
+                                    
+                        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                                         #----------------------------#
                                         #                            #
                                         #      --- Run sfit4---      #
                                         #                            #
                                         #----------------------------#
+<<<<<<< HEAD
 
+=======
+                            
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                     #--------------
                     # Call to sfit4
                     #--------------                        
@@ -693,11 +990,19 @@ def main(argv):
                         print 'Processing spectral observation date: %s' % msgstr2
                         print 'Ouput Directory: %s' % wrkOutputDir3
                         print '*****************************************************'
+<<<<<<< HEAD
 
                         if logFile: 
                             logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)
                             logFile.info('Processed spectral observation date: %s' % msgstr2)
 
+=======
+                        
+                        if logFile: 
+                            logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)
+                            logFile.info('Processed spectral observation date: %s' % msgstr2)
+                        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                         #------------------------------
                         # Change working directory to 
                         # output directory to run pspec
@@ -707,12 +1012,20 @@ def main(argv):
                         except OSError as errmsg:
                             if logFile: logFile.error(errmsg)
                             sys.exit()
+<<<<<<< HEAD
 
+=======
+                            
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                         #---------------------
                         # Run sfit4 executable
                         #---------------------
                         sc.subProcRun( [mainInF.inputs['binDir'] + 'sfit4'] ,logFile)
+<<<<<<< HEAD
 
+=======
+                        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                         #if ( stderr is None or not stderr):
                                 #if log_flg:
                                         #logFile.info('Finished running sfit4\n' + stdout)
@@ -721,15 +1034,24 @@ def main(argv):
                                 #if log_flg:
                                         #logFile.error('Error running sfit4 \n' + stdout)
                                 #sys.exit()   
+<<<<<<< HEAD
 
 
+=======
+    
+    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                         #-----------------------------------
                         # Change permissions of all files in 
                         # working directory
                         #-----------------------------------
                         for f in glob.glob(wrkOutputDir3 + '*'):
                             os.chmod(f,0777)
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                         #----------------------------------------------
                         # If succesfull run, write details to list file
                         #----------------------------------------------
@@ -741,11 +1063,19 @@ def main(argv):
                                     if ind < 10:
                                         if r'RDRV: DONE.' in line: cmpltFlg = True
                                     else: break
+<<<<<<< HEAD
 
                             if cmpltFlg and lstFile:
                                 lstFile.info("{0:<13}".format(int(dbFltData_2['Date'][spcDBind])) + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '       ' + wrkOutputDir3)
 
 
+=======
+                            
+                            if cmpltFlg and lstFile:
+                                lstFile.info("{0:<13}".format(int(dbFltData_2['Date'][spcDBind])) + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '       ' + wrkOutputDir3)
+                                
+                                  
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                                 #----------------------------#
                                 #                            #
                                 #   --- Error Analysis ---   #
@@ -754,17 +1084,26 @@ def main(argv):
                         if mainInF.inputs['errFlg']:
                             if logFile: 
                                 logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)                            
+<<<<<<< HEAD
 
+=======
+                            
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                             #-----------------------------------
                             # Enter into Error Analysis function
                             #-----------------------------------
                             rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, logFile )  
+<<<<<<< HEAD
 
+=======
+                                
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                         #---------------------------
                         # Continuation for Pause flg
                         #---------------------------
                         if pauseFlg:
                             while True:
+<<<<<<< HEAD
                                 user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 plot retrieval results\n >>> ')
                                 plt.close('all')
                                 try:
@@ -817,6 +1156,25 @@ def main(argv):
                                     brkFlg = False 
                                     break
 
+=======
+                                user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all\n >>> ')
+                                try:
+                                    user_input = int(user_input)
+                                    if not any(user_input == val for val in [-1,0,1,2]): raise ValueError
+                                    break
+                                except ValueError:
+                                    print 'Please enter -1, 0, 1, or 2'
+                                    
+                            if   user_input == 0:  sys.exit()           # Exit program
+                            elif user_input == 1:  brkFlg = True        # Exit while loop (Do not repeat)
+                            elif user_input == 2:                       # Stop pause and exit while loop
+                                pauseFlg = False
+                                brkFlg   = True
+                            elif user_input == -1:                      # Repeat loop
+                                brkFlg = False 
+                                # Need to implement functionality to recopy ctl file, bnr file, etc
+                                
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                         #-----------------------
                         # Exit out of while loop
                         #-----------------------
@@ -824,4 +1182,8 @@ def main(argv):
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     main(sys.argv[1:])
+=======
+    main(sys.argv[1:])
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091

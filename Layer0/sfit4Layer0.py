@@ -109,7 +109,11 @@ def main(argv):
         'v2':   '/data/tools/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
         'v3':   '/Users/jamesw/FDP/sfit/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
         'v4':   '/home/ebaumer/Code/sfit4/src/',
+<<<<<<< HEAD
         'v5':   '/Users/jamesw/FDP/sfit/400/src/src-irwg14-mp'
+=======
+        'v5':   '/Users/nataliekille/Documents/sfit4_0.9.4.3/src'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         }
 
 

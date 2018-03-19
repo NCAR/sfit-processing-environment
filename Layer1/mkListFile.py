@@ -18,7 +18,11 @@
 #
 #
 # Usage:
+<<<<<<< HEAD
 #      mkListFile.py -i /data/ebaumer/MLO_input.py -N /data/ebaumer/2008.lst -d /data/ebaumer/2008/
+=======
+#      ./mkListFile.py -i /data/ebaumer/MLO_input.py -N /data/ebaumer/2008.lst -d /data/ebaumer/2008/
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 #
 #
 #
@@ -46,7 +50,11 @@
 #
 #----------------------------------------------------------------------------------------
 
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
                                 #-------------------------#
                                 # Import Standard modules #
                                 #-------------------------#
@@ -63,11 +71,19 @@ import datetime as dt
                                 #-------------------------#
 def usage():
     ''' Prints to screen standard program usage'''
+<<<<<<< HEAD
     print 'mkListFile.py -i <file> -N <file> -d <dir> -?'
     print '  -i <file> : Path and file name of Layer1 input file'
     print '  -N <file> : Path and file name for output list file'
     print '  -d <dir>  : Base directory of data'
     print '  -?        : Show all flags'
+=======
+    print 'mkListFile.py -i <file> -N <file> -?'
+    print '  -i <file> : Path and file name of Layer1 input file'
+    print '  -N <file> : Path and file name for output list file'
+    print '  -d <dir>  : Base directory of data'
+    print '  -?        : Show all flags'                                
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 
 def ckDir(dirName,exit=False):
     ''' '''
@@ -76,7 +92,11 @@ def ckDir(dirName,exit=False):
         if exit: sys.exit()
         return False
     else:
+<<<<<<< HEAD
         return True
+=======
+        return True    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 
 def ckFile(fName,exit=False):
     '''Check if a file exists'''
@@ -85,8 +105,13 @@ def ckFile(fName,exit=False):
         if exit: sys.exit()
         return False
     else:
+<<<<<<< HEAD
         return True
 
+=======
+        return True    
+    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 def sortDict(DataDict,keyval):
     ''' Sort all values of dictionary based on values of one key'''
     base = DataDict[keyval]
@@ -112,11 +137,16 @@ def main(argv):
         print str(err)
         usage()
         sys.exit()
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
     #-----------------------------
     # Parse command line arguments
     #-----------------------------
     for opt, arg in opts:
+<<<<<<< HEAD
 
         # Layer1 input path and name
         if opt == '-i':
@@ -130,11 +160,30 @@ def main(argv):
         elif opt == '-d':
             baseDir = arg
 
+=======
+        
+        # Layer1 input path and name
+        if opt == '-i':
+            inputFile = arg
+            
+        # Output list file name and directory    
+        elif opt == '-N':
+            outputFile = arg
+            
+        # Base Directory for data
+        elif opt == '-d':
+            baseDir = arg
+                
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         # Show all command line flags
         elif opt == '-?':
             usage()
             sys.exit()
+<<<<<<< HEAD
 
+=======
+                                           
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         else:
             print 'Unhandled option: ' + opt
             sys.exit()
@@ -148,21 +197,34 @@ def main(argv):
     hdlr1   = logging.FileHandler(outputFile, mode='w')
     fmt1    = logging.Formatter('')
     hdlr1.setFormatter(fmt1)
+<<<<<<< HEAD
     lstFile.addHandler(hdlr1)
+=======
+    lstFile.addHandler(hdlr1)   
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 
     #----------------------------------
     # Check the existance of input file
     #----------------------------------
     ckFile(inputFile,exit=True)
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
     #--------------------------------------
     # Check the existance of base directory
     #--------------------------------------
     ckDir(baseDir,exit=True)
     # check if '/' is included at end of path
     if not( baseDir.endswith('/') ):
+<<<<<<< HEAD
         baseDir = baseDir + '/'
 
+=======
+        baseDir = baseDir + '/'       
+    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
     #-------------------------
     # Get data from input file
     #-------------------------
@@ -179,7 +241,11 @@ def main(argv):
     #------------------
     ctlData = sc.CtlInputFile(inVars.inputs['ctlList'][0][0])
     ctlData.getInputs()
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
     #------------------------
     # Write data to list file
     #------------------------
@@ -205,11 +271,18 @@ def main(argv):
     lstFile.info('zptFlg         = ' + str(inVars.inputs['zptFlg'])            )
     lstFile.info('refMkrLvl      = ' + str(inVars.inputs['refMkrLvl'])         )
     lstFile.info('wVer           = ' + str(inVars.inputs['wVer'])              )
+<<<<<<< HEAD
     lstFile.info('nbands         = ' + str(len(ctlData.inputs['band']))        )
     lstFile.info('# End List File Meta-Data')
     lstFile.info('')
     lstFile.info('Date         TimeStamp    Directory ')
 
+=======
+    lstFile.info('# End List File Meta-Data')
+    lstFile.info('')
+    lstFile.info('Date         TimeStamp    Directory ')        
+   
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
     #-----------------------------------------------------
     # Loop through directory to find all valid retreivals.
     # Retrieval is valid when summary file exists.
@@ -220,12 +293,17 @@ def main(argv):
     lstDict = {}
     for drs in os.walk(baseDir).next()[1]:
         YYYYMMDD = drs[0:4]  + drs[4:6]   + drs[6:8]
+<<<<<<< HEAD
         hhmmss   = drs[9:11] + drs[11:13] + drs[13:]
+=======
+        hhmmss   = drs[9:11] + drs[11:13] + drs[13:]     
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         if os.path.isfile(baseDir + drs + '/summary'):
             lstDict.setdefault('date',[]).append(dt.datetime(int(drs[0:4]), int(drs[4:6]), int(drs[6:8]), int(drs[9:11]), int(drs[11:13]), int(drs[13:]) ))
             lstDict.setdefault('YYYYMMDD',[]).append(YYYYMMDD)
             lstDict.setdefault('hhmmss',[]).append(hhmmss)
             lstDict.setdefault('directory',[]).append(baseDir + drs)
+<<<<<<< HEAD
 
     lstDict = sortDict(lstDict,'date')
     for ind,val in enumerate(lstDict['date']):
@@ -233,3 +311,12 @@ def main(argv):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
+=======
+        
+    lstDict = sortDict(lstDict,'date')
+    for ind,val in enumerate(lstDict['date']):
+        lstFile.info("{0:<13}".format(lstDict['YYYYMMDD'][ind]) + "{0:6}".format(lstDict['hhmmss'][ind]) + '       ' + lstDict['directory'][ind]+'/')
+                
+if __name__ == "__main__":
+    main(sys.argv[1:])
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091

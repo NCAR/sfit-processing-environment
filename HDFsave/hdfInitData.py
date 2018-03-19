@@ -39,7 +39,10 @@ import datetime as dt
 import numpy as np
 import scipy.io as si
 from itertools import izip
+<<<<<<< HEAD
 import dataOutClass as dc
+=======
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 
 class HDFinitData(object):
     
@@ -97,7 +100,11 @@ class HDFinitData(object):
         #---------------------------------------------------
         self.datesJD2K                      = np.asarray(dataStrc['ds']['DATETIME'])
         self.latitude                       = dataStrc['ds']['LATITUDE'][0]
+<<<<<<< HEAD
         self.longitude                      = 360.0 - dataStrc['ds']['LONGITUDE'][0]                                # Convert [West Long] -> [East Long]
+=======
+        self.longitude                      = dataStrc['ds']['LONGITUDE'][0]
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         self.instAltitudes                  = dataStrc['ds']['ALT_INSTRUMENT'][0] / 1000.0                          # Convert [m] -> [km]
         self.surfPressures                  = np.asarray(dataStrc['ds']['SURFACE_PRESSURE'])
         self.surfTemperatures               = np.asarray(dataStrc['ds']['SURFACE_TEMPERATURE'])
@@ -105,12 +112,21 @@ class HDFinitData(object):
         self.altitudeBoundaries             = np.rot90(dataStrc['ds']['ALT_BOUNDARIES'][0])
         self.pressures                      = np.vstack(dataStrc['ds']['P']).reshape(nobs,nlyrs)
         self.temperatures                   = np.vstack(dataStrc['ds']['T']).reshape(nobs,nlyrs)
+<<<<<<< HEAD
         self.gasMxRatAbsSolar               = np.vstack(dataStrc['ds']['RETVMR']).reshape(nobs,nlyrs)              / self.mxSclFctVal
         self.gasMxRatAbsSolarApriori        = np.vstack(dataStrc['ds']['APRVMR']).reshape(nobs,nlyrs)              / self.mxSclFctVal
         self.gasMxRatAbsSolarAVK            = np.vstack(dataStrc['ds']['AK']).reshape(nobs,nlyrs,nlyrs) 
         self.integrationTimes               = np.asarray(dataStrc['ds']['INT_TIME'])  
         self.gasMxRatAbsSolarUncRand        = np.vstack(dataStrc['ds']['RAND_COVAR']).reshape(nobs,nlyrs,nlyrs)    / self.mxSclFct2Val
         self.gasMxRatAbsSolarUncSys         = np.vstack(dataStrc['ds']['SYS_COVAR']).reshape(nobs,nlyrs,nlyrs)     / self.mxSclFct2Val
+=======
+        self.gasMxRatAbsSolar               = np.vstack(dataStrc['ds']['RETVMR']).reshape(nobs,nlyrs)
+        self.gasMxRatAbsSolarApriori        = np.vstack(dataStrc['ds']['APRVMR']).reshape(nobs,nlyrs)
+        self.gasMxRatAbsSolarAVK            = np.vstack(dataStrc['ds']['AK']).reshape(nobs,nlyrs,nlyrs) 
+        self.integrationTimes               = np.asarray(dataStrc['ds']['INT_TIME'])  
+        self.gasMxRatAbsSolarUncRand        = np.vstack(dataStrc['ds']['RAND_COVAR']).reshape(nobs,nlyrs,nlyrs)  
+        self.gasMxRatAbsSolarUncSys         = np.vstack(dataStrc['ds']['SYS_COVAR']).reshape(nobs,nlyrs,nlyrs)  
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         self.gasColPartAbsSolar             = np.vstack(dataStrc['ds']['RETLAYCOL']).reshape(nobs,nlyrs)
         self.gasColPartAbsApriori           = np.vstack(dataStrc['ds']['APRLAYCOL']).reshape(nobs,nlyrs)
         self.gasColAbsSolar                 = np.asarray(dataStrc['ds']['RETTC']) 
@@ -120,6 +136,7 @@ class HDFinitData(object):
         self.gasColAbsSolarUncSys           = np.asarray(dataStrc['ds']['TOT_SYS_ERR'])  
         self.angleZastr                     = np.asarray(dataStrc['ds']['SZA']) 
         self.angleSolAz                     = np.asarray(dataStrc['ds']['AZI']) 
+<<<<<<< HEAD
         self.h2oMxRatAbsSolar               = np.vstack(dataStrc['ds']['H2O_VMR']).reshape(nobs,nlyrs)             / self.mxSclFctVal
         self.h2oColAbsSol                   = np.asarray(dataStrc['ds']['H2O_TC']) 
 
@@ -131,6 +148,10 @@ class HDFinitData(object):
                 self.angleSolAz[i] = np.abs(360. - az - 180.)
             elif az < 180.0:
                 self.angleSolAz[i] = 180.0 + az
+=======
+        self.h2oMxRatAbsSolar               = np.vstack(dataStrc['ds']['H2O_VMR']).reshape(nobs,nlyrs) 
+        self.h2oColAbsSol                   = np.asarray(dataStrc['ds']['H2O_TC'])  
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 
         #----------------------------------------------
         # Filter data according to specified date range
@@ -160,6 +181,7 @@ class HDFinitData(object):
         self.h2oColAbsSol                   = self.h2oColAbsSol[inds]
         
 
+<<<<<<< HEAD
     def initPy(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,
                mxRMS=1.0,minSZA=0.0,mxSZA=80.0,minDOF=2.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,dofFlg=False,rmsFlg=True,
                tcFlg=True,pcFlg=True,cnvFlg=True,szaFlg=False,errFlg=True,chiFlg=False,tcMMflg=False, h2oFlg=False):
@@ -213,6 +235,17 @@ class HDFinitData(object):
         self.h2oMxRatAbsSolar               = pyData.HDFh2oVMR       / self.mxSclFctVal
         self.h2oColAbsSol                   = pyData.HDFh2oTC
 
+=======
+    def initPy(self):
+        ''' Interface for initializing data with python set of routines'''
+        
+        #---------------------------------------
+        # Convert dates to Julian Day since 2000
+        #---------------------------------------        
+        self.datesJD2K = np.array([(x - dt.datetime(2000,1,1)).total_seconds()/dt.timedelta(1).total_seconds() for x in self.dates])   
+        
+        
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         
         
     def initDummy(self):

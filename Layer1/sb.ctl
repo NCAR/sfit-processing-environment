@@ -213,6 +213,7 @@ sb.linePAir_CH4.systematic              = 0.1
 #sb.dwshift_H2O.systematic           = 0.1
 
 
+<<<<<<< HEAD
 #---------------------------------------------------------
 # These flags indicate which errors are included in the 
 # total random and systematic error budget. If the flag is
@@ -228,6 +229,9 @@ sb.total.measurement                 = T
 sb.total.smoothing                   = T
 sb.total.interfering_species         = T
 sb.total.retrieval_parameters        = T
+=======
+
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 
 
 

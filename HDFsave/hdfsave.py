@@ -22,9 +22,12 @@
 #    You should have received a copy of the GNU General Public License
 #    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #
+<<<<<<< HEAD
 #    Note!!!! You can not have empty strings. HDF will fail to write if there are 
 #             empty strings. Must at least contain a space character (i.e. ' ')
 #
+=======
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 #----------------------------------------------------------------------------------------
 import hdfBaseRetDat
 import numpy as np
@@ -72,6 +75,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DS_AFFILIATION']          = 'National Center for Atmospheric Research; NCAR'
       dataStr['DS_ADDRESS']              = '3450 Mitchell Lane; Boulder CO 80305; UNITED STATES'
       dataStr['DS_EMAIL']                = 'jamesw@ucar.edu'
+<<<<<<< HEAD
       dataStr['DATA_DESCRIPTION']        = 'FTIR vmr vertical profile data of '+self.gasNameUpper+'. Data were taken from a 0.0035cm-1 resolution Bruker 120HR '  + \
                                            'FTIR spectrometer stationed at 3396masl at Mauna Loa, Hawaii (19.54N, 155.57W).  Data acquisition ' + \
                                            'is automated. Small wavenumber regions around features for a gas to be retrieved are used in the retrieval analysis.' + \
@@ -81,6 +85,9 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
                                            'HITRAN 2008 line list with additional pseudo-line parameters are used in the forward calculation. ' + \
                                            'Temperature profiles are derived from NCEP analyses for each day to approx. 1.0 mbar and WACCM monthly mean above. ' + \
                                            'Daily water profiles are averaged from 6 hourly ERA-Interim re-analysis data. Further information can be found at www://acd.ucar.edu/irwg/index/html'
+=======
+      dataStr['DATA_DESCRIPTION']        = 'FTIR vmr vertical profile data of '+self.gasNameUpper+' using sfit version] '+self.sfitVer
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['DATA_DISCIPLINE']         = 'ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED'
       dataStr['DATA_GROUP']              = 'EXPERIMENTAL;PROFILE.STATIONARY'
       dataStr['DATA_LOCATION']           = self.loc.upper()
@@ -100,15 +107,26 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
                                            self.getH2oMixingRatioAbsorptionSolarName()+';'+self.getH2oColumnAbsorptionSolarName(),
       dataStr['DATA_START_DATE']         = idateStr
       dataStr['DATA_STOP_DATE']          = fdateStr
+<<<<<<< HEAD
       dataStr['DATA_FILE_VERSION']       = '002'
       dataStr['DATA_MODIFICATIONS']      = 'None'
       dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-002'
       dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper Hannigan, J.W., Coffey, M.T., Goldman, A. Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
+=======
+      dataStr['DATA_FILE_VERSION']       = '001'
+      dataStr['DATA_MODIFICATIONS']      = 'None'
+      dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-002'
+      dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper] Hannigan, J.W., Coffey, M.T., Goldman, A.] Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['DATA_CAVEATS']            = 'None'
       dataStr['DATA_RULES_OF_USE']       = 'Contact Hannigan;James'
       dataStr['DATA_ACKNOWLEDGEMENT']    = 'NCAR is sponsored by the National Science Foundation. This work is supported under contract by the National Aeronautics and Space Administration.'
       dataStr['FILE_DOI']                = ' '
+<<<<<<< HEAD
       dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_002.hdf'
+=======
+      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.upper()+'_'+self.loc.lower()+'_'+idateStr.lower()+'_'+fdateStr.lower()+'_001.hdf'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
       dataStr['FILE_ACCESS']             = 'NDACC'
       dataStr['FILE_PROJECT_ID']         = 'NSA007'
@@ -212,8 +230,12 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       
       dataStr['VAR_NAME']             = self.getSurfacePressureIndependentName()
       dataStr['VAR_DESCRIPTION']      = 'Daily average surface pressure measured at the observation site'
+<<<<<<< HEAD
       dataStr['VAR_NOTES']            = 'Values are operational data recorded by weather station near instrument. If not available, ' +\
                                         'NCEP daily pressure interpolated to instrument alitude used.'
+=======
+      dataStr['VAR_NOTES']            = 'None'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -235,8 +257,12 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       
       dataStr['VAR_NAME']             = self.getSurfaceTemperatureIndependentName()
       dataStr['VAR_DESCRIPTION']      = 'Daily average temperature at ground level measured at the observation site'
+<<<<<<< HEAD
       dataStr['VAR_NOTES']            = 'Values are operational data recorded by weather station near instrument. If not available, ' +\
                                         'NCEP daily temperature interpolated to instrument alitude used.'
+=======
+      dataStr['VAR_NOTES']            = 'None'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -333,7 +359,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 500.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
+<<<<<<< HEAD
       dataStr['VALID_RANGE']          = (0.0,500.0)
+=======
+      dataStr['VALID_RANGE']          = (0.0,maxval)
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['units']                = 'K'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -346,7 +376,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarName()
       dataStr['VAR_DESCRIPTION']      = 'Retrieved mixing ratio profile of {} '.format(self.gasNameUpper)
+<<<<<<< HEAD
       dataStr['VAR_NOTES']            = 'Retrieval algorithm sfit4 version: ' + self.sfitVer + ' NDACC IRWG retrieval strategy. HITRAN2008 spectroscopy'
+=======
+      dataStr['VAR_NOTES']            = 'None'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -390,7 +424,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarAvkName()
       dataStr['VAR_DESCRIPTION']      = 'Averaging kernel matrix (AVK) of the retrieved vertical profile of {} in VMR/VMR units'.format(self.gasNameUpper)
+<<<<<<< HEAD
       dataStr['VAR_NOTES']            = 'Columns of AVK are the fastest running index (see https://wiki.ucar.edu/display/sfit4/Post-Processing)'
+=======
+      dataStr['VAR_NOTES']            = 'Dimension 2 = AVK rows; Dimension 3 = AVK columns'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -434,9 +472,13 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()
       dataStr['VAR_DESCRIPTION']      = 'Total random error covariance matrix associated with the retrieved vertical profiles of {} in VMR units'.format(self.gasNameUpper)
+<<<<<<< HEAD
       dataStr['VAR_NOTES']            = 'Random errors include: Temperature, SZA, and Measurement noise. Temperature errors are determined by comparing ' +\
                                         'radiosonde data with NCEP temperature profiles. SZA error is set at 0.10 degs. Measurement noise is calculated ' +\
                                         'using the SNR.'
+=======
+      dataStr['VAR_NOTES']            = 'None'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -458,9 +500,13 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()
       dataStr['VAR_DESCRIPTION']      = 'Total systematic error covariance matrix associated with the retrieved vertical profiles of {} in VMR units'.format(self.gasNameUpper)
+<<<<<<< HEAD
       dataStr['VAR_NOTES']            = 'Systematic error includes: Temperature, and Line Parameters. Temperature errors are determined by comparing ' +\
                                         'radiosonde data with NCEP temperature profiles. Line parameter errors are set at 4% as given ' + \
                                         'in Harrison et al., 2010 (JQRST). Smoothing error is not included.'
+=======
+      dataStr['VAR_NOTES']            = 'None'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -570,7 +616,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getColumnAbsorptionSolarAvkName()
       dataStr['VAR_DESCRIPTION']      = 'Total vertical column averaging kernel for {} derived from retrieved mixing ratio averaging kernel'.format(self.gasNameUpper)
+<<<<<<< HEAD
       dataStr['VAR_NOTES']            = 'This averaging kernel multiplies the partial column vector in order to get smoothed total column'
+=======
+      dataStr['VAR_NOTES']            = 'None'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -592,7 +642,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName()
       dataStr['VAR_DESCRIPTION']      = 'Estimated total random uncertainty on the retrieved total vertical columns of {}'.format(self.gasNameUpper)
+<<<<<<< HEAD
       dataStr['VAR_NOTES']            = 'See notes for total random error covariance matrix'
+=======
+      dataStr['VAR_NOTES']            = 'None'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -614,7 +668,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.gasNameUpper+'.'+self.getColumnAbsorptionSolarUncertaintySystematicName()
       dataStr['VAR_DESCRIPTION']      = 'Estimated total systematic uncertainty on the retrieved total vertical columns of {}'.format(self.gasNameUpper)
+<<<<<<< HEAD
       dataStr['VAR_NOTES']            = 'See notes for total systematic error covariance matrix'
+=======
+      dataStr['VAR_NOTES']            = 'None'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -636,7 +694,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.getAngleSolarZenithAstronomicalName()
       dataStr['VAR_DESCRIPTION']      = 'Astronomical zenith angle of the sun at the time of the measurement'
+<<<<<<< HEAD
       dataStr['VAR_NOTES']            = 'In solar absorption mode, the sun defines the line of sight'
+=======
+      dataStr['VAR_NOTES']            = 'None'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -680,7 +742,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       
       dataStr['VAR_NAME']             = self.getH2oMixingRatioAbsorptionSolarName()
       dataStr['VAR_DESCRIPTION']      = 'Final vertical profile of H2O in VMR units'
+<<<<<<< HEAD
       dataStr['VAR_NOTES']            = 'Daily averages derived from 6 hourly ERA-Interim re-analysis data'
+=======
+      dataStr['VAR_NOTES']            = 'Derived from monthly averaged profiles from WACCM 1980-2020 output'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['VAR_SIZE']             = str(nsize)+";"+str(nlyrs)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()+';'+self.getAltitudeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
@@ -702,7 +768,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
       dataStr['VAR_NAME']             = self.getH2oColumnAbsorptionSolarName()
       dataStr['VAR_DESCRIPTION']      = 'Total vertical column of final H2O'
+<<<<<<< HEAD
       dataStr['VAR_NOTES']            = 'Daily averages derived from 6 hourly ERA-Interim re-analysis data'
+=======
+      dataStr['VAR_NOTES']            = 'Derived from monthly averaged profiles from WACCM 1980-2020 output'
+>>>>>>> e19d222675ae6951b17a095558e88d38877eb091
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
