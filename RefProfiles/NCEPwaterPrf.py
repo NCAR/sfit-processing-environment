@@ -92,8 +92,7 @@ def main():
     #---------
     # Location
     #---------
-    loc = 'tab'
-    #loc = 'mlo'
+    loc = 'fl0'
 
     #------------------------------------
     # Version number to append water file
@@ -117,7 +116,7 @@ def main():
     # Date Range of interest
     #-----------------------
     iyear          = 2017
-    imnth          = 9
+    imnth          = 1
     iday           = 1
     fyear          = 2017
     fmnth          = 12

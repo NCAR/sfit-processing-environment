@@ -62,7 +62,7 @@ def main():
     #----------------
     # Initializations
     #----------------
-    statstr     = 'tab'
+    statstr     = 'mlo'
     dataDir     = '/data1/'+statstr.lower()+'/'
     #dataDir     = '/ya4/id/'+statstr.lower()+'/'
     outDataDir  = '/data/Campaign/'+statstr.upper()+'/House_Log_Files/'
@@ -71,14 +71,14 @@ def main():
     # Date Range of data to process
     #------------------------------
     # Starting 
-    iyear = 2017               # Year
+    iyear = 2018               # Year
     imnth = 1                 # Month
     iday  = 1                  # Day
     
     # Ending
-    fyear = 2017               # Year
-    fmnth = 12                 # Month
-    fday  = 31                 # Day
+    fyear = 2018               # Year
+    fmnth = 2                 # Month
+    fday  = 28                 # Day
     
     #-------------------
     # Call to date class

@@ -108,10 +108,10 @@ def main():
     # Date Range of interest
     #-----------------------
     iyear          = 2017
-    imnth          = 6
+    imnth          = 11
     iday           = 1
     fyear          = 2017
-    fmnth          = 8
+    fmnth          = 12
     fday           = 31
     
     #-----------------------
@@ -196,10 +196,10 @@ def main():
         #-----------------
         # Remove grib file
         #-----------------
-        #os.remove(fName1+'.grb')
-        #os.remove(fName2+'.grb')
-        #os.remove(fName3+'.grb')
-        #os.remove(fName4+'.grb')
+        os.remove(fName1+'.grb')
+        os.remove(fName2+'.grb')
+        os.remove(fName3+'.grb')
+        os.remove(fName4+'.grb')
     
         
         print 'Finished processing day: {}'.format(sngDay)

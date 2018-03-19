@@ -89,7 +89,7 @@ def main():
     #---------
     # Location
     #---------
-    loc = 'tab'
+    loc = 'fl0'
 
     #------------------------------------
     # Version number to append water file
@@ -104,12 +104,12 @@ def main():
     #-----------------------
     # Date Range of interest
     #-----------------------
-    iyear          = 2017
+    iyear          = 2018
     imnth          = 1
     iday           = 1
-    fyear          = 2017
-    fmnth          = 12
-    fday           = 31
+    fyear          = 2018
+    fmnth          = 2
+    fday           = 28
 
     #---------------------------------------
     # Size of altitude grid for each station

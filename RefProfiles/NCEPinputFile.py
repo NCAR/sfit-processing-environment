@@ -25,7 +25,7 @@
 # Three letter station
 # location
 #---------------------
-loc = 'tab'                                    # Three letter station identifier
+loc = 'fl0'                                    # Three letter station identifier
 
 #----------------
 # Year to process

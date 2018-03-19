@@ -313,13 +313,15 @@ class MLOread():
         # Open file and read data
         #------------------------        
         data = tryopen(fileName)
+
       
         if data:                
                 
             #--------------------------
             # Remove header information 
             #--------------------------
-            data[:] = [ row.strip().split() for row in data if not '#' in row and len(row.strip().split()) == 30 ]
+            data[:] = [ row.strip().split() for row in data if not '#' in row and len(row.strip().split()) >= 30 ]
+
                                    
             #---------------------------------
             # Determine number of observations

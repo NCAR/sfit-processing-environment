@@ -84,17 +84,17 @@ def main():
     #-------
     # Inputs
     #-------
-    loc     = 'mlo'
+    loc     = 'fl0'
     inPath  = '/ya4/id/' + loc.lower() + '/'     # Input directory
     outPath = '/data1/' + loc.lower() + '/'       # Working directory
 
     iyear   = 2017 
-    imonth  = 1
-    iday    = 1
+    imonth  = 8
+    iday    = 25
 
     fyear   = 2017
     fmonth  = 12
-    fday    = 4
+    fday    = 31
 
     #-------------------
     # Call to date class

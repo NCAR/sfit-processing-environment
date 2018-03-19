@@ -88,7 +88,7 @@ def main():
     dataFileTag = 'flab'
     fileExtTag  = 'cdf'
     outDataDir  = '/data1/ancillary_data/fl0/eol/'
-    yearstr     = '2016'
+    yearstr     = '2017'
 
     #--------------------------
     # Initialize variable lists

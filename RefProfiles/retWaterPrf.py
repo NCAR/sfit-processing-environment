@@ -80,10 +80,13 @@ def main():
     #----------------
     # Initializations
     #----------------
-    loc        = 'tab'                 # Name of station location
+    loc        = 'fl0'                 # Name of station location
     gasName    = 'h2o'                 # Name of gas
     ver        = 'Current_ERA'         # Name of retrieval version to process
+    #ver        = 'Current_NCEP'         # Name of retrieval version to process
     verW       = 'v99'                 # version 99 is used for individual retrievals at specific times
+    #ctlF       = 'sfit4_v1.ctl'
+    ctlF       = 'sfit4.ctl'
 
     #------
     # Flags
@@ -102,11 +105,11 @@ def main():
     # Date Range of interest
     #-----------------------
     iyear          = 2017
-    imnth          = 8
+    imnth          = 1
     iday           = 1
     fyear          = 2017
-    fmnth          = 8
-    fday           = 31
+    fmnth          = 12
+    fday           = 28
 
     #---------------------
     # Input Data Directory
@@ -121,7 +124,7 @@ def main():
     #------
     # Files
     #------
-    ctlFile  = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/'+'x.'+gasName.lower()+'/sfit4.ctl'
+    ctlFile  = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/'+'x.'+gasName.lower()+'/'+ctlF
 
     #---------------------------------------
     # Altitude levels for different stations

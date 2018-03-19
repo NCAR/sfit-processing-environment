@@ -1281,7 +1281,7 @@ class ReadOutputData(_DateRange):
 
         #retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS','H2O']   # These profiles will always be read
         if rtrvGasList[0].upper() == 'H2O': retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be read
-        else: retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']
+        else: retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']
 
         if not fname: 
             if   retapFlg == 1: fname = 'rprfs.table'
@@ -3324,13 +3324,17 @@ class PlotData(ReadOutputData):
                 avkSCF  = np.mean(avkSCF,axis=0)
                 avkVMR  = np.mean(avkVMR,axis=0)
                 dofs    = np.trace(avkSCF)
-                dofs_cs = np.cumsum(np.diag(avkSCF)[::-1])[::-1]                    
+                dofs_cs = np.cumsum(np.diag(avkSCF)[::-1])[::-1]
+
+
 
         #-------------
         # Get Altitude
         #-------------
         if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
-        alt = np.asarray(self.rprfs['Z'][0,:])
+        alt     = np.asarray(self.rprfs['Z'][0,:])
+        Airmass = np.asarray(self.rprfs['AIRMASS'])
+        Airmass = np.mean(Airmass, axis=0)
         
         #--------
         # Ploting
@@ -3395,10 +3399,20 @@ class PlotData(ReadOutputData):
         cbar = fig.colorbar(scalarMap,orientation='vertical')
         cbar.set_label('Altitude [km]')
         ax.set_title('Averaging Kernels Scale Factor')
+
+        #----------------------------------------
+        # Calculate total column averaging kernel
+        #----------------------------------------
+        AirMinv   = np.diag(1.0/Airmass)
+
+        avkTC    = np.dot(np.dot(Airmass,avkSCF),AirMinv)
+
         
-        axb.plot(np.sum(avkSCF,axis=0),alt,color='k')
+        #axb.plot(np.sum(avkSCF,axis=0),alt,color='k')
+        axb.plot(avkTC, alt,color='k')
         axb.grid(True)
-        axb.set_xlabel('Averaging Kernel Area')
+        #axb.set_xlabel('Averaging Kernel Area')
+        axb.set_xlabel('Total Column AK')
         axb.tick_params(axis='x',which='both',labelsize=8)        
 
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
@@ -3424,10 +3438,13 @@ class PlotData(ReadOutputData):
         cbar = fig.colorbar(scalarMap,orientation='vertical')
         cbar.set_label('Altitude [km]')
         ax.set_title('Averaging Kernels VMR')
+
+        avkTCvmr    = np.dot(np.dot(Airmass,avkVMR),AirMinv)
         
-        axb.plot(np.sum(avkVMR,axis=0),alt,color='k')
+        axb.plot(avkTCvmr,alt,color='k')
+        #axb.plot(np.sum(avkVMR,axis=0),alt,color='k')
         axb.grid(True)
-        axb.set_xlabel('Averaging Kernel Area')
+        axb.set_xlabel('Total Column AK')
         axb.tick_params(axis='x',which='both',labelsize=8)        
 
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
