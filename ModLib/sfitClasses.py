@@ -60,11 +60,7 @@ def subProcRun( fname, logFlg=False ):
     rtn = subprocess.Popen( fname, stderr=subprocess.PIPE )
     outstr = ''
     for line in iter(rtn.stderr.readline, b''):
-<<<<<<< HEAD
         print line.rstrip()
-=======
-        print 'STDERR from {}: '.format(fname) + line.rstrip()
->>>>>>> e19d222675ae6951b17a095558e88d38877eb091
         if logFlg: outstr += line
 
     if logFlg: logFlg.info(outstr)
@@ -76,14 +72,12 @@ def nearestDate(daysList, year, month, day=1):
     testDate = datetime.date(year, month, day)
     return min( daysList, key=lambda x:abs(x-testDate) )
 
-<<<<<<< HEAD
 def nearestTime(daysList, year, month, day, hour, minute, second):
     ''' Finds the nearest Time from a list of days based on a given year, month, and day'''
     testDate = datetime.datetime(year, month, day, hour, minute, second)
     return min( daysList, key=lambda x:abs(x-testDate) )
 
-=======
->>>>>>> e19d222675ae6951b17a095558e88d38877eb091
+
 def sortDict(DataDict,keyval):
     ''' Sort all values of dictionary based on values of one key'''
     base = DataDict[keyval]
@@ -111,7 +105,7 @@ def ckDir(dirName,logFlg=False,exitFlg=False,quietFlg=False):
     else:
         return True   
 
-<<<<<<< HEAD
+
 def readCovarFile(fname):
     
     ckFile(fname,exitFlg=True)
@@ -142,11 +136,6 @@ class ExitError(Exception):
     def terminate(self):
         print 'Terminating program.....'
         sys.exit()
-=======
-                                                #----------------#
-                                                # Define classes #
-                                                #----------------#
->>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 
 #-----------------------------------------------------------------------------------------------                                                
 class DateRange:
@@ -276,27 +265,19 @@ class CtlInputFile():
                 #-------------------
                 if len(line) == 0: continue
 
-<<<<<<< HEAD
                 #------------------------------------
                 # Populate input dictionary
                 # Make sure all keys are LOWER case!!
                 #------------------------------------
-=======
-                #--------------------------
-                # Populate input dictionary
-                #--------------------------
->>>>>>> e19d222675ae6951b17a095558e88d38877eb091
+
                 if '=' in line:
                     lhs,_,rhs = line.partition('=')
                     lhs       = lhs.strip()
                     rhs       = rhs.strip().split()
 
 
-<<<<<<< HEAD
                     self.inputs[lhs.lower()] = [self.__convrtD(val) for val in rhs]
-=======
-                    self.inputs[lhs] = [self.__convrtD(val) for val in rhs]
->>>>>>> e19d222675ae6951b17a095558e88d38877eb091
+
                     #for rhs_part in rhs:                          
                         #if 'd' in rhs_part.lower():                               # Test and handle strings containing D (ie 1.0D0)
                             #mant,trsh,expo = rhs_part.lower().partition('d')
@@ -319,11 +300,7 @@ class CtlInputFile():
                     except ValueError:
                         pass
 
-<<<<<<< HEAD
                     self.inputs[lhs.lower()] += rhs          
-=======
-                    self.inputs[lhs] += rhs          
->>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 
                 #----------------------    
                 # Primary Retrieval Gas
@@ -333,11 +310,9 @@ class CtlInputFile():
                 if gas_flg:
                     match = re.match(r'\s*gas\.\w+\.list\s*=\s*(\w+)', line)
                     if match:
-<<<<<<< HEAD
+
                         self.primGas = match.group(1).lower()
-=======
-                        self.primGas = match.group(1)
->>>>>>> e19d222675ae6951b17a095558e88d38877eb091
+
                         gas_flg = False
 
                 #----------------   
@@ -431,7 +406,6 @@ class DbInputFile():
         return dbFltInputs
 
 
-<<<<<<< HEAD
     def dbFilterScn(self,scnFlg,fltDict=False):#=self.dbInputs):
         ''' Filter spectral db dicitonary based only forward or only backward scans'''
         inds = []
@@ -448,8 +422,7 @@ class DbInputFile():
         return dbFltInputs
 
 
-=======
->>>>>>> e19d222675ae6951b17a095558e88d38877eb091
+
     def dbFindDate(self,singlDate,fltDict=False):
         ''' Grab a specific date and time from dictionary '''
 
@@ -528,21 +501,15 @@ class RetOutput():
         ckFile(self.wrkDir + fName , logFlg=self.logFile, exitFlg=True)
 
         self.deflt = {}
-<<<<<<< HEAD
+
         retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS','H2O']   # These profiles will always be retrieved        
-=======
-        retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be retrieved        
->>>>>>> e19d222675ae6951b17a095558e88d38877eb091
+
 
         #--------------------------------------
         # Add user specified retrieved gas list 
         # to standard retrievals
         #--------------------------------------
-<<<<<<< HEAD
         if gasName.upper() != 'H2O': retrvdAll.append(gasName.upper())        
-=======
-        retrvdAll.append(gasName.upper())        
->>>>>>> e19d222675ae6951b17a095558e88d38877eb091
 
         #--------------------------
         # Open and read output file

@@ -62,7 +62,7 @@ def main():
     #----------------
     # Initializations
     #----------------
-    statstr     = 'mlo'
+    statstr     = 'tab'
     dataDir     = '/data1/'+statstr.lower()+'/'
     #dataDir     = '/ya4/id/'+statstr.lower()+'/'
     outDataDir  = '/data/Campaign/'+statstr.upper()+'/House_Log_Files/'
@@ -77,8 +77,8 @@ def main():
     
     # Ending
     fyear = 2018               # Year
-    fmnth = 2                 # Month
-    fday  = 28                 # Day
+    fmnth = 12                 # Month
+    fday  = 31                 # Day
     
     #-------------------
     # Call to date class

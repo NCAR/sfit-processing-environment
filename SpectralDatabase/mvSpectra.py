@@ -84,16 +84,16 @@ def main():
     #-------
     # Inputs
     #-------
-    loc     = 'fl0'
+    loc     = 'tab'
     inPath  = '/ya4/id/' + loc.lower() + '/'     # Input directory
     outPath = '/data1/' + loc.lower() + '/'       # Working directory
 
-    iyear   = 2017 
-    imonth  = 8
-    iday    = 25
+    iyear   = 2018 
+    imonth  = 1
+    iday    = 1
 
-    fyear   = 2017
-    fmonth  = 12
+    fyear   = 2018
+    fmonth  = 3
     fday    = 31
 
     #-------------------

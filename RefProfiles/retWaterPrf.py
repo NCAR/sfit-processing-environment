@@ -80,13 +80,13 @@ def main():
     #----------------
     # Initializations
     #----------------
-    loc        = 'fl0'                 # Name of station location
+    loc        = 'tab'                 # Name of station location
     gasName    = 'h2o'                 # Name of gas
-    ver        = 'Current_ERA'         # Name of retrieval version to process
-    #ver        = 'Current_NCEP'         # Name of retrieval version to process
+    #ver        = 'Current_ERA'         # Name of retrieval version to process
+    ver        = 'Current_NCEP'         # Name of retrieval version to process
     verW       = 'v99'                 # version 99 is used for individual retrievals at specific times
-    #ctlF       = 'sfit4_v1.ctl'
-    ctlF       = 'sfit4.ctl'
+    ctlF       = 'sfit4_v1.ctl'
+    #ctlF       = 'sfit4.ctl'
 
     #------
     # Flags
@@ -104,12 +104,12 @@ def main():
     #-----------------------
     # Date Range of interest
     #-----------------------
-    iyear          = 2017
+    iyear          = 2018
     imnth          = 1
     iday           = 1
-    fyear          = 2017
-    fmnth          = 12
-    fday           = 28
+    fyear          = 2018
+    fmnth          = 3
+    fday           = 31
 
     #---------------------
     # Input Data Directory

@@ -1279,9 +1279,9 @@ class ReadOutputData(_DateRange):
                 retapFlg determines whether retrieved profiles (=1) or a priori profiles (=0) are read'''
         self.deflt = {}
 
-        #retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS','H2O']   # These profiles will always be read
-        if rtrvGasList[0].upper() == 'H2O': retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be read
-        else: retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']
+        retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']   # These profiles will always be read
+        #if rtrvGasList[0].upper() == 'H2O': retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be read
+        #else: retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']
 
         if not fname: 
             if   retapFlg == 1: fname = 'rprfs.table'
