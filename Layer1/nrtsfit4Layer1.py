@@ -10,11 +10,20 @@
 #            * Creation of Water Profiles v99 
 #
 #Notes:
-#       1) Make Sure ckopus has been performed 
+#        Make Sure the following steps are followed prior to run:
+#        1) ckopus has been performed 
+#        2) Edit Inputs in mvSpectra.py
+#        3) Edit e.g., specDBInputFile_TAB.dat
+#        4) Edit station_house_reader.py
+#        5) Edit appndSpecDBInputFile
+#        6) Edit NCEPinputFile.py
+#        7) Edit mergprfInput.py
+#        8) Edit NCEPwaterPrf.py
+#        9) Edit, E.g., MLO_H2O_Input.py file
+#        10) Edit retWaterPrf.py
+#        11) Edit retWaterPrfDaily.py
 #
-#       2) Read Commenst Below: Input parameters for each step need to be modified prior to running this script
-#
-#       3) For details see the "Optical Techniques FTS Profile Retrieval Strategy" document
+#       * For details see the "Optical Techniques FTS Profile Retrieval Strategy" document
 #
 #
 # Version History:
