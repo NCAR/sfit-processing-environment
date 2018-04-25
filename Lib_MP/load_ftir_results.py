@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# Script to rpint results in a hdf created by create_hdf5.py
+# Script to print results in a hdf created by create_hdf5.py
 
 import tables as h5
 import numpy as np
