@@ -146,6 +146,7 @@ sb.solstrnth.*          = 0.01
 sb.apod_fcn.*           = 0.05
 sb.phase_fcn.*          = 0.05
 sb.line*_*.random       = 0.
+sb.line*_*.systematic       = 0.
 sb.lineInt_CH4.systematic            = 0.03     
 sb.lineInt_CO.systematic             = 0.02
 sb.lineInt_NO2.systematic            = 0.10     
@@ -1041,7 +1042,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         test1 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper()
         try:    test2 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]            # This parameter might not exist in the ctl file if zshift = false
         except KeyError: test2 = 1 
-        if (test1 == 'F' or (test1 == 'T' and test2 == 1)): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
+        if (test1 == 'F' or (test1 == 'T' and test2 == 2)): 
+          bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
 
         #--------------------------------------------------------------------
         # Set band ordering for micro-window dependent Sb's other than zshift

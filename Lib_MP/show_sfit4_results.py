@@ -26,17 +26,17 @@ class show_results:
         self.load_result(sb_ctl)
         
         # Find a free figure for profile
-        self.winprf = plt.figure()#figsize=(24,12))
+        self.winprf = plt.figure('Profile')#figsize=(24,12))
         # Find a free figure for microwindow
-        self.winmw = plt.figure()#figsize=(24,12))
+        self.winmw = plt.figure('Spectrum')#figsize=(24,12))
         # Find a free figure for AVK
-        self.winavk = plt.figure()#figsize=(24,12))
+        self.winavk = plt.figure('AVK')#figsize=(24,12))
         # Find a free figure for ERROR
-        self.winerr = plt.figure()#figsize=(24,12))
+        self.winerr = plt.figure('Error')#figsize=(24,12))
 
-        self.winpcol = plt.figure()#figsize=(24,12))
+        self.winpcol = plt.figure('Partial column')#figsize=(24,12))
 
-        self.winfft = plt.figure()#figsize=(24,12))
+        self.winfft = plt.figure('FFT')#figsize=(24,12))
 
     
 
@@ -151,7 +151,7 @@ class show_results:
                     max_alt = float(self.max_pcv[i].get())
                     min_ind = np.max(np.where(np.array(z)>=min_alt))
                     max_ind = np.min(np.where(np.array(z)<max_alt))
-                    self.winavk.gca().plot(np.sum(self.avk.avk('frac')[max_ind:min_ind,:],0), z, label='PCOL from %.2f to %.2f km'%(min_alt,max_alt))
+                    self.winavk.gca().plot(np.sum(self.avk.avk('col')[:,max_ind:min_ind],1), z, label='PCOL from %.2f to %.2f km'%(min_alt,max_alt))
             self.winavk.gca().set_ylabel('Altitude [km]')
             self.winavk.gca().set_xlabel('Fraction of AVK [a.u.]')
             self.winavk.gca().legend(fontsize=16)
@@ -316,7 +316,7 @@ class show_results:
             self.menu1.grid(row=2,column=1,stick=E+W)
         
 
-    def load_result(self, sbctl = 'sb.ctl'):
+    def load_result(self, sb_ctl = 'sb.ctl'):
         direc = self.direc
         ctlfile = self.ctlfile
         ctl = sfit4_ctl()
@@ -341,7 +341,7 @@ class show_results:
         else:
             self.avk = -1
 
-        self.error = sfit4.error('.', sbctl=sbctl,rprfs=direc+'/rprfs.table')
+        self.error = sfit4.error('.', sbctl=sb_ctl,rprfs=direc+'/rprfs.table')
 
         self.gas = sfit4.gasspectra(direc)
 

@@ -214,7 +214,7 @@ class show_tmph5:
         self.columns.gca().errorbar(self.res.dnum[self.valid_ind],
                                     self.res.col_rt[self.valid_ind],
                                     self.res.err_tot[self.valid_ind],
-                                    color = 'b', fmt=None)        
+                                    color = 'b', fmt='none')        
         self.canvas.show()
 
     def save_values(self):

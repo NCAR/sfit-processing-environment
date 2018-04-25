@@ -311,7 +311,7 @@ class HDFbaseRetDat(object):
         fDOI           = dt.datetime.now()
         hdfHdr         = self.glblAttrbs(fDOI,idate,fdate)
         hdfFname       = hdfHdr['FILE_NAME']
-        
+        hdfFile.hdfFname  = hdfFname
         #-----------------------------------
         # Create HDF file
         #-----------------------------------
@@ -525,6 +525,7 @@ class HDFbaseRetDat(object):
         # Open hdf file, write data, close file
         #--------------------------------------        
         self.createHDF(hdfFile)
+        return(hdfFile.hdfFname)
 
     def createHDF5(self):
         ''' create an HDF 5 file in outDdir specified from the pltOutputClass outputDatat passed in'''

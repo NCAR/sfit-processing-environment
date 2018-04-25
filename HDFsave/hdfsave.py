@@ -51,7 +51,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.attribute_file      = attr_file
       self.locID               = source
       self.granularity         = granu
-
+      
 
    def glblAttrbs(self,fDOI,idate,fdate):
       ''' Meta-data for hdf file (Global Attributes) '''

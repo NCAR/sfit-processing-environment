@@ -121,3 +121,8 @@ class spectrum:
         f.clf()
         plt.plot(self.nu[0], self.spectrum[0])
         f.show()
+
+
+
+
+    

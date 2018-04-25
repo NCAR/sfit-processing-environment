@@ -868,7 +868,7 @@ class ReadOutputData(_DateRange):
             
             self.dirDateTime = []
             self.dirFlg      = True
-            
+
             _DateRange.__init__(self, iyear, imnth, iday, fyear, fmnth, fday, incr=1)
             
             #--------------------------------------------
@@ -880,6 +880,7 @@ class ReadOutputData(_DateRange):
                 #-------------------------------------------
                 # Test directory to make sure it is a number
                 #-------------------------------------------
+
                 try:    int(drs[0:4])
                 except: continue
 
@@ -1291,7 +1292,7 @@ class ReadOutputData(_DateRange):
                     self.summary.setdefault(self.PrimaryGas.upper()+'_CHI_2_Y'  ,[]).append( float( lines[ind2+1].strip().split()[indCHIY2]   ) )
                     self.summary.setdefault(self.PrimaryGas.upper()+'_DOFS_TRG' ,[]).append( float( lines[ind2+1].strip().split()[indDOFtrgt] ) )
                     self.summary.setdefault(self.PrimaryGas.upper()+'_CONVERGED',[]).append(        lines[ind2+1].strip().split()[indCNVRG]     )                  
-                    if self.dirFlg: 
+                    if self.dirFlg:
                         dirname = os.path.basename(os.path.normpath(sngDir)) 
                         self.summary.setdefault('date',[]).append( dt.datetime(int(dirname[0:4]), int(dirname[4:6]), int(dirname[6:8]), 
                                                                                int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))

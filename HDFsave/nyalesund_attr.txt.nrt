@@ -20,6 +20,7 @@ DATA_QUALITY            = RD
 DATA_CAVEATS            = Irregular HBR cell measurements analysed with linefit 12 and linefit 14
 DATA_RULES_OF_USE       = Contact Mathias Palm or Justus Notholt
 DATA_ACKNOWLEDGEMENT    = The measurements are supported by AWI Bremerhaven.
+DATA_FILE_VERSION       = 005
 FILE_DOI                = None 
 FILE_ACCESS             = NDACC;EVDC
 FILE_PROJECT_ID         = AOID331
