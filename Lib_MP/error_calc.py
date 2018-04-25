@@ -29,13 +29,13 @@ def error_calc(**kwargs):
 
 
 
-    dd = filter(lambda x: os.path.isfile(x+'/setup/sfit4.ctl')
+    dd = filter(lambda x: os.path.isfile(x+'/sfit4.ctl')
                 and x[0:8] >= start_date[0:8] 
                 and x[0:8] <= end_date[0:8], os.listdir(kwargs['dir']))
     
     print start_date, end_date
     for direc in dd:
-        ctl = sc.CtlInputFile(direc+'/setup/sfit4.ctl')
+        ctl = sc.CtlInputFile(direc+'/sfit4.ctl')
         ctl.getInputs()
         Sbctl = sc.CtlInputFile(kwargs['sbctl'])
         Sbctl.getInputs()
