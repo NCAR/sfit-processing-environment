@@ -597,7 +597,7 @@ class load_hdf:
 
         
 
-    def plot_results(self,gas,src='GEOMS'):
+    def plot_results(self,gas,src='GEOMS', figroot=''):
         self.f1.clf()
         self.f2.clf()
         self.f3.clf()
@@ -621,18 +621,28 @@ class load_hdf:
         self.f2.show()
         self.f3.show()
 
+        print figroot
+        if len(figroot) > 0:
+            self.f1.savefig('%s_f1.pdf'%figroot)
+            self.f2.savefig('%s_f2.pdf'%figroot)
+            self.f3.savefig('%s_f3.pdf'%figroot)
+
 if __name__ == '__main__':
 #    load_H4GEOMS(sys.argv[1])
     import sys, os
-    if len(sys.argv) != 4:
-        print 'call as python <...>/sfit-processing-environment/Lib_MP/load_H4GEOMS.py hdf_dir location gas' 
+    if len(sys.argv) < 4:
+        print 'call as python <...>/sfit-processing-environment/Lib_MP/load_H4GEOMS.py hdf_dir location gas [figroot]' 
         exit()
 
 
     sys.path.append(os.path.dirname(sys.argv[0]))
     h4 = load_hdf()
     h4.load_AllGeoms (sys.argv[1], sys.argv[2], sys.argv[3])
-    h4.plot_results(sys.argv[3])
+    if len(sys.argv) > 4:
+        
+        h4.plot_results(sys.argv[3],figroot=sys.argv[4])
+    else:
+        h4.plot_results(sys.argv[3])
 #    h4.save_columns()
     print 'Hit any key in this window to terminate program'
     raw_input()

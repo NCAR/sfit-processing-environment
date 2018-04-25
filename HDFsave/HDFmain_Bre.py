@@ -25,21 +25,24 @@
 #----------------------------------------------------------------------------------------                              
 
 if __name__ != "__main__":
+    import sys, os, datetime
+    sys.path.append(os.path.join('..','ModLib'))
     import hdfsave as hdfsave
                             
 def main(args):
-    if len(args) != 7:
-        print 'call as HDFmain_Bre Datadir HDFDir location gas YYYYMMDD (start) YYYYMMDD (end)'
+    if len(args) != 8:
+        print 'call as HDFmain_Bre Datadir HDFDir location gas YYYYMMDD (start) YYYYMMDD (end) nrt|final|cams27'
         return()
-        
-    script_dir = os.path.dirname(sys.argv[0])
+
+    script_dir = os.path.dirname(args[0])
     quality        = 'final'
     dataDir        = args[1]+'/'
     outDir         = args[2]+'/'
     loc1           = args[3]
     gasName        = args[4]  # This is the target gas for retrieval
+    quality        = args[7].lower()
     version        = 'Current'
-    sfitVer        = '0.9.4.4'                      # This is the version of sfit4 used for the retrievals
+    sfitVer        = '0.9'                      # This is the version of sfit4 used for the retrievals
     sdate = datetime.datetime.strptime(args[5],'%Y%m%d')
     edate = datetime.datetime.strptime(args[6],'%Y%m%d')
     iyear          = sdate.year
@@ -66,6 +69,11 @@ def main(args):
     maxCHI2        = 9e99
     maxTCTotErr    = 9e99
     granularity    = 'yearly'
+
+    if quality != 'nrt' and quality !='final' and quality != 'cams27':
+        print 'quality has to be nrt, final or cams27, not %s'%quality
+        exit()
+
     
     if loc1.lower() == 'bre' or loc1.lower() == 'bremen':
         loc            = 'BREMEN'
@@ -125,7 +133,7 @@ def main(args):
         cnvFlag        = True
         szaFlag        = True
         validFlag      = True
-        maxCHI2        = 6.0
+        maxCHI2        = 10.0
         minVMR         = -1e-7
 
     if gasName.lower() == 'ch4':
@@ -141,6 +149,10 @@ def main(args):
         maxTCTotErr    = 1.0e19
         minVMR         = -1e-7
         maxVMR         = 2.0e-5
+        if quality.lower()=='cams27':
+            maxSZA = 83
+            
+
 
     if gasName.lower() == 'ccl4':
         gasName        = 'CCl4'
@@ -266,7 +278,10 @@ def main(args):
         tcFlag         = False
         pcFlag         = False
         dofFlag        = True
-        minDOFs        = 0.8
+        if quality.lower()=='cams27':
+            minDOFs = 1.5
+        else:
+            minDOFs        = 0.8
 #        maxCHI2        = 100.0
         maxVMR         = 1e-4
         minVMR         = -1e-7
@@ -362,15 +377,15 @@ def main(args):
     # Here we are actually creating the HDF file.
     # We can create either and HDF4 or HDF5 file
     #--------------------------------------------
-    myhdf.createHDF4()
+    filename = myhdf.createHDF4()
     #myhdf.createHDF5()
     
     print 'Finished creating HDF file'
-    
+    return(filename)
     
 if __name__ == "__main__":
     import sys, os
     import datetime
     sys.path.append(os.path.join(os.path.dirname(sys.argv[0]),'..','ModLib'))
     import hdfsave as hdfsave
-    main(sys.argv)
+    filename = main(sys.argv)

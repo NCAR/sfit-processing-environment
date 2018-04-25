@@ -10,6 +10,7 @@ class load_tmph5:
         self.vars = {'dnum':'mdate',
                      'Z': 'Z',
                      'T': 'T',
+                     'P': 'P',
                      'col_rt':'col_rt',
                      'pcol_rt':'pcol_rt',
                      'col_ap':'col_ap',    
