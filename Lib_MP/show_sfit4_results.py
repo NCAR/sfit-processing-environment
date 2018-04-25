@@ -151,7 +151,7 @@ class show_results:
                     max_alt = float(self.max_pcv[i].get())
                     min_ind = np.max(np.where(np.array(z)>=min_alt))
                     max_ind = np.min(np.where(np.array(z)<max_alt))
-                    self.winavk.gca().plot(np.sum(self.avk.avk('frac')[max_ind:min_ind,:],0), z, label='PCOL from %.2f to %.2f km'%(min_alt,max_alt))
+                    self.winavk.gca().plot(np.sum(self.avk.avk('col')[:,max_ind:min_ind],1), z, label='PCOL from %.2f to %.2f km'%(min_alt,max_alt))
             self.winavk.gca().set_ylabel('Altitude [km]')
             self.winavk.gca().set_xlabel('Fraction of AVK [a.u.]')
             self.winavk.gca().legend(fontsize=16)
