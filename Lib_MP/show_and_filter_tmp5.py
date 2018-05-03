@@ -338,20 +338,40 @@ class show_tmph5:
             maxsza = 1.0
 
 
+        # for x in  range(0,len(self.res.dnum)):
+        #     print self.res.dofs[x] >= mindofs
+        #     print self.res.dofs[x] <= maxdofs
+        #     print self.res.c2y[x] > minc2y
+        #     print self.res.c2y[x] < maxc2y
+        #     print np.min(self.res.vmr_rt[:,x]) > minvmr
+        #     print np.max(self.res.vmr_rt[:,x]) < maxvmr
+        #     print np.min(self.res.avk_col[:,x]) > minavkc
+        #     print np.max(self.res.avk_col[:,x]) < maxavkc
+        #     print self.res.err_tot[x] <= errcol
+        #     print self.res.col_co2[x] > minco2
+        #     print self.res.col_co2[x] < maxco2
+        #     print self.res.sza[x] >= minsza
+        #     print self.res.sza[x] <= maxsza
+        #     import ipdb
+        #     ipdb.set_trace()
             
-        self.valid_ind = filter(lambda x: self.res.dofs[x] > mindofs
-                                and self.res.dofs[x] < maxdofs
-                                and self.res.c2y[x] > minc2y
-                                and self.res.c2y[x] < maxc2y
-                                and np.min(self.res.vmr_rt[:,x]) > minvmr
-                                and np.max(self.res.vmr_rt[:,x]) < maxvmr
-                                and np.min(self.res.avk_col[:,x]) > minavkc
-                                and np.max(self.res.avk_col[:,x]) < maxavkc
+        self.valid_ind = filter(lambda x: self.res.dofs[x] >= mindofs
+                                and self.res.dofs[x] <= maxdofs
+                                and self.res.c2y[x] >= minc2y
+                                and self.res.c2y[x] <= maxc2y
+                                and np.min(self.res.vmr_rt[:,x]) >= minvmr
+                                and np.max(self.res.vmr_rt[:,x]) <= maxvmr
+                                and np.min(self.res.avk_col[:,x]) >= minavkc
+                                and np.max(self.res.avk_col[:,x]) <= maxavkc
                                 and self.res.err_tot[x] <= errcol
-                                and self.res.col_co2[x] > minco2
-                                and self.res.col_co2[x] < maxco2
-                                and self.res.sza[x] > minsza
-                                and self.res.sza[x] < maxsza, range(0,len(self.res.dnum)))
+                                and self.res.col_co2[x] >= minco2
+                                and self.res.col_co2[x] <= maxco2
+                                and self.res.sza[x] >= minsza
+                                and self.res.sza[x] <= maxsza, range(0,len(self.res.dnum)))
+
+        
+
+        
 #        self.valid_ind = np.array(self.valid_ind)
 
 
