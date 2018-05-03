@@ -2158,16 +2158,18 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFazi   = np.zeros(nobs)
         self.HDFsurfP   = np.zeros(nobs)
         self.HDFsurfT   = np.zeros(nobs)
+        self.HDFlon   = np.zeros(nobs)
+        self.HDFlat   = np.zeros(nobs)
+        self.HDFinstAlt   = np.zeros(nobs)
         
         for i,val in enumerate(self.HDFdates):
             tempSpecDB = self.dbFindDate(self.HDFdates[i])
-            if i == 0:
-                self.HDFlat     = np.array(tempSpecDB['N_Lat'])
-                if tempSpecDB.has_key('W_Lon'):
-                    self.HDFlon     = -np.array(tempSpecDB['W_Lon'])
-                else:
-                    self.HDFlon     = np.array(tempSpecDB['E_Lon'])
-                self.HDFinstAlt = np.array(tempSpecDB['Alt'])
+            self.HDFlat[i]     = np.array(tempSpecDB['N_Lat'])
+            if tempSpecDB.has_key('W_Lon'):
+                self.HDFlon[i]     = -np.array(tempSpecDB['W_Lon'])
+            else:
+                self.HDFlon[i]     = np.array(tempSpecDB['E_Lon'])
+            self.HDFinstAlt[i] = np.array(tempSpecDB['Alt'])
             self.HDFintT[i] = tempSpecDB['Dur']
             self.HDFazi[i]  = tempSpecDB['SAzm']
             self.HDFazi[i] = np.mod(self.HDFazi[i] + 180,360.0)
