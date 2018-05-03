@@ -6,14 +6,15 @@ DO_NAME                 = Palm;Mathias
 DO_AFFILIATION          = Institut fuer Umweltphysik, Universitaet Bremen;IUP
 DO_ADDRESS              = Otto-Hahn-Allee 1;D-28334 Bremen;GERMANY
 DO_EMAIL                = mathias@iup.physik.uni-bremen.de
-DS_NAME                 = Palm;Mathias						DS_AFFILIATION          = Institut fuer Umweltphysik, Universitaet Bremen;IUP
+DS_NAME                 = Palm;Mathias
+DS_AFFILIATION          = Institut fuer Umweltphysik, Universitaet Bremen;IUP
 DS_ADDRESS              = Otto-Hahn-Allee 1;D-28334 Bremen;GERMANY
 DS_EMAIL                = mathias@iup.physik.uni-bremen.de
 DATA_DISCIPLINE         = ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED
 DATA_GROUP              = EXPERIMENTAL;PROFILE.STATIONARY
 DATA_LOCATION           = NY.ALESUND
 DATA_MODIFICATIONS      = None
-DATA_DESCRIPTION        = FTIR O3 vmr vertical profiles from solar absorption spectra
+DATA_DESCRIPTION        = FTIR vmr vertical profiles from solar absorption spectra
 DATA_TEMPLATE           = GEOMS-TE-FTIR-002
 DATA_QUALITY            = FINAL
 DATA_CAVEATS            = Irregular HBR cell measurements analysed with linefit 12 and linefit 14
