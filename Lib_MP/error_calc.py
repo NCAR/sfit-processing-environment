@@ -38,7 +38,6 @@ def error_calc(**kwargs):
         ctl.getInputs()
         Sbctl = sc.CtlInputFile(kwargs['sbctl'])
         Sbctl.getInputs()
-        errAnalysis(ctl,Sbctl,kwargs['dir']+'/'+direc+'/', False)
         try:    
             errAnalysis(ctl,Sbctl,kwargs['dir']+'/'+direc+'/', False)
             print 'errorcalculation in path: '+direc

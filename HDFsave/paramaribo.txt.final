@@ -6,7 +6,8 @@ DO_NAME                 = Warneke;Thorsten
 DO_AFFILIATION          = Institut fuer Umweltphysik, Universitaet Bremen;IUP
 DO_ADDRESS              = Otto-Hahn-Allee 1;D-28334 Bremen;GERMANY
 DO_EMAIL                = warneke@iup.physik.uni-bremen.de
-DS_NAME                 = Palm;Mathias						DS_AFFILIATION          = Institut fuer Umweltphysik, Universitaet Bremen;IUP
+DS_NAME                 = Palm;Mathias
+DS_AFFILIATION          = Institut fuer Umweltphysik, Universitaet Bremen;IUP
 DS_ADDRESS              = Otto-Hahn-Allee 1;D-28334 Bremen;GERMANY
 DS_EMAIL                = mathias@iup.physik.uni-bremen.de                  
 DATA_DISCIPLINE         = ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED

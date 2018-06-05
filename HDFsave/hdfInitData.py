@@ -96,9 +96,12 @@ class HDFinitData(object):
         # Assign IDL data to attributes to be written to HDF
         #---------------------------------------------------
         self.datesJD2K                      = np.asarray(dataStrc['ds']['DATETIME'])
-        self.latitude                       = dataStrc['ds']['LATITUDE'][0]
-        self.longitude                      = dataStrc['ds']['LONGITUDE'][0]                                
-        self.instAltitudes                  = dataStrc['ds']['ALT_INSTRUMENT'][0] / 1000.0                          # Convert [m] -> [km]
+
+        import ipdb
+        ipdb.set_trace()
+        self.latitude                       = dataStrc['ds']['LATITUDE']
+        self.longitude                      = dataStrc['ds']['LONGITUDE']                                
+        self.instAltitudes                  = dataStrc['ds']['ALT_INSTRUMENT'] / 1000.0                          # Convert [m] -> [km]
         self.surfPressures                  = np.asarray(dataStrc['ds']['SURFACE_PRESSURE'])
         self.surfTemperatures               = np.asarray(dataStrc['ds']['SURFACE_TEMPERATURE'])
         self.altitudes                      = dataStrc['ds']['ALTITUDE'][0]

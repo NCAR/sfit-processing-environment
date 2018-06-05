@@ -86,7 +86,8 @@ def main(args):
     elif loc1.lower() == 'cruise':    
         loc            = 'POLARSTERN'
         source         = 'AWI027'
-        attribute_file = os.path.join(script_dir, 'bremen_attr.txt.%s'%quality)
+        attribute_file = os.path.join(script_dir, 'polarstern_attr.txt.%s'%quality)
+
     elif loc1.lower() == 'pmb':    
         loc            = 'PARAMARIBO'
         attribute_file = os.path.join(script_dir, 'paramaribo.txt.%s'%quality)
@@ -122,6 +123,10 @@ def main(args):
         szaFlag        = True
         validFlag      = True
 
+    if gasName.lower() == 'pan':
+        gasName        = 'PAN'
+        maxSZA         = 90.0
+        maxCHI2        = 100.0
 
 
     if gasName.lower() == 'o3':

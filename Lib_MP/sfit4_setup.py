@@ -204,7 +204,7 @@ class reference_prf:
                        'NF3',     'OTHER',   'OTHER',  'OTHER',   'OTHER',   
                        'OTHER',   'OTHER',   'OCLO',   'F134A',   'C3H8',     
                        'F142B',   'CFC113',  'F141B',  'CH3OH',   'CH3CNPL', 
-                       'C2H6PL',  'PAN',     'CH3CHO' ,'CH3CN',   'OTHER',    
+                       'C2H6PL',  'PAN',     'CH3CHO' ,'CH3CN',   'CHF3',    
                        'CH3COOH', 'C5H8',    'MVK',    'MACR',    'C3H6',    
                        'C4H8',    'OTHER',   'OTHER',  'OTHER',   'OTHER',    
                        'OTHER',   'OTHER',   'OTHER',  'OTHER',   'OTHER',   
