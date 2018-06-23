@@ -183,7 +183,7 @@ class load_hdf:
     def load_AllGeoms(self,direc,site,gas):
         m = re.compile(".*\.hdf",re.I)
         s = re.compile(site,re.I)
-        g = re.compile(gas+'_',re.I)
+        g = re.compile('\.'+gas+'_',re.I)
         hdffiles = filter(m.search,os.listdir(direc))
         hdffiles = filter(s.search,hdffiles)
         hdffiles = filter(g.search,hdffiles)
@@ -643,6 +643,6 @@ if __name__ == '__main__':
         h4.plot_results(sys.argv[3],figroot=sys.argv[4])
     else:
         h4.plot_results(sys.argv[3])
-#    h4.save_columns()
+    h4.save_all_columns(sys.argv[3],file='columns_%s_%s.dat'%(sys.argv[2],sys.argv[3]))
     print 'Hit any key in this window to terminate program'
     raw_input()

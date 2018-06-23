@@ -27,7 +27,9 @@ class show_tmph5:
 
         # Find a free figure for profile
         self.columns = plt.figure(figsize=(7,3))#figsize=(24,12))
+        ax = plt.axes()
         self.aux = plt.figure(figsize=(7,3))
+        plt.axes(sharex=ax)
         self.vmr = plt.figure(figsize=(7,3))
 
         self.tkroot = Tk()
@@ -208,7 +210,7 @@ class show_tmph5:
         print self.v1.get()
         
     def plot_values(self):
-        self.columns.clf()
+        self.columns.gca().cla()
         self.columns.gca().plot_date(self.res.dnum[self.valid_ind],
                                      self.res.col_rt[self.valid_ind])
         self.columns.gca().errorbar(self.res.dnum[self.valid_ind],
@@ -244,7 +246,7 @@ class show_tmph5:
 
     def plot_aux_val(self):
         aux = self.aux_val.get()
-        self.aux.clf()
+        self.aux.gca().cla()
         if aux == 'SZA':
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.sza[self.valid_ind])
         if aux == 'CHI_Y_2':
