@@ -27,7 +27,9 @@ class show_tmph5:
 
         # Find a free figure for profile
         self.columns = plt.figure(figsize=(7,3))#figsize=(24,12))
+        cax1 = plt.axes()
         self.aux = plt.figure(figsize=(7,3))
+        plt.axes(sharex=cax1)
         self.vmr = plt.figure(figsize=(7,3))
 
         self.tkroot = Tk()
