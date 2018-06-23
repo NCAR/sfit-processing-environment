@@ -180,6 +180,7 @@ def main(argv):
         #--------------------------
         # Initialize sfit ctl class
         #--------------------------
+        print wrkDir+'sfit4.ctl', sc.ckFile(wrkDir+'sfit4.ctl')
         if sc.ckFile(wrkDir+'sfit4.ctl'): ctlFileName = wrkDir + 'sfit4.ctl'
         else:
                 Tk().withdraw()

@@ -1,5 +1,30 @@
 import numpy as np
 
+def create_h(p):
+    # Creates the pressure weighting function to calculate xGAS from a
+    # VMR profile for GAS given the pressure levels p
+    #
+    # NOTE: not normalized to ground pressure !!!    #
+    # Taken from Article Connor, B. J., et.al.
+    # Orbiting Carbon Observatory: Inverse
+    # method and prospective error analysis
+    # Journal of Geophysical Research: Atmospheres, 2008, 113
+    
+    lh = len(p)
+    h = np.zeros(lh)
+
+    nr = 0
+    h[nr] = -p[nr] + (p[nr+1] - p[nr]) / np.log(p[nr+1]/p[nr])
+    nr = lh-1
+    h[nr] = p[nr] - (p[nr] - p[nr-1]) / np.log(p[nr]/p[nr-1])
+
+    for nr in np.arange(1,lh-1):
+        h[nr] = (p[nr+1] - p[nr]) / np.log(p[nr+1]/p[nr]) - (p[nr] - p[nr-1]) / np.log(p[nr]/p[nr-1])
+    h = np.abs(h)
+        
+    return(h)
+    
+
 def create_Wstar_mean(x, y_b):
     #
     # W_star = create_Wstar_mean(x, y)

@@ -2049,7 +2049,7 @@ class DbInputFile(_DateRange):
 
 class GatherHDF(ReadOutputData,DbInputFile):
     
-    def __init__(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imnth,iday,fyear,fmnth,fday,errFlg=True,incr=1):
+    def __init__(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imnth,iday,fyear,fmnth,fday,mtype,errFlg=True,incr=1):
         primGas = ''
 
         #-----------------------------------------
@@ -2226,7 +2226,9 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFazi         = np.delete(self.HDFazi,self.inds)
         self.HDFdatesJD2K   = np.delete(self.HDFdatesJD2K,self.inds)
         self.HDFsza         = np.delete(self.HDFsza,self.inds)
-   
+        self.HDFlat         = np.delete(self.HDFlat,self.inds)
+        self.HDFlon         = np.delete(self.HDFlon,self.inds)
+        self.HDFinstAlt         = np.delete(self.HDFinstAlt,self.inds)
         print 'Number of observations after filtering = {}'.format(len(self.HDFdates))   
 
 
