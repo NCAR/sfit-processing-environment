@@ -6,6 +6,7 @@ sys.path.append('/home/mathias/sfit-processing-environment/ModLib')
 from Layer1Mods import errAnalysis
 import sfitClasses as sc
 import os,shutil
+from multiprocessing import Pool
 
 
 
@@ -31,7 +32,8 @@ def error_calc(**kwargs):
     dd = filter(lambda x: os.path.isfile(kwargs['dir'] + '/' + x+'/sfit4.ctl')
                 and x[0:8] >= start_date[0:8] 
                 and x[0:8] <= end_date[0:8], os.listdir(kwargs['dir']))
-    
+
+    dd.sort()
     print start_date, end_date
     for direc in dd:
         ctl = sc.CtlInputFile(kwargs['dir']+'/'+direc+'/sfit4.ctl')

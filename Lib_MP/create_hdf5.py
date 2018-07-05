@@ -130,8 +130,16 @@ def create_hdf5(**kwargs):
 	        continue
 
 	    flag_h2o = False
-	    rprf = sfit4.read_table(rprfsfile)    
-	    aprf = sfit4.read_table(aprfsfile)    
+            try:
+	        rprf = sfit4.read_table(rprfsfile)
+            except:
+                print 'rprf file not readable'
+                continue
+            try:
+	        aprf = sfit4.read_table(aprfsfile)
+            except:
+                print 'aprf file not readable'
+                continue
 	    gasnames = rprf.get_retrieval_gasnames()
 	    rvmr,z = rprf.get_gas_vmr(gasnames[0])
 	    avmr = aprf.get_gas_vmr(gasnames[0])
@@ -139,8 +147,13 @@ def create_hdf5(**kwargs):
 	    acol = aprf.get_gas_col(gasnames[0])
 	    len_vmr = len(z)
 
-	    stv = sfit4.statevec(statefile)
-	    auxnames =  stv.aux
+            try:
+	        stv = sfit4.statevec(statefile)
+            except:
+                print 'statevec file not readable'
+                continue
+                    
+            auxnames =  stv.aux
 	    aux_apriori = stv.ap_aux
 	    aux_retrieved = stv.rt_aux
 	    nr_aux = len(aux_apriori)
