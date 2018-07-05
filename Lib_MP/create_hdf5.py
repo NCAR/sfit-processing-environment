@@ -164,7 +164,9 @@ def create_hdf5(**kwargs):
 	    i_col = []
 	    for gas in gasnames[1:]:
 	        vmr,z = rprf.get_gas_vmr(gas)
+                avmr = aprf.get_gas_vmr(gas)
 	        i_rvmr = np.hstack((i_rvmr, np.reshape(vmr, (len_vmr,1))))
+                i_avmr = np.hstack((i_rvmr, np.reshape(avmr, (len_vmr,1))))
 	        col,z = rprf.get_gas_col(gas)
 	        i_col.append(sum(col))
 	    i_col = np.array(i_col)
@@ -207,7 +209,8 @@ def create_hdf5(**kwargs):
 	        h5file.createArray("/", 'Zb', np.array(zb), "Altitude levels (boundaries)")
 	        vmr_rt = h5file.createEArray("/", 'vmr_rt', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="Retrieved VMR", expectedrows=nr_entries)
-	        ivmr_rt = h5file.createEArray("/", 'ivmr_rt', hdf5.Float32Atom(), 
+	        ivmr_rt = h5file.createEArray("/", 'ivmr_rt', hdf5.Float32Atom(),
+                ivmr_ap = h5file.createEArray("/", 'ivmr_ap', hdf5.Float32Atom(), 
 	                                     (len_vmr,nr_gas-1,0), title="Retrieved VMR of interfering gases", 
 	                                      expectedrows=nr_entries)
 	        icol_rt = h5file.createEArray("/", 'icol_rt', hdf5.Float32Atom(), 
@@ -321,6 +324,7 @@ def create_hdf5(**kwargs):
 	
 	    vmr_rt.append(np.reshape(rvmr,(len_vmr,-1)))
 	    ivmr_rt.append(np.reshape(i_rvmr, (len_vmr, nr_gas-1, 1)))
+            ivmr_ap.append(np.reshape(i_avmr, (len_vmr, nr_gas-1, 1)))  
 	    icol_rt.append(np.reshape(i_col, (nr_gas-1, 1)))
 	    aux_ap.append(np.reshape(aux_apriori, (nr_aux, 1)))
 	    aux_rt.append(np.reshape(aux_retrieved, (nr_aux, 1)))

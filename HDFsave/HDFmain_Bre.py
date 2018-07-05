@@ -69,6 +69,7 @@ def main(args):
     maxCHI2        = 9e99
     maxTCTotErr    = 9e99
     granularity    = 'yearly'
+    mtype          = 'stationary'
 
     if quality != 'nrt' and quality !='final' and quality != 'cams27':
         print 'quality has to be nrt, final or cams27, not %s'%quality
@@ -86,7 +87,9 @@ def main(args):
     elif loc1.lower() == 'cruise':    
         loc            = 'POLARSTERN'
         source         = 'AWI027'
-        attribute_file = os.path.join(script_dir, 'bremen_attr.txt.%s'%quality)
+        mtype = 'mobile'
+        attribute_file = os.path.join(script_dir, 'polarstern_attr.txt.%s'%quality)
+
     elif loc1.lower() == 'pmb':    
         loc            = 'PARAMARIBO'
         attribute_file = os.path.join(script_dir, 'paramaribo.txt.%s'%quality)
@@ -107,6 +110,10 @@ def main(args):
         loc            = 'Jungfraujoch'
         source         = 'ULG002'
         attribute_file = os.path.join(script_dir, 'jungfraujoch_final.txt')
+    elif loc1.lower() == 'palau':
+	loc 	       = 'Palau'
+	source	       = 'AWI019'
+        attribute_file = os.path.join(script_dir, 'palau.txt.final')
 
 
     if gasName.lower() == 'nh3':
@@ -122,7 +129,13 @@ def main(args):
         szaFlag        = True
         validFlag      = True
 
-
+    if gasName.lower() == 'pan':
+        gasName        = 'PAN'
+        maxSZA         = 90.0
+        maxCHI2        = 100.0
+        if loc1.lower() == 'bremen':
+            maxCHI2         = 35.0
+            
 
     if gasName.lower() == 'o3':
         gasName        = 'O3'
@@ -293,7 +306,7 @@ def main(args):
         tcFlag         = False
         pcFlag         = False
         minDOFs        = 1.0
-        if loc == 'BREMEN':
+        if loc == 'BREMEN' or loc == 'PARAMARIBO':
             maxCHI2        = 10.0
         else:
             maxCHI2        = 2.0
@@ -358,7 +371,7 @@ def main(args):
     # variable DATETIME will always be written as a DOUBLE as 
     # specified in GEOMS: http://avdc.gsfc.nasa.gov/index.php?site=1989220925
     #------------------------------------------------------------
-    myhdf = hdfsave.HDFsave(gasName,outDir,sfitVer,loc,source,attribute_file,granularity,dType='float32')
+    myhdf = hdfsave.HDFsave(gasName,outDir,sfitVer,loc,source,attribute_file,granularity,mtype,dType='float32')
     
     #------------------------------------------------
     # Here we initialize the HDF object with our data

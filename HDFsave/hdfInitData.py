@@ -96,9 +96,12 @@ class HDFinitData(object):
         # Assign IDL data to attributes to be written to HDF
         #---------------------------------------------------
         self.datesJD2K                      = np.asarray(dataStrc['ds']['DATETIME'])
-        self.latitude                       = dataStrc['ds']['LATITUDE'][0]
-        self.longitude                      = dataStrc['ds']['LONGITUDE'][0]                                
-        self.instAltitudes                  = dataStrc['ds']['ALT_INSTRUMENT'][0] / 1000.0                          # Convert [m] -> [km]
+
+        import ipdb
+        ipdb.set_trace()
+        self.latitude                       = dataStrc['ds']['LATITUDE']
+        self.longitude                      = dataStrc['ds']['LONGITUDE']                                
+        self.instAltitudes                  = dataStrc['ds']['ALT_INSTRUMENT'] / 1000.0                          # Convert [m] -> [km]
         self.surfPressures                  = np.asarray(dataStrc['ds']['SURFACE_PRESSURE'])
         self.surfTemperatures               = np.asarray(dataStrc['ds']['SURFACE_TEMPERATURE'])
         self.altitudes                      = dataStrc['ds']['ALTITUDE'][0]
@@ -154,14 +157,14 @@ class HDFinitData(object):
     def initPy(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,
                mxRMS=1.0,mxSZA=80.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,
                cnvFlg=True,szaFlg=False, validFlg=False,maxCHI2=-1.0,minVMR=1,maxVMR=-1,
-               co2Flag=False, minCO2=-1e99, maxCO2=1e99,maxTCTotErr=1e99):
+               co2Flag=False, minCO2=-1e99, maxCO2=1e99,maxTCTotErr=1e99,mtype='stationary'):
 
         ''' Interface for initializing data with python set of routines'''
         
         #---------------------------------------
         # Gather data using python read routines
         #---------------------------------------
-        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, statLyrFile, iyear, imonth, iday, fyear, fmonth, fday,errFlg=True)
+        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, statLyrFile, iyear, imonth, iday, fyear, fmonth, fday,mtype,errFlg=True)
         
         #------------
         # Filter data

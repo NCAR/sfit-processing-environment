@@ -327,18 +327,24 @@ class HDFbaseRetDat(object):
         #-----------------------------------
         # Create Latitude dataset (variable)
         #-----------------------------------
+        if self.latAttrbs(np.size(self.latitude))['VAR_DEPEND'] == 'CONSTANT':
+            self.latitude = self.latitude[0]
         hdfFile.createDataSet(self.getLatitudeInstrumentName(),np.size(self.latitude),self.latitude, \
                                 self.latAttrbs(np.size(self.latitude)))
 
         #-----------------------------------
         # Create Longitude dataset (variable)
         #-----------------------------------
+        if self.lonAttrbs(np.size(self.longitude))['VAR_DEPEND'] == 'CONSTANT':
+            self.longitude = self.longitude[0]
         hdfFile.createDataSet(self.getLongitudeInstrumentName(),np.size(self.longitude),self.longitude, \
                                 self.lonAttrbs(np.size(self.longitude)))
 
         #----------------------------------------------
         # Create Instrument Altitude dataset (variable)
         #----------------------------------------------
+        if self.instAltAttrbs(np.size(self.instAltitudes))['VAR_DEPEND'] == 'CONSTANT':
+            self.instAltitudes = self.instAltitudes[0]
         hdfFile.createDataSet(self.getAltitudeInstrumentName(),np.size(self.instAltitudes),self.instAltitudes, \
                                 self.instAltAttrbs(np.size(self.instAltitudes)))
 

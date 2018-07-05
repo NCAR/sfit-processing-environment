@@ -2049,7 +2049,7 @@ class DbInputFile(_DateRange):
 
 class GatherHDF(ReadOutputData,DbInputFile):
     
-    def __init__(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imnth,iday,fyear,fmnth,fday,errFlg=True,incr=1):
+    def __init__(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imnth,iday,fyear,fmnth,fday,mtype,errFlg=True,incr=1):
         primGas = ''
 
         #-----------------------------------------
@@ -2158,16 +2158,18 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFazi   = np.zeros(nobs)
         self.HDFsurfP   = np.zeros(nobs)
         self.HDFsurfT   = np.zeros(nobs)
+        self.HDFlon   = np.zeros(nobs)
+        self.HDFlat   = np.zeros(nobs)
+        self.HDFinstAlt   = np.zeros(nobs)
         
         for i,val in enumerate(self.HDFdates):
             tempSpecDB = self.dbFindDate(self.HDFdates[i])
-            if i == 0:
-                self.HDFlat     = np.array(tempSpecDB['N_Lat'])
-                if tempSpecDB.has_key('W_Lon'):
-                    self.HDFlon     = -np.array(tempSpecDB['W_Lon'])
-                else:
-                    self.HDFlon     = np.array(tempSpecDB['E_Lon'])
-                self.HDFinstAlt = np.array(tempSpecDB['Alt'])
+            self.HDFlat[i]     = np.array(tempSpecDB['N_Lat'])
+            if tempSpecDB.has_key('W_Lon'):
+                self.HDFlon[i]     = -np.array(tempSpecDB['W_Lon'])
+            else:
+                self.HDFlon[i]     = np.array(tempSpecDB['E_Lon'])
+            self.HDFinstAlt[i] = np.array(tempSpecDB['Alt'])
             self.HDFintT[i] = tempSpecDB['Dur']
             self.HDFazi[i]  = tempSpecDB['SAzm']
             self.HDFazi[i] = np.mod(self.HDFazi[i] + 180,360.0)
@@ -2224,7 +2226,9 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFazi         = np.delete(self.HDFazi,self.inds)
         self.HDFdatesJD2K   = np.delete(self.HDFdatesJD2K,self.inds)
         self.HDFsza         = np.delete(self.HDFsza,self.inds)
-   
+        self.HDFlat         = np.delete(self.HDFlat,self.inds)
+        self.HDFlon         = np.delete(self.HDFlon,self.inds)
+        self.HDFinstAlt         = np.delete(self.HDFinstAlt,self.inds)
         print 'Number of observations after filtering = {}'.format(len(self.HDFdates))   
 
 

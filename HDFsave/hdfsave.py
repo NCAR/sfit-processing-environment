@@ -34,7 +34,7 @@ import hdfInitData
 
 class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
-   def __init__(self,gasNameStr,outputDir,processingSfitVer,location,source,attr_file,granu,dType):
+   def __init__(self,gasNameStr,outputDir,processingSfitVer,location,source,attr_file,granu,mtype,dType):
       super(HDFsave, self).__init__(gasNameStr)
       self.dType               = dType
       if   dType.lower() == 'float32': self.dTypeStr = 'REAL'
@@ -51,6 +51,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.attribute_file      = attr_file
       self.locID               = source
       self.granularity         = granu
+      self.mtype               = mtype
       
 
    def glblAttrbs(self,fDOI,idate,fdate):
@@ -178,7 +179,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DESCRIPTION']      = 'Latitude of the instrument location, positive North'
       dataStr['VAR_NOTES']            = 'None'
       dataStr['VAR_SIZE']             = str(nsize)
-      dataStr['VAR_DEPEND']           = 'CONSTANT'
+      if self.mtype.lower() == 'stationary':
+         dataStr['VAR_DEPEND']           = 'CONSTANT'
+      elif self.mtype.lower() == 'mobile':
+         dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = 'deg'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.74533E-2;rad'
@@ -200,7 +204,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DESCRIPTION']      = 'Longitude of the instrument location, positive East'
       dataStr['VAR_NOTES']            = 'None'
       dataStr['VAR_SIZE']             = str(nsize)
-      dataStr['VAR_DEPEND']           = 'CONSTANT'
+      if self.mtype.lower() == 'stationary':
+         dataStr['VAR_DEPEND']           = 'CONSTANT'
+      elif self.mtype.lower() == 'mobile':
+         dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = 'deg'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.74533E-2;rad'
@@ -222,7 +229,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DESCRIPTION']      = 'altitude of the location of the instrument'
       dataStr['VAR_NOTES']            = 'None'
       dataStr['VAR_SIZE']             = str(nsize)
-      dataStr['VAR_DEPEND']           = 'CONSTANT'
+      if self.mtype.lower() == 'stationary':
+         dataStr['VAR_DEPEND']           = 'CONSTANT'
+      elif self.mtype.lower() == 'mobile':
+         dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = 'km'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.0E3;m'

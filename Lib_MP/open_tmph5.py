@@ -16,6 +16,7 @@ class load_tmph5:
                      'col_ap':'col_ap',    
                      'c2y':'chi_2_y',
                      'vmr_rt': 'vmr_rt',
+                     'ivmr_rt': 'ivmr_rt',
                      'vmr_ap': 'vmr_ap',
                      'err_ran':'col_ran',   
                      'err_sys':'col_sys',   
@@ -39,7 +40,8 @@ class load_tmph5:
                      'aux_rt': 'aux_rt',
                      'iter':'iter',
                      'itmx':'itmx',
-                     'avk_col':'avk_col'}
+                     'avk_col':'avk_col',
+                     'gasnames','gasnames'}
 
         self.h5f = h5.File(filename)
         self.dnum = self.h5f.root.mdate[:]
