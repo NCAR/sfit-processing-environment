@@ -299,6 +299,8 @@ def main(argv):
         # Initialize process list
         procList = []
         for indvday in daysList:
+
+            print indvday
                         
             # Find year month and day strings
             yrstr   = "{0:02d}".format(indvday.year)

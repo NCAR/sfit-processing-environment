@@ -154,8 +154,6 @@ def main(argv):
         fmonth         = 12
         fday           = 31
 
-        print("Creating HDF file for year: " + str(year))
-
         #------------------------------------------------------------
         # Here we create an instance of the HDFsave object. We define
         # that the data written to the HDF file will be REAL (float32)
@@ -186,10 +184,17 @@ def main(argv):
             print '*************************************************'
             print '\n' 
 
+            print("\nCreating HDF file for year: " + str(year) + '\n')
+
+            #try:
             myhdf.initPy(Inputs['dataDir'],Inputs['ctlFile'],Inputs['spcDBFile'],Inputs['statLyrFile'],iyear,imonth,iday,fyear,fmonth,fday,
                     mxRMS=Inputs['maxRMS'], minDOF=Inputs['minDOF'],minSZA=Inputs['minSZA'],mxSZA=Inputs['maxSZA'],maxCHI=Inputs['maxCHI'],minTC=Inputs['minTC'],
                     maxTC=Inputs['maxTC'], dofFlg=Inputs['dofFlg'],rmsFlg=Inputs['rmsFlg'],tcFlg=Inputs['tcNegFlg'],pcFlg=Inputs['pcNegFlg'],cnvFlg=Inputs['cnvrgFlg'],
                     szaFlg=Inputs['szaFlg'], chiFlg=Inputs['chiFlg'],errFlg=Inputs['errFlg'],tcMMflg=Inputs['tcMMFlg'], h2oFlg=Inputs['h2oFlg'])
+            
+            #except: 
+            #    print '!!! Seomething went bad with year: {} !!!'.format(iyear)
+            #    continue
 
         #--------------------------------------------
         # Here we are actually creating the HDF file.

@@ -80,7 +80,7 @@ def main():
     #----------------
     # Initializations
     #----------------
-    loc        = 'tab'                 # Name of station location
+    loc        = 'mlo'                 # Name of station location
     gasName    = 'h2o'                 # Name of gas
     #ver        = 'Current_ERA'         # Name of retrieval version to process
     ver        = 'Current_NCEP'         # Name of retrieval version to process
@@ -105,10 +105,10 @@ def main():
     # Date Range of interest
     #-----------------------
     iyear          = 2018
-    imnth          = 1
+    imnth          = 4
     iday           = 1
     fyear          = 2018
-    fmnth          = 3
+    fmnth          = 5
     fday           = 31
 
     #---------------------

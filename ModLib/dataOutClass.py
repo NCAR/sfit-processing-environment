@@ -46,27 +46,28 @@ import os
 from os import listdir
 from os.path import isfile, join
 import re
-#import statsmodels.api as sm
 from scipy.integrate import simps
 import matplotlib.animation as animation
-#MODIFIED (IVAN)
 import matplotlib
-# Force matplotlib to not use any Xwindows backend.
-#matplotlib.use('Agg')
-#
-
+from cycler import cycler
 import matplotlib.dates as md
-from matplotlib.dates import DateFormatter, MonthLocator, YearLocator, DayLocator
-
+from matplotlib.dates import DateFormatter, MonthLocator, YearLocator, DayLocator, HourLocator, MinuteLocator
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import FormatStrFormatter, MultipleLocator,AutoMinorLocator,ScalarFormatter
-from matplotlib.backends.backend_pdf import PdfPages #to save multiple pages in 1 pdf...
+from matplotlib.backends.backend_pdf import PdfPages 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.cm as mplcm
 import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
 import matplotlib.gridspec as gridspec
+
+
+#----------------------------------------------------------------------------------------
+# TO PLOT CLASSIC STYLE (https://matplotlib.org/users/dflt_style_changes.html)
+#----------------------------------------------------------------------------------------
+matplotlib.style.use('classic')  
+#----------------------------------------------------------------------------------------
 
 
 
@@ -656,7 +657,7 @@ def fit_driftfourier(x, data, weights, degree, half_period=0.5):
     
     # linear weighted least squares
     results = np.linalg.lstsq(A * weights[:, np.newaxis],
-                              data * weights)
+                              data * weights, rcond=None)
 
     
     params = results[0]
@@ -1279,9 +1280,12 @@ class ReadOutputData(_DateRange):
                 retapFlg determines whether retrieved profiles (=1) or a priori profiles (=0) are read'''
         self.deflt = {}
 
-        retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']   # These profiles will always be read
+        #retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']   # These profiles will always be read
         #if rtrvGasList[0].upper() == 'H2O': retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be read
         #else: retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']
+
+        if "H2O" in rtrvGasList: retrvdAll = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']
+        else: retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']
 
         if not fname: 
             if   retapFlg == 1: fname = 'rprfs.table'
@@ -1292,8 +1296,9 @@ class ReadOutputData(_DateRange):
         # Add user specified retrieved gas list 
         # to standard retrievals
         #--------------------------------------
-        #orginalRtrvGasList = rtrvGasList
-        #rtrvGasList = [g.upper() for g in rtrvGasList if g.upper() != 'H2O']   # Remove water from gas list since this read by default
+        # orginalRtrvGasList = rtrvGasList
+        # rtrvGasList = [g.upper() for g in rtrvGasList if g.upper() != 'H2O']   # Remove water from gas list since this read by default
+        
         retrvdAll.extend(rtrvGasList)
 
         #-----------------------------------
@@ -1353,12 +1358,10 @@ class ReadOutputData(_DateRange):
         #--------------------------------------------------------
         # If retrieved profiles is a gas, get total column amount
         #--------------------------------------------------------
-
-
         for i, gas in enumerate(rtrvGasList):
 
-
             self.deflt[gas+'_tot_col'] = np.sum(self.deflt[gas] * self.deflt['AIRMASS'], axis=1)
+
            
         #-------------------------------------------
         # Assign to aprfs or rprfs according to flag
@@ -2060,6 +2063,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
             self.readprfs([self.PrimaryGas,'H2O'],retapFlg=1)          # Retrieved Profiles
         else:
             self.readprfs([self.PrimaryGas],retapFlg=1)          # Retrieved Profiles
+
+        #self.readprfs([self.PrimaryGas],retapFlg=1)          # Retrieved Profiles
         self.readprfs([self.PrimaryGas],retapFlg=0)                # A priori Profiles
         self.readsummary()                                         # Summary file information
         self.readError(totFlg=True,avkFlg=True,vmrFlg=True)        # Read Error Data
@@ -2105,7 +2110,6 @@ class GatherHDF(ReadOutputData,DbInputFile):
             self.HDFrandErr.fill(-9.0E4)
             self.HDFtcSysErr.fill(-9.0E4)
             self.HDFtcRanErr.fill(-9.0E4)
-            
                         
         # Total Column
         self.HDFretTC     = np.asarray(self.rprfs[self.PrimaryGas+'_tot_col'])                          # Primary gas retrieved total column
@@ -2139,6 +2143,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
         specDB        = self.getInputs()        
         self.HDFintT  = np.zeros(nobs)
         self.HDFazi   = np.zeros(nobs)
+
+    
         
         for i,val in enumerate(self.HDFdates):
             tempSpecDB = self.dbFindDate(self.HDFdates[i])
@@ -2221,14 +2227,14 @@ class GatherHDF(ReadOutputData,DbInputFile):
 #------------------------------------------------------------------------------------------------------------------------------        
 class PlotData(ReadOutputData):
 
-    def __init__(self,dataDir,ctlF,iyear=False,imnth=False,iday=False,fyear=False,fmnth=False,fday=False,incr=1,outFname=''):
+    def __init__(self,dataDir,ctlF,iyear=False,imnth=False,iday=False,fyear=False,fmnth=False,fday=False,incr=1, saveFlg=False, outFname=''):
         primGas = ''
         #------------------------------------------------------------
         # If outFname is specified, plots will be saved to this file,
         # otherwise plots will be displayed to screen
         #------------------------------------------------------------
-        if outFname: self.pdfsav = PdfPages(outFname)
-        else:        self.pdfsav = False
+        if saveFlg: self.pdfsav = PdfPages(outFname)
+        else:       self.pdfsav = False
         
         super(PlotData,self).__init__(dataDir,primGas,ctlF,iyear,imnth,iday,fyear,fmnth,fday,incr)
         
@@ -2374,6 +2380,14 @@ class PlotData(ReadOutputData):
             gasSpec = {gas.upper()+'_'+x:np.mean(gasSpec[gas.upper()+'_'+x],axis=0) for x in mwList for gas in mwList[x]}   
         else:
             for x in gasSpec: gasSpec[x] = gasSpec[x][0]
+
+        #---------------------------
+        self.dataSpec = dataSpec
+        self.mwList   = mwList
+        self.gasSpec  = gasSpec
+        self.gasAbs   = gasAbs
+
+        #---------------------------
  
         #---------------------------
         # Date locators for plotting
@@ -2393,12 +2407,18 @@ class PlotData(ReadOutputData):
         if ('gas.profile.list' in self.ctl) and self.ctl['gas.profile.list'] and (len(self.dirLst) == 1):
             fig1   = plt.figure()
             gs1    = gridspec.GridSpec(2,numMW,height_ratios=(1,60))
-            levels = np.arange(np.round(np.min(JacbMat),decimals=3)-0.001,np.round(np.max(JacbMat),decimals=3)+0.001,0.001)
+            #levels = np.arange(np.round(np.min(JacbMat),decimals=3)-0.001, np.round(np.max(JacbMat),decimals=3)+0.001)
             ipnt   = 0
             for i,x in enumerate(mwList):
                 npnts = np.shape(dataSpec['WaveN_'+x])[0]
                 ax    = plt.subplot(gs1[1,i])
-                im    = ax.contourf(dataSpec['WaveN_'+x],Z,np.transpose(JacbMat[ipnt:(ipnt+npnts),:]),levels,cmap=mplcm.jet) 
+                im    = ax.contourf(dataSpec['WaveN_'+x],Z,np.transpose(JacbMat[ipnt:(ipnt+npnts),:]),cmap=mplcm.jet) 
+
+                norm= matplotlib.colors.Normalize(vmin=im.cvalues.min(), vmax=im.cvalues.max())
+
+                sm = plt.cm.ScalarMappable(norm=norm)
+                sm.set_array([])
+
                 ipnt += npnts
                 ax.grid(True)
                 if i == 0: ax.set_ylabel('Altitude [km]')
@@ -2406,8 +2426,10 @@ class PlotData(ReadOutputData):
     
             fig1.text(0.5,0.04,'Wavenumber [cm$^{-1}$]',ha='center',va='center')
             fig1.autofmt_xdate()
-            caxb = fig1.add_axes([0.2,0.9,0.6,0.05])
-            fig1.colorbar(im,cax=caxb,orientation='horizontal')
+            caxb = fig1.add_axes([0.15,0.9,0.7,0.03])
+            #fig1.colorbar(im,cax=caxb,orientation='horizontal')
+            fig1.colorbar(sm, ticks=im.levels, cax=caxb,orientation='horizontal')
+            plt.suptitle('Jacobian Matrix')
                 
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)
@@ -2456,7 +2478,6 @@ class PlotData(ReadOutputData):
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)
 
-            
             
             
             #---------------------------------------------------------------
@@ -2547,7 +2568,7 @@ class PlotData(ReadOutputData):
             
         
     def pltPrf(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,dofFlg=False,rmsFlg=True,tcFlg=True,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
-               pcFlg=True,cnvrgFlg=True,allGas=True,sclfct=1.0,sclname='ppv',pltStats=True,szaFlg=False,errFlg=False,chiFlg=False,tcMMflg=False,mnthFltFlg=False):
+               pcFlg=True,cnvrgFlg=True,allGas=True,sclfct=1.0,sclname=' ',pltStats=True,szaFlg=False,errFlg=False,chiFlg=False,tcMMflg=False,mnthFltFlg=False):
         ''' Plot retrieved profiles '''
         
         
@@ -2702,12 +2723,13 @@ class PlotData(ReadOutputData):
             ax2.grid(True,which='both')
             
             ax1.legend(prop={'size':9})
-            ax2.legend(prop={'size':9})   
+            ax2.legend(prop={'size':9}) 
 
-            ax1.text(-0.1,1.09, 'Max RMS = '+str(maxRMS),ha='left',va='center',transform=ax1.transAxes,fontsize=6)
-            ax1.text(-0.1,1.07, 'Min DOF = '+str(minDOF), ha='left',va='center',transform=ax1.transAxes,fontsize=6)
-            ax1.text(-0.1,1.05, 'Number of Obs Filtered        = '+str(nfltr),ha='left',va='center',transform=ax1.transAxes,fontsize=6)
-            ax1.text(-0.1,1.03,'Number of Obs After Filtering = '+str(ntot), ha='left',va='center',transform=ax1.transAxes,fontsize=6)
+            if fltr:  
+                ax1.text(-0.1,1.09, 'Max RMS = '+str(maxRMS),ha='left',va='center',transform=ax1.transAxes,fontsize=6)
+                ax1.text(-0.1,1.07, 'Min DOF = '+str(minDOF), ha='left',va='center',transform=ax1.transAxes,fontsize=6)
+                ax1.text(-0.1,1.05, 'Number of Obs Filtered        = '+str(nfltr),ha='left',va='center',transform=ax1.transAxes,fontsize=6)
+                ax1.text(-0.1,1.03,'Number of Obs After Filtering = '+str(ntot), ha='left',va='center',transform=ax1.transAxes,fontsize=6)
          
             ax1.set_ylabel('Altitude [km]')
             ax1.set_xlabel('VMR ['+sclname+']')
@@ -2740,8 +2762,11 @@ class PlotData(ReadOutputData):
                 
                 scalarMap.set_array(rms)
     
-                ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in rms] )
-                ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in rms] )
+                #ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in rms] )
+                #ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in rms] )
+
+                ax1.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in rms] ) )
+                ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in rms] ) )
                 
                 for i in range(len(rms)):
                     ax1.plot(rPrf[gas][i,:],alt,linewidth=0.75)
@@ -2785,8 +2810,11 @@ class PlotData(ReadOutputData):
                 
                 scalarMap.set_array(sza)
     
-                ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in sza] )
-                ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in sza] )
+                #ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in sza] )
+                #ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in sza] )
+
+                ax1.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in sza] ) )
+                ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in sza] ) )
                 
                 for i in range(len(sza)):
                     ax1.plot(rPrf[gas][i,:],alt,linewidth=0.75)
@@ -2833,8 +2861,13 @@ class PlotData(ReadOutputData):
                 
                 scalarMap.set_array(month)
     
-                ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in month] )
-                ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in month] )
+                #ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in month] )
+                #ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in month] )
+
+                ax1.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in month] ) )
+                ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in month] ) )
+
+
                 
                 for i in range(len(month)):
                     ax1.plot(rPrf[gas][i,:],alt,linewidth=0.75)
@@ -3116,12 +3149,12 @@ class PlotData(ReadOutputData):
                 fig,(ax1,ax2)  = plt.subplots(1,2, sharey=True)
                 if len(self.dirLst) > 1:
                     ax1.plot(mnthMean,alt,color='k',label=gas+' Retrieved Monthly Mean')
-                    ax1.errorbar(mnthMean,alt,fmt=None,xerr=rand_std,ecolor='r',label='Total Random Error')
+                    ax1.errorbar(mnthMean,alt,fmt='none',xerr=rand_std,ecolor='r',label='Total Random Error')
                     ax1.fill_betweenx(alt,mnthMean-rand_max,mnthMean+rand_max,alpha=0.5,color='0.75')  
                     ax1.set_title('Random Error')
                 else:
                     ax1.plot(rPrfMol[0],alt,color='k',label=gas+' Retrieved Profile')
-                    ax1.errorbar(rPrfMol[0],alt,fmt=None,xerr=rand_err[0],ecolor='r',label='Total Random Error')
+                    ax1.errorbar(rPrfMol[0],alt,fmt='none',xerr=rand_err[0],ecolor='r',label='Total Random Error')
                     ax1.fill_betweenx(alt,rPrfMol[0]-tot_err[0],rPrfMol[0]+tot_err[0],alpha=0.5,color='0.75')
                     ax1.set_title('Errorbars = Random Error\nShadded Region = Total Error',multialignment='center',fontsize=10)
                     
@@ -3131,12 +3164,12 @@ class PlotData(ReadOutputData):
                 
                 if len(self.dirLst) > 1:
                     ax2.plot(mnthMean,alt,color='k',label=gas+' Retrieved Monthly Mean')
-                    ax2.errorbar(mnthMean,alt,fmt=None,xerr=sys_std,ecolor='r',label='Total Systematic Error')
+                    ax2.errorbar(mnthMean,alt,fmt='none',xerr=sys_std,ecolor='r',label='Total Systematic Error')
                     ax2.fill_betweenx(alt,mnthMean-sys_max,mnthMean+sys_max,alpha=0.5,color='0.75')      
                     ax2.set_title('Systematic Error')
                 else:
                     ax2.plot(rPrfMol[0],alt,color='k',label=gas+' Retrieved Profile')
-                    ax2.errorbar(rPrfMol[0],alt,fmt=None,xerr=sys_err[0],ecolor='r',label='Total Systematic Error')
+                    ax2.errorbar(rPrfMol[0],alt,fmt='none',xerr=sys_err[0],ecolor='r',label='Total Systematic Error')
                     ax2.fill_betweenx(alt,rPrfMol[0]-tot_err[0],rPrfMol[0]+tot_err[0],alpha=0.5,color='0.75')       
                     ax2.set_title('Errorbars = Systematic Error\nShadded Region = Total Error',multialignment='center',fontsize=10)
                 
@@ -3152,7 +3185,7 @@ class PlotData(ReadOutputData):
                     #-------------------------------------------------------
                     fig,ax1  = plt.subplots()
                     ax1.plot(mnthMean,alt,color='k',label=gas+' Retrieved Monthly Mean')
-                    ax1.errorbar(mnthMean,alt,fmt=None,xerr=tot_std,ecolor='r',label='Total Error')
+                    ax1.errorbar(mnthMean,alt,fmt='none',xerr=tot_std,ecolor='r',label='Total Error')
                     ax1.fill_betweenx(alt,mnthMean-tot_max,mnthMean+tot_max,alpha=0.5,color='0.75')                
                     ax1.set_title('Total Error')
                     ax1.set_ylabel('Altitude [km]')
@@ -3160,17 +3193,12 @@ class PlotData(ReadOutputData):
                     ax1.grid(True,which='both')
                     
                     if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-                    else:           plt.show(block=False)              
-                    
-                    
-                #---------------------------------------------
+                    else:           plt.show(block=False)
+
+                #-------------------------------------------------------
                 # Plot individual components of error analysis
-                #---------------------------------------------
-                #-------
-                # Random
-                #-------
-                fig,ax1  = plt.subplots()           
-                
+                #-------------------------------------------------------
+                fig,(ax1,ax2)  = plt.subplots(1,2, sharey=True)
                 #---------------------------------
                 # Plot systematic error components
                 #---------------------------------                
@@ -3179,7 +3207,7 @@ class PlotData(ReadOutputData):
                         errPlt = np.mean(np.sqrt(rand_cmpnts[k]),axis=0)
                         retPrf = np.mean(rPrfMol,axis=0)
                     else:
-                        errPlt = rand_cmpnts[k][0]
+                        errPlt = np.sqrt(rand_cmpnts[k][0])
                         retPrf = rPrfMol[0]
                     
                     #-------------------------------------------------
@@ -3201,16 +3229,8 @@ class PlotData(ReadOutputData):
                 ax1.legend(prop={'size':9})
                 
                 ax1.tick_params(axis='both',which='both',labelsize=8) 
-                ax1.set_title('Random Error Components')
-    
-                if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-                else:           plt.show(block=False)   
+                ax1.set_title('Random Error Components')               
                 
-                #-----------
-                # Systematic
-                #-----------                
-                fig, ax1  = plt.subplots()        
-                                
                 #-----------------------------
                 # Plot random error components
                 #-----------------------------
@@ -3219,7 +3239,7 @@ class PlotData(ReadOutputData):
                         errPlt = np.mean(np.sqrt(sys_cmpnts[k]),axis=0)
                         retPrf = np.mean(rPrfMol,axis=0)
                     else:
-                        errPlt = sys_cmpnts[k][0]
+                        errPlt = np.sqrt(sys_cmpnts[k][0])
                         retPrf = rPrfMol[0]
                     
                     #-------------------------------------------------
@@ -3227,24 +3247,107 @@ class PlotData(ReadOutputData):
                     #-------------------------------------------------
                     errPlt = errPlt / retPrf         
                         
-                    ax1.plot(errPlt,alt,linewidth=0.75, label=k)
+                    ax2.plot(errPlt,alt,linewidth=0.75, label=k)
     
                 #------------------------
                 # Plot total random error
                 #------------------------
                 sysMean  = np.mean(sys_err,axis=0) / retPrf
-                ax1.plot(sysMean,alt,linewidth=0.75, label='Total Systematic Error')
+                ax2.plot(sysMean,alt,linewidth=0.75, label='Total Systematic Error')
 
-                ax1.set_ylabel('Altitude [km]')
-                ax1.set_xlabel('Fraction of Retrieved Profile')             
-                ax1.grid(True,which='both')
-                ax1.legend(prop={'size':9})
+                ax2.set_xlabel('Fraction of Retrieved Profile')             
+                ax2.grid(True,which='both')
+                ax2.legend(prop={'size':9})
                 
-                ax1.tick_params(axis='both',which='both',labelsize=8) 
-                ax1.set_title('Systematic Error Components')
-    
+                ax2.tick_params(axis='both',which='both',labelsize=8) 
+                ax2.set_title('Systematic Error Components')
+                
                 if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-                else:           plt.show(block=False)
+                else:           plt.show(block=False)                 
+                    
+                    
+                # #---------------------------------------------
+                # # Plot individual components of error analysis
+                # #---------------------------------------------
+                # #-------
+                # # Random
+                # #-------
+                # fig,ax1  = plt.subplots()           
+                
+                # #---------------------------------
+                # # Plot systematic error components
+                # #---------------------------------                
+                # for k in rand_cmpnts:
+                #     if len(self.dirLst) > 1:
+                #         errPlt = np.mean(np.sqrt(rand_cmpnts[k]),axis=0)
+                #         retPrf = np.mean(rPrfMol,axis=0)
+                #     else:
+                #         errPlt = rand_cmpnts[k][0]
+                #         retPrf = rPrfMol[0]
+                    
+                #     #-------------------------------------------------
+                #     # Normalize error as fraction of retrieved profile
+                #     #-------------------------------------------------
+                #     errPlt = errPlt / retPrf         
+                        
+                #     ax1.plot(errPlt,alt,linewidth=0.75, label=k)
+                    
+                # #------------------------
+                # # Plot total random error
+                # #------------------------
+                # randMean = np.mean(rand_err,axis=0) / retPrf
+                # ax1.plot(randMean,alt,linewidth=0.75, label='Total Random Error')                
+
+                # ax1.set_ylabel('Altitude [km]')
+                # ax1.set_xlabel('Fraction of Retrieved Profile')             
+                # ax1.grid(True,which='both')
+                # ax1.legend(prop={'size':9})
+                
+                # ax1.tick_params(axis='both',which='both',labelsize=8) 
+                # ax1.set_title('Random Error Components')
+    
+                # if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                # else:           plt.show(block=False)   
+                
+                # #-----------
+                # # Systematic
+                # #-----------                
+                # fig, ax1  = plt.subplots()        
+                                
+                # #-----------------------------
+                # # Plot random error components
+                # #-----------------------------
+                # for k in sys_cmpnts:
+                #     if len(self.dirLst) > 1:
+                #         errPlt = np.mean(np.sqrt(sys_cmpnts[k]),axis=0)
+                #         retPrf = np.mean(rPrfMol,axis=0)
+                #     else:
+                #         errPlt = sys_cmpnts[k][0]
+                #         retPrf = rPrfMol[0]
+                    
+                #     #-------------------------------------------------
+                #     # Normalize error as fraction of retrieved profile
+                #     #-------------------------------------------------
+                #     errPlt = errPlt / retPrf         
+                        
+                #     ax1.plot(errPlt,alt,linewidth=0.75, label=k)
+    
+                # #------------------------
+                # # Plot total random error
+                # #------------------------
+                # sysMean  = np.mean(sys_err,axis=0) / retPrf
+                # ax1.plot(sysMean,alt,linewidth=0.75, label='Total Systematic Error')
+
+                # ax1.set_ylabel('Altitude [km]')
+                # ax1.set_xlabel('Fraction of Retrieved Profile')             
+                # ax1.grid(True,which='both')
+                # ax1.legend(prop={'size':9})
+                
+                # ax1.tick_params(axis='both',which='both',labelsize=8) 
+                # ax1.set_title('Systematic Error Components')
+    
+                # if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                # else:           plt.show(block=False)
 
                                    
 
@@ -3388,7 +3491,10 @@ class PlotData(ReadOutputData):
         cNorm     = colors.Normalize(vmin=np.min(alt), vmax=np.max(alt))
         scalarMap = mplcm.ScalarMappable(norm=cNorm,cmap=clmap)
         scalarMap.set_array(alt)
-        ax.set_color_cycle([scalarMap.to_rgba(x) for x in alt])
+        #ax.set_color_cycle([scalarMap.to_rgba(x) for x in alt])
+        ax.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in alt] ) )
+
+
         
         for i in range(len(alt)):
             ax.plot(avkSCF[i,:],alt)
@@ -3427,7 +3533,10 @@ class PlotData(ReadOutputData):
         cNorm     = colors.Normalize(vmin=np.min(alt), vmax=np.max(alt))
         scalarMap = mplcm.ScalarMappable(norm=cNorm,cmap=clmap)
         scalarMap.set_array(alt)
-        ax.set_color_cycle([scalarMap.to_rgba(x) for x in alt])
+
+        #ax.set_color_cycle([scalarMap.to_rgba(x) for x in alt])
+
+        ax.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in alt] ) )
         
         for i in range(len(alt)):
             ax.plot(avkVMR[i,:],alt)
@@ -3591,62 +3700,107 @@ class PlotData(ReadOutputData):
             for k in randErrs:
                 randErrs[k] = np.delete(randErrs[k],self.inds)
                 randErrs[k] = np.divide(randErrs[k], totClmn) * 100.00  # Convert total random error components to 
-            
+   
+        #----------------------------
+        # DETERMINE FORMAT OF X-AXIS
+        #----------------------------
+
         #----------------------------
         # Determine if multiple years
         #----------------------------
-        years = [ singDate.year for singDate in dates]      # Find years for all date entries
-        if len(list(set(years))) > 1: yrsFlg = True         # Determine all unique years
-        else:                         yrsFlg = False
+        yrsFlg   = False
+        monthFlg = False
 
+        years = [ singDate.year for singDate in dates]      # Find years for all date entries
+        
+        if len(list(set(years))) > 1:  yrsFlg    = True         # Determine all unique years
+        else: 
+            months = [ singDate.month for singDate in dates]
+            if len(list(set(months))) > 1:  monthFlg    = True
+           
         #-----------------
         # Plot time series
         #-----------------
         clmap        = 'jet'
         cm           = plt.get_cmap(clmap)    
-        yearsLc      = YearLocator()
-        monthsAll    = MonthLocator()
-
-        diffDates    = abs((dt.date(dates[0].year, dates[0].month, dates[0].day) - dt.date(dates[-1].year, dates[-1].month, dates[-1].day)).days)
-        if diffDates <= 30:
-            DayAll       = DayLocator(interval=1)
-        elif (diffDates > 30) and (diffDates < 60):
-            DayAll       = DayLocator(interval=3)
-        elif diffDates > 60:
-            DayAll       = monthsAll
-
-
         #months       = MonthLocator(bymonth=1,bymonthday=1)
-        months       = MonthLocator()
-        if yrsFlg: DateFmt      = DateFormatter('%Y')
-        else:      DateFmt      =  DateFormatter('%d\n%m')#  DateFormatter('%m\n%Y')        
+
+        if yrsFlg: 
+            majorLc      = YearLocator()
+            majorFmt     = DateFormatter('%Y')
+            minorLc      = MonthLocator()
+            minorFmt     = DateFormatter('%m')
+            xlabel       = 'Year'
+
+        if monthFlg:
+            majorLc      = MonthLocator()
+            majorFmt     = DateFormatter('%m')
+            minorLc      = AutoMinorLocator()  
+            minorFmt     = DateFormatter('%d')
+            xlabel       = 'Month'
+
+        else:      
+
+            diffDates    = abs((dt.date(dates[0].year, dates[0].month, dates[0].day) - dt.date(dates[-1].year, dates[-1].month, dates[-1].day)).days)
         
+            if diffDates == 0:
+                majorLc       = HourLocator()
+                majorFmt      = DateFormatter('%H')
+                minorLc       = AutoMinorLocator()
+                xlabel        = 'Hour'
+
+            elif (diffDates > 0) and (diffDates <= 4):
+                majorLc       = DayLocator(interval=1)
+                majorFmt      = DateFormatter('%m/%d')  
+                minorLc       = HourLocator()
+                xlabel        = 'Day [Hour]'
+
+            elif (diffDates > 4) and (diffDates <= 7):
+                majorLc       = DayLocator(interval=1)
+                majorFmt      = DateFormatter('%m/%d')  
+                minorLc       = AutoMinorLocator()
+                xlabel        = 'Day [Hour]'
+
+            elif (diffDates > 7) and (diffDates <= 15):
+                majorLc       = DayLocator(interval=2)
+                majorFmt      = DateFormatter('%m/%d')  
+                minorLc       = DayLocator()
+                xlabel        = 'Day [Hour]' 
+
+            elif (diffDates > 15) and (diffDates <= 31):
+                majorLc       = DayLocator(interval=4)
+                majorFmt      = DateFormatter('%m/%d')  
+                minorLc       = DayLocator()
+                xlabel        = 'Day [Hour]' 
+
+        #----------------------------
+        #             PLOTS
+        #----------------------------
+
+        #----------------------------
+        # time Series of Retrieved Total Column
+        #----------------------------
         fig1,ax1 = plt.subplots()
-        ax1.plot(dates,totClmn,'k.',markersize=4)
+        ax1.plot(dates,totClmn,'k.',markersize=6)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
+        ax1.set_xlabel(xlabel)
         ax1.set_title('Time Series of Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         
         if yrsFlg:
             #plt.xticks(rotation=45)
-            ax1.xaxis.set_major_locator(yearsLc)
-            ax1.xaxis.set_minor_locator(months)
-            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax1.xaxis.set_major_formatter(DateFmt) 
-            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
             ax1.xaxis.set_tick_params(which='major',labelsize=8)
             ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
         else:
-            ax1.xaxis.set_major_locator(DayAll)
-            ax1.xaxis.set_major_formatter(DateFmt)
-            #ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            #fig1.autofmt_xdate()
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            ax1.xaxis.set_minor_locator(minorLc)
         
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-        else:           plt.show(block=False)  
-        
+        else:           plt.show(block=False)    
                 
         #--------------------------------------
         # Plot time series color coded with SZA
@@ -3658,25 +3812,20 @@ class PlotData(ReadOutputData):
         sc1 = ax1.scatter(dates,totClmn,c=sza,cmap=cm,norm=norm)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
+        ax1.set_xlabel(xlabel)
         ax1.set_title('Time Series of Retrieved Total Column with SZA\n[molecules cm$^{-2}$]',multialignment='center')
         
         if yrsFlg:
             #plt.xticks(rotation=45)
-            ax1.xaxis.set_major_locator(yearsLc)
-            ax1.xaxis.set_minor_locator(months)
-            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax1.xaxis.set_major_formatter(DateFmt) 
-            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
             ax1.xaxis.set_tick_params(which='major',labelsize=8)
             ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
         else:
-            ax1.xaxis.set_major_locator(DayAll)
-            ax1.xaxis.set_major_formatter(DateFmt)
-            #ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            ax1.set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-            #fig1.autofmt_xdate()
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            ax1.xaxis.set_minor_locator(minorLc)
         
         fig1.subplots_adjust(right=0.82)
         cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
@@ -3686,7 +3835,7 @@ class PlotData(ReadOutputData):
         
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
         else:           plt.show(block=False) 
-
+ 
         #--------------------------------------
         # Plot time series color coded with SAA
         #--------------------------------------    
@@ -3697,24 +3846,20 @@ class PlotData(ReadOutputData):
         sc1 = ax1.scatter(dates,totClmn,c=saa,cmap=cm,norm=norm)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
+        ax1.set_xlabel(xlabel)
         ax1.set_title('Time Series of Retrieved Total Column with SAA\n[molecules cm$^{-2}$]',multialignment='center')
         
         if yrsFlg:
             #plt.xticks(rotation=45)
-            ax1.xaxis.set_major_locator(yearsLc)
-            ax1.xaxis.set_minor_locator(months)
-            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax1.xaxis.set_major_formatter(DateFmt) 
-            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
             ax1.xaxis.set_tick_params(which='major',labelsize=8)
             ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
         else:
-            ax1.xaxis.set_major_locator(DayAll)
-            ax1.xaxis.set_major_formatter(DateFmt)
-            #ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-            ax1.set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            ax1.xaxis.set_minor_locator(minorLc)
             #fig1.autofmt_xdate()
         
         fig1.subplots_adjust(right=0.82)
@@ -3724,8 +3869,8 @@ class PlotData(ReadOutputData):
         cbar.set_label('SAA (Relative to North)')    
         
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-        else:           plt.show(block=False)           
-        
+        else:           plt.show(block=False)  
+
         #--------------------------------------
         # Plot time series color coded with RMS
         #--------------------------------------         
@@ -3735,25 +3880,20 @@ class PlotData(ReadOutputData):
         sc1 = ax1.scatter(dates,totClmn,c=rms,cmap=cm,norm=norm)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
+        ax1.set_xlabel(xlabel)
         ax1.set_title('Time Series of Retrieved Total Column with RMS\n[molecules cm$^{-2}$]',multialignment='center')
         
         if yrsFlg:
-            #plt.xscatter(rotation=45)
-            ax1.xaxis.set_major_locator(yearsLc)
-            ax1.xaxis.set_minor_locator(months)
-            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax1.xaxis.set_major_formatter(DateFmt) 
-            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            #plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
             ax1.xaxis.set_tick_params(which='major',labelsize=8)
             ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
         else:
-            ax1.xaxis.set_major_locator(DayAll)
-            ax1.xaxis.set_major_formatter(DateFmt)
-            ax1.set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-            #ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            #fig1.autofmt_xdate()
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            ax1.xaxis.set_minor_locator(minorLc)
         
         fig1.subplots_adjust(right=0.82)
         cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
@@ -3773,25 +3913,20 @@ class PlotData(ReadOutputData):
         sc1 = ax1.scatter(dates,totClmn,c=dofs,cmap=cm,norm=norm)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
+        ax1.set_xlabel(xlabel)
         ax1.set_title('Time Series of Retrieved Total Column with DOF\n[molecules cm$^{-2}$]',multialignment='center')
         
         if yrsFlg:
-            #plt.xscatter(rotation=45)
-            ax1.xaxis.set_major_locator(yearsLc)
-            ax1.xaxis.set_minor_locator(months)
-            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax1.xaxis.set_major_formatter(DateFmt) 
-            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            #plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
             ax1.xaxis.set_tick_params(which='major',labelsize=8)
             ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
         else:
-            ax1.xaxis.set_major_locator(DayAll)
-            ax1.xaxis.set_major_formatter(DateFmt)
-            ax1.set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-            #ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            #fig1.autofmt_xdate()
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            ax1.xaxis.set_minor_locator(minorLc)
         
         fig1.subplots_adjust(right=0.82)
         cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
@@ -3800,20 +3935,20 @@ class PlotData(ReadOutputData):
         cbar.set_label('DOF')    
         
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-        else:           plt.show(block=False)           
+        else:           plt.show(block=False)   
 
-    
         #-----------------------------------
         # Plot trend analysis of time series
         #-----------------------------------
         # Actual data
         #------------
-        dateYearFrac = toYearFraction(dates)
-        weights      = np.ones_like(dateYearFrac)
-        res          = fit_driftfourier(dateYearFrac, totClmn, weights, 2)
-        f_drift, f_fourier, f_driftfourier = res[3:6]
-        
         try:
+            dateYearFrac = toYearFraction(dates)
+            weights      = np.ones_like(dateYearFrac)
+            res          = fit_driftfourier(dateYearFrac, totClmn, weights, 2)
+            f_drift, f_fourier, f_driftfourier = res[3:6]
+        
+        
             fig1,ax1 = plt.subplots()
             ax1.scatter(dates,totClmn,s=4,label='data')
             ax1.plot(dates,f_drift(dateYearFrac),label='Fitted Anual Trend')
@@ -3821,34 +3956,27 @@ class PlotData(ReadOutputData):
             ax1.grid(True)
             ax1.set_ylim([np.min(totClmn)-0.1*np.min(totClmn), np.max(totClmn)+0.15*np.max(totClmn)])
             ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-            ax1.set_xlabel('Date [MM]')
+            ax1.set_xlabel(xlabel)
             ax1.set_title('Trend Analysis with Boot Strap Resampling\nIndividual Retrievals',multialignment='center')
             ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(totClmn)*100.0),transform=ax1.transAxes)
             ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
             ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(totClmn)*100.0),transform=ax1.transAxes) 
             
-            
             if yrsFlg:
                 #plt.xticks(rotation=45)
-                ax1.xaxis.set_major_locator(yearsLc)
-                ax1.xaxis.set_minor_locator(months)
-                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax1.xaxis.set_major_formatter(DateFmt) 
-                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax1.xaxis.set_major_locator(DayAll)
-                ax1.xaxis.set_major_formatter(DateFmt)
-                ax1.set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-                #ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                #fig1.autofmt_xdate()  
-                
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                ax1.xaxis.set_minor_locator(minorLc)
+            
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-            else:           plt.show(block=False)          
-            
-            
+            else:           plt.show(block=False)       
+  
             #------
             # Daily
             #------
@@ -3865,7 +3993,7 @@ class PlotData(ReadOutputData):
             ax1.grid(True)
             ax1.set_ylim([np.min(dailyVals['dailyAvg'])-0.1*np.min(dailyVals['dailyAvg']), np.max(dailyVals['dailyAvg'])+0.15*np.max(dailyVals['dailyAvg'])])
             ax1.set_ylabel('Daily Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-            ax1.set_xlabel('Date [MM]')
+            ax1.set_xlabel(xlabel)
             ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
             ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)
             ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
@@ -3873,20 +4001,15 @@ class PlotData(ReadOutputData):
         
             if yrsFlg:
                 #plt.xticks(rotation=45)
-                ax1.xaxis.set_major_locator(yearsLc)
-                ax1.xaxis.set_minor_locator(months)
-                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax1.xaxis.set_major_formatter(DateFmt) 
-                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax1.xaxis.set_major_locator(DayAll)
-                ax1.xaxis.set_major_formatter(DateFmt)
-                ax1.set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-                #ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                #fig1.autofmt_xdate()    
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                ax1.xaxis.set_minor_locator(minorLc)
                 
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)            
@@ -3907,7 +4030,7 @@ class PlotData(ReadOutputData):
             ax1.grid(True)
             ax1.set_ylim([np.min(mnthlyVals['mnthlyAvg'])-0.1*np.min(mnthlyVals['mnthlyAvg']), np.max(mnthlyVals['mnthlyAvg'])+0.15*np.max(mnthlyVals['mnthlyAvg'])])
             ax1.set_ylabel('Monthly Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-            ax1.set_xlabel('Date [MM]')
+            ax1.set_xlabel(xlabel)
             ax1.set_title('Trend Analysis with Boot Strap Resampling\Monthly Averaged Retrievals',multialignment='center')
             ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)
             ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
@@ -3915,20 +4038,15 @@ class PlotData(ReadOutputData):
         
             if yrsFlg:
                 #plt.xticks(rotation=45)
-                ax1.xaxis.set_major_locator(yearsLc)
-                ax1.xaxis.set_minor_locator(months)
-                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax1.xaxis.set_major_formatter(DateFmt) 
-                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax1.xaxis.set_major_locator(monthsAll)
-                ax1.xaxis.set_major_formatter(DateFmt)
-                ax1.set_xlim(xmin=dt.date(int(years[0]), 1, 1), xmax=dt.date(int(years[0]), 12, 31))
-                #ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                #fig1.autofmt_xdate()        
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                ax1.xaxis.set_minor_locator(minorLc)
                 
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)                 
@@ -3954,25 +4072,23 @@ class PlotData(ReadOutputData):
                 ax2.set_ylabel('Retrieved Partial Column\n[molecules cm$^{-2}$]',multialignment='center')
                 ax1.set_title('Partial Column Weighted VMR and molecules cm$^{-2}$\nAltitude Layer '+str(alt[ind1])+'[km] - '+str(alt[ind2])+'[km]',
                               multialignment='center',fontsize=12)
+                ax2.set_xlabel(xlabel)
                 
                 if yrsFlg:
-                    ax2.xaxis.set_major_locator(yearsLc)
-                    ax2.xaxis.set_minor_locator(months)
-                    ax2.xaxis.set_major_formatter(DateFmt) 
-                    ax2.xaxis.set_tick_params(which='major',labelsize=8)
-                    ax2.xaxis.set_tick_params(which='minor',labelbottom='off')
+                    #plt.xticks(rotation=45)
+                    ax1.xaxis.set_major_locator(majorLc)
+                    ax1.xaxis.set_minor_locator(minorLc)
+                    ax1.xaxis.set_major_formatter(majorFmt) 
+                    ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                    ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
                 else:
-                    ax2.xaxis.set_major_locator(DayAll)
-                    ax2.xaxis.set_major_formatter(DateFmt)
-                    ax2.set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-                    #ax2.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                    ax2.xaxis.set_minor_locator(AutoMinorLocator())
-                    #fig.autofmt_xdate()
+                    ax1.xaxis.set_major_locator(majorLc)
+                    ax1.xaxis.set_major_formatter(majorFmt)
+                    ax1.xaxis.set_minor_locator(minorLc)
                 
                 if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
                 else:           plt.show(block=False)            
-        
-        
+          
         #-------------------------------------
         # Plot time series of Monthly Averages
         #-------------------------------------
@@ -3983,24 +4099,21 @@ class PlotData(ReadOutputData):
         ax1.errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],yerr=mnthVals['std'],fmt='k.',markersize=4,ecolor='grey')
         ax1.grid(True)
         ax1.set_ylabel('Monthly Averaged Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
+        ax1.set_xlabel(xlabel)
         ax1.set_title('Monthly Averaged Time Series of Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         
         if yrsFlg:
             #plt.xticks(rotation=45)
-            ax1.xaxis.set_major_locator(yearsLc)
-            ax1.xaxis.set_minor_locator(months)
-            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax1.xaxis.set_major_formatter(DateFmt) 
-            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
             ax1.xaxis.set_tick_params(which='major',labelsize=8)
             ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
         else:
-            ax1.xaxis.set_major_locator(monthsAll)
-            ax1.xaxis.set_major_formatter(DateFmt)
-            ax1.set_xlim(xmin=dt.date(int(years[0]), 1, 1), xmax=dt.date(int(years[0]), 12, 31))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            #fig1.autofmt_xdate()
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            ax1.xaxis.set_minor_locator(minorLc)
+
         
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
         else:           plt.show(block=False)          
@@ -4014,24 +4127,19 @@ class PlotData(ReadOutputData):
             ax1.errorbar(dates,totClmn,yerr=tot_std,fmt='k.',markersize=4,ecolor='red')
             ax1.grid(True)
             ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-            ax1.set_xlabel('Date [MM]')
+            ax1.set_xlabel(xlabel)
             ax1.set_title('Time Series of Retrieved Total Column with Total Error\n[molecules cm$^{-2}$]',multialignment='center')
             
             if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax1.xaxis.set_major_locator(yearsLc)
-                ax1.xaxis.set_minor_locator(months)
-                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax1.xaxis.set_major_formatter(DateFmt) 
-                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax1.xaxis.set_major_locator(DayAll)
-                ax1.xaxis.set_major_formatter(DateFmt)
-                ax1.set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                #fig1.autofmt_xdate()
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                ax1.xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)        
@@ -4044,24 +4152,19 @@ class PlotData(ReadOutputData):
             ax1.errorbar(dates,totClmn,yerr=tot_rnd,fmt='k.',markersize=4,ecolor='red')
             ax1.grid(True)
             ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-            ax1.set_xlabel('Date [MM]')
+            ax1.set_xlabel(xlabel)
             ax1.set_title('Time Series of Retrieved Total Column with Random Error\n[molecules cm$^{-2}$]',multialignment='center')
             
             if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax1.xaxis.set_major_locator(yearsLc)
-                ax1.xaxis.set_minor_locator(months)
-                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax1.xaxis.set_major_formatter(DateFmt) 
-                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax1.xaxis.set_major_locator(DayAll)
-                ax1.xaxis.set_major_formatter(DateFmt)
-                ax1.set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                #fig1.autofmt_xdate()
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                ax1.xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)              
@@ -4071,28 +4174,23 @@ class PlotData(ReadOutputData):
             #-----------------------------------------------
             totErr_frac = tot_std / totClmn * 100.0
             ranErr_frac = tot_rnd / totClmn * 100.0
-            fig, ax = plt.subplots()           
-            ax.plot(dates,totErr_frac,'k.',markersize=4)
-            ax.grid(True)
-            ax.set_ylabel('Total Error as Precentage of Total Column [%]')
-            ax.set_xlabel('Date [MM]')
-            ax.set_title('Total Error as % of Retrieved Total Column')
+            fig, ax1 = plt.subplots()           
+            ax1.plot(dates,totErr_frac,'k.',markersize=4)
+            ax1.grid(True)
+            ax1.set_ylabel('Total Error as Precentage of Total Column [%]')
+            ax1.set_xlabel(xlabel)
+            ax1.set_title('Total Error as % of Retrieved Total Column')
             
             if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax.xaxis.set_major_locator(yearsLc)
-                ax.xaxis.set_minor_locator(months)
-                #ax.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax.xaxis.set_major_formatter(DateFmt) 
-                #ax.xaxis.set_tick_params(which='major', pad=15)  
-                ax.xaxis.set_tick_params(which='major',labelsize=8)
-                ax.xaxis.set_tick_params(which='minor',labelbottom='off')
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax.xaxis.set_major_locator(DayAll)
-                ax.xaxis.set_major_formatter(DateFmt)
-                ax.set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-                ax.xaxis.set_minor_locator(AutoMinorLocator())
-                #fig.autofmt_xdate()
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                ax1.xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)     
@@ -4100,32 +4198,27 @@ class PlotData(ReadOutputData):
             #------------------------------------------------
             # Plot random error as a fraction of total column
             #------------------------------------------------
-            fig, ax = plt.subplots()           
-            ax.plot(dates,ranErr_frac,'k.',markersize=4)
-            ax.grid(True)
-            ax.set_ylabel('Random Error as Precentage of Total Column [%]')
-            ax.set_xlabel('Date [MM]')
-            ax.set_title('Random Error as % of Retrieved Total Column')
+            fig, ax1 = plt.subplots()           
+            ax1.plot(dates,ranErr_frac,'k.',markersize=4)
+            ax1.grid(True)
+            ax1.set_ylabel('Random Error as Precentage of Total Column [%]')
+            ax1.set_xlabel(xlabel)
+            ax1.set_title('Random Error as % of Retrieved Total Column')
             
             if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax.xaxis.set_major_locator(yearsLc)
-                ax.xaxis.set_minor_locator(months)
-                #ax.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax.xaxis.set_major_formatter(DateFmt) 
-                #ax.xaxis.set_tick_params(which='major', pad=15)  
-                ax.xaxis.set_tick_params(which='major',labelsize=8)
-                ax.xaxis.set_tick_params(which='minor',labelbottom='off')
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax.xaxis.set_major_locator(DayAll)
-                ax.xaxis.set_major_formatter(DateFmt)
-                ax.set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-                ax.xaxis.set_minor_locator(AutoMinorLocator())
-                #fig.autofmt_xdate()
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                ax1.xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-            else:           plt.show(block=False)               
-         
+            else:           plt.show(block=False) 
+                
         #----------------------------
         # Plot time series of daily SNR, RMS, and DOF
         #----------------------------
@@ -4154,29 +4247,24 @@ class PlotData(ReadOutputData):
         ax[2].grid(True)
         ax[2].set_title('Time Series of DOF')
         ax[2].set_ylabel('DOF')
+        ax[2].set_xlabel(xlabel)
         
         for pp in range(1,3):
         
             if yrsFlg:
                 #plt.xticks(rotation=45)
-                ax[pp].xaxis.set_major_locator(yearsLc)
-                ax[pp].xaxis.set_minor_locator(months)
-                #ax.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax[pp].xaxis.set_major_formatter(DateFmt) 
-                #ax.xaxis.set_tick_params(which='major', pad=15)  
+                ax[pp].xaxis.set_major_locator(majorLc)
+                ax[pp].xaxis.set_minor_locator(minorLc)
+                ax[pp].xaxis.set_major_formatter(majorFmt) 
                 ax[pp].xaxis.set_tick_params(which='major',labelsize=8)
                 ax[pp].xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax[pp].xaxis.set_major_locator(DayAll)
-                ax[pp].xaxis.set_major_formatter(DateFmt)
-                ax[pp].set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-                ax[pp].xaxis.set_minor_locator(AutoMinorLocator())
-                #fig.autofmt_xdate()
-
-        #fig.subplots_adjust(bottom=0.15,top=0.95, left=0.1, right=0.97)
+                ax[pp].xaxis.set_major_locator(majorLc)
+                ax[pp].xaxis.set_major_formatter(majorFmt)
+                ax[pp].xaxis.set_minor_locator(minorLc)
         
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-        else:           plt.show(block=False)  
+        else:           plt.show(block=False)   
 
         #----------------------------
         # Plot time series of Monthly SNR, RMS, and DOF
@@ -4214,24 +4302,21 @@ class PlotData(ReadOutputData):
         ax[2].grid(True)
         ax[2].set_title('Monthly Averaged Time Series of DOF')
         ax[2].set_ylabel('DOF')
+        ax[2].set_xlabel(xlabel)
  
         for pp in range(1,3):
   
             if yrsFlg:
                 #plt.xticks(rotation=45)
-                ax[pp].xaxis.set_major_locator(yearsLc)
-                ax[pp].xaxis.set_minor_locator(months)
-                #ax.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax[pp].xaxis.set_major_formatter(DateFmt) 
-                #ax.xaxis.set_tick_params(which='major', pad=15)  
+                ax[pp].xaxis.set_major_locator(majorLc)
+                ax[pp].xaxis.set_minor_locator(minorLc)
+                ax[pp].xaxis.set_major_formatter(majorFmt) 
                 ax[pp].xaxis.set_tick_params(which='major',labelsize=8)
                 ax[pp].xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax[pp].xaxis.set_major_locator(monthsAll)
-                ax[pp].xaxis.set_major_formatter(DateFmt)
-                ax[pp].set_xlim(xmin=dt.date(int(years[0]), 1, 1), xmax=dt.date(int(years[0]), 12, 31))
-                ax[pp].xaxis.set_minor_locator(AutoMinorLocator())
-                #fig.autofmt_xdate()
+                ax[pp].xaxis.set_major_locator(majorLc)
+                ax[pp].xaxis.set_major_formatter(majorFmt)
+                ax[pp].xaxis.set_minor_locator(minorLc)
 
         #fig.subplots_adjust(bottom=0.15,top=0.95, left=0.1, right=0.97)
         
@@ -4241,28 +4326,24 @@ class PlotData(ReadOutputData):
         #----------------------------
         # Plot time series of CHI_2_Y
         #----------------------------
-        fig, ax = plt.subplots()           
-        ax.plot(dates,chi2y,'k.',markersize=4)
-        ax.grid(True)
-        ax.set_ylabel(r'$\chi_y^{2}$')
-        ax.set_xlabel('Date [MM]')
-        ax.set_title(r'$\chi_y^{2}$')
+        fig, ax1 = plt.subplots()           
+        ax1.plot(dates,chi2y,'k.',markersize=4)
+        ax1.grid(True)
+        ax1.set_ylabel(r'$\chi_y^{2}$')
+        ax1.set_xlabel(xlabel)
+        ax1.set_title(r'$\chi_y^{2}$')
         
         if yrsFlg:
             #plt.xticks(rotation=45)
-            ax.xaxis.set_major_locator(yearsLc)
-            ax.xaxis.set_minor_locator(months)
-            #ax.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax.xaxis.set_major_formatter(DateFmt) 
-            #ax.xaxis.set_tick_params(which='major', pad=15)  
-            ax.xaxis.set_tick_params(which='major',labelsize=8)
-            ax.xaxis.set_tick_params(which='minor',labelbottom='off')
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
+            ax1.xaxis.set_tick_params(which='major',labelsize=8)
+            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
         else:
-            ax.xaxis.set_major_locator(DayAll)
-            ax.xaxis.set_major_formatter(DateFmt)
-            ax.set_xlim(xmin=np.min(dates), xmax=np.max(dates))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            #fig.autofmt_xdate()
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            ax1.xaxis.set_minor_locator(minorLc)
         
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
         else:           plt.show(block=False)          
@@ -4460,8 +4541,8 @@ class PlotData(ReadOutputData):
                 
                 if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
                 else:           plt.show(block=False)              
-            
-            
+        
+
             #--------------------------------------
             # Plot Measurement error vs SZA and RMS
             #--------------------------------------           

@@ -410,12 +410,16 @@ class HDFbaseRetDat(object):
                                 (self.gasMxRatAbsSolarUncRand.shape[0],self.gasMxRatAbsSolarUncRand.shape[1],self.gasMxRatAbsSolarUncRand.shape[2]), \
                                 self.gasMxRatAbsSolarUncRand, self.mRandAttrbs(self.gasMxRatAbsSolarUncRand.shape[1],self.gasMxRatAbsSolarUncRand.shape[0]))
 
+
+
+
         #-----------------------------------------------------------------------------
         # Create gasname systematic error covariance matrix profile dataset (variable)
         #-----------------------------------------------------------------------------
         hdfFile.createDataSet(self.gasNameUpper+"."+self.getMixingRatioAbsorptionSolarUncertaintySystematicName(), \
                                 (self.gasMxRatAbsSolarUncSys.shape[0],self.gasMxRatAbsSolarUncSys.shape[1],self.gasMxRatAbsSolarUncSys.shape[2]), \
                                 self.gasMxRatAbsSolarUncSys, self.mSysAttrbs(self.gasMxRatAbsSolarUncSys.shape[1],self.gasMxRatAbsSolarUncSys.shape[0]))
+
 
         #-----------------------------------------------------------------------------
         # Create gasname retrieved partial column profile dataset (variable)
@@ -443,6 +447,8 @@ class HDFbaseRetDat(object):
         hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnAbsorptionSolarAprioriName(), \
                                 np.size(self.gasColAbsSolarApriori), self.gasColAbsSolarApriori, 
                                 self.tcAprfAttrbs(np.size(self.gasColAbsSolarApriori)))
+
+
 
         #-----------------------------------------------------------------------------
         # Create gasname total column averaging kernel profile dataset (variable)
@@ -491,6 +497,8 @@ class HDFbaseRetDat(object):
         #-----------------------------------------------------------------------------
         hdfFile.createDataSet(self.getH2oColumnAbsorptionSolarName(),np.size(self.h2oColAbsSol), self.h2oColAbsSol, \
                                 self.H2OtcAttrbs(np.size(self.h2oColAbsSol)))
+
+
         
         #---------------
         # Close HDF file
@@ -505,11 +513,12 @@ class HDFbaseRetDat(object):
         # Create instance
         #----------------        
         hdfFile = hdfCrtFile.HDF4File(self.dType)
-        
+
         #--------------------------------------
         # Open hdf file, write data, close file
         #--------------------------------------        
         self.createHDF(hdfFile)
+        
 
     def createHDF5(self):
         ''' create an HDF 5 file in outDdir specified from the pltOutputClass outputDatat passed in'''

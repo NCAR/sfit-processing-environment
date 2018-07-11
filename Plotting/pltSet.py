@@ -1,13 +1,59 @@
 #! /usr/bin/python
-##! /usr/local/python-2.7/bin/python
-##! /usr/local/bin/python2.7
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
 # Name:
 #        pltSet.py
 #
 # Purpose:
+#       This program is use to plot multiple sfit4 results. It includes  
+#           -- Fit retrievals/residuals in all micro-windows
+#           -- Averaging Kernels (Matrix, vmr, and unitless)
+#           -- Profiles of all gases in mixing ratios
+#           -- Profile error are shown if error are calculated 
+#           -- Time Series, trends, etc
 #
+#
+# External called functions:
+#        This program calls dataOutClass
+#
+#
+# Notes:
+#       1) Options include:
+#            -i <setInput.py> : Input File (python syntax) 
+#            -?               : Show all flags
+#
+#
+# Usage:
+#      >> pltSet.py
+#
+# Examples:
+#      Runs pltSet.py for current working director
+#      >> pltSet.py -i setInput.py
+#
+#
+# Version History:
+#       Created, May, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
+#       Version history stored in git repository
+#
+#       Modified, Ivan Ortega (iortega@ucar.edu)
+#
+#
+# License:
+#    Copyright (c) 2013-2014 NDACC/IRWG
+#    This file is part of sfit4.
+#
+#    sfit4 is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    any later version.
+#
+#    sfit4 is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #
 #----------------------------------------------------------------------------------------
 
@@ -104,11 +150,11 @@ def main(argv):
     # Create Instance of Class
     #-------------------------
     gas = dc.PlotData(pltInputs['retDir'],pltInputs['ctlFile'],iyear=pltInputs['iyear'],imnth=pltInputs['imnth'],iday=pltInputs['iday'],
-                fyear=pltInputs['fyear'],fmnth=pltInputs['fmnth'],fday=pltInputs['fday'],outFname=pltInputs['pltFile'])
+                fyear=pltInputs['fyear'],fmnth=pltInputs['fmnth'],fday=pltInputs['fday'],saveFlg=pltInputs['saveFlg'], outFname=pltInputs['pltFile'])
 
 
     #----------------------
-    #Call to plot profiles
+    # Call to plot profiles
     #----------------------
     gas.pltPrf(fltr=pltInputs['fltrFlg'],allGas=False,sclfct=pltInputs['sclfct'],sclname=pltInputs['sclfctName'],mnthFltr=pltInputs["mnths"],mnthFltFlg=pltInputs["mnthFlg"],
            errFlg=pltInputs['errorFlg'],minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],minTC=pltInputs['minTC'],maxTC=pltInputs['maxTC'],
@@ -119,14 +165,14 @@ def main(argv):
     #-----------------
     # Call to plot AVK
     #-----------------
-    #try:
-    gas.pltAvk(fltr=pltInputs['fltrFlg'],errFlg=pltInputs['errorFlg'],partialCols=pltInputs['pCols'],mnthFltr=pltInputs["mnths"],mnthFltFlg=pltInputs["mnthFlg"],
+    try:
+        gas.pltAvk(fltr=pltInputs['fltrFlg'],errFlg=pltInputs['errorFlg'],partialCols=pltInputs['pCols'],mnthFltr=pltInputs["mnths"],mnthFltFlg=pltInputs["mnthFlg"],
                   minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],maxRMS=pltInputs['maxRMS'],minTC=pltInputs['minTC'],maxTC=pltInputs['maxTC'],
                   minDOF=pltInputs['minDOF'],maxCHI=pltInputs['maxCHI'],dofFlg=pltInputs['dofFlg'],rmsFlg=pltInputs['rmsFlg'],
                   tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],
                   chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'],tcMMflg=pltInputs['tcMMFlg'])
-    #except:
-    #  print "Unable to plot AVK!!" 
+    except:
+        print "Unable to plot AVK!!" 
 
     #-------------------
     # Plot total columns
@@ -144,9 +190,6 @@ def main(argv):
                     maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'],maxCHI=pltInputs['maxCHI'],dofFlg=pltInputs['dofFlg'],
                     rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],mnthFltr=pltInputs["mnths"],mnthFltFlg=pltInputs["mnthFlg"],
                     szaFlg=pltInputs['szaFlg'],chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'],tcMMflg=pltInputs['tcMMFlg'])
-
-    ##----
-    if pltInputs['saveFlg']: gas.closeFig()
 
     #--------------------
     # Create yearly plots
@@ -172,6 +215,8 @@ def main(argv):
     #--------------------------------
     # Pause so user can look at plots
     #--------------------------------
+    if pltInputs['saveFlg']: gas.closeFig()
+
     if not pltInputs['saveFlg']:
         user_input = raw_input('Press any key to exit >>> ')
         sys.exit()           # Exit program        

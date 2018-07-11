@@ -84,16 +84,16 @@ def main():
     #-------
     # Inputs
     #-------
-    loc     = 'tab'
+    loc     = 'mlo'
     inPath  = '/ya4/id/' + loc.lower() + '/'     # Input directory
     outPath = '/data1/' + loc.lower() + '/'       # Working directory
 
     iyear   = 2018 
-    imonth  = 1
-    iday    = 1
+    imonth  = 5
+    iday    = 29
 
     fyear   = 2018
-    fmonth  = 3
+    fmonth  = 5
     fday    = 31
 
     #-------------------
@@ -106,6 +106,8 @@ def main():
     # Loop through day list
     #----------------------
     for i,snglDay in enumerate(daysList):
+
+        print snglDay
 
         #---------------------------------
         # Determine input/output directory

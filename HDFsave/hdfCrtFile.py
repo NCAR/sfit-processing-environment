@@ -89,8 +89,10 @@ class HDF4File(object):
       
       #-----------------
       # Create HDF4 file
-      #-----------------      
+      #-----------------    
+
       self.fopen = SD(filename,SDC.TRUNC | SDC.WRITE | SDC.CREATE) 
+
       
       #--------------------------------
       # Write global attributes to file

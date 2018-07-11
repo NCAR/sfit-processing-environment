@@ -140,17 +140,7 @@ def main(argv):
             print 'Unhandled option: ' + opt
             sys.exit()
 
-
-    #---------------------------------
-    # Initialize list file as log file
-    #---------------------------------
-    lstFile = logging.getLogger('1')
-    lstFile.setLevel(logging.INFO)
-    hdlr1   = logging.FileHandler(outputFile, mode='w')
-    fmt1    = logging.Formatter('')
-    hdlr1.setFormatter(fmt1)
-    lstFile.addHandler(hdlr1)
-
+    
     #----------------------------------
     # Check the existance of input file
     #----------------------------------
@@ -170,6 +160,35 @@ def main(argv):
     inVars = sc.Layer1InputFile(inputFile)
     inVars.getInputs()
 
+    if not 'outputFile' in locals():
+        version = baseDir.strip().split('/')[-2]
+        outputFile =  version+'_latest.lst'  
+
+    #---------------------------------
+    #listdir = os.listdir(baseDir)
+    #AllDir  = [d for d in listdir if len(d) == 15]
+
+    # iyear  = AllDir[0][0:4]
+    # imnth  = AllDir[0][4:6]
+    # iday   = AllDir[0][6:8]
+
+    # fyear  = AllDir[-1][0:4]
+    # fmnth  = AllDir[-1][4:6]
+    # fday   = AllDir[-1][6:8]
+    #---------------------------------
+
+
+    #---------------------------------
+    # Initialize list file as log file
+    #---------------------------------
+    lstFile = logging.getLogger('1')
+    lstFile.setLevel(logging.INFO)
+    hdlr1   = logging.FileHandler(outputFile, mode='w')
+    fmt1    = logging.Formatter('')
+    hdlr1.setFormatter(fmt1)
+    lstFile.addHandler(hdlr1)
+
+
     #--------------------------------
     # Check the existance of ctl file
     #--------------------------------
@@ -187,6 +206,8 @@ def main(argv):
     lstFile.info('# Begin List File Meta-Data'                                 )
     lstFile.info('Start Date     = ' + str(inVars.inputs['iyear']) +  str(inVars.inputs['imnth']).zfill(2) +  str(inVars.inputs['iday']).zfill(2)  )
     lstFile.info('End Date       = ' + str(inVars.inputs['fyear']) +  str(inVars.inputs['fmnth']).zfill(2) +  str(inVars.inputs['fday']).zfill(2)  )
+    #lstFile.info('Start Date     = ' + iyear +  imnth.zfill(2) +  iday.zfill(2)  )
+    #lstFile.info('End Date       = ' + fyear +  fmnth.zfill(2) +  fday.zfill(2)  )
     lstFile.info('WACCM_File     = ' + inVars.inputs['WACCMfile']              )
     lstFile.info('ctl_File       = ' + inVars.inputs['ctlList'][0][0]    )
     lstFile.info('FilterID       = ' + inVars.inputs['ctlList'][0][1]    )

@@ -12,14 +12,14 @@
 #Notes:
 #        Make Sure the following steps are followed prior to run:
 #        1) ckopus has been performed 
-#        2) Edit Inputs in mvSpectra.py
-#        3) Edit e.g., specDBInputFile_TAB.dat
+#        2) Edit Inputs in mvSpectspecDBInputFile_TABra.py
+#        3) Edit e.g., specDBInputFile_MLO.dat
 #        4) Edit station_house_reader.py
 #        5) Edit appndSpecDBInputFile
 #        6) Edit NCEPinputFile.py
 #        7) Edit mergprfInput.py
 #        8) Edit NCEPwaterPrf.py
-#        9) Edit, E.g., MLO_H2O_Input.py file
+#        9) Edit, sfit4Layer1 input file, E.g., MLO_H2O_Input.py file
 #        10) Edit retWaterPrf.py
 #        11) Edit retWaterPrfDaily.py
 #
@@ -36,7 +36,7 @@
 #---------------
 import sys
 import os
-
+import getopt
 
 def ckDir(dirName,logFlg=False,exit=False):
     ''' '''
@@ -64,14 +64,59 @@ def ckFile(fName,logFlg=False,exit=False):
                             #        --- Main---         #
                             #                            #
                             #----------------------------#
+
+def usage():
+    ''' Prints to screen standard program usage'''
+    print ' nrtsfit4Layer1.py [-s tab/mlo/fl0 -y 2018 -?]'
+    print ' Retrieval Processing' 
+    print ' *Consecutive Pre-processing'
+    print ' *Analysis of h2o using NCEP'
+    print ' *Creation of Water Profiles v99'
+    print ' Arguments:'
+    print '  -s <site>  : Flag to specify location --> tab/mlo/fl0'
+    print '  -y <year>  : Flag to specify year'
+    print '  -?         : Show all flags'
                             
-def main():    
+def main(argv):    
 
     #----------------
     # Initializations
     #----------------
-    loc    = 'tab'
-    year   = 2018
+    #loc    = 'tab'
+    #year   = 2018
+
+    #--------------------------------
+    # Retrieve command line arguments
+    #--------------------------------
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 's:y:?')
+
+    except getopt.GetoptError as err:
+        print str(err)
+        usage()
+        sys.exit()
+
+    #-----------------------------
+    # Parse command line arguments
+    #-----------------------------
+    for opt, arg in opts:
+        # Check input file flag and path
+        if opt == '-s':
+
+            loc = arg
+
+        elif opt == '-y':
+
+            year = int(arg)
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
+
+        else:
+            print 'Unhandled option: ' + opt
+            sys.exit()
+
 
     print '\n\n'
     print '*************************************************'
@@ -81,23 +126,22 @@ def main():
     #----------------
     # Starting mvSpectra.py: IMPORTANT --> Modify Inputs in mvSpectra.py
     #----------------
-    print '\nStarting mvSpectra.py: copying files from ya/id/'+loc+' to /data1/'+loc
-    try: 
-        os.system('mvSpectra.py')
-    except OSError as errmsg:
-        print errmsg
-        sys.exit()
+    # print '\nStarting mvSpectra.py: copying files from ya/id/'+loc+' to /data1/'+loc
+    # try: 
+    #     os.system('mvSpectra.py')
+    # except OSError as errmsg:
+    #     print errmsg
+    #     sys.exit()
 
-
-    #----------------
-    # Starting delSpcdel.py: Nothing to Do
-    #----------------
-    print '\nStarting delSpcdel.py: deleting Files if found in deleted folder'
-    try:
-        os.system('delSpcdel.py -y'+str(year)+ ' -s'+loc)
-    except OSError as errmsg:
-        print errmsg
-        sys.exit()
+    # #----------------
+    # # Starting delSpcdel.py: Nothing to Do
+    # #----------------
+    # print '\nStarting delSpcdel.py: deleting Files if found in deleted folder'
+    # try:
+    #     os.system('delSpcdel.py -y'+str(year)+ ' -s'+loc)
+    # except OSError as errmsg:
+    #     print errmsg
+    #     sys.exit()
 
     #----------------
     # Starting mkSpecDB.py: IMPORTANT --> Since spDB is removed Modify specDBInputFile every year Only
@@ -228,4 +272,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

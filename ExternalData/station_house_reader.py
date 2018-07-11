@@ -62,7 +62,7 @@ def main():
     #----------------
     # Initializations
     #----------------
-    statstr     = 'tab'
+    statstr     = 'mlo'
     dataDir     = '/data1/'+statstr.lower()+'/'
     #dataDir     = '/ya4/id/'+statstr.lower()+'/'
     outDataDir  = '/data/Campaign/'+statstr.upper()+'/House_Log_Files/'
@@ -169,11 +169,16 @@ def main():
                 # Format C for 20090320 <= date < 20110802
                 elif dt.date(2009,3,20) <= indvDay < dt.date(2011,8,2):
                     houseData.formatC(houseFile,indvDay.year,indvDay.month,indvDay.day)
-                    
-                # Format D for date >= 20110802
-                elif indvDay >= dt.date(2011,8,2):
+
+                # Format D for 20110802 <= date < 20171210
+                elif dt.date(2011,8,2) <= indvDay < dt.date(2017,12,10):
                     houseData.formatD(houseFile,indvDay.year,indvDay.month,indvDay.day)
-                    
+
+                # Format D for date >= 20171210
+                elif indvDay >= dt.date(2017,12,10):
+                    houseData.formatD(houseFile,indvDay.year,indvDay.month,indvDay.day)
+
+          
             elif (statstr.lower() == 'tab'):
                 # Format A for (TAB) date < 20150101
                 if indvDay < dt.date(2015,1,1):

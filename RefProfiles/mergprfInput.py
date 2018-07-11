@@ -25,7 +25,7 @@
 # Three letter station
 # location
 #---------------------
-loc = 'tab'                                    # Three letter station identifier
+loc = 'mlo'                                    # Three letter station identifier
 
 #----------------------------------
 # Date Range of data to process

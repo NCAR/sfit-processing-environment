@@ -373,7 +373,70 @@ class MLOread():
             except:
                 print 'Error in reading file: %s' % fileName
                 pass
-                #sys.exit()    
+                #sys.exit()
+
+
+    def formatE(self,fileName,year,month,day):
+        ''' '''       
+        #------------------------
+        # Open file and read data
+        #------------------------        
+        data = tryopen(fileName)
+                
+        #--------------------------
+        # Remove header information 
+        #--------------------------
+        data[:] = [ row.strip().split() for row in data if not '#' in row and len(row.strip().split()) == 42 ]
+                               
+        #---------------------------------
+        # Determine number of observations
+        #---------------------------------
+        npoints = len(data)
+               
+        #------------------------------------------------
+        # Create DateTime entry in Dictionary for sorting
+        #------------------------------------------------
+        try:
+            self.data['DateTime'].extend([dt.datetime(int(time[0][0:4]),int(time[0][4:6]),int(time[0][6:8]),\
+                                                      int(time[1][0:2]),int(time[1][3:5]),int(time[1][6:8])) for time in data])
+        except:
+            print 'Error in reading file: %s' % fileName
+            sys.exit()            
+            
+        #------------------
+        # Update dictionary
+        #------------------
+        self.data['Date'].extend([row[0] for row in data])            
+        self.data['Time'].extend([row[1] for row in data])            
+        self.data['LN2_Dewar_P_volt'].extend([-9999]*npoints)   
+        self.data['LN2_Dewar_P_psi'].extend([row[2] for row in data])   
+        self.data['Optic_Bench_Baseplate_T'].extend([row[3] for row in data])   
+        self.data['Beamsplitter_T'].extend([row[4] for row in data])   
+        self.data['Front_T'].extend([-9999]*npoints)   
+        self.data['InSb_T'].extend([row[5] for row in data])   
+        self.data['MCT_T'].extend([row[6] for row in data])   
+        self.data['Laser_T'].extend([row[16] for row in data])   
+        self.data['Outside_T'].extend([row[17] for row in data])              
+        self.data['Brucker_Optical_RH'].extend([row[7] for row in data])
+        self.data['Outside_RH'].extend([row[12] for row in data])
+        self.data['Wind_Speed_volt'].extend([-9999]*npoints)
+        self.data['Wind_Speed_mph'].extend([row[14] for row in data])
+        self.data['WindDir_volt'].extend([-9999]*npoints)  
+        self.data['WindDir_E_of_N'].extend([row[15] for row in data]) 
+        self.data['Mid_IR_Cooler'].extend([row[19][1] for row in data])
+        self.data['LN2_Fill'].extend([row[19][2] for row in data])
+        self.data['Hatch_Relay'].extend([row[20][2] for row in data])
+        self.data['Solar_Seeker_ON_Relay'].extend([row[21][0] for row in data])
+        self.data['Solar_Seeker_OFF_Relay'].extend([row[21][1] for row in data])
+        self.data['Dyn_Mirror_Pwr'].extend([row[21][2] for row in data])
+        self.data['28V_Solar_Seeker_Pwr'].extend([row[22][2] for row in data])
+        self.data['DEC_A_Plug_Strip'].extend([row[21][3] for row in data])
+        self.data['Hatch_Position_bit'].extend([row[22][0] for row in data])
+        self.data['Hatch_Position_volt'].extend([-999]*npoints)
+        self.data['UTC_offset'].extend([row[36] for row in data])
+        self.data['DOY'].extend([row[37] for row in data])
+        self.data['E_Radiance'].extend([row[8] for row in data])
+        self.data['W_Radiance'].extend([row[9] for row in data])     
             
             
         
