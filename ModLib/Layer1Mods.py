@@ -1359,12 +1359,12 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #--------------------------
     # Error summary information
     #--------------------------      
-    with open(wrkingDir+SbDict['file.out.error.summary'][0], 'w') as fout:
+    with open(wrkingDir+SbctlFileVars.inputs['file.out.error.summary'][0], 'w') as fout:
         fout.write('sfit4 ERROR SUMMARY\n\n')
         fout.write('Primary gas                                   = {0:>15s}\n'.format(primgas.upper())                                  )
         fout.write('Total column amount                           = {0:15.5E} [molecules cm^-2]\n'.format(retdenscol)                    )
         fout.write('DOFs (total column)                           = {0:15.3f}\n'.format(col_dofs)                                        )
-        fout.write('Smoothing error (Ss, using sa+sb.ctl)         = {0:15.3f} [%]\n'.format(S_ran['smoothing'][2]        /retdenscol*100))
+        fout.write('Smoothing error (Ss, using sa+sb.ctl)         = {0:15.3f} [%]\n'.format(S_sys['smoothing'][2]        /retdenscol*100))
         fout.write('Measurement error (Sm)                        = {0:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
         fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
         fout.write('Interference error (interfering spcs)         = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
