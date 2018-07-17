@@ -144,7 +144,7 @@ def main(argv):
         # Initialize Plot Class
         #----------------------
         if saveFlg:
-            gas = dc.PlotData(wrkDir,ctlFile, outFname=wrkDir+pltFile)
+            gas = dc.PlotData(wrkDir,ctlFile,saveFlg=saveFlg, outFname=wrkDir+pltFile)
         else:       
             gas = dc.PlotData(wrkDir,ctlFile)
         

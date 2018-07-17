@@ -94,17 +94,17 @@ def main():
     #--------------------------------
     loc        = 'tab'
     gas        = 'c2h6'
-    ver        = 'Test_SFIT4_PreRelease'
+    ver        = 'SFIT4_PreRelease'
     sbFileName = '/data1/ebaumer/'+loc.lower()+'/'+gas.lower()+'/x.'+gas.lower()+'/sb_v2.ctl'
     dataDir    = '/data1/ebaumer/'+loc.lower()+'/'+gas.lower()+'/'+ver+'/'
     
     #sbFileName = '/Volumes/data/ebaumer/Err/sb_tab.ctl'
     iyear      = 2017
     imnth      = 5
-    iday       = 3
+    iday       = 20
     fyear      = 2017
     fmnth      = 5
-    fday       = 3    
+    fday       = 20    
         
     #--------------------------
     # Check if directory exists

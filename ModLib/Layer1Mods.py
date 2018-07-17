@@ -790,6 +790,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         Sm_3 = np.sqrt( np.dot( np.dot( densPrf, Sm ), densPrf.T )     )         # Whole column uncertainty [molecules cm^-2]
         ##Sm_3 = np.sqrt( np.sum( np.diagonal( Sm_2 ) ) )                          # Whole column uncertainty [molecules cm^-2]
         
+        print Sm_1
+        exit()
+        
         return (Sm_1, Sm_2, Sm_3)     # (Variance, Variance, STD)
 
     def writeCoVar(fname,header,var,ind):
