@@ -1334,54 +1334,54 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # --------------------------
 #     Error summary information
 #     --------------------------      
-#     with open(wrkingDir+SbctlFileVars.inputs['file.out.error.summary'][0], 'w') as fout:
-#         fout.write('sfit4 ERROR SUMMARY\n\n')
-#         fout.write('Primary gas                                   = {:>15s}\n'.format(primgas.upper())                                  )
-#         fout.write('Total column amount                           = {:15.5E} [molecules cm^-2]\n'.format(retdenscol)                    )
-#         fout.write('DOFs (total column)                           = {:15.3f}\n'.format(col_dofs)                                        )
-#         fout.write('Smoothing error (Ss)                          = {:15.3f} [%]\n'.format(S_sys['smoothing'][2]        /retdenscol*100))
-#         fout.write('Measurement error (Sm)                        = {:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
-#         fout.write('Interference error (retrieved params)         = {:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
-#         fout.write('Interference error (interfering spcs)         = {:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
-#         
-#         fout.write('Temperature (Random)                          = {:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
-#         fout.write('Water Vapor                                   = {:15.3f} [%]\n'.format(S_ran['H2O'][2]/retdenscol*100)              )
-#         
-#         fout.write('Total random error                            = {:15.3f} [%]\n'.format(S_tot['Random'][2]           /retdenscol*100))
-#         fout.write('Total systematic error                        = {:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
-#         fout.write('Total random uncertainty                      = {:15.3E} [molecules cm^-2]\n'.format(S_tot['Random'][2])            )
-#         fout.write('Total systematic uncertainty                  = {:15.3E} [molecules cm^-2]\n'.format(S_tot['Systematic'][2])        )
-#         for k in S_ran:
-#             fout.write('Total random uncertainty {:<20s} = {:15.3E} [molecules cm^-2]\n'.format(k,S_ran[k][2]))
-#         for k in S_sys:
-#             fout.write('Total systematic uncertainty {:<16s} = {:15.3E} [molecules cm^-2]\n'.format(k,S_sys[k][2])) 
-    
-    #--------------------------
-    # Error summary information
-    #--------------------------      
     with open(wrkingDir+SbctlFileVars.inputs['file.out.error.summary'][0], 'w') as fout:
         fout.write('sfit4 ERROR SUMMARY\n\n')
-        fout.write('Primary gas                                   = {0:>15s}\n'.format(primgas.upper())                                  )
-        fout.write('Total column amount                           = {0:15.5E} [molecules cm^-2]\n'.format(retdenscol)                    )
-        fout.write('DOFs (total column)                           = {0:15.3f}\n'.format(col_dofs)                                        )
-        fout.write('Smoothing error (Ss, using sa+sb.ctl)         = {0:15.3f} [%]\n'.format(S_sys['smoothing'][2]        /retdenscol*100))
-        fout.write('Measurement error (Sm)                        = {0:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
-        fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
-        fout.write('Interference error (interfering spcs)         = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
+        fout.write('Primary gas                                   = {:>15s}\n'.format(primgas.upper())                                  )
+        fout.write('Total column amount                           = {:15.5E} [molecules cm^-2]\n'.format(retdenscol)                    )
+        fout.write('DOFs (total column)                           = {:15.3f}\n'.format(col_dofs)                                        )
+        fout.write('Smoothing error (Ss)                          = {:15.3f} [%]\n'.format(S_sys['smoothing'][2]        /retdenscol*100))
+        fout.write('Measurement error (Sm)                        = {:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
+        fout.write('Interference error (retrieved params)         = {:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
+        fout.write('Interference error (interfering spcs)         = {:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
         
-        fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
-        fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
-        if 'h2o' in S_ran: fout.write('Water Vapor (Random)                          = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
-        if 'h2o' in S_sys: fout.write('Water Vapor (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['h2o'][2]/retdenscol*100)              )
+        #fout.write('Temperature (Random)                          = {:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
+        #fout.write('Water Vapor                                   = {:15.3f} [%]\n'.format(S_ran['H2O'][2]/retdenscol*100)              )
         
-        fout.write('Total random error                            = {0:15.3f} [%]\n'.format(S_tot['Random'][2]           /retdenscol*100))
-        fout.write('Total systematic error                        = {0:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
-        fout.write('Total random uncertainty                      = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Random'][2])            )
-        fout.write('Total systematic uncertainty                  = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Systematic'][2])        )
-        for k in S_ran: 
-            fout.write('Total random uncertainty {0:<20s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_ran[k][2],S_ran[k][2]/retdenscol*100))
+        fout.write('Total random error                            = {:15.3f} [%]\n'.format(S_tot['Random'][2]           /retdenscol*100))
+        fout.write('Total systematic error                        = {:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
+        fout.write('Total random uncertainty                      = {:15.3E} [molecules cm^-2]\n'.format(S_tot['Random'][2])            )
+        fout.write('Total systematic uncertainty                  = {:15.3E} [molecules cm^-2]\n'.format(S_tot['Systematic'][2])        )
+        for k in S_ran:
+            fout.write('Total random uncertainty {:<20s} = {:15.3E} [molecules cm^-2]\n'.format(k,S_ran[k][2]))
         for k in S_sys:
-            fout.write('Total systematic uncertainty {0:<16s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_sys[k][2],S_sys[k][2]/retdenscol*100)) 
+            fout.write('Total systematic uncertainty {:<16s} = {:15.3E} [molecules cm^-2]\n'.format(k,S_sys[k][2])) 
+    
+#     --------------------------
+#     Error summary information
+#     --------------------------      
+#     with open(wrkingDir+SbctlFileVars.inputs['file.out.error.summary'][0], 'w') as fout:
+#         fout.write('sfit4 ERROR SUMMARY\n\n')
+#         fout.write('Primary gas                                   = {0:>15s}\n'.format(primgas.upper())                                  )
+#         fout.write('Total column amount                           = {0:15.5E} [molecules cm^-2]\n'.format(retdenscol)                    )
+#         fout.write('DOFs (total column)                           = {0:15.3f}\n'.format(col_dofs)                                        )
+#         fout.write('Smoothing error (Ss, using sa+sb.ctl)         = {0:15.3f} [%]\n'.format(S_sys['smoothing'][2]        /retdenscol*100))
+#         fout.write('Measurement error (Sm)                        = {0:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
+#         fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
+#         fout.write('Interference error (interfering spcs)         = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
+#         
+#         fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
+#         fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
+#         if 'h2o' in S_ran: fout.write('Water Vapor (Random)                          = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
+#         if 'h2o' in S_sys: fout.write('Water Vapor (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['h2o'][2]/retdenscol*100)              )
+#         
+#         fout.write('Total random error                            = {0:15.3f} [%]\n'.format(S_tot['Random'][2]           /retdenscol*100))
+#         fout.write('Total systematic error                        = {0:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
+#         fout.write('Total random uncertainty                      = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Random'][2])            )
+#         fout.write('Total systematic uncertainty                  = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Systematic'][2])        )
+#         for k in S_ran: 
+#             fout.write('Total random uncertainty {0:<20s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_ran[k][2],S_ran[k][2]/retdenscol*100))
+#         for k in S_sys:
+#             fout.write('Total systematic uncertainty {0:<16s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_sys[k][2],S_sys[k][2]/retdenscol*100)) 
 
 
     #-----------------------------------

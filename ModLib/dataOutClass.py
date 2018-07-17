@@ -4092,31 +4092,33 @@ class PlotData(ReadOutputData):
         #-------------------------------------
         # Plot time series of Monthly Averages
         #-------------------------------------
-        mnthVals = mnthlyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
-    
-        fig1,ax1 = plt.subplots()
-        ax1.plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'k.',markersize=4)
-        ax1.errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],yerr=mnthVals['std'],fmt='k.',markersize=4,ecolor='grey')
-        ax1.grid(True)
-        ax1.set_ylabel('Monthly Averaged Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel(xlabel)
-        ax1.set_title('Monthly Averaged Time Series of Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        
-        if yrsFlg:
-            #plt.xticks(rotation=45)
-            ax1.xaxis.set_major_locator(majorLc)
-            ax1.xaxis.set_minor_locator(minorLc)
-            ax1.xaxis.set_major_formatter(majorFmt) 
-            ax1.xaxis.set_tick_params(which='major',labelsize=8)
-            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-        else:
-            ax1.xaxis.set_major_locator(majorLc)
-            ax1.xaxis.set_major_formatter(majorFmt)
-            ax1.xaxis.set_minor_locator(minorLc)
+        try:
+			mnthVals = mnthlyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
+	
+			fig1,ax1 = plt.subplots()
+			ax1.plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'k.',markersize=4)
+			ax1.errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],yerr=mnthVals['std'],fmt='k.',markersize=4,ecolor='grey')
+			ax1.grid(True)
+			ax1.set_ylabel('Monthly Averaged Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+			ax1.set_xlabel(xlabel)
+			ax1.set_title('Monthly Averaged Time Series of Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+		
+			if yrsFlg:
+				#plt.xticks(rotation=45)
+				ax1.xaxis.set_major_locator(majorLc)
+				ax1.xaxis.set_minor_locator(minorLc)
+				ax1.xaxis.set_major_formatter(majorFmt) 
+				ax1.xaxis.set_tick_params(which='major',labelsize=8)
+				ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+			else:
+				ax1.xaxis.set_major_locator(majorLc)
+				ax1.xaxis.set_major_formatter(majorFmt)
+				ax1.xaxis.set_minor_locator(minorLc)
 
-        
-        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-        else:           plt.show(block=False)          
+		
+			if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+			else:           plt.show(block=False)
+        except: pass        
         
         #----------------------------------
         # Plot time series with Total Error

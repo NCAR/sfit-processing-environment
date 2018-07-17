@@ -409,6 +409,8 @@ def main(argv):
         Groups_Lab    = [Group_1_label, Group_2_label, Group_3_label, Group_4_label, Group_5_label]
 
     else:
+        print '!! ERROR !!: Include Site:' 
+        exit()
     
 
     d = RemoteHK(Dir=Dir, pdfFlg=pdfFlg)
