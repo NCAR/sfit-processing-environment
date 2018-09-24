@@ -1,12 +1,165 @@
 import numpy as np
 import linecache, string, glob, os
 import read_from_file as rn
-from sfit4_ctl import sfit4_ctl
 import pdb
 import fnmatch
 
 
 reload(rn) # because problem with dreload
+
+# class read_stationlayer():
+#     def __init__(self,filename):
+#         stl = np.recfromtxt(filename, skip_header=2,names=True)
+#         self.z = stl[]
+#         self.z_thick = stl['thick']
+#         self.z_growth = stl[:,3]
+#         self.z_mid = stl[:,4]
+        
+
+class sfit4_ctl:
+
+    def __init(self):
+        pass
+
+
+    def read(self, ctlfile):
+
+        fid = open(ctlfile, 'r')
+        
+        self.value = {}
+        old_tag = ''
+        for line in fid:
+            line = line.strip()
+#            pdb.set_trace()
+            if line.find('#')>-1:
+                line = line[0:line.find('#')].strip()
+            if len(line)==0:
+                if len(old_tag) > 0:
+                    self.value[old_tag] += ' ' + line.strip().strip()
+                continue;
+            if line.find('=') == -1:
+                self.value[old_tag] += ' ' + line.strip().strip()
+                continue
+            tags = line.split('=')
+            old_tag = tags[0].strip()
+            if len(tags) == 2:
+                self.value[tags[0].strip()] = tags[1].strip()
+
+
+        fid.close()
+
+    def get_value(self, tag):
+
+        tag = tag.strip()
+        if self.value.has_key(tag):
+            return self.value[tag].strip()
+        else:
+            print 'key ' + tag.strip() + ' not found'
+            return(-1)
+
+    def get_keys(self, level=''):
+        # gets all keys under key level
+        # e.g. for key file.out.summary 
+        # get_keys('file.out') it returns ['summary']
+        # if level is not given, it returns all keys
+        res = []
+        if level.endswith('.'):
+            level = level[0:-1]
+        else:
+            level = level+'.'            
+        for v in self.value.keys():
+            if level == '.':
+                key = v
+            else:
+                key = v.partition(level)[2]
+            if key != '':
+                res.append(key)
+        return(res)
+        
+    def replace(self, tag, value):
+
+        
+        tag = tag.strip()
+        if self.value.has_key(tag):
+            self.value[tag] = value.strip()
+        else:
+            print 'key ' + tag.strip() + ' appended'
+            
+
+            
+    def replace_in_file(self, ctlfile, newtag, newvalue):
+        fido = open(ctlfile, 'r')
+        value = ''
+        tag = ''
+        newlines = []
+        flag = False
+        for line in fido:
+            line = line.strip()
+            comment = ''
+            if line.find('#')>-1:
+                #comment = line[line.find('#'):]
+                line = line[0:line.find('#')].strip()
+            if len(line)==0:
+                if len(value) > 0:
+                    newlines.append(tag + ' = ' + value + 
+                                    ' ' + comment + '\n')
+                    value = ''
+                    comment = ''
+                elif len(comment)>0:
+                    newlines.append(comment + '\n')
+                    comment = ''
+                continue
+            old_line = line
+            if len(value)> 0 and line[0].isalpha():
+                if (tag == newtag):
+ #                   print tag
+                    newlines.append(tag + ' = ' + newvalue +
+                                ' ' + comment + '\n')
+                else:
+#                    print tag
+                    newlines.append(tag + ' = ' + value + 
+                                ' ' + comment + '\n')
+#                print tag + ' = '  + value + '\n'
+                value = ''
+                comment = ''
+            if line.find('=') == -1: 
+                if tag == newtag:
+                    dum = line.strip().strip()
+                else:
+                    value  += ' ' + line.strip().strip()
+                    value = value.strip()
+#                    print value 
+                continue
+            tags = line.split('=')
+            tag = tags[0].strip()
+            value = tags[1].strip()
+            if tag.lower() == newtag.strip().lower():
+                value = newvalue
+                flag = True
+
+        # last line has not yet been written!
+        if len(value) > 0:
+            newlines.append(tag + ' = ' + value + 
+                            ' ' + comment + '\n')
+            
+
+        if not flag:
+            newlines.append(newtag + ' = ' + newvalue + '\n')
+        fido.close()
+        fidn = open(ctlfile, 'w')
+        fidn.writelines(newlines)
+        fidn.close()
+
+
+    def write(self, ctlfile):
+        order = ['file', 'file.in','file.out','gas','fw','rt','band','sp','out','kb']
+        
+        fid = open(ctlfile, 'w')
+        for k,v in self.value.iteritems():
+            fid.write(k + ' = ' + v + '\n')
+
+        fid.close()
+
 
 class read_table:
 
@@ -40,29 +193,43 @@ class read_table:
         ac = self.table['AIRMASS']
         return(z,zb, p,t,ac)
 
+    def calc_hfunction(self,p_surf=-1):
+        z,zb, p,t,ac = self.get_atmosphere()
+        if p_surf == -1:
+            p_surf = p[-1]
 
+        h = np.zeros(p.size)
+        h[:-1] = -p[:-1] + (p[1:] - p[:-1])/np.log(p[1:]/p[:-1])
+        h[1:] += p[1:] - (p[1:] - p[:-1])/np.log(p[1:]/p[:-1])
+        h /= p_surf
+        return(h)
+        
+    
     def get_retrieval_gasnames(self):
         return self.retgas
 
 
-class calc_diagnostics():
+class calc_diagnostics(sfit4_ctl):
 
     def __init__(self):
         self.F_K = False
         self.F_SA = False
         self.F_SE = False
+        self.ctl = sfit4_ctl()
+        self.ctl.read('sfit4.ctl')
         
     def read_Kmatrix(self, filename):
-    
+
         self.K_frac = np.genfromtxt(filename,skip_header=3)
         self.F_K = True
         
-    def read_sa_matrix(self, filename):
-        self.sa = np.genfromtxt(filename,skip_header=3)
-        self.sainv = np.linalg.inv(self.sa)
+    def read_sainv_matrix(self, filename):
+        self.sainv = np.genfromtxt(filename,skip_header=3)
+        # if TP is used, construct the inverse SA matrix
+#        self.sainv = np.linalg.inv(self.sa)
         self.F_SA = True
         
-    def read_se_matrix(self, filename):
+    def read_seinv_matrix(self, filename):
         self.seinv = np.genfromtxt(filename,skip_header=2)
         self.F_SE = True
         
@@ -129,7 +296,7 @@ class avk:
         self.AK_vmr = np.dot(np.dot(np.diag(prf),self.AK_frac),np.diag(1/prf))
         prf,z = ap.get_gas_col(ap.get_retrieval_gasnames()[0])
         self.AK_col = np.dot(np.dot(np.diag(prf),self.AK_frac),np.diag(1/prf))
-
+        self.z = z
 
     def avk(self, type='frac', direc = '.'):
 
@@ -223,7 +390,7 @@ class error(read_table):
         if not os.path.isfile(sbctl):
             self.flag = False
             return
-        sb_ctl.read_ctl_file(sbctl)
+        sb_ctl.read(sbctl)
         # check if sb.ctl and direc are formally consistent
         self.total_vmr = direc+'/'+sb_ctl.get_value('file.out.total.vmr')
         self.total_col = direc+'/'+sb_ctl.get_value('file.out.total')

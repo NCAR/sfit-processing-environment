@@ -1,7 +1,6 @@
 import sys
 sys.path.append('/home/mathias/sfit-processing-environment/Lib_MP/')
 import read_result_sfit4 as sfit4
-from sfit4_ctl import *
 from Tkinter import *
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
@@ -151,7 +150,7 @@ class show_results:
                     max_alt = float(self.max_pcv[i].get())
                     min_ind = np.max(np.where(np.array(z)>=min_alt))
                     max_ind = np.min(np.where(np.array(z)<max_alt))
-                    self.winavk.gca().plot(np.sum(self.avk.avk('col')[:,max_ind:min_ind],1), z, label='PCOL from %.2f to %.2f km'%(min_alt,max_alt))
+                    self.winavk.gca().plot(np.sum(self.avk.avk('col')[max_ind:min_ind,:],0), z, label='PCOL from %.2f to %.2f km'%(min_alt,max_alt))
             self.winavk.gca().set_ylabel('Altitude [km]')
             self.winavk.gca().set_xlabel('Fraction of AVK [a.u.]')
             self.winavk.gca().legend(fontsize=16)
@@ -319,8 +318,8 @@ class show_results:
     def load_result(self, sb_ctl = 'sb.ctl'):
         direc = self.direc
         ctlfile = self.ctlfile
-        ctl = sfit4_ctl()
-        ctl.read_ctl_file(ctlfile)
+        ctl = sfit4.sfit4_ctl() 
+        ctl.read(ctlfile)
         ak_m = ctl.get_value('file.out.ak_matrix')
         if ak_m == -1:
             ak_m = 'ak.out' # Default name of ak_matrix
@@ -374,6 +373,7 @@ class show_results:
 
             ax.plot(apr,z,'-', lw=1, label='a priori', color=l[0].get_color())
             ax.legend()
+            ax.ticklabel_format(style='sci',scilimits=(0,4))
             if (type == 'vmr'):
                 ax = self.winprf.add_subplot(122)
                 for n in range(0,len(self.gases)):
@@ -383,8 +383,10 @@ class show_results:
                     ax.plot(apr,z,'--',lw=1, color=l[0].get_color())
                     ax.legend()
             ax.set_ylabel('altitude [km]')
-            ax.set_xlabel('VMR [ppt]')
-            ax.set_xticklabels(ax.get_xticks()/1.0e-9)
+            ax.set_xlabel('VMR [ppm]')
+            ax.ticklabel_format(style='sci',scilimits=(0,4))
+#            print 'a%0.2f'%ax.get_xticks()/1.0e-6
+#            ax.set_xticklabels('a%0.2f'%ax.get_xticks()/1.0e-6)
             self.winprf.show()
 
                 

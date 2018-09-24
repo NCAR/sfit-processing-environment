@@ -34,8 +34,8 @@ import hdfInitData
 
 class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
-   def __init__(self,gasNameStr,outputDir,processingSfitVer,location,source,attr_file,granu,mtype,dType):
-      super(HDFsave, self).__init__(gasNameStr)
+   def __init__(self,gasNameStr,outputDir,processingSfitVer,location,instrument,attr_file,granu,mtype,source,dType):
+      super(HDFsave, self).__init__(gasNameStr,type=source)
       self.dType               = dType
       if   dType.lower() == 'float32': self.dTypeStr = 'REAL'
       elif dType.lower() == 'float64': self.dTypeStr = 'DOUBLE'       
@@ -49,7 +49,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.mxSclFct2Name       = 'ppmv2'
       self.mxSclFct2Val        = 1E-12
       self.attribute_file      = attr_file
-      self.locID               = source
+      self.locID               = instrument
       self.granularity         = granu
       self.mtype               = mtype
       

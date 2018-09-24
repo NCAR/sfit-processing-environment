@@ -70,6 +70,7 @@ def main(args):
     maxTCTotErr    = 9e99
     granularity    = 'yearly'
     mtype          = 'stationary'
+    source         = 'sun'
 
     if quality != 'nrt' and quality !='final' and quality != 'cams27':
         print 'quality has to be nrt, final or cams27, not %s'%quality
@@ -78,17 +79,24 @@ def main(args):
     
     if loc1.lower() == 'bre' or loc1.lower() == 'bremen':
         loc            = 'BREMEN'
-        source         = 'IUP001'
+        instrument         = 'IUP001'
         attribute_file = os.path.join(script_dir, 'bremen_attr.txt.%s'%quality)
     elif loc1.lower() == 'nya':    
         loc            = 'NY.ALESUND'
-        source         = 'AWI001'
+        instrument         = 'AWI001'
         attribute_file = os.path.join(script_dir, 'nyalesund_attr.txt.%s'%quality)
     elif loc1.lower() == 'cruise':    
         loc            = 'POLARSTERN'
-        source         = 'AWI027'
+        instrument         = 'AWI027'
         mtype = 'mobile'
         attribute_file = os.path.join(script_dir, 'polarstern_attr.txt.%s'%quality)
+
+    elif loc1.lower() == 'ps106':    
+        loc            = 'POLARSTERN'
+        instrument         = 'IUP004'
+        source = 'Atmosphere'
+        mtype = 'mobile'
+        attribute_file = os.path.join(script_dir, 'ps106_attr.txt.%s'%quality)
 
     elif loc1.lower() == 'pmb':    
         loc            = 'PARAMARIBO'
@@ -99,20 +107,20 @@ def main(args):
             return
         
         if sdate.year < 2012:
-            source         = 'AWI019'
+            instrument         = 'AWI019'
         else:
-            source         = 'AWI028'
+            instrument         = 'AWI028'
     elif loc1.lower() == 'ispra':
         loc = 'ISPRA'
-        source        = 'iup003'
+        instrument        = 'iup003'
         attribute_file = os.path.join(script_dir, 'bremen_attr.txt.%s'%quality)
     elif loc1.lower() == 'jfj':
         loc            = 'Jungfraujoch'
-        source         = 'ULG002'
+        instrument         = 'ULG002'
         attribute_file = os.path.join(script_dir, 'jungfraujoch_final.txt')
     elif loc1.lower() == 'palau':
 	loc 	       = 'Palau'
-	source	       = 'AWI019'
+	instrument	       = 'AWI019'
         attribute_file = os.path.join(script_dir, 'palau.txt.final')
 
 
@@ -163,8 +171,7 @@ def main(args):
         minVMR         = -1e-7
         maxVMR         = 2.0e-5
         if quality.lower()=='cams27':
-            maxSZA = 83
-            
+            maxSZA = 83            
 
 
     if gasName.lower() == 'ccl4':
@@ -352,6 +359,14 @@ def main(args):
         cnvFlag        = True
         validFlag      = True
 
+
+    if instrument.lower() == 'iup004':
+        if gasName.lower() == 'CH4':
+            gasName = 'CH4'
+            maxCHI2 = 2.0
+            cnvFlag = True
+            valifFlag = True
+        
     #---------------------
     # For python interface
     #---------------------
@@ -371,7 +386,8 @@ def main(args):
     # variable DATETIME will always be written as a DOUBLE as 
     # specified in GEOMS: http://avdc.gsfc.nasa.gov/index.php?site=1989220925
     #------------------------------------------------------------
-    myhdf = hdfsave.HDFsave(gasName,outDir,sfitVer,loc,source,attribute_file,granularity,mtype,dType='float32')
+
+    myhdf = hdfsave.HDFsave(gasName,outDir,sfitVer,loc,instrument,attribute_file,granularity,mtype,source,dType='float32')
     
     #------------------------------------------------
     # Here we initialize the HDF object with our data
