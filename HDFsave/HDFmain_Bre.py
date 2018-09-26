@@ -22,6 +22,7 @@
 #
 #    You should have received a copy of the GNU General Public License
 #    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
+#
 #----------------------------------------------------------------------------------------                              
 
 if __name__ != "__main__":
