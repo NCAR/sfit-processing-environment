@@ -896,11 +896,11 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             pname,appnd = val.split('_')[:2]
             try: int(appnd)
             except ValueError: pass
-            else: val = pname #remove the mw index from the labels if integer
-        Kb_param[ind] = val 
+            else:
+              val = pname #remove the mw index from the labels if integer
+        Kb_param[ind] = val
 
     Kb_unsrt = np.array([[float(x) for x in row.split()] for row in lines[3:]])
-
     #----------------------------------
     # Create a dictionary of Kb columns
     # A list of numpy arrays is created
@@ -961,7 +961,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #
     #---------------------------
     col_dofs = np.trace(AKx)
-
+    
     #------------------------------------------------------------
     # Initialize dictionary of all calculated random error data,
     # including: convariance matrices, percent errors, and labels
@@ -993,7 +993,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #----------------------------------
     #print 'random noise',
     S_ran['measurement'] = calcCoVar(se,Dx,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
-
     #---------------------
     # Interference Errors:
     #---------------------
@@ -1003,9 +1002,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     AK_int1                   = AK[x_start:x_stop,0:x_start]  
     Sa_int1                   = sa[0:x_start,0:x_start]
     #print 'random retr. params',
-    S_ran['retrieval_parameters'] = calcCoVar(Sa_int1,AK_int1,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
-
-    #-----------------------
+    if x_start > 0:
+      S_ran['retrieval_parameters'] = calcCoVar(Sa_int1,AK_int1,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
+      #-----------------------
     # 2) Interfering species
     #-----------------------
     n_int2                     = n_profile + n_column - 1
@@ -1240,6 +1239,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                     
                  
 
+
     #---------------------------------------------
     # Calculate total systematic and random errors
     #---------------------------------------------
@@ -1268,7 +1268,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             else:                                                    S_tot_ran_molcs  = 0
 
     S_tot_rndm_err  = np.sqrt(S_tot_rndm_err)
-
     # Systematic
     for k in S_sys:
         totkey='sb.total.'+k
@@ -1289,7 +1288,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 
     #--------------------------
     # Error summary information
-    #--------------------------      
+    #--------------------------
     with open(wrkingDir+SbDict['file.out.error.summary'][0], 'w') as fout:
         fout.write('sfit4 ERROR SUMMARY\n\n')
         fout.write('Primary gas                                   = {0:>15s}\n'.format(primgas.upper())                                  )
@@ -1297,9 +1296,11 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         fout.write('DOFs (total column)                           = {0:15.3f}\n'.format(col_dofs)                                        )
         fout.write('Smoothing error (Ss, using sa)                = {0:15.3f} [%]\n'.format(S_ran['smoothing'][2]        /retdenscol*100))
         fout.write('Measurement error (Sm)                        = {0:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
-        fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
+        if S_ran.has_key('retrieval_parameters'):
+          fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
+        else:
+          fout.write('No additional parameters retrieved')  
         fout.write('Interference error (interfering spcs)         = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
-        
         fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
         fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
         if 'h2o' in S_ran: fout.write('Water Vapor (Random)                          = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
