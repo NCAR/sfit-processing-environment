@@ -92,7 +92,7 @@ def main():
     #---------
     # Location
     #---------
-    loc = 'mlo'
+    loc = 'tab'
 
     #------------------------------------
     # Version number to append water file

@@ -486,7 +486,6 @@ def main(argv):
                     daystr = str(int(dbFltData_2['Date'][spcDBind]))
                     obsDay = dt.datetime(int(daystr[0:4]),int(daystr[4:6]),int(daystr[6:]))
 
-
                     #----------------------------------------
                     # Check the existance of input and output 
                     # directory structure
@@ -678,13 +677,9 @@ def main(argv):
 
                         print '*****************************************************'
                         print 'Running REFMKRNCAR for ctl file: %s' % msgstr1
-                        if mainInF.inputs['waccmFlg']:
-                            print 'Using ' + waccmFile + ' WACCM Monthly Profile'
+                        if mainInF.inputs['waccmFlg']: print 'Using ' + waccmFile + ' WACCM Monthly Profile'
                         print 'Processing spectral observation date: %s' % msgstr2
                         print '*****************************************************'
-
-                        
-
 
                         rtn = refMkrNCAR(wrkInputDir2, waccmFile, wrkOutputDir3, \
                                          mainInF.inputs['refMkrLvl'], mainInF.inputs['wVer'], mainInF.inputs['zptFlg'],\
@@ -782,12 +777,12 @@ def main(argv):
                         if pauseFlg:
                             while True:
 
-                                user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 plot retrieval results\n >>> ')
+                                user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 show plot retrieval results, 4 save plot retrievals in pdf\n >>> ')
                                 plt.close('all')
                                 try:
                                     user_input = int(user_input)
-                                    if not any(user_input == val for val in [-1,0,1,2,3]): raise ValueError
-                                except ValueError: print 'Please enter -1, 0, 1, 2, or 3'
+                                    if not any(user_input == val for val in [-1,0,1,2,3, 4]): raise ValueError
+                                except ValueError: print 'Please enter -1, 0, 1, 2, 3, or 4'
 
                                 if   user_input == 0:  sys.exit()           # Exit program
                                 elif user_input == 1:                       # Exit while loop (Do not repeat)
@@ -797,11 +792,15 @@ def main(argv):
                                     pauseFlg = False
                                     brkFlg   = True
                                     break
-                                elif user_input == 3:                       # Plot retrieval results
+                                elif (user_input == 3) or (user_input) == 4:                       # Plot retrieval results
+
                                     #----------------------
                                     # Initialize Plot Class
-                                    #----------------------                                
-                                    gas = dc.PlotData(wrkOutputDir3,wrkOutputDir3+'sfit4.ctl')
+                                    #----------------------    
+
+                                    if user_input == 4: gas = dc.PlotData(wrkOutputDir3,wrkOutputDir3+'sfit4.ctl', saveFlg=True, outFname='pltRet.pdf')
+                                    else: gas = dc.PlotData(wrkOutputDir3,wrkOutputDir3+'sfit4.ctl')
+                                                                
                                     #--------------------------
                                     # Call to plot spectral fit
                                     #--------------------------
@@ -828,7 +827,50 @@ def main(argv):
 
                                         print '****************SUMMARY FILE****************'
                                         print (info)
-                                        print '****************END OF SUMMARY FILE****************' 
+                                        print '****************END OF SUMMARY FILE****************'
+
+                                        if user_input == 4:
+
+                                            fig, ax = plt.subplots(figsize=(10,8))  
+
+                                            ax.text(0.0,0.05,info, ha='left', fontsize=10, color='b')
+
+                                            ax.get_xaxis().set_visible(False)
+                                            ax.get_yaxis().set_visible(False)
+                                            ax.axis('off')
+
+                                            gas.pdfsav.savefig(fig,dpi=200)
+                                        
+                                        #-----------------------------
+                                        # Print Error summary file to screen
+                                        #-----------------------------
+                                        try:
+                                            with open(wrkOutputDir3+'Errorsummary.output','r') as fopen: info = fopen.read()
+                                        
+                                            print '\n******************SUMMARY ERROR*********************\n'
+                                            print (info)
+                                            print '\n****************END OF SUMMARY ERROR****************\n'
+
+                                            if user_input == 4:
+
+                                                fig, ax = plt.subplots(figsize=(10,8))  
+
+                                                ax.text(0.0,0.05,info, ha='left', fontsize=10, color='b')
+
+                                                ax.get_xaxis().set_visible(False)
+                                                ax.get_yaxis().set_visible(False)
+                                                ax.axis('off')
+
+                                                gas.pdfsav.savefig(fig,dpi=200)
+                                                
+                                        except:
+                                            print '\n*************ERROR IS NOT CALCULATED****************\n'
+
+                                    if user_input == 4: 
+                                        print '\n****************PDF FILE SAVED****************\n'
+                                        print wrkOutputDir3+'pltRet.pdf'
+                                        print '\n*********************END**********************\n'
+                                        gas.closeFig()
 
                                 elif user_input == -1:                      # Repeat loop
                                     brkFlg = False 

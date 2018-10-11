@@ -60,7 +60,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.cm as mplcm
 import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
-import matplotlib.gridspec as gridspec
 
 
 #----------------------------------------------------------------------------------------
@@ -4234,7 +4233,7 @@ class PlotData(ReadOutputData):
             #ax[0].errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],yerr=mnthVals['std'],ecolor=clr[i-1])
             #ax[0].scatter(mnthVals['dates'],mnthVals['mnthlyAvg'],facecolors=clr[i-1], edgecolors='black', s=35,  label='band {}'.format(i))
             #ax[0].set_ylim(0, 5000)
-        ax[0].legend(prop={'size':11})
+        ax[0].legend(prop={'size':8})
         ax[0].grid(True)
         ax[0].set_ylabel('SNR')
         ax[0].set_title('Time Series of SNR')
@@ -4282,7 +4281,7 @@ class PlotData(ReadOutputData):
             ax[0].errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'], linestyle='None', yerr=mnthVals['std'],ecolor=clr[i-1])
             ax[0].scatter(mnthVals['dates'],mnthVals['mnthlyAvg'],facecolors=clr[i-1], edgecolors='black', s=35,  label='band {}'.format(i))
             #ax[0].set_ylim(0, 5000)
-        ax[0].legend(prop={'size':11})
+        ax[0].legend(prop={'size':8})
         ax[0].grid(True)
         ax[0].set_ylabel('SNR')
         ax[0].set_title('Monthly Averaged Time Series of SNR')
@@ -4585,5 +4584,12 @@ class PlotData(ReadOutputData):
                 ##plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
             
             #if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-            #else:           plt.show(block=False)         
+            #else:           plt.show(block=False) 
+
+    #def pltSummary(self,errFlg=False):    
+
+    #    if not self.readsummaryFlg:                 self.readsummary()
+
+    #    print self.summary
+
                      

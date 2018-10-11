@@ -89,11 +89,11 @@ def main():
     outPath = '/data1/' + loc.lower() + '/'       # Working directory
 
     iyear   = 2018 
-    imonth  = 5
-    iday    = 29
+    imonth  = 8
+    iday    = 1
 
     fyear   = 2018
-    fmonth  = 5
+    fmonth  = 8
     fday    = 31
 
     #-------------------

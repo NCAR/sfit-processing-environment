@@ -483,6 +483,21 @@ class DbInputFile():
 
         return dbFltInputs
 
+    def dbFilterSZA(self,minSZA, maxSZA, fltDict=False):
+        ''' Filter spectral DB dictionary based on zenith angle specification'''
+        inds = []
+
+        if not fltDict:
+            fltDict = self.dbInputs
+
+        for ind,val in enumerate(fltDict['SZen']):
+            if ( val >= minSZA and val <= maxSZA ):                                          # Check if wavenumber is within range of ctl files
+                inds.append(ind)
+
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
+        #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
+        return dbFltInputs
+
 #---------------------------------------GasPrfs--------------------------------------------------------
 class RetOutput():
     ''' This class deals with reading output from a retrieval '''

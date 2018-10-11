@@ -291,7 +291,9 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
     #---------------------------
     # Create a list of version number for water files
     r = re.compile(r"([0-9]+)")
+
     waterVer = [int(r.search(os.path.splitext(wfile)[1]).group(1)) for wfile in waterFiles]
+
 
     #-------------------------------------------
     # For wVer < 0 get latest water version file
@@ -308,10 +310,13 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
         #waterInd = waterVer.index(wVer)
         
         #------------------------------------------------
-        # If water version == 99 find the closest water
-        # to retrieval
+        # If water version == 99 find the closest water  to retrieval
+        # If water version == 66 (ERA - 6h) find the closest in time to retrieval
+        # If water version == 77 find the closest water  to retrieval - Log retrieval
         #------------------------------------------------
-        if waterInd and wVer == 99:
+        #if waterInd:
+        if (len(waterInd) > 0) and (wVer > 6):  #(wVer == 99) or (wVer == 66) or (wVer == 77):
+
             waterNames = [os.path.basename(waterFiles[i]) for i in waterInd]
             waterDates = [dt.datetime(int(x.strip().split('.')[1][0:4]),int(x.strip().split('.')[1][4:6]),int(x.strip().split('.')[1][6:]),
                                       int(x.strip().split('.')[2][0:2]),int(x.strip().split('.')[2][2:4]),int(x.strip().split('.')[2][4:])) for x in waterNames]
@@ -324,28 +329,12 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
             waterInd = waterFiles.index(zptwPath+waterNames[indTemp]) 
 
         #------------------------------------------------
-        # If water version == 66 (ERA) find the closest in time to retrieval
-        #------------------------------------------------
-        elif waterInd and wVer == 66:
-            waterNames = [os.path.basename(waterFiles[i]) for i in waterInd]
 
-            waterDates = [dt.datetime(int(x.strip().split('.')[1][0:4]),int(x.strip().split('.')[1][4:6]),int(x.strip().split('.')[1][6:]),
-                                      int(x.strip().split('.')[2][0:2]),int(x.strip().split('.')[2][2:4]),int(x.strip().split('.')[2][4:])) for x in waterNames]
-            
-            obsDate = dt.datetime(int(str(int(specDB['Date'][spcDBind]))[0:4]),int(str(int(specDB['Date'][spcDBind]))[4:6]),int(str(int(specDB['Date'][spcDBind]))[6:]),
-                                  int(specDB['Time'][spcDBind].split(':')[0]),int(specDB['Time'][spcDBind].split(':')[1]),int(specDB['Time'][spcDBind].split(':')[2]))
-            
-            nearstD  = sc.nearestTime(waterDates,obsDate.year,obsDate.month,obsDate.day,obsDate.hour,obsDate.minute,obsDate.second)    
-            indTemp  = waterDates.index(nearstD) 
-            waterInd = waterFiles.index(zptwPath+waterNames[indTemp])
-
-        #------------------------------------------------
-
-        elif not waterInd:
+        elif len(waterInd) == 0:
             print 'Water version {0:d} not found, using latest version: {1:d} '.format(wVer,max(waterVer))
             if logFile: logFile.error('Water version %d not found, using latest version'% wVer)
             waterInd = waterVer.index(max(waterVer))
-            
+    
         else: waterInd = waterInd[0]
               
     waterFile = waterFiles[waterInd]
@@ -519,6 +508,9 @@ def isotopePrep(refFile):
 
     with open(refFile,'r') as fopen: lines = fopen.readlines()
 
+    gasDir = refFile.strip().split('/')[4]
+
+
     #----------------------------------------
     # Get Altitude, Pressure, and Temperature
     # from reference.prf file
@@ -602,7 +594,7 @@ def isotopePrep(refFile):
                 lines[linenum] = str('{0:.4e}'.format(hdoPrf_2[linenum - 6]))+'\n'       
 
 
-    with open('/data1/ebaumer/mlo/hdo/x.hdo/isotope.input3', 'w' ) as fout:
+    with open('/data1/ebaumer/mlo/'+gasDir+'/x.'+gasDir+'/isotope.input3', 'w' ) as fout:
         for line in lines:
             fout.write(line)
 
@@ -789,9 +781,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         densPrf = retPrfVMR * airMass
         Sm_3 = np.sqrt( np.dot( np.dot( densPrf, Sm ), densPrf.T )     )         # Whole column uncertainty [molecules cm^-2]
         ##Sm_3 = np.sqrt( np.sum( np.diagonal( Sm_2 ) ) )                          # Whole column uncertainty [molecules cm^-2]
-        
-        print Sm_1
-        exit()
         
         return (Sm_1, Sm_2, Sm_3)     # (Variance, Variance, STD)
 

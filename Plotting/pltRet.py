@@ -75,6 +75,19 @@ import os
 import getopt
 import dataOutClass as dc
 
+import matplotlib.animation as animation
+import matplotlib
+from cycler import cycler
+import matplotlib.dates as md
+from matplotlib.dates import DateFormatter, MonthLocator, YearLocator, DayLocator, HourLocator, MinuteLocator
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import FormatStrFormatter, MultipleLocator,AutoMinorLocator,ScalarFormatter
+from matplotlib.backends.backend_pdf import PdfPages 
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+import matplotlib.cm as mplcm
+import matplotlib.colors as colors
+import matplotlib.gridspec as gridspec
 
 #------------------------
 # Define helper functions
@@ -164,7 +177,9 @@ def main(argv):
         #-----------------
         # Call to plot AVK
         #-----------------
-        if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  gas.pltAvk()        
+        if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  gas.pltAvk()   
+
+        #gas.pltSummary()   
 
         #-----------------------------
         # Print summary file to screen
@@ -174,6 +189,18 @@ def main(argv):
         print '\n******************SUMMARY FILE*********************\n'
         print (info)
         print '\n****************END OF SUMMARY FILE****************\n'
+
+        fig, ax = plt.subplots(figsize=(10,8))  
+
+        ax.text(0.0,0.05,info, ha='left', fontsize=10, color='b')
+
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+        ax.axis('off')
+
+        
+        if saveFlg: gas.pdfsav.savefig(fig,dpi=200)
+        else:           plt.show(block=False) 
 
         #-----------------------------
         # Print Error summary file to screen
@@ -186,6 +213,18 @@ def main(argv):
             print '\n****************END OF SUMMARY ERROR****************\n'
         except:
             print '\n*************ERROR IS NOT CALCULATED****************\n'
+
+        fig, ax = plt.subplots(figsize=(10,8))    
+
+        ax.text(0.0,0.05,info, ha='left', fontsize=10, color='b')
+
+        ax.get_xaxis().set_visible(False)
+        ax.get_yaxis().set_visible(False)
+        ax.axis('off')
+
+        
+        if saveFlg: gas.pdfsav.savefig(fig,dpi=200)
+        else:           plt.show(block=False) 
 
         #--------------------------------
         # Pause so user can look at plots

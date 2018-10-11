@@ -126,22 +126,22 @@ def main(argv):
     #----------------
     # Starting mvSpectra.py: IMPORTANT --> Modify Inputs in mvSpectra.py
     #----------------
-    # print '\nStarting mvSpectra.py: copying files from ya/id/'+loc+' to /data1/'+loc
-    # try: 
-    #     os.system('mvSpectra.py')
-    # except OSError as errmsg:
-    #     print errmsg
-    #     sys.exit()
+    print '\nStarting mvSpectra.py: copying files from ya/id/'+loc+' to /data1/'+loc
+    try: 
+        os.system('mvSpectra.py')
+    except OSError as errmsg:
+        print errmsg
+        sys.exit()
 
-    # #----------------
-    # # Starting delSpcdel.py: Nothing to Do
-    # #----------------
-    # print '\nStarting delSpcdel.py: deleting Files if found in deleted folder'
-    # try:
-    #     os.system('delSpcdel.py -y'+str(year)+ ' -s'+loc)
-    # except OSError as errmsg:
-    #     print errmsg
-    #     sys.exit()
+    #----------------
+    # Starting delSpcdel.py: Nothing to Do
+    #----------------
+    print '\nStarting delSpcdel.py: deleting Files if found in deleted folder'
+    try:
+        os.system('delSpcdel.py -y'+str(year)+ ' -s'+loc)
+    except OSError as errmsg:
+        print errmsg
+        sys.exit()
 
     #----------------
     # Starting mkSpecDB.py: IMPORTANT --> Since spDB is removed Modify specDBInputFile every year Only
