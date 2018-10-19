@@ -1,11 +1,11 @@
-#! /usr/bin/python
+#! /usr/bin/python2
 #----------------------------------------------------------------------------------------
 # Name:
 #        HDFmain.py
 #
 # Purpose:
 #       Main program to create GEOMS format HDF files
-#		
+#       
 # License:
 #    Copyright (c) 2013-2014 NDACC/IRWG
 #    This file is part of sfit4.
@@ -86,6 +86,12 @@ def main(args):
         loc            = 'NY.ALESUND'
         instrument         = 'AWI001'
         attribute_file = os.path.join(script_dir, 'nyalesund_attr.txt.%s'%quality)
+        if gasName.lower() == 'h2o':
+            source = 'sun'
+            maxCHI2 = 50.0
+            maxDOFS = 4.0
+            maxVMR = 1.0e-2
+
     elif loc1.lower() == 'cruise':    
         loc            = 'POLARSTERN'
         instrument         = 'AWI027'
@@ -95,7 +101,13 @@ def main(args):
     elif loc1.lower() == 'ps106':    
         loc            = 'POLARSTERN'
         instrument         = 'IUP004'
-        source = 'Atmosphere'
+        if gasName.lower() == 'h2o':
+            source = 'sun'
+            maxCHI2 = 50.0
+            maxDOFS = 2.5
+            maxVMR = 1.0e-2
+        else:
+            source = 'Atmosphere'
         mtype = 'mobile'
         attribute_file = os.path.join(script_dir, 'ps106_attr.txt.%s'%quality)
 
@@ -120,8 +132,8 @@ def main(args):
         instrument         = 'ULG002'
         attribute_file = os.path.join(script_dir, 'jungfraujoch_final.txt')
     elif loc1.lower() == 'palau':
-	loc 	       = 'Palau'
-	instrument	       = 'AWI019'
+        loc            = 'Palau'
+        instrument         = 'AWI019'
         attribute_file = os.path.join(script_dir, 'palau.txt.final')
 
 

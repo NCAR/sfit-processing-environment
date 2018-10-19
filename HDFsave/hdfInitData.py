@@ -205,10 +205,13 @@ class HDFinitData(object):
         self.gasColAbsSolarUncSys           = pyData.HDFtcSysErr
         self.angleZastr                     = pyData.HDFsza
         self.angleSolAz                     = pyData.HDFazi
-        self.h2oMxRatAbsSolar               = pyData.HDFh2oVMR       / self.mxSclFctVal
-        self.h2oColAbsSol                   = pyData.HDFh2oTC
-
-        
+        if 'H2O' not in pyData.PrimaryGas:
+            self.h2oMxRatAbsSolar               = pyData.HDFh2oVMR       / self.mxSclFctVal
+            self.h2oColAbsSol                   = pyData.HDFh2oTC
+        else:
+            del self.h2oMxRatAbsSolar
+            del self.h2oColAbsSol
+            
         
     def initDummy(self):
         ''' Interface for initalizing with dummy data. For testing!!!'''

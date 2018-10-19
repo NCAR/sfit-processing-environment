@@ -532,23 +532,25 @@ class HDFbaseRetDat(object):
         # Create solar azimuth angle dataset (variable)
         #-----------------------------------------------------------------------------
         hdfFile.createDataSet(self.getAngleSolarAzimuthName(),np.size(self.angleSolAz),self.angleSolAz, \
-                                self.saaAttrbs(np.size(self.angleSolAz)))
+                              self.saaAttrbs(np.size(self.angleSolAz)))
 
-        #-----------------------------------------------------------------------------
-        # Create interfering H2O from solar absorption profile dataset (variable)
-        #-----------------------------------------------------------------------------
-        hdfFile.createDataSet(self.getH2oMixingRatioAbsorptionSolarName(), \
-                                (self.h2oMxRatAbsSolar.shape[0],self.h2oMxRatAbsSolar.shape[1]), self.h2oMxRatAbsSolar, \
-                                self.H2OrprfAttrbs(self.h2oMxRatAbsSolar.shape[1],self.h2oMxRatAbsSolar.shape[0], \
-                                                   float(self.h2oMxRatAbsSolar.min()), \
+        if self.gasName.upper() != 'H2O':
+
+            #-----------------------------------------------------------------------------
+            # Create interfering H2O from solar absorption profile dataset (variable)
+            #-----------------------------------------------------------------------------
+            hdfFile.createDataSet(self.getH2oMixingRatioAbsorptionSolarName(), \
+                                  (self.h2oMxRatAbsSolar.shape[0],self.h2oMxRatAbsSolar.shape[1]), self.h2oMxRatAbsSolar, \
+                                  self.H2OrprfAttrbs(self.h2oMxRatAbsSolar.shape[1],self.h2oMxRatAbsSolar.shape[0], \
+                                                     float(self.h2oMxRatAbsSolar.min()), \
                                                    float(self.h2oMxRatAbsSolar.max())))
 
-        #-----------------------------------------------------------------------------
-        # Create total column of interfering H2O solar absorption dataset (variable)
-        #-----------------------------------------------------------------------------
-        hdfFile.createDataSet(self.getH2oColumnAbsorptionSolarName(),np.size(self.h2oColAbsSol), self.h2oColAbsSol, \
-                                self.H2OtcAttrbs(np.size(self.h2oColAbsSol)))
-        
+            #-----------------------------------------------------------------------------
+            # Create total column of interfering H2O solar absorption dataset (variable)
+            #-----------------------------------------------------------------------------
+            hdfFile.createDataSet(self.getH2oColumnAbsorptionSolarName(),np.size(self.h2oColAbsSol), self.h2oColAbsSol, \
+                                  self.H2OtcAttrbs(np.size(self.h2oColAbsSol)))
+            
         #---------------
         # Close HDF file
         #---------------

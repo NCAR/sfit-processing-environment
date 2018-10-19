@@ -252,8 +252,8 @@ class show_tmph5:
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.c2y[self.valid_ind])
         elif aux == 'DOFS':
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.dofs[self.valid_ind])
-        elif aux == 'CO2':
-            self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.col_co2[self.valid_ind])
+#        elif aux == 'CO2':
+#            self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.col_co2[self.valid_ind])
         elif aux == 'E_TOT':
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.err_tot[self.valid_ind])
         elif aux == 'SNR':
