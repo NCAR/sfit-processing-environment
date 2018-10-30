@@ -35,21 +35,21 @@ def error_calc(**kwargs):
 
     dd.sort()
     print start_date, end_date
-    filenames = []
+    direcs = []
     for direc in dd:
-        filenames.append(kwargs['dir']+'/'+direc+'/sfit4.ctl')
+        direcs.append(kwargs['dir']+'/'+direc)
 
-    filenames.sort()
+    direcs.sort()
     p = Pool(processes=15)
-    p.map(calc_now, filenames)
+    p.map(lambda x: calc_now(kwargs['sbctl'], x), direcs)
     
-def calc_now(filename):
-    ctl = sc.CtlInputFile(kwargs['dir']+'/'+direc+'/sfit4.ctl')
+def calc_now(Sbctl, direc):
+    ctl = sc.CtlInputFile(direc+'/sfit4.ctl')
     ctl.getInputs()
     Sbctl = sc.CtlInputFile(kwargs['sbctl'])
     Sbctl.getInputs()
     try:    
-        errAnalysis(ctl,Sbctl,kwargs['dir']+'/'+direc+'/', False)
+        errAnalysis(ctl,Sbctl,direc, False)
         print 'errorcalculation in path: '+direc
     except:
         print 'failed in path: '+direc
@@ -58,7 +58,7 @@ def calc_now(filename):
     #        ipdb.set_trace()
     shutil.copy(kwargs['dir']+'/'+direc+'/sfit4.ctl',kwargs['dir'])
     shutil.copy(kwargs['dir']+'/'+direc+'/'+ctl.inputs['file.in.stalayers'][0],
-                kwargs['dir']+'/'+'station.layers')
+                    kwargs['dir']+'/'+'station.layers')
         
 if __name__ == '__main__':
     import os,sys, getopt
