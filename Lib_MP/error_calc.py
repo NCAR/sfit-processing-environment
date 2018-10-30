@@ -35,22 +35,30 @@ def error_calc(**kwargs):
 
     dd.sort()
     print start_date, end_date
+    filenames = []
     for direc in dd:
-        ctl = sc.CtlInputFile(kwargs['dir']+'/'+direc+'/sfit4.ctl')
-        ctl.getInputs()
-        Sbctl = sc.CtlInputFile(kwargs['sbctl'])
-        Sbctl.getInputs()
-        try:    
-            errAnalysis(ctl,Sbctl,kwargs['dir']+'/'+direc+'/', False)
-            print 'errorcalculation in path: '+direc
-        except:
-            print 'failed in path: '+direc
-            pass
-#        import ipdb
-#        ipdb.set_trace()
-        shutil.copy(kwargs['dir']+'/'+direc+'/sfit4.ctl',kwargs['dir'])
-        shutil.copy(kwargs['dir']+'/'+direc+'/'+ctl.inputs['file.in.stalayers'][0],
-                    kwargs['dir']+'/'+'station.layers')
+        filenames.append(kwargs['dir']+'/'+direc+'/sfit4.ctl')
+
+    filenames.sort()
+    p = Pool(processes=15)
+    p.map(calc_now, filenames)
+    
+def calc_now(filename):
+    ctl = sc.CtlInputFile(kwargs['dir']+'/'+direc+'/sfit4.ctl')
+    ctl.getInputs()
+    Sbctl = sc.CtlInputFile(kwargs['sbctl'])
+    Sbctl.getInputs()
+    try:    
+        errAnalysis(ctl,Sbctl,kwargs['dir']+'/'+direc+'/', False)
+        print 'errorcalculation in path: '+direc
+    except:
+        print 'failed in path: '+direc
+        pass
+    #        import ipdb
+    #        ipdb.set_trace()
+    shutil.copy(kwargs['dir']+'/'+direc+'/sfit4.ctl',kwargs['dir'])
+    shutil.copy(kwargs['dir']+'/'+direc+'/'+ctl.inputs['file.in.stalayers'][0],
+                kwargs['dir']+'/'+'station.layers')
         
 if __name__ == '__main__':
     import os,sys, getopt
