@@ -62,7 +62,7 @@ def error_calc(**kwargs):
     for direc in dd:
         direcs.append(kwargs['dir']+'/'+direc)
 
-    p = Pool(processes=15)
+    p = Pool(processes=28)
     sbctl= kwargs['sbctl']
     p.map(partial(calc_now, sbctl=sbctl,rootdir=kwargs['dir']), direcs)
 

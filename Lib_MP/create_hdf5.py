@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.dates as mdt
 import datetime as dt
 import read_result_sfit4 as sfit4
-from sfit4_ctl import sfit4_ctl
+from read_result_sfit4 import sfit4_ctl
 import read_misc
 
 def create_hdf5(**kwargs):
@@ -51,8 +51,8 @@ def create_hdf5(**kwargs):
 	
 
 	sbctl = sfit4_ctl()
-	sbctl.read_ctl_file(sb_ctl)
-	h5file = hdf5.openFile(filename, mode = "w", title = "sfit4 results")
+	sbctl.read(sb_ctl)
+	h5file = hdf5.open_file(filename, mode = "w", title = "sfit4 results")
 	
 	df = mdt.strpdate2num('%Y%m%d.%H%M%S')
 	dnum = []
@@ -206,47 +206,47 @@ def create_hdf5(**kwargs):
 	        airmass = np.zeros((len_vmr, nr_entries)) *np.nan
 		vmr_h2o_ap = np.zeros((len_vmr, nr_entries)) *np.nan
 
-	        h5file.createArray("/", 'Z', np.array(z), "Altitude levels (mid points)")
-	        h5file.createArray("/", 'Zb', np.array(zb), "Altitude levels (boundaries)")
-	        vmr_rt = h5file.createEArray("/", 'vmr_rt', hdf5.Float32Atom(), 
+	        h5file.create_array("/", 'Z', np.array(z), "Altitude levels (mid points)")
+	        h5file.create_array("/", 'Zb', np.array(zb), "Altitude levels (boundaries)")
+	        vmr_rt = h5file.create_earray("/", 'vmr_rt', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="Retrieved VMR", expectedrows=nr_entries)
-	        ivmr_rt = h5file.createEArray("/", 'ivmr_rt', hdf5.Float32Atom(),
+	        ivmr_rt = h5file.create_earray("/", 'ivmr_rt', hdf5.Float32Atom(),
 	                                     (len_vmr,nr_gas-1,0), title="Retrieved VMR of interfering gases", 
 	                                      expectedrows=nr_entries)
-                ivmr_ap = h5file.createEArray("/", 'ivmr_ap', hdf5.Float32Atom(), 
+                ivmr_ap = h5file.create_earray("/", 'ivmr_ap', hdf5.Float32Atom(), 
 	                                     (len_vmr,nr_gas-1,0), title="A priori VMR of interfering gases", 
 	                                      expectedrows=nr_entries)
-	        icol_rt = h5file.createEArray("/", 'icol_rt', hdf5.Float32Atom(), 
+	        icol_rt = h5file.create_earray("/", 'icol_rt', hdf5.Float32Atom(), 
 	                                     (nr_gas-1,0), title="Retrieved total column of interfering gases", 
 	                                      expectedrows=nr_entries)
                 if nr_aux > 0:
-	                aux_ap = h5file.createEArray("/", 'aux_ap', hdf5.Float32Atom(), 
+	                aux_ap = h5file.create_earray("/", 'aux_ap', hdf5.Float32Atom(), 
 	                                             (nr_aux,0), title="Apriori of auxilliary entries in state vector", 
 	                                             expectedrows=nr_entries)
-	                aux_rt = h5file.createEArray("/", 'aux_rt', hdf5.Float32Atom(), 
+	                aux_rt = h5file.create_earray("/", 'aux_rt', hdf5.Float32Atom(), 
 	                                             (nr_aux,0), title="Retrievals of auxilliary entries in state vector", expectedrows=nr_entries)
-	        vmr_ap = h5file.createEArray("/", 'vmr_ap', hdf5.Float32Atom(), 
+	        vmr_ap = h5file.create_earray("/", 'vmr_ap', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="Apriori VMR", expectedrows=nr_entries)
-	        vmr_ran = h5file.createEArray("/", 'cov_vmr_ran', hdf5.Float32Atom(), 
+	        vmr_ran = h5file.create_earray("/", 'cov_vmr_ran', hdf5.Float32Atom(), 
 	                                     (len_vmr,len_vmr,0), title="Total error random VMR", expectedrows=nr_entries)
-	        vmr_sys = h5file.createEArray("/", 'cov_vmr_sys', hdf5.Float32Atom(), 
+	        vmr_sys = h5file.create_earray("/", 'cov_vmr_sys', hdf5.Float32Atom(), 
 	                                     (len_vmr,len_vmr,0), title="Total error systematic VMR", expectedrows=nr_entries)
-	        pcol_rt = h5file.createEArray("/", 'pcol_rt', hdf5.Float32Atom(), 
+	        pcol_rt = h5file.create_earray("/", 'pcol_rt', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="Retrieved Partial Columns", expectedrows=nr_entries)
-	        pcol_ap = h5file.createEArray("/", 'pcol_ap', hdf5.Float32Atom(), 
+	        pcol_ap = h5file.create_earray("/", 'pcol_ap', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="Apriori Partial Columns", expectedrows=nr_entries)
-	        pcol_ran = h5file.createEArray("/", 'pcol_ran', hdf5.Float32Atom(), 
+	        pcol_ran = h5file.create_earray("/", 'pcol_ran', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="Total error random partial column", expectedrows=nr_entries)
-	        pcol_sys = h5file.createEArray("/", 'pcol_sys', hdf5.Float32Atom(), 
+	        pcol_sys = h5file.create_earray("/", 'pcol_sys', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="Total error systematic partial column", expectedrows=nr_entries)
-	        h2o_setup = h5file.createEArray("/", 'h2o_vmr_setup', hdf5.Float32Atom(), 
+	        h2o_setup = h5file.create_earray("/", 'h2o_vmr_setup', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="H2O VMR profile of setup", expectedrows=nr_entries)
 	        
-	        P = h5file.createEArray("/", 'P', hdf5.Float32Atom(), 
+	        P = h5file.create_earray("/", 'P', hdf5.Float32Atom(), 
 	                                (len_vmr,0), title="Pressure", expectedrows=nr_entries)
-	        T = h5file.createEArray("/", 'T', hdf5.Float32Atom(), 
+	        T = h5file.create_earray("/", 'T', hdf5.Float32Atom(), 
 	                                (len_vmr,0), title="Temperature", expectedrows=nr_entries)
-	        air_mass = h5file.createEArray("/", 'air_mass', hdf5.Float32Atom(), 
+	        air_mass = h5file.create_earray("/", 'air_mass', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="AIRMASS", expectedrows=nr_entries)
 	
 	    akt_entry = akt_entry + 1
@@ -355,13 +355,13 @@ def create_hdf5(**kwargs):
 	    nr_res = nr_res + 1
 	    if nr_res == 1:
 	        len_ak = avk.shape[0]
-	        AK = h5file.createEArray("/", 'avk', hdf5.Float32Atom(), 
+	        AK = h5file.create_earray("/", 'avk', hdf5.Float32Atom(), 
 	                                 (len_ak,len_ak,0), title="AVK (normalised)", 
 	                                 expectedrows=nr_entries)
-	        AKc = h5file.createEArray("/", 'avk_col', hdf5.Float32Atom(), 
+	        AKc = h5file.create_earray("/", 'avk_col', hdf5.Float32Atom(), 
 	                                 (len_ak,len_ak,0), title="AVK (column)", 
 	                                 expectedrows=nr_entries)
-	        AKv = h5file.createEArray("/", 'avk_vmr', hdf5.Float32Atom(), 
+	        AKv = h5file.create_earray("/", 'avk_vmr', hdf5.Float32Atom(), 
 	                                 (len_ak,len_ak,0), title="AVK (vmr)", 
 	                                 expectedrows=nr_entries)
 	    AK.append(np.reshape(avk,(len_ak,len_ak,1)))
@@ -378,32 +378,32 @@ def create_hdf5(**kwargs):
 	dofs = dofs[0:nr_res]
 
 	
-	h5file.createArray("/", 'directories', dir, "Directories")
-	h5file.createArray("/", 'spectra', spectra, "Filename of Spectrum")
-	h5file.createArray("/", 'mdate', np.array(mdate), "Measurement date and time")
-	h5file.createArray("/", 'sza', np.array(sza), "Solar zenith angle")
-	h5file.createArray("/", 'azimuth', np.array(azi), "Solar azimuth angle")
-	h5file.createArray("/", 'lat', np.array(lat), "Latitude")
-	h5file.createArray("/", 'lon', np.array(lon), "Longitude")
-	h5file.createArray("/", 'alt', np.array(alt), "Altitude of Instrument")
-	h5file.createArray("/", 'dur', np.array(dur), "Duration of measurement")
-	h5file.createArray("/", 'P_s', np.array(p_surface), "Surface Pressure")
-	h5file.createArray("/", 'T_s', np.array(t_surface), "Surface temperature")
-	h5file.createArray("/", 'H_s', np.array(h_surface), "Surface Humidity")
-	h5file.createArray("/", 'snr_clc', np.array(snr_clc), "Calculated SNR")
-	h5file.createArray("/", 'snr_the', np.array(snr_the), "Theoretically possible SNR")
-	h5file.createArray("/", 'chi_2_y', np.array(chi_2_y), "CHI_2_Y")
-	h5file.createArray("/", 'dofs', np.array(dofs), "DOFS (theo)")
-	h5file.createArray("/", 'iter', np.array(iter), "Iteration")
-	h5file.createArray("/", 'itmx', np.array(itmx), "Maximum nr of Iteration")
-	h5file.createArray("/", 'col_rt', col_rt, "Retrieved columns")
-	h5file.createArray("/", 'col_ap', col_ap, "A prior columns")
-	h5file.createArray("/", 'col_ran', col_ran, "Column error random")
-	h5file.createArray("/", 'col_sys', col_sys, "Column error systematic")
-	h5file.createArray("/", 'air_col', air_col, "Retrieved AIRMASS")
-	h5file.createArray("/", 'gasnames', gasnames, "Names of retrieved gases")
-	h5file.createArray("/", 'auxnames', auxnames, "Names of auxilliary state entries")
-	h5file.createArray("/", 'h2o_col_setup', col_h2o_ap, "Columns of H2O in setup")
+	h5file.create_array("/", 'directories', dir, "Directories")
+	h5file.create_array("/", 'spectra', spectra, "Filename of Spectrum")
+	h5file.create_array("/", 'mdate', np.array(mdate), "Measurement date and time")
+	h5file.create_array("/", 'sza', np.array(sza), "Solar zenith angle")
+	h5file.create_array("/", 'azimuth', np.array(azi), "Solar azimuth angle")
+	h5file.create_array("/", 'lat', np.array(lat), "Latitude")
+	h5file.create_array("/", 'lon', np.array(lon), "Longitude")
+	h5file.create_array("/", 'alt', np.array(alt), "Altitude of Instrument")
+	h5file.create_array("/", 'dur', np.array(dur), "Duration of measurement")
+	h5file.create_array("/", 'P_s', np.array(p_surface), "Surface Pressure")
+	h5file.create_array("/", 'T_s', np.array(t_surface), "Surface temperature")
+	h5file.create_array("/", 'H_s', np.array(h_surface), "Surface Humidity")
+	h5file.create_array("/", 'snr_clc', np.array(snr_clc), "Calculated SNR")
+	h5file.create_array("/", 'snr_the', np.array(snr_the), "Theoretically possible SNR")
+	h5file.create_array("/", 'chi_2_y', np.array(chi_2_y), "CHI_2_Y")
+	h5file.create_array("/", 'dofs', np.array(dofs), "DOFS (theo)")
+	h5file.create_array("/", 'iter', np.array(iter), "Iteration")
+	h5file.create_array("/", 'itmx', np.array(itmx), "Maximum nr of Iteration")
+	h5file.create_array("/", 'col_rt', col_rt, "Retrieved columns")
+	h5file.create_array("/", 'col_ap', col_ap, "A prior columns")
+	h5file.create_array("/", 'col_ran', col_ran, "Column error random")
+	h5file.create_array("/", 'col_sys', col_sys, "Column error systematic")
+	h5file.create_array("/", 'air_col', air_col, "Retrieved AIRMASS")
+	h5file.create_array("/", 'gasnames', gasnames, "Names of retrieved gases")
+	h5file.create_array("/", 'auxnames', auxnames, "Names of auxilliary state entries")
+	h5file.create_array("/", 'h2o_col_setup', col_h2o_ap, "Columns of H2O in setup")
 
 	h5file.close()
 
@@ -424,6 +424,7 @@ if __name__ == '__main__':
 
         import os,sys, getopt
         sys.path.append(os.path.dirname(sys.argv[0]))
+	print sys.argv[0]
         
 	print 'Arguments: --sbctl= : path to sb.ctl-file (mandatory), --dir= : directory containing results, --start_date=yyyymmdd, --end_date=yyyymmdd'
 
