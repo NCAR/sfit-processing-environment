@@ -1299,7 +1299,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         if S_ran.has_key('retrieval_parameters'):
           fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
         else:
-          fout.write('No additional parameters retrieved')  
+          fout.write('Interference error (retrieved params)         = none\n')  
         fout.write('Interference error (interfering spcs)         = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
         fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
         fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )

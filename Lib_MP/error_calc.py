@@ -7,7 +7,30 @@ from Layer1Mods import errAnalysis
 import sfitClasses as sc
 import os,shutil
 from multiprocessing import Pool
+from functools import partial
+import random, time
+import gc
 
+def calc_now(direc, sbctl,rootdir):
+    ctl = sc.CtlInputFile(direc+'/sfit4.ctl')
+    ctl.getInputs()
+    Sbctl = sc.CtlInputFile(sbctl)
+    Sbctl.getInputs()
+    try:    
+        errAnalysis(ctl,Sbctl,direc, False)
+        print 'errorcalculation in path: '+direc
+    except:
+        print 'failed in path: '+direc
+        pass
+
+    del ctl, Sbctl
+    gc.collect()
+    #        import ipdb
+    #        ipdb.set_trace()
+    # shutil.copy(direc+'/sfit4.ctl',rootdir)
+    # shutil.copy(direc+'/'+ctl.inputs['file.in.stalayers'][0],
+    #                 rootdir+'/'+'station.layers')
+        
 
 
 def error_calc(**kwargs):
@@ -39,31 +62,14 @@ def error_calc(**kwargs):
     for direc in dd:
         direcs.append(kwargs['dir']+'/'+direc)
 
-    direcs.sort()
     p = Pool(processes=15)
-    p.map(lambda x: calc_now(kwargs['sbctl'], x), direcs)
-    
-def calc_now(Sbctl, direc):
-    ctl = sc.CtlInputFile(direc+'/sfit4.ctl')
-    ctl.getInputs()
-    Sbctl = sc.CtlInputFile(kwargs['sbctl'])
-    Sbctl.getInputs()
-    try:    
-        errAnalysis(ctl,Sbctl,direc, False)
-        print 'errorcalculation in path: '+direc
-    except:
-        print 'failed in path: '+direc
-        pass
-    #        import ipdb
-    #        ipdb.set_trace()
-    shutil.copy(kwargs['dir']+'/'+direc+'/sfit4.ctl',kwargs['dir'])
-    shutil.copy(kwargs['dir']+'/'+direc+'/'+ctl.inputs['file.in.stalayers'][0],
-                    kwargs['dir']+'/'+'station.layers')
-        
+    sbctl= kwargs['sbctl']
+    p.map(partial(calc_now, sbctl=sbctl,rootdir=kwargs['dir']), direcs)
+
 if __name__ == '__main__':
     import os,sys, getopt
     sys.path.append(os.path.dirname(sys.argv[0]))
-
+    
     try:
         opts,arg = getopt.getopt(sys.argv[1:], [], ["dir=","sbctl=","start_date=","end_date="])
     except:

@@ -219,11 +219,12 @@ def create_hdf5(**kwargs):
 	        icol_rt = h5file.createEArray("/", 'icol_rt', hdf5.Float32Atom(), 
 	                                     (nr_gas-1,0), title="Retrieved total column of interfering gases", 
 	                                      expectedrows=nr_entries)
-	        aux_ap = h5file.createEArray("/", 'aux_ap', hdf5.Float32Atom(), 
-	                                     (nr_aux,0), title="Apriori of auxilliary entries in state vector", 
-	                                      expectedrows=nr_entries)
-	        aux_rt = h5file.createEArray("/", 'aux_rt', hdf5.Float32Atom(), 
-	                                     (nr_aux,0), title="Retrievals of auxilliary entries in state vector", expectedrows=nr_entries)
+                if nr_aux > 0:
+	                aux_ap = h5file.createEArray("/", 'aux_ap', hdf5.Float32Atom(), 
+	                                             (nr_aux,0), title="Apriori of auxilliary entries in state vector", 
+	                                             expectedrows=nr_entries)
+	                aux_rt = h5file.createEArray("/", 'aux_rt', hdf5.Float32Atom(), 
+	                                             (nr_aux,0), title="Retrievals of auxilliary entries in state vector", expectedrows=nr_entries)
 	        vmr_ap = h5file.createEArray("/", 'vmr_ap', hdf5.Float32Atom(), 
 	                                     (len_vmr,0), title="Apriori VMR", expectedrows=nr_entries)
 	        vmr_ran = h5file.createEArray("/", 'cov_vmr_ran', hdf5.Float32Atom(), 
@@ -330,8 +331,9 @@ def create_hdf5(**kwargs):
 	    ivmr_rt.append(np.reshape(i_rvmr, (len_vmr, nr_gas-1, 1)))
             ivmr_ap.append(np.reshape(i_avmr, (len_vmr, nr_gas-1, 1)))  
 	    icol_rt.append(np.reshape(i_col, (nr_gas-1, 1)))
-	    aux_ap.append(np.reshape(aux_apriori, (nr_aux, 1)))
-	    aux_rt.append(np.reshape(aux_retrieved, (nr_aux, 1)))
+            if nr_aux > 0:
+	            aux_ap.append(np.reshape(aux_apriori, (nr_aux, 1)))
+	            aux_rt.append(np.reshape(aux_retrieved, (nr_aux, 1)))
 	    if np.isfinite(srvmr).all() and np.isfinite(srpcol).all():
 	        vmr_ran.append(np.reshape(cov_srvmr,(len_vmr, len_vmr, 1)))
 	        vmr_sys.append(np.reshape(cov_ssvmr,(len_vmr, len_vmr, 1)))
