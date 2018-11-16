@@ -102,7 +102,7 @@ def main(args):
         loc            = 'POLARSTERN'
         instrument         = 'IUP004'
         if gasName.lower() == 'h2o':
-            source = 'sun'
+            source = 'Atmosphere'
             maxCHI2 = 50.0
             maxDOFS = 2.5
             maxVMR = 1.0e-2

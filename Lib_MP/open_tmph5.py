@@ -59,7 +59,7 @@ class load_tmph5:
         
     def return_value(self, value):
         if value not in self.vars.keys():
-            print 'value %s not defined in tmp.h5'%(value)
+            print ('value %s not defined in tmp.h5'%(value))
             return
 
         # values not in the scheme
@@ -90,7 +90,7 @@ class load_tmph5:
             str = 'valb = self.h5f.root.'+val+'[:,self.valid]'
         elif len(dims) == 3:
             str = 'valb = self.h5f.root.'+val+'[:,:,self.valid]'
-        print str
+        print (str)
         exec(str)
         return(valb)
             

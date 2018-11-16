@@ -97,8 +97,6 @@ class HDFinitData(object):
         #---------------------------------------------------
         self.datesJD2K                      = np.asarray(dataStrc['ds']['DATETIME'])
 
-        import ipdb
-        ipdb.set_trace()
         self.latitude                       = dataStrc['ds']['LATITUDE']
         self.longitude                      = dataStrc['ds']['LONGITUDE']                                
         self.instAltitudes                  = dataStrc['ds']['ALT_INSTRUMENT'] / 1000.0                          # Convert [m] -> [km]

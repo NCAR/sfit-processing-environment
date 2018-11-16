@@ -154,6 +154,8 @@ class sonde():
         elif x2.find('Paramaribo') != -1:
             tim = A[1]
             mdate = mdate + int(tim[0])/24.0
+        else:
+            mdate = mdate + float(A[1])/24.0
 
         ASTRING = []
         for a in range(nauxv-nauxc,nauxv):

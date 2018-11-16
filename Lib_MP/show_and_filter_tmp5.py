@@ -365,8 +365,8 @@ class show_tmph5:
                                 and np.min(self.res.avk_col[:,x]) >= minavkc
                                 and np.max(self.res.avk_col[:,x]) <= maxavkc
                                 and self.res.err_tot[x] <= errcol
-                                and self.res.col_co2[x] >= minco2
-                                and self.res.col_co2[x] <= maxco2
+#                                and self.res.col_co2[x] >= minco2
+#                                and self.res.col_co2[x] <= maxco2
                                 and self.res.sza[x] >= minsza
                                 and self.res.sza[x] <= maxsza, range(0,len(self.res.dnum)))
 
@@ -401,10 +401,10 @@ class show_tmph5:
         self.min_c2y.insert(0,np.min(self.res.c2y[self.valid_ind]))
         self.max_c2y.delete(0,END)
         self.max_c2y.insert(0,np.max(self.res.c2y[self.valid_ind]))
-        self.min_co2.delete(0,END)
-        self.min_co2.insert(0,np.min(self.res.col_co2[self.valid_ind]))
-        self.max_co2.delete(0,END)
-        self.max_co2.insert(0,np.max(self.res.col_co2[self.valid_ind]))
+#        self.min_co2.delete(0,END)
+#        self.min_co2.insert(0,np.min(self.res.col_co2[self.valid_ind]))
+#        self.max_co2.delete(0,END)
+#        self.max_co2.insert(0,np.max(self.res.col_co2[self.valid_ind]))
         self.min_vmr.delete(0,END)
         self.min_vmr.insert(0,np.min(self.res.vmr_rt[:,self.valid_ind]))
         self.max_vmr.delete(0,END)
