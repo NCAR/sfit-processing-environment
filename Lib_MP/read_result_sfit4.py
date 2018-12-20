@@ -592,13 +592,20 @@ class statevec:
         
         stvf.skipline()
         self.nr_layer = stvf.next(1).pop(0)
-        stvf.skip_reminder_of_line()
+        stvf.next(1).pop(0)
+        stvf.next(1).pop(0)
+        self.tretflag = stvf.next(1).pop(0)
+        stvf.next(1).pop(0)
+        stvf.next(1).pop(0)
         stvf.skipline()
         self.Z = stvf.next(self.nr_layer)
         stvf.skipline()
         self.P = stvf.next(self.nr_layer)
         stvf.skipline()
         self.T = stvf.next(self.nr_layer)
+        if self.tretflag == 'T':
+            stvf.skipline()
+            self.Tret = stvf.next(self.nr_layer)
         
         nr_gas = stvf.next(1).pop(0)
         self.ap_col = []

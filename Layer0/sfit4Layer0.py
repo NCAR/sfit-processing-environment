@@ -84,18 +84,32 @@ def usage(binDirVer):
         sys.exit()
 
 
-def main(argv):
+def sfit4Layer0(argv):
 
         #---------------
         # Import modules
         #---------------
         import sys
+        sys.path.append('/home/mathias/sfit-processing-environment/ModLib/')
         import os
         import getopt
         import sfitClasses as sc
         from Layer1Mods import errAnalysis
         from Tkinter import Tk
         from tkFileDialog import askopenfilename
+        #------------------------
+        # Define helper functions
+        #------------------------
+        def usage(binDirVer):
+                print 'sfit4Layer0.py -f <str> [-i <dir> [-b <dir/str> ] \n'
+                print '-i <dir>     Data directory. Optional: default is current working directory'
+                print '-f <str>     Run Flags: Necessary: h = hbin, p = pspec, s = sfit4, e = error analysis, c = clean'
+                print '-b <dir/str> Binary sfit directory. Optional: default is hard-coded in main(). Also accepts v1, v2, etc.'
+                for ver in binDirVer:
+                        print '             {}: {}'.format(ver,binDirVer[ver])        
+        
+                sys.exit()
+                
         #----------------
         # Initializations
         #----------------
@@ -126,7 +140,7 @@ def main(argv):
         # Retrieve command line arguments
         #--------------------------------
         try:
-                opts, args = getopt.getopt(sys.argv[1:], 'i:b:f:?')
+                opts, args = getopt.getopt(argv, 'i:b:f:?')
 
         except getopt.GetoptError as err:
                 print str(err)
@@ -253,4 +267,4 @@ if __name__ == "__main__":
         sys.path.append(os.path.dirname(sys.argv[0]))
         sys.path.append(os.path.dirname(os.path.normpath(os.path.dirname(sys.argv[0])))+'/ModLib')
         
-        main(sys.argv[1:])
+        sfit4Layer0(sys.argv[1:])
