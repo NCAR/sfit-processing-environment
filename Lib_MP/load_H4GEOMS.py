@@ -68,18 +68,22 @@ class load_H4:
 
     def get_columns(self,gas):
         self.h4
-        rt = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR').get()
+        try:
+            rt = self.h4.select(gas+'.COLUMN_EMISSION').get()
+            self.source = 'EMISSION'
+        except:
+            self.source = 'ABSORPTION.SOLAR'
         er=es=ap = []
         try:
-            rt = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR').get()
-            ap = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_APRIORI').get()
+            rt = self.h4.select(gas+'.COLUMN_%s'%self.source).get()
+            ap = self.h4.select(gas+'.COLUMN_%s_APRIORI'%self.source).get()
 
             if self.data_template == 'GEOMS-TE-FTIR-001':
-                er = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM').get()
-                es = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC').get()
+                er = self.h4.select(gas+'.COLUMN_%s_UNCERTAINTY.RANDOM'%self.source).get()
+                es = self.h4.select(gas+'.COLUMN_%s_UNCERTAINTY.SYSTEMATIC'%self.source).get()
             else:
-                er = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM.STANDARD').get()
-                es = self.h4.select(gas+'.COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC.STANDARD').get()
+                er = self.h4.select(gas+'.COLUMN_%s_UNCERTAINTY.RANDOM.STANDARD'%self.source).get()
+                es = self.h4.select(gas+'.COLUMN_%s_UNCERTAINTY.SYSTEMATIC.STANDARD'%self.source).get()
         except:
             pass
         return(rt,ap,er,es)
