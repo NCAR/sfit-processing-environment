@@ -34,8 +34,8 @@ import hdfInitData
 
 class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
-   def __init__(self,gasNameStr,outputDir,processingSfitVer,location,source,attr_file,granu,mtype,dType):
-      super(HDFsave, self).__init__(gasNameStr)
+   def __init__(self,gasNameStr,outputDir,processingSfitVer,location,instrument,attr_file,granu,mtype,source,dType):
+      super(HDFsave, self).__init__(gasNameStr,type=source)
       self.dType               = dType
       if   dType.lower() == 'float32': self.dTypeStr = 'REAL'
       elif dType.lower() == 'float64': self.dTypeStr = 'DOUBLE'       
@@ -49,7 +49,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.mxSclFct2Name       = 'ppmv2'
       self.mxSclFct2Val        = 1E-12
       self.attribute_file      = attr_file
-      self.locID               = source
+      self.locID               = instrument
       self.granularity         = granu
       self.mtype               = mtype
       
@@ -130,8 +130,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
                                            self.gasName+'.'+self.getColumnAbsorptionSolarAvkName()+';'+\
                                            self.gasName+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName()+';'+\
                                            self.gasName+'.'+self.getColumnAbsorptionSolarUncertaintySystematicName()+';'+\
-                                           self.getAngleSolarZenithAstronomicalName()+';'+self.getAngleSolarAzimuthName()+';'+\
-                                           self.getH2oMixingRatioAbsorptionSolarName()+';'+self.getH2oColumnAbsorptionSolarName(),
+                                           self.getAngleSolarZenithAstronomicalName()+';'+self.getAngleSolarAzimuthName()
+
+      if self.gasName.upper() != 'H2O':
+         dataStr['DATA_VARIABLES'] = dataStr['DATA_VARIABLES'] +';'+\
+                                     self.getH2oMixingRatioAbsorptionSolarName()+';'+self.getH2oColumnAbsorptionSolarName()
 
       
 
@@ -551,11 +554,16 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = 'molec cm-2'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.66054E-20;mol m-2'
-      dataStr['VAR_VALID_MIN']        = -1.0E17
-      dataStr['VAR_VALID_MAX']        = 1.0E20
-      dataStr['VAR_FILL_VALUE']       = self.getFillValue()*dataStr['VAR_VALID_MAX']
-      dataStr['VALID_RANGE']          = (-1.0E17,1.0E20)
+      if self.gasName.upper() == 'H2O':
+         dataStr['VAR_VALID_MIN']        = -1.0E17
+         dataStr['VAR_VALID_MAX']        = 1.0E25
+         dataStr['VALID_RANGE']          = (-1.0E17,1.0E25)
+      else:
+         dataStr['VAR_VALID_MIN']        = -1.0E17
+         dataStr['VAR_VALID_MAX']        = 1.0E20
+         dataStr['VALID_RANGE']          = (-1.0E17,1.0E20)
       dataStr['units']                = 'molec cm-2'
+      dataStr['VAR_FILL_VALUE']       = self.getFillValue()*dataStr['VAR_VALID_MAX']
       dataStr['_FillValue']           = self.getFillValue()*dataStr['VAR_VALID_MAX']
       
       return dataStr

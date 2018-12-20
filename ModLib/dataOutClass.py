@@ -1508,7 +1508,10 @@ class ReadOutputData(_DateRange):
                 #---------------------------------------------------------
                 for line in errSumLines[3:]:
                     header = line.strip().split('=')[0].strip()
-                    val    = float(line.strip().split('=')[1].split()[0])
+                    tmpval = line.strip().split('=')[1].split()[0]
+                    if tmpval == 'none':
+                        tmpval = 0
+                    val    = float(tmpval)
                     self.error.setdefault(header,[]).append( val )
 
                 #-------------------------------
@@ -2062,6 +2065,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         #---------------
         # ReadOutputData
         #---------------
+
         ReadOutputData.__init__(self,dataDir,primGas,ctlF,iyear,imnth,iday,fyear,fmnth,fday,incr)    
 
         #------------

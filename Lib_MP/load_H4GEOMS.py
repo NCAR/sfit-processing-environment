@@ -190,7 +190,7 @@ class load_hdf:
 
         self.h4 = []
         for hf in hdffiles:
-            print hf
+            print (hf)
             self.h4.append(load_H4(direc+'/'+hf))
             
 
@@ -366,7 +366,7 @@ class load_hdf:
             mdnum = event.mouseevent.xdata
             ind = np.argmin(np.abs(dnum-mdnum))
             pt = False
-            print mdnum, dnum[ind]
+            print (mdnum, dnum[ind])
             dnum = dnum[ind]
 
             for hf in src_hdf:
@@ -401,7 +401,7 @@ class load_hdf:
             rt2,ap,er,es = hf.get_columns('H2O')
  #           ax2.plot(dd, rt2,'go',)
             rt,ap,er,es = hf.get_columns(gas)
-            print dates.num2date(dd[0])
+            print (dates.num2date(dd[0]))
             ax.plot(dd, rt,'bx',picker=5)
             dd_min = np.min(np.hstack((dd_min, dd)))
             dd_max = np.max(np.hstack((dd_max, dd)))
@@ -487,7 +487,7 @@ class load_hdf:
         dd_min = 9e99
         dd_max = 0
         for hf in self.h4:
-            print hf
+            print (hf)
             rt,ap,z = hf.get_profile(gas)
             dd = dates.date2num(hf.dates)
             dd_min = np.min(np.hstack((dd_min, dd)))
@@ -621,7 +621,7 @@ class load_hdf:
         self.f2.show()
         self.f3.show()
 
-        print figroot
+        print (figroot)
         if len(figroot) > 0:
             self.f1.savefig('%s_f1.pdf'%figroot)
             self.f2.savefig('%s_f2.pdf'%figroot)
@@ -631,7 +631,7 @@ if __name__ == '__main__':
 #    load_H4GEOMS(sys.argv[1])
     import sys, os
     if len(sys.argv) < 4:
-        print 'call as python <...>/sfit-processing-environment/Lib_MP/load_H4GEOMS.py hdf_dir location gas [figroot]' 
+        print ('call as python <...>/sfit-processing-environment/Lib_MP/load_H4GEOMS.py hdf_dir location gas [figroot]' )
         exit()
 
 
@@ -644,5 +644,5 @@ if __name__ == '__main__':
     else:
         h4.plot_results(sys.argv[3])
     h4.save_all_columns(sys.argv[3],file='columns_%s_%s.dat'%(sys.argv[2],sys.argv[3]))
-    print 'Hit any key in this window to terminate program'
+    print ('Hit any key in this window to terminate program')
     raw_input()

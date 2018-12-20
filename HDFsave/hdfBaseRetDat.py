@@ -32,7 +32,12 @@ import hdfCrtFile
 class HDFbaseRetDat(object):
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self,gasNameStr):
+    def __init__(self,gasNameStr, type='Sun'):
+        if type.lower() == 'atmosphere':
+            self.type='Emission'
+        else:
+            self.type='Absorption'
+            
         self.gasName                      = gasNameStr
         self.gasNameUpper                 = gasNameStr.upper()
         self.mxSclFctName                 = 'ppmv'               # default Max Scale Factor Name 
@@ -105,54 +110,85 @@ class HDFbaseRetDat(object):
         return 'TEMPERATURE_INDEPENDENT'
 
     def getMixingRatioAbsorptionSolarName(self):
+        if self.type=='Emission':
+            return 'MIXING.RATIO.VOLUME_EMISSION'
         return 'MIXING.RATIO.VOLUME_ABSORPTION.SOLAR'
 
     def getMixingRatioAbsorptionSolarAprioriName(self):
+        if self.type=='Emission':
+            return 'MIXING.RATIO.VOLUME_EMISSION_APRIORI'
         return 'MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI'
 
     def getMixingRatioAbsorptionSolarAvkName(self):
+        if self.type=='Emission':
+            return 'MIXING.RATIO.VOLUME_EMISSION_AVK'
         return 'MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_AVK'
 
     def getIntegrationTimeName(self):
         return 'INTEGRATION.TIME'
 
     def getMixingRatioAbsorptionSolarUncertaintyRandomName(self):
+        if self.type=='Emission':
+            return 'MIXING.RATIO.VOLUME_EMISSION_UNCERTAINTY.RANDOM.COVARIANCE'         
         return 'MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM.COVARIANCE'
 
     def getMixingRatioAbsorptionSolarUncertaintySystematicName(self):
+        if self.type=='Emission':
+            return 'MIXING.RATIO.VOLUME_EMISSION_UNCERTAINTY.SYSTEMATIC.COVARIANCE'
         return 'MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC.COVARIANCE'
-
     def getColumnPartialAbsorptionSolarName(self):
+        if self.type=='Emission':
+            return 'COLUMN.PARTIAL_EMISSION'
         return 'COLUMN.PARTIAL_ABSORPTION.SOLAR'
 
     def getColumnPartialAbsorptionSolarAprioriName(self):
+        if self.type=='Emission':
+            return 'COLUMN.PARTIAL_EMISSION_APRIORI'
         return 'COLUMN.PARTIAL_ABSORPTION.SOLAR_APRIORI'
 
     def getColumnAbsorptionSolarName(self):
+        if self.type=='Emission':
+            return 'COLUMN_EMISSION'
         return 'COLUMN_ABSORPTION.SOLAR'
 
     def getColumnAbsorptionSolarAprioriName(self):
+        if self.type=='Emission':
+            return 'COLUMN_EMISSION_APRIORI'
         return 'COLUMN_ABSORPTION.SOLAR_APRIORI'
 
     def getColumnAbsorptionSolarAvkName(self):
+        if self.type=='Emission':
+            return 'COLUMN_EMISSION_AVK'
         return 'COLUMN_ABSORPTION.SOLAR_AVK'
 
     def getColumnAbsorptionSolarUncertaintyRandomName(self):
+        if self.type=='Emission':
+            return 'COLUMN_EMISSION_UNCERTAINTY.RANDOM.STANDARD'
         return 'COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM.STANDARD'
 
     def getColumnAbsorptionSolarUncertaintySystematicName(self):
+        if self.type=='Emission':
+            return 'COLUMN_EMISSION_UNCERTAINTY.SYSTEMATIC.STANDARD'
         return 'COLUMN_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC.STANDARD'
 
     def getAngleSolarZenithAstronomicalName(self):
+        if self.type=='Emission':
+            return 'ANGLE.EMISSION_ZENITH.ASTRONOMICAL'
         return 'ANGLE.SOLAR_ZENITH.ASTRONOMICAL'
 
     def getAngleSolarAzimuthName(self):
+        if self.type=='Emission':
+            return 'ANGLE.EMISSION_AZIMUTH'
         return 'ANGLE.SOLAR_AZIMUTH'
 
     def getH2oMixingRatioAbsorptionSolarName(self):
+        if self.type=='Emission':
+            return 'H2O.MIXING.RATIO.VOLUME_EMISSION'
         return 'H2O.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR'
 
     def getH2oColumnAbsorptionSolarName(self):
+        if self.type=='Emission':
+            return 'H2O.COLUMN_EMISSION'
         return 'H2O.COLUMN_ABSORPTION.SOLAR'
 
     @abc.abstractmethod
@@ -496,23 +532,25 @@ class HDFbaseRetDat(object):
         # Create solar azimuth angle dataset (variable)
         #-----------------------------------------------------------------------------
         hdfFile.createDataSet(self.getAngleSolarAzimuthName(),np.size(self.angleSolAz),self.angleSolAz, \
-                                self.saaAttrbs(np.size(self.angleSolAz)))
+                              self.saaAttrbs(np.size(self.angleSolAz)))
 
-        #-----------------------------------------------------------------------------
-        # Create interfering H2O from solar absorption profile dataset (variable)
-        #-----------------------------------------------------------------------------
-        hdfFile.createDataSet(self.getH2oMixingRatioAbsorptionSolarName(), \
-                                (self.h2oMxRatAbsSolar.shape[0],self.h2oMxRatAbsSolar.shape[1]), self.h2oMxRatAbsSolar, \
-                                self.H2OrprfAttrbs(self.h2oMxRatAbsSolar.shape[1],self.h2oMxRatAbsSolar.shape[0], \
-                                                   float(self.h2oMxRatAbsSolar.min()), \
+        if self.gasName.upper() != 'H2O':
+
+            #-----------------------------------------------------------------------------
+            # Create interfering H2O from solar absorption profile dataset (variable)
+            #-----------------------------------------------------------------------------
+            hdfFile.createDataSet(self.getH2oMixingRatioAbsorptionSolarName(), \
+                                  (self.h2oMxRatAbsSolar.shape[0],self.h2oMxRatAbsSolar.shape[1]), self.h2oMxRatAbsSolar, \
+                                  self.H2OrprfAttrbs(self.h2oMxRatAbsSolar.shape[1],self.h2oMxRatAbsSolar.shape[0], \
+                                                     float(self.h2oMxRatAbsSolar.min()), \
                                                    float(self.h2oMxRatAbsSolar.max())))
 
-        #-----------------------------------------------------------------------------
-        # Create total column of interfering H2O solar absorption dataset (variable)
-        #-----------------------------------------------------------------------------
-        hdfFile.createDataSet(self.getH2oColumnAbsorptionSolarName(),np.size(self.h2oColAbsSol), self.h2oColAbsSol, \
-                                self.H2OtcAttrbs(np.size(self.h2oColAbsSol)))
-        
+            #-----------------------------------------------------------------------------
+            # Create total column of interfering H2O solar absorption dataset (variable)
+            #-----------------------------------------------------------------------------
+            hdfFile.createDataSet(self.getH2oColumnAbsorptionSolarName(),np.size(self.h2oColAbsSol), self.h2oColAbsSol, \
+                                  self.H2OtcAttrbs(np.size(self.h2oColAbsSol)))
+            
         #---------------
         # Close HDF file
         #---------------

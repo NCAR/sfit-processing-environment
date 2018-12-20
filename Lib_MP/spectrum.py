@@ -47,6 +47,9 @@ class spectrum:
             
                 spdf.nextline()
 
+            else:
+                spdf.nextline()
+
             self.comment.append(spdf.get_line())
             
             tmp = spdf.next(4)
@@ -56,7 +59,7 @@ class spectrum:
             self.nu_stop.append(tmp[1])
             self.nu_res.append(tmp[2])
             self.nr_nu.append(tmp[3])
-            
+            print tmp
             nu = []
             spectrum = []
             for n in range(0,self.nr_nu[-1]):
@@ -102,7 +105,7 @@ class spectrum:
             tmp = '%.2f %.2f %.2f %.2f %.2f' % (self.sza[nr], self.earth_rad[nr], self.latitude[nr], self.longitude[nr], self.snr[nr])
             fid.write(tmp+'\n')
         
-            fid.write(dt.num2date(self.meas_date[nr]).strftime('%Y %d %d %H %M %S')+'\n')
+            fid.write(dt.num2date(self.meas_date[nr]).strftime('%Y %m %d %H %M %S')+'\n')
             fid.write(self.comment[nr]+'\n')
 
             res = np.abs(self.nu[nr][0] - self.nu[nr][-1])/(self.nu[nr].size-1)

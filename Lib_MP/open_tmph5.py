@@ -16,7 +16,9 @@ class load_tmph5:
                      'col_ap':'col_ap',    
                      'c2y':'chi_2_y',
                      'vmr_rt': 'vmr_rt',
+                     'ivmr_rt': 'ivmr_rt',
                      'vmr_ap': 'vmr_ap',
+                     'ivmr_ap': 'ivmr_ap',
                      'err_ran':'col_ran',   
                      'err_sys':'col_sys',   
                      'err_tot':'',
@@ -39,7 +41,8 @@ class load_tmph5:
                      'aux_rt': 'aux_rt',
                      'iter':'iter',
                      'itmx':'itmx',
-                     'avk_col':'avk_col'}
+                     'avk_col':'avk_col',
+                     'gasnames':'gasnames'}
 
         self.h5f = h5.File(filename)
         self.dnum = self.h5f.root.mdate[:]
@@ -56,7 +59,7 @@ class load_tmph5:
         
     def return_value(self, value):
         if value not in self.vars.keys():
-            print 'value %s not defined in tmp.h5'%(value)
+            print ('value %s not defined in tmp.h5'%(value))
             return
 
         # values not in the scheme
@@ -65,6 +68,8 @@ class load_tmph5:
                                 self.h5f.root.cov_vmr_sys[:,:,self.valid])))
 
         igasnames =self.h5f.root.gasnames[:]
+        if value == 'gasnames':
+            return(igasnames[1:])
         
         if value == 'col_co2':
             return(self.h5f.root.icol_rt[igasnames.index('CO2')-1,self.valid])
@@ -85,7 +90,7 @@ class load_tmph5:
             str = 'valb = self.h5f.root.'+val+'[:,self.valid]'
         elif len(dims) == 3:
             str = 'valb = self.h5f.root.'+val+'[:,:,self.valid]'
-        print str
+        print (str)
         exec(str)
         return(valb)
             

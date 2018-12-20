@@ -1,9 +1,11 @@
-import sfit4_ctl
+import sys
+sys.path.append('/home/mathias/sfit-processing-environment/Lib_MP/')
+from sfit4_setup import sfit4_ctl
 from datetime import datetime as dt
 
 class spectrum():
     def __init__(self,ctl_file='sfit4.ctl'):
-        self.ctl = sfit4_ctl.sfit4_ctl()
+        self.ctl = sfit4_ctl()
         self.ctl.read_ctl_file(ctl_file)
         
         
@@ -27,7 +29,7 @@ class spectrum():
         
         self.nu_start = float(self.ctl.get_value('band.1.nu_start'))
         max_opd = 0
-        for nr in range(1,9):
+        for nr in range(1,2):
             v = self.ctl.get_value('band.%d.nu_stop'%nr)
             opd = self.ctl.get_value('band.%d.max_opd'%nr)
             if v == -1:

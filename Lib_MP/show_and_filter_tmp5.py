@@ -1,7 +1,6 @@
 import sys
 sys.path.append('/data/sfit-processing-environment/Lib_MP/')
 import read_result_sfit4 as sfit4
-from sfit4_ctl import *
 from Tkinter import *
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
@@ -404,8 +403,6 @@ class show_tmph5:
         self.max_c2y.insert(0,np.max(self.res.c2y[self.valid_ind]))
 #        self.min_co2.delete(0,END)
 #        self.min_co2.insert(0,np.min(self.res.col_co2[self.valid_ind]))
-        self.max_co2.delete(0,END)
-        self.max_co2.insert(0,np.max(self.res.col_co2[self.valid_ind]))
         self.min_vmr.delete(0,END)
         self.min_vmr.insert(0,np.min(self.res.vmr_rt[:,self.valid_ind]))
         self.max_vmr.delete(0,END)
