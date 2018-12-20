@@ -221,7 +221,7 @@ def main(args):
     if gasName.lower() == 'hcl':
         gasName        = 'HCl'
         tcFlag         = False
-        minDOFs        = 0.8
+        minDOFs        = 0.7
         dofFlag        = True
         maxCHI2        = 5.0
         maxVMR         = 6e-9
