@@ -292,7 +292,12 @@ def main(argv):
             strformat = ''.join(strformat).lstrip().rstrip() + '\n'            
             
             fopen.write(strformat.format(*outstrHdr))
-            
+
+        #-----------------------------------------    
+        # Find FLT ID to change Name (iom, Dec 4 2018)
+        #-----------------------------------------
+        indFlt = [i for i, s in enumerate(outstrHdr) if s == 'Flt'][0]
+
         #-----------------------------------------    
         # Search each day directory for data files 
         #-----------------------------------------
@@ -381,7 +386,22 @@ def main(argv):
                     outstr[0] = os.path.split(outstr[0])[1]
                     strformat = ['{0:<15}'] + [' {'+str(i)+':<12}' for i in range(1,len(outstr))]
                     strformat = ''.join(strformat).lstrip().rstrip() + '\n'
-                                
+
+                    #--------------------------------------
+                    # Do not include spectra different than S* (iom, Dec 4 2018)
+                    #--------------------------------------
+                    if outstr[0][0].upper() != 'S':
+                        continue
+
+                    #--------------------------------------
+                    # Replace X for FLT ID in spectrum name
+                    #--------------------------------------
+                    fltid = outstr[0][1]
+                    outstr[indFlt] = fltid.upper()
+
+                    #--------------------------------------
+                    # print in file
+                    #--------------------------------------                                
                     fopen.write(strformat.format(*outstr))
                                     
                     #fopen.write( stdoutParam )

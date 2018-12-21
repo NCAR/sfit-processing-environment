@@ -70,6 +70,7 @@ import glob
 from pyhdf.SD import SD, SDC
 from pyhdf.SD import *
 import coda
+from cycler import cycler
 
 import h5py
 
@@ -1338,10 +1339,6 @@ class PlotHDF(ReadHDFData):
             except Exception as errmsg:
                 print '\nError: ', errmsg
 
-        #print prfMean
-        #print prfMean_rnd
-        #exit()
-
         
         #----------------------------------------------------------------------------------------------------------------------------------------------------------------
         #                                                           PLOTS
@@ -1407,8 +1404,11 @@ class PlotHDF(ReadHDFData):
                 
                 scalarMap.set_array(sza)
 
-                ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in sza] )
-                ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in sza] )
+                #ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in sza] )
+                #ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in sza] )
+
+                ax1.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in sza] ) )
+                ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in sza] ) )
                 
                 for i in range(len(sza)):
                     ax1.plot(rPrf[i,:],alt,linewidth=0.75)
@@ -1449,8 +1449,11 @@ class PlotHDF(ReadHDFData):
                 
                 scalarMap.set_array(month)
 
-                ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in month] )
-                ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in month] )
+                #ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in month] )
+                #ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in month] )
+
+                ax1.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in month] ) )
+                ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in month] ) )
                 
                 for i in range(len(month)):
                     ax1.plot(rPrf[i,:],alt,linewidth=0.75)
@@ -1525,7 +1528,7 @@ class PlotHDF(ReadHDFData):
             fig,(ax1,ax2)  = plt.subplots(1,2, sharey=True)
            
             ax1.plot(prfMean,alt,color='k',label=self.PrimaryGas.upper()+' Retrieved Monthly Mean')
-            ax1.errorbar(prfMean,alt,fmt=None,xerr=prfMean_rnd,ecolor='r',label='Total Random Error')
+            ax1.errorbar(prfMean,alt,xerr=prfMean_rnd,ecolor='r',label='Total Random Error')
             ax1.fill_betweenx(alt,prfMean-rand_std,prfMean+rand_std,alpha=0.5,color='0.75')  
             ax1.set_title('Random Error')
                 
@@ -1534,7 +1537,7 @@ class PlotHDF(ReadHDFData):
             ax1.grid(True,which='both')                
             
             ax2.plot(prfMean,alt,color='k',label=self.PrimaryGas.upper()+' Retrieved Monthly Mean')
-            ax2.errorbar(prfMean,alt,fmt=None,xerr=prfMean_sys,ecolor='r',label='Total Systematic Error')
+            ax2.errorbar(prfMean,alt,xerr=prfMean_sys,ecolor='r',label='Total Systematic Error')
             ax2.fill_betweenx(alt,prfMean-sys_std,prfMean+sys_std,alpha=0.5,color='0.75')      
             ax2.set_title('Systematic Error')
 
@@ -1631,7 +1634,11 @@ class PlotHDF(ReadHDFData):
             cNorm     = colors.Normalize(vmin=np.min(alt), vmax=np.max(alt))
             scalarMap = mplcm.ScalarMappable(norm=cNorm,cmap=clmap)
             scalarMap.set_array(alt)
-            ax.set_color_cycle([scalarMap.to_rgba(x) for x in alt])
+
+            #ax.set_color_cycle([scalarMap.to_rgba(x) for x in alt])
+            ax.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in alt] ) )
+
+
             
             for i in range(len(alt)):
                 ax.plot(avkVMRAv[i,:],alt)

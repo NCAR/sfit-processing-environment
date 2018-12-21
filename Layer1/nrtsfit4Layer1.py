@@ -12,7 +12,7 @@
 #Notes:
 #        Make Sure the following steps are followed prior to run:
 #        1) ckopus has been performed 
-#        2) Edit Inputs in mvSpectspecDBInputFile_TABra.py
+#        2) Edit Inputs in mvSpectra.py
 #        3) Edit e.g., specDBInputFile_MLO.dat
 #        4) Edit station_house_reader.py
 #        5) Edit appndSpecDBInputFile
@@ -123,25 +123,25 @@ def main(argv):
     print '*************Begin Pre Processing*****************'
     print '*************************************************'     
     
-    #----------------
-    # Starting mvSpectra.py: IMPORTANT --> Modify Inputs in mvSpectra.py
-    #----------------
-    print '\nStarting mvSpectra.py: copying files from ya/id/'+loc+' to /data1/'+loc
-    try: 
-        os.system('mvSpectra.py')
-    except OSError as errmsg:
-        print errmsg
-        sys.exit()
+    # #----------------
+    # # Starting mvSpectra.py: IMPORTANT --> Modify Inputs in mvSpectra.py
+    # #----------------
+    # print '\nStarting mvSpectra.py: copying files from ya/id/'+loc+' to /data1/'+loc
+    # try: 
+    #     os.system('mvSpectra.py')
+    # except OSError as errmsg:
+    #     print errmsg
+    #     sys.exit()
 
-    #----------------
-    # Starting delSpcdel.py: Nothing to Do
-    #----------------
-    print '\nStarting delSpcdel.py: deleting Files if found in deleted folder'
-    try:
-        os.system('delSpcdel.py -y'+str(year)+ ' -s'+loc)
-    except OSError as errmsg:
-        print errmsg
-        sys.exit()
+    # #----------------
+    # # Starting delSpcdel.py: Nothing to Do
+    # #----------------
+    # print '\nStarting delSpcdel.py: deleting Files if found in deleted folder'
+    # try:
+    #     os.system('delSpcdel.py -y'+str(year)+ ' -s'+loc)
+    # except OSError as errmsg:
+    #     print errmsg
+    #     sys.exit()
 
     #----------------
     # Starting mkSpecDB.py: IMPORTANT --> Since spDB is removed Modify specDBInputFile every year Only
@@ -162,18 +162,19 @@ def main(argv):
     #----------------
     # Starting station_house_reader.py: IMPORTANT --> Since HouseData is removed Modify inputs in station_house_reader every year Only
     #----------------
-    House     = '/data/Campaign/'+loc.upper()+'/House_Log_Files/'+loc.upper()+'_HouseData_'+str(year)+'.dat'
+    if loc.lower() != 'fl0':
+        House     = '/data/Campaign/'+loc.upper()+'/House_Log_Files/'+loc.upper()+'_HouseData_'+str(year)+'.dat'
 
-    if ckFile(House):
-        print 'Deleting: '+ House
-        os.remove(House)
+        if ckFile(House):
+            print 'Deleting: '+ House
+            os.remove(House)
 
-    print '\nStarting station_house_reader.py: read House Data'
-    try:
-        os.system('station_house_reader.py')
-    except OSError as errmsg:
-        print errmsg
-        sys.exit()
+        print '\nStarting station_house_reader.py: read House Data'
+        try:
+            os.system('station_house_reader.py')
+        except OSError as errmsg:
+            print errmsg
+            sys.exit()
 
     #----------------
     # Starting read_FL0_EOL_data.py
@@ -183,7 +184,7 @@ def main(argv):
         os.system('read_FL0_EOL_data.py')
 
     #----------------
-    # Starting mkSpecDB.py: IMPORTANT --> Since HRDB is removed Modify appndSpecDBInputFile every year Only
+    # Starting mkSpecDB.py: IMPORTANT --> Si nce HRDB is removed Modify appndSpecDBInputFile every year Only
     #----------------
     HRspDB   = '/data/Campaign/'+loc.upper()+'/Spectral_DB/HRspDB_'+loc.lower()+'_'+str(year)+'.dat'
     
@@ -201,7 +202,7 @@ def main(argv):
     #----------------
     # Starting read_FL0_EOL_data.py
     #----------------
-    if loc.lower() == 'fl0':
+    if (loc.lower() == 'fl0') & (int(year) < 2018):
         print '\nStarting mkCoadSpecDB.py: Coadd Spectral Database Fil'
         os.system('mkCoadSpecDB.py -i CoadSpecDBInputFile.py')
 

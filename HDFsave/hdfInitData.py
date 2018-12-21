@@ -125,7 +125,7 @@ class HDFinitData(object):
         self.h2oColAbsSol                   = np.asarray(dataStrc['ds']['H2O_TC']) 
 
         #----------------------------------------------
-        # Convert South Solar Azimuth to North Solar Azimuth (reuqested by Bavo)
+        # Convert South Solar Azimuth to North Solar Azimuth (requested by Bavo)
         #----------------------------------------------
         for i, az in enumerate(self.angleSolAz):
             if az >= 180.0:

@@ -3741,11 +3741,11 @@ class PlotData(ReadOutputData):
         else:      
 
             diffDates    = abs((dt.date(dates[0].year, dates[0].month, dates[0].day) - dt.date(dates[-1].year, dates[-1].month, dates[-1].day)).days)
-        
+
             if diffDates == 0:
                 majorLc       = HourLocator()
                 majorFmt      = DateFormatter('%H')
-                minorLc       = AutoMinorLocator()
+                #minorLc       = AutoMinorLocator()
                 xlabel        = 'Hour'
 
             elif (diffDates > 0) and (diffDates <= 4):
@@ -3796,7 +3796,7 @@ class PlotData(ReadOutputData):
         else:
             ax1.xaxis.set_major_locator(majorLc)
             ax1.xaxis.set_major_formatter(majorFmt)
-            ax1.xaxis.set_minor_locator(minorLc)
+            #ax1.xaxis.set_minor_locator(minorLc)
         
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
         else:           plt.show(block=False)    
@@ -3824,7 +3824,7 @@ class PlotData(ReadOutputData):
         else:
             ax1.xaxis.set_major_locator(majorLc)
             ax1.xaxis.set_major_formatter(majorFmt)
-            ax1.xaxis.set_minor_locator(minorLc)
+            #ax1.xaxis.set_minor_locator(minorLc)
         
         fig1.subplots_adjust(right=0.82)
         cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
@@ -3858,7 +3858,7 @@ class PlotData(ReadOutputData):
         else:
             ax1.xaxis.set_major_locator(majorLc)
             ax1.xaxis.set_major_formatter(majorFmt)
-            ax1.xaxis.set_minor_locator(minorLc)
+            #ax1.xaxis.set_minor_locator(minorLc)
             #fig1.autofmt_xdate()
         
         fig1.subplots_adjust(right=0.82)
@@ -3892,7 +3892,7 @@ class PlotData(ReadOutputData):
         else:
             ax1.xaxis.set_major_locator(majorLc)
             ax1.xaxis.set_major_formatter(majorFmt)
-            ax1.xaxis.set_minor_locator(minorLc)
+            #ax1.xaxis.set_minor_locator(minorLc)
         
         fig1.subplots_adjust(right=0.82)
         cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
@@ -3925,7 +3925,7 @@ class PlotData(ReadOutputData):
         else:
             ax1.xaxis.set_major_locator(majorLc)
             ax1.xaxis.set_major_formatter(majorFmt)
-            ax1.xaxis.set_minor_locator(minorLc)
+            #ax1.xaxis.set_minor_locator(minorLc)
         
         fig1.subplots_adjust(right=0.82)
         cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
@@ -3971,7 +3971,7 @@ class PlotData(ReadOutputData):
             else:
                 ax1.xaxis.set_major_locator(majorLc)
                 ax1.xaxis.set_major_formatter(majorFmt)
-                ax1.xaxis.set_minor_locator(minorLc)
+                #ax1.xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)       
@@ -4083,7 +4083,7 @@ class PlotData(ReadOutputData):
                 else:
                     ax1.xaxis.set_major_locator(majorLc)
                     ax1.xaxis.set_major_formatter(majorFmt)
-                    ax1.xaxis.set_minor_locator(minorLc)
+                    #ax1.xaxis.set_minor_locator(minorLc)
                 
                 if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
                 else:           plt.show(block=False)            
@@ -4112,7 +4112,7 @@ class PlotData(ReadOutputData):
 			else:
 				ax1.xaxis.set_major_locator(majorLc)
 				ax1.xaxis.set_major_formatter(majorFmt)
-				ax1.xaxis.set_minor_locator(minorLc)
+				#ax1.xaxis.set_minor_locator(minorLc)
 
 		
 			if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
@@ -4140,7 +4140,7 @@ class PlotData(ReadOutputData):
             else:
                 ax1.xaxis.set_major_locator(majorLc)
                 ax1.xaxis.set_major_formatter(majorFmt)
-                ax1.xaxis.set_minor_locator(minorLc)
+                #ax1.xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)        
@@ -4165,7 +4165,7 @@ class PlotData(ReadOutputData):
             else:
                 ax1.xaxis.set_major_locator(majorLc)
                 ax1.xaxis.set_major_formatter(majorFmt)
-                ax1.xaxis.set_minor_locator(minorLc)
+                #ax1.xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)              
@@ -4191,7 +4191,7 @@ class PlotData(ReadOutputData):
             else:
                 ax1.xaxis.set_major_locator(majorLc)
                 ax1.xaxis.set_major_formatter(majorFmt)
-                ax1.xaxis.set_minor_locator(minorLc)
+                #ax1.xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)     
@@ -4215,7 +4215,7 @@ class PlotData(ReadOutputData):
             else:
                 ax1.xaxis.set_major_locator(majorLc)
                 ax1.xaxis.set_major_formatter(majorFmt)
-                ax1.xaxis.set_minor_locator(minorLc)
+                #ax1.xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False) 
@@ -4262,7 +4262,7 @@ class PlotData(ReadOutputData):
             else:
                 ax[pp].xaxis.set_major_locator(majorLc)
                 ax[pp].xaxis.set_major_formatter(majorFmt)
-                ax[pp].xaxis.set_minor_locator(minorLc)
+                #ax[pp].xaxis.set_minor_locator(minorLc)
         
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
         else:           plt.show(block=False)   
@@ -4317,7 +4317,7 @@ class PlotData(ReadOutputData):
             else:
                 ax[pp].xaxis.set_major_locator(majorLc)
                 ax[pp].xaxis.set_major_formatter(majorFmt)
-                ax[pp].xaxis.set_minor_locator(minorLc)
+                #ax[pp].xaxis.set_minor_locator(minorLc)
 
         #fig.subplots_adjust(bottom=0.15,top=0.95, left=0.1, right=0.97)
         
@@ -4344,7 +4344,7 @@ class PlotData(ReadOutputData):
         else:
             ax1.xaxis.set_major_locator(majorLc)
             ax1.xaxis.set_major_formatter(majorFmt)
-            ax1.xaxis.set_minor_locator(minorLc)
+            #ax1.xaxis.set_minor_locator(minorLc)
         
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
         else:           plt.show(block=False)          

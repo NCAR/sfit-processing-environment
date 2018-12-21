@@ -84,17 +84,17 @@ def main():
     #-------
     # Inputs
     #-------
-    loc     = 'mlo'
+    loc     = 'fl0'
     inPath  = '/ya4/id/' + loc.lower() + '/'     # Input directory
     outPath = '/data1/' + loc.lower() + '/'       # Working directory
 
     iyear   = 2018 
-    imonth  = 8
+    imonth  = 10
     iday    = 1
 
     fyear   = 2018
-    fmonth  = 8
-    fday    = 31
+    fmonth  = 11
+    fday    = 30
 
     #-------------------
     # Call to date class
@@ -107,7 +107,7 @@ def main():
     #----------------------
     for i,snglDay in enumerate(daysList):
 
-        print snglDay
+        #print snglDay
 
         #---------------------------------
         # Determine input/output directory
@@ -151,6 +151,7 @@ def main():
                 fnamesDel = [ k for k in listdir(join(inDir,f)) if (join(join(inDir,k),k) and not k.startswith('.') ) ]
 
                 for k in fnamesDel:
+                    print 'Copying file: {} to {}'.format(join(inDir,f),join(outDir,f))
                     shutil.copy(join(join(inDir,f),k),join(join(outDir,f),k))
                     os.chmod(join(join(outDir,f),k), 0o766)
 

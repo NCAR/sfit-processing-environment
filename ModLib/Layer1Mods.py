@@ -486,7 +486,7 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
     #-------------------------#
     #Auto-Update isotope Prf in the isotope.input --> Initially created and tested for HDO at MLO
     #-------------------------#
-    #isotopePrep(refFile)
+    isotopePrep(refFile)
     
 
     return True
