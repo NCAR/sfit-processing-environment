@@ -9,9 +9,10 @@ from sfit4Layer0 import sfit4Layer0
 
 import numpy as np
 
-sfit4_dir = '/home/mathias/sfit-core-code_new/'
+sfit4_dir = '/home/mathias/sfit-core-code-github/'
 #testcase_dir = '/home/mathias/sfit-core-code_new/test_cases_NDACC'
 testcase_dir = '/home/mathias/test_cases'
+orig_testcases = '/home/mathias/test_cases'
 
 #testcases=[
 #    ['x.o3'],
@@ -23,16 +24,16 @@ testcase_dir = '/home/mathias/test_cases'
 #]
 testcases=[
     ['c2h6'],
-    ['clono2'],
-    ['hcl'],
+#    ['clono2'],
+#    ['hcl'],
     ['hcn'],
-    ['hno3'],
+#    ['hno3'],
     ['n2o'],
-    ['no2'],
-    ['o3']
+#    ['no2'],
+#    ['o3']
 ]
 
-orig_testcases = '/home/mathias/sfit4_tentative_testcases'
+
 
 
 results = {}
@@ -43,33 +44,32 @@ for tc in testcases:
     sf4l0args = ['-i',tcpath,
                  '-b',os.path.join(sfit4_dir,'src'),
                  '-f','hs']
-    sfit4Layer0(sf4l0args)
-
-    continue
-
+#    sfit4Layer0(sf4l0args)
+#    continue
+    
     # Store values from summary
-    sum_orig = summary(os.path.join(orig_testcases,'summary.%s'%(tc[0].split('.')[1])))
+    sum_orig = summary(os.path.join(orig_testcases,'summary.%s'%(tc[0].split('.')[0])))
     result = {'apriori':sum_orig.apriori[0],
               'retriev':sum_orig.retriev[0],
               'chi_y_2':sum_orig.chi_y_2
               }
-    results_orig.update({tc[0].split('.')[1]:result})
+    results_orig.update({tc[0].split('.')[0]:result})
     
     sum_new = summary(os.path.join(tcpath,'summary'))
     result = {'apriori':sum_new.apriori[0],
               'retriev':sum_new.retriev[0],
               'chi_y_2':sum_new.chi_y_2
               }
-    results.update({tc[0].split('.')[1]:result})
+    results.update({tc[0].split('.')[0]:result})
     
     #Store values from statevec
-    state_orig = statevec(os.path.join(orig_testcases,'statevec.%s'%(tc[0].split('.')[1])))
+    state_orig = statevec(os.path.join(orig_testcases,'statevec.%s'%(tc[0].split('.')[0])))
     result = {'ret_profile': state_orig.rt_vmr[0]}
-    results_orig[tc[0].split('.')[1]].update(result)
+    results_orig[tc[0].split('.')[0]].update(result)
 
     state = statevec(os.path.join(tcpath,'statevec'))
     result = {'ret_profile': state.rt_vmr[0]}
-    results[tc[0].split('.')[1]].update(result)
+    results[tc[0].split('.')[0]].update(result)
 
     
 for rs in results.keys():
