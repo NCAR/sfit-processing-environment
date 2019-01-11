@@ -96,7 +96,8 @@ class test_sfit4:
                     print('Something wrong in %s'%tc)
                     print('hbin terminated with:')
                     print rhbin[0]
-                    sys.exit()    
+                    self.results[tc].update({hbin:False})
+                    
                 ctl.replace_in_file('sfit4.ctl','file.in.linelist',fhbin)
 
             if sfit4 and self.results[tc]['sfit']:
@@ -116,14 +117,13 @@ class test_sfit4:
                             print('sfit converged in %s'%tc)
                         else:
                             print('sfit did not converge in %s'%tc)
-
+                            self.results[tc].update({sfit4:False})
 
                 if not flag:
                     print('Something wrong in %s'%tc)
                     print('sfit4 terminated with:')
                     print rsfit[1]
-                    sys.exit()    
-
+                    self.results[tc].update({sfit4:False})
                             #
 #            sf4l0args = ['-i',tcpath,
 #                         '-b',os.path.join(self.sfit4_dir,'src'),
@@ -135,24 +135,34 @@ class test_sfit4:
         
         # Store values from summary
         for tc in self.results:
-            sum_orig = summary(os.path.join(self.testcase_dir,
-                                            'summary.%s'%(tc.lower())))
-            result = {'apriori':sum_orig.apriori[0],
-                      'retriev':sum_orig.retriev[0],
-                      'chi_y_2':sum_orig.chi_y_2
-            }
-            self.results_orig[tc].update(result)
 
-            
-            sum_new = summary(os.path.join(self.testcase_dir,self.results[tc]['dir'],'summary'))
-            result = {'apriori':sum_new.apriori[0],
-                      'retriev':sum_new.retriev[0],
-                      'chi_y_2':sum_new.chi_y_2
-            }
-            self.results[tc].update(result)
+            sum_file = os.path.join(self.testcase_dir,
+                                    'summary.%s'%(tc.lower()))
+            if os.path.exists(sum_file):
+                sum_orig = summary(sum_file)
+                result = {'summary': True,
+                          'apriori':sum_orig.apriori[0],
+                          'retriev':sum_orig.retriev[0],
+                          'chi_y_2':sum_orig.chi_y_2
+                }
+                self.results_orig[tc].update(result)
+            else:
+                self.results_orig[tc].update({'summary':False})
+
+            sum_file = os.path.join(self.testcase_dir,
+                                    self.results[tc]['dir'],'summary')
+            if os.path.exists(sum_file):
+                sum_new = summary(sum_file)
+                result = {'summary': True,
+                          'apriori':sum_new.apriori[0],
+                          'retriev':sum_new.retriev[0],
+                          'chi_y_2':sum_new.chi_y_2
+                }
+                self.results[tc].update(result)
+            else:
+                self.results[tc].update({'summary':False})
 
     def read_statevectors(self):
-        
         #Store values from statevec
         state_orig = statevec(os.path.join(orig_testcases,'statevec.%s'%(tc[1])))
         result = {'ret_profile': state_orig.rt_vmr[0]}
@@ -169,11 +179,13 @@ class test_sfit4:
 
         for rs in self.results.keys():
             print 'Testcase for:', rs
-            print 'Target Apriori:\t\t', self.results[rs]['apriori'], '\t', self.results_orig[rs]['apriori'], '\t', 200*(self.results[rs]['apriori']-self.results_orig[rs]['apriori'])/(self.results[rs]['apriori']+self.results_orig[rs]['apriori']), '%'
-            print 'Target Retrieved:\t', self.results[rs]['retriev'], '\t', self.results_orig[rs]['retriev'], '\t', 200*(self.results[rs]['retriev']-self.results_orig[rs]['retriev'])/(self.results[rs]['retriev']+self.results_orig[rs]['retriev']), '%'
-            print 'CHI_Y_2:\t\t', self.results[rs]['chi_y_2'], '\t', self.results_orig[rs]['chi_y_2'], '\t', 200*(self.results[rs]['chi_y_2']-self.results_orig[rs]['chi_y_2'])/(self.results[rs]['chi_y_2']+self.results_orig[rs]['chi_y_2']), '%'
-#            print 'MEAN SQARE Diff. RETRIEVED VMR:', np.sqrt(np.mean((self.results[rs]['chi_y_2']-self.results_orig[rs]['chi_y_2'])**2))
-    
+            if self.results[rs]['summary'] and self.results_orig[rs]['summary']:
+                print 'Target Apriori:\t\t', self.results[rs]['apriori'], '\t', self.results_orig[rs]['apriori'], '\t', 200*(self.results[rs]['apriori']-self.results_orig[rs]['apriori'])/(self.results[rs]['apriori']+self.results_orig[rs]['apriori']), '%'
+                print 'Target Retrieved:\t', self.results[rs]['retriev'], '\t', self.results_orig[rs]['retriev'], '\t', 200*(self.results[rs]['retriev']-self.results_orig[rs]['retriev'])/(self.results[rs]['retriev']+self.results_orig[rs]['retriev']), '%'
+                print 'CHI_Y_2:\t\t', self.results[rs]['chi_y_2'], '\t', self.results_orig[rs]['chi_y_2'], '\t', 200*(self.results[rs]['chi_y_2']-self.results_orig[rs]['chi_y_2'])/(self.results[rs]['chi_y_2']+self.results_orig[rs]['chi_y_2']), '%'
+                #            print 'MEAN SQARE Diff. RETRIEVED VMR:', np.sqrt(np.mean((self.results[rs]['chi_y_2']-self.results_orig[rs]['chi_y_2'])**2))
+            else:
+                print 'No new summary or original summary file found'
 
 if __name__ == '__main__':
 
