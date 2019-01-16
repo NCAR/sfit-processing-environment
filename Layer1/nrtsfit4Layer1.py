@@ -19,6 +19,7 @@
 #        6) Edit NCEPinputFile.py
 #        7) Edit mergprfInput.py
 #        8) Edit NCEPwaterPrf.py
+#        9) Edit ERAwaterPrf.py  --> If using this note that cnvrtNC.py need to be run beforehand separately.     
 #        9) Edit, sfit4Layer1 input file, E.g., MLO_H2O_Input.py file
 #        10) Edit retWaterPrf.py
 #        11) Edit retWaterPrfDaily.py
@@ -123,25 +124,25 @@ def main(argv):
     print '*************Begin Pre Processing*****************'
     print '*************************************************'     
     
-    # #----------------
-    # # Starting mvSpectra.py: IMPORTANT --> Modify Inputs in mvSpectra.py
-    # #----------------
-    # print '\nStarting mvSpectra.py: copying files from ya/id/'+loc+' to /data1/'+loc
-    # try: 
-    #     os.system('mvSpectra.py')
-    # except OSError as errmsg:
-    #     print errmsg
-    #     sys.exit()
+    #----------------
+    # Starting mvSpectra.py: IMPORTANT --> Modify Inputs in mvSpectra.py
+    #----------------
+    print '\nStarting mvSpectra.py: copying files from ya/id/'+loc+' to /data1/'+loc
+    try: 
+        os.system('mvSpectra.py')
+    except OSError as errmsg:
+        print errmsg
+        sys.exit()
 
-    # #----------------
-    # # Starting delSpcdel.py: Nothing to Do
-    # #----------------
-    # print '\nStarting delSpcdel.py: deleting Files if found in deleted folder'
-    # try:
-    #     os.system('delSpcdel.py -y'+str(year)+ ' -s'+loc)
-    # except OSError as errmsg:
-    #     print errmsg
-    #     sys.exit()
+    #----------------
+    # Starting delSpcdel.py: Nothing to Do
+    #----------------
+    print '\nStarting delSpcdel.py: deleting Files if found in deleted folder'
+    try:
+        os.system('delSpcdel.py -y'+str(year)+ ' -s'+loc)
+    except OSError as errmsg:
+        print errmsg
+        sys.exit()
 
     #----------------
     # Starting mkSpecDB.py: IMPORTANT --> Since spDB is removed Modify specDBInputFile every year Only
@@ -232,6 +233,16 @@ def main(argv):
     print '\nStarting NCEPwaterPrf.py: daily water profiles from NCEP'
     try:
         os.system('NCEPwaterPrf.py')
+    except OSError as errmsg:
+        print errmsg
+        sys.exit()
+
+    #----------------
+    # Starting ERAwaterPrf.py: IMPORTANT --> Edit Input file Accordingly
+    #----------------
+    print '\nStarting NCEPwaterPrf.py: daily water profiles from NCEP'
+    try:
+        os.system('ERAwaterPrf.py')
     except OSError as errmsg:
         print errmsg
         sys.exit()

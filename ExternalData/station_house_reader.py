@@ -62,7 +62,7 @@ def main():
     #----------------
     # Initializations
     #----------------
-    statstr     = 'mlo'
+    statstr     = 'tab'
     dataDir     = '/data1/'+statstr.lower()+'/'
     #dataDir     = '/ya4/id/'+statstr.lower()+'/'
     outDataDir  = '/data/Campaign/'+statstr.upper()+'/House_Log_Files/'

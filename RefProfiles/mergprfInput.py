@@ -25,7 +25,7 @@
 # Three letter station
 # location
 #---------------------
-loc = 'fl0'                                    # Three letter station identifier
+loc = 'tab'                                    # Three letter station identifier
 
 #----------------------------------
 # Date Range of data to process
@@ -34,13 +34,13 @@ loc = 'fl0'                                    # Three letter station identifier
 #----------------------------------
 # Starting
 iyear = 2018               # Year
-imnth = 10                 # Month
+imnth = 1                 # Month
 iday  = 1                  # Day
 
 # Ending
 fyear = 2018               # Year
-fmnth = 11                 # Month
-fday  = 30                # Day
+fmnth = 12                 # Month
+fday  = 31                # Day
 
 #------
 # Flags

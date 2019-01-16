@@ -3621,7 +3621,6 @@ class PlotData(ReadOutputData):
             for k in tempKeys:
                 if 'Total random uncertainty' in k: randErrs[k] = np.array(self.error[k])
 
-
             # print '***********************'
             # print '   Mean Total Errors   '
             # print '***********************'

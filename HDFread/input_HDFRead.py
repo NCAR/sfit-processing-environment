@@ -15,13 +15,13 @@
 #gasName    = 'ocs'                                      # NAME OF GAS
                                    # NAME OF GAS
 
-dataDir    = '/data1/projects/ocs/tor/OCS'                    # DIRECTORY
-locID      = 'eureka'                                   # LOCATION ID IN THE HDF FILE
-gasName    = 'ocs'                                       # NAME OF GAS
+#dataDir    = '/data1/projects/ocs/tor/OCS'                    # DIRECTORY
+#locID      = 'eureka'                                   # LOCATION ID IN THE HDF FILE
+#gasName    = 'ocs'                                       # NAME OF GAS
 
-# dataDir    = '/data1/ebaumer/tab/co/HDF_Current_B3/'             # DIRECTORY
-# locID      = 'thule'                                   # LOCATION ID IN THE HDF FILE
-# gasName    = 'co'                                         # NAME OF GAS
+dataDir    = '/data1/ebaumer/tab/c2h6/HDF_Current_v2/'             # DIRECTORY
+locID      = 'thule'                                   # LOCATION ID IN THE HDF FILE
+gasName    = 'c2h6'                                         # NAME OF GAS
 
 
 #------
@@ -32,8 +32,8 @@ errorFlg   = True                  # Flag to process error data
 fltrFlg    = False                   # Flag to filter the data
 
 dateFlg    = True                   # Flag to filter based on min and max dates
-szaFlg     = True                   # Flag to filter based on min and max SZA
-dofFlg     = True                   # Flag to filter based on min DOFs
+szaFlg     = False                   # Flag to filter based on min and max SZA
+dofFlg     = False                   # Flag to filter based on min DOFs
 pcNegFlg   = False                  # Flag to filter profiles with negative partial columns
 tcNegFlg   = True                   # Flagsag to filter profiles with negative total columns
 tcMMFlg    = True                   # Flag to filter based on min and max total column amount
@@ -52,7 +52,7 @@ sclfctName = 'ppbv'                 # Name of scale factor for labeling plots
 iyear      = 1999	
 imonth     = 1
 iday       = 1
-fyear      = 2017
+fyear      = 2018
 fmonth     = 12
 fday       = 31
 

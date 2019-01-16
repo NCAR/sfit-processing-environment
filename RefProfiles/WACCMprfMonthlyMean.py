@@ -26,6 +26,13 @@ import sys
 import os
 import myfunctions as mf
 
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import matplotlib.cm as mplcm
+import matplotlib.colors as colors
+
+from cycler import cycler
+
 def ckFile(fName,logFlg=False,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
@@ -45,13 +52,11 @@ def main():
     #-----------------
     #Inputs
     #-----------------
-    station    = 'Thule'                                          
-    
     inputDir   = '/data/Campaign/TAB/waccm/Thule.V6/'
     
-    gasOI      = 'co'  
+    gasoi      = 'co'  
     
-    outputFld  = '/data/Campaign/TAB/waccm/'+ gasOI.lower() + '/'
+    outputFld  = '/data/Campaign/TAB/waccm/'+ gasoi.lower() + '/test/'
 
     reffile    = '/data/Campaign/TAB/waccm/reference.prf.REFC1.3'   #In case a gas is not in WACCM use this reference file
     
@@ -87,6 +92,8 @@ def main():
     #-----------------
     # Open output file 
     #-----------------
+
+    prfgas = np.zeros((12, 43))
 
     for mnth in range(1, 13):
 
@@ -141,13 +148,15 @@ def main():
                         #-------------------------------------------
                         #if gas is not gas of interest calculate global mean
                         #-------------------------------------------
-                        if gas.lower() != gasOI.lower():
+                        if gas.lower() != gasoi.lower():
 
                             data_mean = np.mean(data, axis=0)
                             for row in segmnt(data_mean, 5):
                                 strformat = ','.join('{:>12.3E}' for i in row) + ', \n'
                                 fout.write(strformat.format(*row))
                         else:
+
+                            print gas
                             #----------------------
                             # Find monthly averages
                             #----------------------
@@ -157,6 +166,11 @@ def main():
                             for row in segmnt(data_mean, 5):
                                 strformat = ','.join('{:>12.3E}' for i in row) + ', \n'
                                 fout.write(strformat.format(*row))
+
+                            print data_mean
+
+                            prfgas[mnth-1, :] = data_mean
+
                     else:
                         #-------------------------------------------
                         #if gas is not in waccm folder use reference profile
@@ -176,6 +190,43 @@ def main():
                         for row in segmnt(refprf, 5):
                             strformat = ','.join('{:>12.3E}' for i in row) + ', \n'
                             fout.write(strformat.format(*row))
+
+    prfgas = np.asarray(prfgas)
+
+    fig1, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+    clmap = 'jet'  # jet, rainbow, gist_ncar
+    
+    cm             = plt.get_cmap(clmap)
+    cNorm          = colors.Normalize( vmin=1, vmax=12 )
+    scalarMap      = mplcm.ScalarMappable( norm=cNorm, cmap=cm )
+   
+    months = range(1, 13)
+
+    ax1.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in months] ) )
+    ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in months] ) )
+
+    for i in range(0, 12): 
+        ax1.plot(prfgas[i,:]*1e9, alt, label=str(i+1))
+        ax2.plot(prfgas[i,:]*1e9, alt)
+    ax1.grid(True,which='both')
+    ax1.legend(prop={'size':9})
+    ax1.set_ylabel('Altitude [km]', fontsize=12)
+    ax1.set_xlabel('VMR [ppb]', fontsize=12 )
+    ax1.tick_params(which='both',labelsize=12)
+    ax1.set_ylim((0,120))
+    #ax1.set_xlim((0,np.max((waccmW[-1,mnthInd],Q_day[-1]))))
+    #ax1.set_title(YYYY+'-'+MM+'-'+DD)
+
+        
+    ax2.grid(True,which='both')
+    ax2.set_xlabel('VMR [ppb]', fontsize=12)
+    ax2.tick_params(which='both',labelsize=12)
+    #ax2.set_ylim((0,40))
+    ax2.set_xscale('log')
+
+    plt.show(block=False)
+    user_input = raw_input('Press any key to exit >>> ')
+    sys.exit()
 
             
 if __name__ == "__main__":

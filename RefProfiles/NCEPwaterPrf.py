@@ -92,7 +92,7 @@ def main():
     #---------
     # Location
     #---------
-    loc = 'fl0'
+    loc = 'tab'
 
     #------------------------------------
     # Version number to append water file
@@ -116,11 +116,11 @@ def main():
     # Date Range of interest
     #-----------------------
     iyear          = 2018
-    imnth          = 10
+    imnth          = 1
     iday           = 1
     fyear          = 2018
-    fmnth          = 11
-    fday           = 30
+    fmnth          = 12
+    fday           = 31
 
     #-------------------------------
     # NCEP Reanalysis data directory
