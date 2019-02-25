@@ -1339,6 +1339,14 @@ class PlotHDF(ReadHDFData):
             except Exception as errmsg:
                 print '\nError: ', errmsg
 
+        #----------------------------
+        # Determine if multiple years
+        #----------------------------
+        
+        years = [ singDate.year for singDate in dates]      # Find years for all date entries
+        if len(list(set(years))) > 1: yrsFlg = True         # Determine all unique years
+        else:                         yrsFlg = False
+
         
         #----------------------------------------------------------------------------------------------------------------------------------------------------------------
         #                                                           PLOTS
@@ -1351,9 +1359,9 @@ class PlotHDF(ReadHDFData):
         try: 
             fig,(ax1,ax2) = plt.subplots(1,2,sharey=True)
             if int(nobs) > 1:
-                ax1.plot(prfMean,alt,color='k',label=self.PrimaryGas.upper()+' Retrieved Profile Mean')
+                ax1.plot(prfMean,alt,color='k',label='Retrieved Profile Mean')
                 ax1.fill_betweenx(alt,prfMean-prfSTD,prfMean+prfSTD,alpha=0.5,color='0.75')
-                ax2.plot(prfMean,alt,color='k',label=self.PrimaryGas.upper()+' Retrieved Profile Mean')
+                ax2.plot(prfMean,alt,color='k',label='Retrieved Profile Mean')
                 ax2.fill_betweenx(alt,prfMean-prfSTD,prfMean+prfSTD,alpha=0.5,color='0.75')   
             else:
                 ax1.plot(rPrf[0],alt,color='k',label=self.PrimaryGas.upper())
@@ -1366,7 +1374,7 @@ class PlotHDF(ReadHDFData):
             ax2.grid(True,which='both')
             
             ax1.legend(prop={'size':10})
-            ax2.legend(prop={'size':10})   
+            #ax2.legend(prop={'size':10})   
 
             ax1.text(-0.1,1.05,'Number of Obs = '+str(rPrf.shape[0]), ha='left',va='center',transform=ax1.transAxes,fontsize=10)
             
@@ -1474,7 +1482,7 @@ class PlotHDF(ReadHDFData):
                 cbar.set_label('Month')
                 
                 ax1.legend(prop={'size':9})
-                ax2.legend(prop={'size':9})
+                #ax2.legend(prop={'size':9})
                 
                 ax1.tick_params(axis='x',which='both',labelsize=8)
                 ax2.tick_params(axis='x',which='both',labelsize=8)  
@@ -1482,6 +1490,50 @@ class PlotHDF(ReadHDFData):
 
                 if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
                 else:           plt.show(block=False)
+
+
+                #--------------------------------
+                #Profiles as a function of Year if multiple years
+                #--------------------------------
+                if yrsFlg:
+                    year           = np.array([d.year for d in dates])
+                    fig,(ax1,ax2)  = plt.subplots(1,2,sharey=True)
+                    cm             = plt.get_cmap(clmap)
+                    cNorm          = colors.Normalize( vmin=np.nanmin(year), vmax=np.nanmax(year) )
+                    scalarMap      = mplcm.ScalarMappable( norm=cNorm, cmap=cm )
+                    
+                    scalarMap.set_array(year)
+
+                    ax1.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in year] ) )
+                    ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in year] ) )
+                    
+                    for i in range(len(year)):
+                        ax1.plot(rPrf[i,:],alt,linewidth=0.75)
+                        ax2.plot(rPrf[i,:],alt,linewidth=0.75)
+                    
+                    ax1.plot(aprPrf[0,:],alt,'k--',linewidth=4,label='A priori')
+                    ax2.plot(aprPrf[0,:],alt,'k--',linewidth=4,label='A priori')
+                    
+                    ax1.set_ylabel('Altitude [km]')
+                    ax1.set_xlabel('VMR ['+sclname+']')
+                    ax2.set_xlabel('Log VMR ['+sclname+']')
+                    
+                    ax1.grid(True,which='both')
+                    ax2.grid(True,which='both')
+                    ax2.set_xscale('log')
+                    
+                    cbar = fig.colorbar(scalarMap,orientation='vertical')
+                    cbar.set_label('Year')
+                    
+                    ax1.legend(prop={'size':9})
+                    #ax2.legend(prop={'size':9})
+                    
+                    ax1.tick_params(axis='x',which='both',labelsize=8)
+                    ax2.tick_params(axis='x',which='both',labelsize=8)  
+                    plt.suptitle(self.PrimaryGas.upper(), fontsize=16)
+
+                    if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                    else:           plt.show(block=False)
            
                 #-------------------------------
                 #Plot average profiles by month
@@ -1527,7 +1579,7 @@ class PlotHDF(ReadHDFData):
             #-------------------------------------------------------
             fig,(ax1,ax2)  = plt.subplots(1,2, sharey=True)
            
-            ax1.plot(prfMean,alt,color='k',label=self.PrimaryGas.upper()+' Retrieved Monthly Mean')
+            #ax1.plot(prfMean,alt,color='k',label=self.PrimaryGas.upper()+' Retrieved Monthly Mean')
             ax1.errorbar(prfMean,alt,xerr=prfMean_rnd,ecolor='r',label='Total Random Error')
             ax1.fill_betweenx(alt,prfMean-rand_std,prfMean+rand_std,alpha=0.5,color='0.75')  
             ax1.set_title('Random Error')
@@ -1536,7 +1588,7 @@ class PlotHDF(ReadHDFData):
             ax1.set_xlabel('VMR')      
             ax1.grid(True,which='both')                
             
-            ax2.plot(prfMean,alt,color='k',label=self.PrimaryGas.upper()+' Retrieved Monthly Mean')
+            #ax2.plot(prfMean,alt,color='k',label=self.PrimaryGas.upper()+' Retrieved Monthly Mean')
             ax2.errorbar(prfMean,alt,xerr=prfMean_sys,ecolor='r',label='Total Systematic Error')
             ax2.fill_betweenx(alt,prfMean-sys_std,prfMean+sys_std,alpha=0.5,color='0.75')      
             ax2.set_title('Systematic Error')
@@ -1721,7 +1773,7 @@ class PlotHDF(ReadHDFData):
             f_drift, f_fourier, f_driftfourier = res[3:6]
             
             fig1,ax1 = plt.subplots()
-            ax1.scatter(dailyVals['dates'],dailyVals['dailyAvg'],s=4,label='data')
+            ax1.scatter(dailyVals['dates'],dailyVals['dailyAvg'],s=12, facecolor='white',edgecolor='k', label='data')
             #ax1.plot(dailyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
             #ax1.plot(dailyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
             ax1.grid(True)
@@ -1764,7 +1816,8 @@ class PlotHDF(ReadHDFData):
             f_drift, f_fourier, f_driftfourier = res[3:6]
             
             fig1,ax1 = plt.subplots()
-            ax1.scatter(mnthlyVals['dates'],mnthlyVals['mnthlyAvg'],s=4,label='data')
+            ax1.scatter(mnthlyVals['dates'],mnthlyVals['mnthlyAvg'],s=12, facecolor='white',edgecolor='k', label='data')
+            #ax.scatter(Dates, Anomaly, s=20, facecolor='lightgray', edgecolor='k',alpha=0.85)
             #ax1.plot(mnthlyVals['dates'],f_drift(dateYearFrac),label='Fitted Anual Trend')
             #ax1.plot(mnthlyVals['dates'],f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
             ax1.grid(True)

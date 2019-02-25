@@ -2391,7 +2391,7 @@ class PlotData(ReadOutputData):
         #---------------------------
         # Date locators for plotting
         #---------------------------
-        clmap        = 'jet'
+        clmap        = 'bwr'
         cm           = plt.get_cmap(clmap)              
         yearsLc      = YearLocator()
         monthsAll    = MonthLocator()
@@ -2406,16 +2406,19 @@ class PlotData(ReadOutputData):
         if ('gas.profile.list' in self.ctl) and self.ctl['gas.profile.list'] and (len(self.dirLst) == 1):
             fig1   = plt.figure()
             gs1    = gridspec.GridSpec(2,numMW,height_ratios=(1,60))
-            #levels = np.arange(np.round(np.min(JacbMat),decimals=3)-0.001, np.round(np.max(JacbMat),decimals=3)+0.001)
+            
+            #levels = np.arange(np.round(np.min(JacbMat),decimals=3)-0.001, np.round(np.max(JacbMat),decimals=3)+0.001, np.round(  (np.round(np.max(JacbMat),decimals=3) - np.round(np.min(JacbMat),decimals=3) )/20., decimals=4))
+           
             ipnt   = 0
             for i,x in enumerate(mwList):
                 npnts = np.shape(dataSpec['WaveN_'+x])[0]
                 ax    = plt.subplot(gs1[1,i])
-                im    = ax.contourf(dataSpec['WaveN_'+x],Z,np.transpose(JacbMat[ipnt:(ipnt+npnts),:]),cmap=mplcm.jet) 
+                im    = ax.contourf(dataSpec['WaveN_'+x],Z,np.transpose(JacbMat[ipnt:(ipnt+npnts),:]), 100, cmap=cm) 
 
-                norm= matplotlib.colors.Normalize(vmin=im.cvalues.min(), vmax=im.cvalues.max())
-
-                sm = plt.cm.ScalarMappable(norm=norm)
+                norm  = matplotlib.colors.Normalize(vmin=im.cvalues.min(), vmax=im.cvalues.max())
+                
+                sm = plt.cm.ScalarMappable(norm=norm, cmap=cm)
+                
                 sm.set_array([])
 
                 ipnt += npnts
@@ -2427,11 +2430,12 @@ class PlotData(ReadOutputData):
             fig1.autofmt_xdate()
             caxb = fig1.add_axes([0.15,0.9,0.7,0.03])
             #fig1.colorbar(im,cax=caxb,orientation='horizontal')
-            fig1.colorbar(sm, ticks=im.levels, cax=caxb,orientation='horizontal')
+            fig1.colorbar(sm,  cax=caxb,orientation='horizontal')
             plt.suptitle('Jacobian Matrix')
                 
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)
+
         
         #--------------------------------
         # Plot data for each micro-window
