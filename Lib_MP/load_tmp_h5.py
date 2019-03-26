@@ -60,8 +60,8 @@ class load_tmph5:
         igasnames = h5f.root.gasnames[:]
         self.gasname = igasnames[0]
         self.col_co2 = 0
-#        if 'CO2' in igasnames:
-        for co2name in [s for s in igasnames if s.find('CO2')==0]:
+        #        if 'CO2' in igasnames:
+        for co2name in [s for s in igasnames if s.find(b'CO2')==0]:
             self.col_co2 = self.col_co2+h5f.root.icol_rt[igasnames.index(co2name)-1,:]
 
         if 'H2O' in igasnames:
@@ -159,7 +159,7 @@ class load_tmph5:
         self.Z = Z
 
     def get_column_avk(self):
-        self.avk_col = np.sum(self.avk_pcol,axis=1)
+        self.avk_col = np.sum(self.avk_pcol,axis=0)
 
         
     def get_partial_columns(self,zrange, apriori=False):
