@@ -31,6 +31,10 @@ class show_tmph5:
         plt.axes(sharex=ax)
         self.vmr = plt.figure(figsize=(7,3))
 
+
+        self.show_error = True
+        self.num_aux = 0
+        
         self.tkroot = Tk()
         self.tkroot.wm_title('tmph5 result viewer')
 
@@ -44,7 +48,7 @@ class show_tmph5:
                              command = self.quit)
         button_quit.grid(row=0, column=0, sticky=E+W)
 
-        options = ['CHI_Y_2', 'DOFS', 'CO2', 'E_TOT', 'SNR', 'SZA', 'H2O_TOT']
+        options = ['CHI_Y_2', 'DOFS', 'CO2', 'E_TOT', 'SNR', 'SZA', 'H2O_TOT','AUX_RETR']
         frame_show = Frame(main_frame_1)
         frame_show.grid(row=1,column=0)    
 
@@ -66,6 +70,11 @@ class show_tmph5:
                              text = 'Auxiliary quantity', 
                              command = lambda:self.plot_aux_val())
         button_show.grid(row=0, column=1, sticky=E+W)
+
+        button_save = Button(frame_show, 
+                             text = 'Plot Total Error', 
+                             command = lambda:self.toggle_error())
+        button_save.grid(row=0, column=3, sticky=E+W)
         if len(options) == 0:
             button_show.config(state=DISABLED)
             #        self.button_spec_by_gas = button_spec
@@ -235,11 +244,11 @@ class show_tmph5:
         self.columns.gca().cla()
         self.columns.gca().plot_date(self.res.dnum[self.valid_ind],
                                      self.res.col_rt[self.valid_ind])
-        
-        #self.columns.gca().errorbar(self.res.dnum[self.valid_ind],
-        #                            self.res.col_rt[self.valid_ind],
-        #                            self.res.err_tot[self.valid_ind],
-        #                            color = 'b', fmt='none')        
+        if self.show_error:
+            self.columns.gca().errorbar(self.res.dnum[self.valid_ind],
+                                        self.res.col_rt[self.valid_ind],
+                                        self.res.err_tot[self.valid_ind],
+                                        color = 'b', fmt='none')        
         self.canvas.draw()
 
     def save_values(self):
@@ -276,7 +285,10 @@ class show_tmph5:
             self.vmr.gca().plot(self.res.avk_col[:,self.valid_ind], self.res.Z)
             self.canvas3.draw()
 
-
+    def toggle_error(self):
+        self.show_error = not self.show_error
+        self.plot_values()
+        
     def plot_aux_val(self):
         aux = self.aux_val.get()
         self.aux.gca().cla()
@@ -295,6 +307,12 @@ class show_tmph5:
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.snr_the[self.valid_ind], label='SNR THE')
         elif aux == 'H2O_TOT':
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.col_h2o[self.valid_ind])
+        elif aux == 'AUX_RETR':
+            self.aux.gca().set_title(self.res.auxname[self.num_aux])
+            self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.aux_rt[self.num_aux,self.valid_ind])
+            self.num_aux += 1
+            if self.num_aux >= len(self.res.auxname):
+                self.num_aux = 0
         self.canvas2.draw()
 
     def filter(self):
