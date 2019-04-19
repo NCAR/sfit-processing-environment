@@ -92,19 +92,19 @@ def main():
     #--------------------------------
     # Initialize date and insitu vars
     #--------------------------------
-    loc        = 'tab'
-    gas        = 'c2h6'
-    ver        = 'SFIT4_PreRelease'
-    sbFileName = '/data1/ebaumer/'+loc.lower()+'/'+gas.lower()+'/x.'+gas.lower()+'/sb_v2.ctl'
+    loc        = 'mlo'
+    gas        = 'ch4'
+    ver        = 'Current_WP'
+    sbFileName = '/data1/ebaumer/'+loc.lower()+'/'+gas.lower()+'/x.'+gas.lower()+'/sb.ctl'
     dataDir    = '/data1/ebaumer/'+loc.lower()+'/'+gas.lower()+'/'+ver+'/'
     
     #sbFileName = '/Volumes/data/ebaumer/Err/sb_tab.ctl'
     iyear      = 2017
-    imnth      = 5
-    iday       = 20
-    fyear      = 2017
-    fmnth      = 5
-    fday       = 20    
+    imnth      = 1
+    iday       = 1
+    fyear      = 2018
+    fmnth      = 12
+    fday       = 31    
         
     #--------------------------
     # Check if directory exists

@@ -1,6 +1,6 @@
 #----------------------------------------------------------------------------------------
 # Name:
-#        input_HDFSave.py
+#        input_HDFCreate.py
 #
 # Purpose:
 #        This is the input file for HDFCreate.py
@@ -10,12 +10,14 @@ loc          = 'mlo'                  # Name of station location
 gasName      = 'c2h6'                 # Name of gas
 ver          = 'Current_newSA'        # Name of retrieval version to process
 ctlF         = 'sfit4.ctl'            # Name of ctl file
+hdfMeta      = '/data/hdfsaveMLO.py'        # Python File Nme with Meta Data
 
 #------
 #Some Meta-data for hdf file (Global Attributes) --> More in hdfsave.py
 #------
 sfitVer      = '0.9.4.4'
-fileVer      = '003'                  
+fileVer      = '003'   
+locID        = 'MAUNA.LOA.HI'         # OPTIONAL FOR NCAR USERS              
 projectID    = ' '
 
 #------

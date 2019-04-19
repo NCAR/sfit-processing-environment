@@ -1198,6 +1198,7 @@ class PlotHDF(ReadHDFData):
             lon          = self.HDF[self.getLongitudeInstrumentName()]
             altinstr     = self.HDF[self.getAltitudeInstrumentName()]
 
+
         except Exception as errmsg:
             print '\nError: ', errmsg
         
@@ -1213,8 +1214,6 @@ class PlotHDF(ReadHDFData):
             alt          = alt[0:n_layer]
 
         #----------------------------------------
-            
-
         print 'Latitude          = {}'.format(lat[0])
         print 'Longitude         = {}'.format(lon[0])
         print 'Altitude of Instr = {}'.format(altinstr[0])
@@ -1222,17 +1221,17 @@ class PlotHDF(ReadHDFData):
         #----------------------------------------
         #CREATE A FILE WITH DATE AND TIME (TO SEND AND GET BACK THE TROPOPAUSE HEIGHT)
         #----------------------------------------
-        Fileout  = self.dataDir + 'Dates_'+self.locID+'.ascii'
-        with open(Fileout, 'wb') as fopen:
-            fopen.write('#Location:   {0:15}\n'.format(self.locID))
-            fopen.write('#Latitude:   {0:8.4f} [deg, positive North]\n'.format(float(lat[0])))
-            fopen.write('#Longitude:  {0:8.4f} [deg, positive East]\n'.format(float(lon[0])))
-            fopen.write('#Altitude:   {0:6.4f} [km]\n'.format(float(altinstr[0])))
-            fopen.write('YYYYMMDD     hhmmss [UT]\n')
-            for dd in dates:
-                YYYYMMDD = '{0:4d}{1:02d}{2:02d}'.format(dd.year, dd.month, dd.day)
-                hhmmss   = '{0:02d}:{1:02d}:{2:02d}'.format(dd.hour, dd.minute, dd.second)
-                fopen.write('{0:13}{1:13}\n'.format(YYYYMMDD, hhmmss))
+        # Fileout  = self.dataDir + 'Dates_'+self.locID+'.ascii'
+        # with open(Fileout, 'wb') as fopen:
+        #     fopen.write('#Location:   {0:15}\n'.format(self.locID))
+        #     fopen.write('#Latitude:   {0:8.4f} [deg, positive North]\n'.format(float(lat[0])))
+        #     fopen.write('#Longitude:  {0:8.4f} [deg, positive East]\n'.format(float(lon[0])))
+        #     fopen.write('#Altitude:   {0:6.4f} [km]\n'.format(float(altinstr[0])))
+        #     fopen.write('YYYYMMDD     hhmmss [UT]\n')
+        #     for dd in dates:
+        #         YYYYMMDD = '{0:4d}{1:02d}{2:02d}'.format(dd.year, dd.month, dd.day)
+        #         hhmmss   = '{0:02d}:{1:02d}:{2:02d}'.format(dd.hour, dd.minute, dd.second)
+        #         fopen.write('{0:13}{1:13}\n'.format(YYYYMMDD, hhmmss))
         
         #----------------------------------------
 
@@ -1374,8 +1373,6 @@ class PlotHDF(ReadHDFData):
             ax2.grid(True,which='both')
             
             ax1.legend(prop={'size':10})
-            #ax2.legend(prop={'size':10})   
-
             ax1.text(-0.1,1.05,'Number of Obs = '+str(rPrf.shape[0]), ha='left',va='center',transform=ax1.transAxes,fontsize=10)
             
             ax1.set_ylabel('Altitude [km]')
@@ -1762,7 +1759,10 @@ class PlotHDF(ReadHDFData):
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)
 
+        except Exception:
+            print 'Error in Column plots: all ata' 
 
+        try:
             #------
             # Time Series of Daily Averaged Total Column
             #------
@@ -1805,10 +1805,13 @@ class PlotHDF(ReadHDFData):
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)
 
+        except Exception:
+            print 'Error in Column plots: daily columns' 
+
             #------
             # Time Series of Monthly Averaged Total Column
             #------
-            
+        try:
             mnthlyVals = mnthlyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
             dateYearFrac = toYearFraction(mnthlyVals['dates'])
             weights      = np.ones_like(dateYearFrac)
@@ -1850,6 +1853,6 @@ class PlotHDF(ReadHDFData):
             else:           plt.show(block=False)
 
         except Exception:
-            print 'Error in Column plots'     
+            print 'Error in Column plots: Monthly columns'     
 
         

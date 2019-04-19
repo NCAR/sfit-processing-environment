@@ -10,18 +10,10 @@
 #------------
 # Directories
 #------------ 
-#dataDir    = '/data1/projects/ocs/tab/'                    # DIRECTORY
-#locID      = 'thule'                               # LOCATION ID IN THE HDF FILE
-#gasName    = 'ocs'                                      # NAME OF GAS
-                                   # NAME OF GAS
 
-#dataDir    = '/data1/projects/ocs/tor/OCS'                    # DIRECTORY
-#locID      = 'eureka'                                   # LOCATION ID IN THE HDF FILE
-#gasName    = 'ocs'                                       # NAME OF GAS
-
-dataDir    = '/data1/ebaumer/tab/c2h6/HDF_Current_v2/'             # DIRECTORY
-locID      = 'thule'                                   # LOCATION ID IN THE HDF FILE
-gasName    = 'c2h6'                                         # NAME OF GAS
+dataDir    = '/data1/temp/harestua/sfit4/hrt/o3/HDF_test'             # DIRECTORY
+locID      = 'harestua'                                   # LOCATION ID IN THE HDF FILE
+gasName    = 'O3'                                      
 
 
 #------
@@ -49,10 +41,10 @@ sclfctName = 'ppbv'                 # Name of scale factor for labeling plots
 #----------------------
 # Date range to plot
 #----------------------
-iyear      = 1999	
+iyear      = 2014	
 imonth     = 1
 iday       = 1
-fyear      = 2018
+fyear      = 2014
 fmonth     = 12
 fday       = 31
 

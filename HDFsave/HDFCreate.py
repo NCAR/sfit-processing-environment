@@ -130,19 +130,56 @@ def main(argv):
     if Inputs['pyFlg'] == False:
         ckFile(Inputs['idlFname'], exit=True)
     #------------------
+
+    #------------------
+    # Import hdfsaveLOC.py should exist in order to save Meta Data
+    #------------------
+
+    if 'hdfMeta' in Inputs:
+        if os.path.isabs(Inputs['hdfMeta']):
+            
+            sys.path.append(os.path.split(Inputs['hdfMeta'])[0])
+            hdfsaveFile = os.path.splitext(os.path.split(Inputs['hdfMeta'])[1])[0]
+
+        else:
+            print Inputs['hdfMeta']
+            hdfsaveFile = os.path.splitext(Inputs['hdfMeta'])[0]
     
+    else:    
+        hdfsaveFile  = 'hdfsave'+Inputs['loc'].upper()
+
+    try:
+
+       hdfsave =  __import__(hdfsaveFile)
+
+    except Exception as errmsg:
+        print '!hdfsave does not exist: {} !!!'.format(hdfsaveFile)
+        exit()
+
     #------------------
-    # IMPORT SPECIFIC CLASS AND DEFINE ID IN HDF FILES
+    #
     #------------------
-    if Inputs['loc'].lower() == 'tab':
-        loc            = 'THULE'
-        import hdfsaveTAB as hdfsave
-    elif Inputs['loc'].lower() == "mlo":
-        loc            = 'MAUNA.LOA.HI'
-        import hdfsaveMLO as hdfsave
-    else:
-        loc            = "BOULDER.COLORADO"
-        import hdfsaveFL0 as hdfsave
+    
+    if 'locID' in Inputs:
+
+        locID = Inputs['locID']
+
+    else: 
+        if Inputs['loc'].lower() == 'tab':
+             locID            = 'THULE'
+            
+        elif Inputs['loc'].lower() == "mlo":
+            locID            = 'MAUNA.LOA.HI'
+        
+        elif Inputs['loc'].lower() == "fl0":
+            locID            = "BOULDER.COLORADO"
+        
+        elif Inputs['loc'].lower() == "hrt":
+            locID            = 'HARESTUA'
+        else: 
+            print 'Error in loc ID'
+            sys.exit()
+
     
     #------------------------------------------------------------
     # Here we create an instance of the HDFsave object. We define
@@ -152,7 +189,7 @@ def main(argv):
     # specified in GEOMS: http://avdc.gsfc.nasa.gov/index.php?site=1989220925
     #------------------------------------------------------------
     
-    myhdf = hdfsave.HDFsave(Inputs['gasName'],Inputs['outDir'], Inputs['sfitVer'], loc, Inputs['fileVer'], Inputs['projectID'], dType='float32')
+    myhdf = hdfsave.HDFsave(Inputs['gasName'],Inputs['outDir'], Inputs['sfitVer'], locID, Inputs['fileVer'], Inputs['projectID'], dType='float32')
 
     ErrYearFlg = False
     ErrYear    = []

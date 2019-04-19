@@ -11,7 +11,7 @@
 #
 #
 # Version History:
-#       Created, October, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
+#       Created, October, 2013  Eric Nussbaumer (ebaumer@ucar.edu) & Modified/edited Ivan Ortega
 #
 #
 # License:
@@ -60,6 +60,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.cm as mplcm
 import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
+import matplotlib.ticker as mtick
 
 
 #----------------------------------------------------------------------------------------
@@ -1801,9 +1802,8 @@ class ReadOutputData(_DateRange):
        # if self.dirFlg: self.pbp = sortDict(self.pbp, 'date')
 
        #--------------------------
-       #Convert SAA to 0.0- North
+       # For NCAR sites - Convert SAA to 0.0- North
        #--------------------------
-
         for i, az in enumerate(self.pbp['saa']):
            if az >= 180.0:
                self.pbp['saa'][i] = np.abs(360. - az  - 180.)
@@ -2142,21 +2142,49 @@ class GatherHDF(ReadOutputData,DbInputFile):
         specDB        = self.getInputs()        
         self.HDFintT  = np.zeros(nobs)
         self.HDFazi   = np.zeros(nobs)
-
-    
         
         for i,val in enumerate(self.HDFdates):
             tempSpecDB = self.dbFindDate(self.HDFdates[i])
            
             if i == 0:
                 self.HDFlat     = np.array(tempSpecDB['N_Lat'])
-                self.HDFlon     = np.array(tempSpecDB['W_Lon'])*-1.0    #-180 to +180
+
+                self.HDFlon     = np.array(tempSpecDB['W_Lon'])
+
+                print '\nLongitude [W_Lon] in database: {}'.format(self.HDFlon)
+
+                #-----------------------------
+                # In the Database the Longitude is defined as positive West. 
+                # Hence, to comply with GEOMS needs to be converted to positive East
+                #-----------------------------                
+                if (self.HDFlon > 0.) &  (self.HDFlon <= 180.):
+                    self.HDFlon     = self.HDFlon*(-1.0)
+
+                elif (self.HDFlon > 180.) &  (self.HDFlon <= 360.):
+                    self.HDFlon     = 360.0 - self.HDFlon
+
+                elif (self.HDFlon < 0.) &  (self.HDFlon >= -180.):
+                    self.HDFlon     = self.HDFlon*(-1.0)
+
+                elif (self.HDFlon < -180.) &  (self.HDFlon >= -360.):
+                    self.HDFlon     = (360.0 + self.HDFlon)*(-1.0)
+
+                else:
+                    user_input = raw_input('Paused processing....\n Input specific longitude for HDF file: >>> ')
+                    self.HDFlon = np.array(user_input)
+
+                print 'Longitude [E_Lon] in HDF file: {}'.format(self.HDFlon)
+
                 self.HDFinstAlt = np.array(tempSpecDB['Alt'] / 1000.0)
+            
             self.HDFintT[i] = tempSpecDB['Dur']
             self.HDFazi[i]  = tempSpecDB['SAzm']
 
+        print '\nConverting S-azimuth to N-Azimuth....\n'
+
         #----------------------------------------------
-        # Convert South Solar Azimuth to North Solar Azimuth (2016 GEOMS CONVENTION)
+        # In the Database Solar Azimuth is defined as positive South. 
+        # Convert to North Solar Azimuth (2016 GEOMS CONVENTION)
         #----------------------------------------------
         for i, az in enumerate(self.HDFazi):
             if az >= 180.0:
@@ -2269,9 +2297,10 @@ class PlotData(ReadOutputData):
         #------------------------------------------
         if len(self.dirLst) == 1:
             lines   = tryopen(self.dirLst[0]+self.ctl['file.out.k_matrix'][0])
-            nlyrs   = int(lines[1].strip().split()[-1])
-            nstrt   = int(lines[1].strip().split()[-2])
-            JacbMat = np.array( [ [ float(x) for x in line.strip().split()[nstrt:(nstrt+nlyrs)] ] for line in lines[3:] ] )        
+            
+            nlyrs   = int(lines[1].strip().split()[3])
+            nstrt   = int(lines[1].strip().split()[2])
+            JacbMat = np.array( [ [ float(x) for x in line.strip().split()[nstrt:(nstrt+nlyrs)] ] for line in lines[3:] ] )   
         
         #--------------------
         # Call to filter data
@@ -3515,19 +3544,22 @@ class PlotData(ReadOutputData):
         AirMinv   = np.diag(1.0/Airmass)
 
         avkTC    = np.dot(np.dot(Airmass,avkSCF),AirMinv)
-
         
         #axb.plot(np.sum(avkSCF,axis=0),alt,color='k')
         axb.plot(avkTC, alt,color='k')
         axb.grid(True)
         #axb.set_xlabel('Averaging Kernel Area')
         axb.set_xlabel('Total Column AK')
-        axb.tick_params(axis='x',which='both',labelsize=8)        
+        #axb.tick_params(axis='x',which='both',labelsize=8)    
+        axb.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1f'))      
+        axb.tick_params(axis='x', which='major', labelrotation=45) 
 
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
         else:           plt.show(block=False)         
-
+        
+        #----------------------------------------
         # VMR AVK
+        #----------------------------------------
         fig       = plt.figure()
         gs        = gridspec.GridSpec(1,2,width_ratios=[3,1])
         ax        = plt.subplot(gs[0])
@@ -3557,7 +3589,9 @@ class PlotData(ReadOutputData):
         #axb.plot(np.sum(avkVMR,axis=0),alt,color='k')
         axb.grid(True)
         axb.set_xlabel('Total Column AK')
-        axb.tick_params(axis='x',which='both',labelsize=8)        
+        #axb.tick_params(axis='x',which='both',labelsize=8)  
+        axb.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1f'))     
+        axb.tick_params(axis='x', which='major',labelrotation=45)  
 
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
         else:           plt.show(block=False)
@@ -3811,6 +3845,7 @@ class PlotData(ReadOutputData):
         norm = colors.BoundaryNorm(tcks,cm.N)   
         
         fig1,ax1 = plt.subplots()
+        ax1.plot(dates,totClmn,'',markersize=0, linestyle='none')
         sc1 = ax1.scatter(dates,totClmn,c=sza,cmap=cm,norm=norm)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
@@ -3845,6 +3880,7 @@ class PlotData(ReadOutputData):
         norm = colors.BoundaryNorm(tcks,cm.N)
         
         fig1,ax1 = plt.subplots()
+        ax1.plot(dates,totClmn,'',markersize=0 ,linestyle='none')
         sc1 = ax1.scatter(dates,totClmn,c=saa,cmap=cm,norm=norm)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
@@ -3879,6 +3915,7 @@ class PlotData(ReadOutputData):
         norm = colors.Normalize( vmin=np.nanmin(rms), vmax=np.nanmax(rms) )
       
         fig1,ax1 = plt.subplots()
+        ax1.plot(dates,totClmn,'',markersize=0,  linestyle='none')
         sc1 = ax1.scatter(dates,totClmn,c=rms,cmap=cm,norm=norm)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
@@ -3912,6 +3949,7 @@ class PlotData(ReadOutputData):
         norm = colors.Normalize( vmin=np.nanmin(dofs), vmax=np.nanmax(dofs) )
       
         fig1,ax1 = plt.subplots()
+        ax1.plot(dates,totClmn,'',markersize=0 ,linestyle='none')
         sc1 = ax1.scatter(dates,totClmn,c=dofs,cmap=cm,norm=norm)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
@@ -4273,59 +4311,62 @@ class PlotData(ReadOutputData):
         #----------------------------
         # Plot time series of Monthly SNR, RMS, and DOF
         #----------------------------
-        fig, ax = plt.subplots(3,1,sharex=True)
-        clr = ('k', 'r', 'b', 'g', 'gray' )
+        if len(list(set(months))) > 1:
 
-        for i in range(1, nbands+1):
-        #for i in range(1, 2):
-            mnthVals = mnthlyAvg(snr[i],dates,dateAxis=1, meanAxis=0)           
-            #ax[0].plot(dates,snr[i],'k.', color=clr[i-1], label= 'band '+str(i),markersize=4)
-            #ax[0].plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'', linestyle='None', color=clr[i-1],markersize=2)
-            ax[0].errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'], linestyle='None', yerr=mnthVals['std'],ecolor=clr[i-1])
-            ax[0].scatter(mnthVals['dates'],mnthVals['mnthlyAvg'],facecolors=clr[i-1], edgecolors='black', s=35,  label='band {}'.format(i))
-            #ax[0].set_ylim(0, 5000)
-        ax[0].legend(prop={'size':8})
-        ax[0].grid(True)
-        ax[0].set_ylabel('SNR')
-        ax[0].set_title('Monthly Averaged Time Series of SNR')
-        #ax[0].legend(prop={'size':12})
+            fig, ax = plt.subplots(3,1,sharex=True)
+            clr = ('k', 'r', 'b', 'g', 'gray' )
 
-        mnthVals = mnthlyAvg(rms,dates,dateAxis=1, meanAxis=0) 
-        #ax[1].plot(dates,rms,'k.',markersize=4)
-        #ax[1].plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'',linestyle='None', markersize=2)
-        ax[1].errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],linestyle='None', yerr=mnthVals['std'],ecolor='red')
-        ax[1].scatter(mnthVals['dates'],mnthVals['mnthlyAvg'],facecolors='red', edgecolors='black', s=35)
-        ax[1].grid(True)
-        ax[1].set_title('Monthly Averaged Time Series of RMS')
-        ax[1].set_ylabel('RMS')
+            for i in range(1, nbands+1):
+            #for i in range(1, 2):
+                mnthVals = mnthlyAvg(snr[i],dates,dateAxis=1, meanAxis=0)           
+                #ax[0].plot(dates,snr[i],'k.', color=clr[i-1], label= 'band '+str(i),markersize=4)
+                ax[0].plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'', linestyle='None', color=clr[i-1],markersize=0)
+                ax[0].errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'], linestyle='None', yerr=mnthVals['std'],ecolor=clr[i-1])
+                ax[0].scatter(mnthVals['dates'],mnthVals['mnthlyAvg'],facecolors=clr[i-1], edgecolors='black', s=35,  label='band {}'.format(i))
+                #ax[0].set_ylim(0, 5000)
+            ax[0].legend(prop={'size':8})
+            ax[0].grid(True)
+            ax[0].set_ylabel('SNR')
+            ax[0].set_title('Monthly Averaged Time Series of SNR')
+            #ax[0].legend(prop={'size':12})
 
-        mnthVals = mnthlyAvg(dofs,dates,dateAxis=1, meanAxis=0)
+            mnthVals = mnthlyAvg(rms,dates,dateAxis=1, meanAxis=0) 
+            #ax[1].plot(dates,rms,'k.',markersize=4)
+            ax[1].plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'',linestyle='None', markersize=0)
+            ax[1].errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],linestyle='None', yerr=mnthVals['std'],ecolor='red')
+            ax[1].scatter(mnthVals['dates'],mnthVals['mnthlyAvg'],facecolors='red', edgecolors='black', s=35)
+            ax[1].grid(True)
+            ax[1].set_title('Monthly Averaged Time Series of RMS')
+            ax[1].set_ylabel('RMS')
 
-        ax[2].errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],linestyle='None', yerr=mnthVals['std'],ecolor='red')
-        ax[2].scatter(mnthVals['dates'],mnthVals['mnthlyAvg'],facecolors='red', edgecolors='black', s=35)
-        ax[2].grid(True)
-        ax[2].set_title('Monthly Averaged Time Series of DOF')
-        ax[2].set_ylabel('DOF')
-        ax[2].set_xlabel(xlabel)
- 
-        for pp in range(1,3):
-  
-            if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax[pp].xaxis.set_major_locator(majorLc)
-                ax[pp].xaxis.set_minor_locator(minorLc)
-                ax[pp].xaxis.set_major_formatter(majorFmt) 
-                ax[pp].xaxis.set_tick_params(which='major',labelsize=8)
-                ax[pp].xaxis.set_tick_params(which='minor',labelbottom='off')
-            else:
-                ax[pp].xaxis.set_major_locator(majorLc)
-                ax[pp].xaxis.set_major_formatter(majorFmt)
-                #ax[pp].xaxis.set_minor_locator(minorLc)
+            mnthVals = mnthlyAvg(dofs,dates,dateAxis=1, meanAxis=0)
 
-        #fig.subplots_adjust(bottom=0.15,top=0.95, left=0.1, right=0.97)
-        
-        if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-        else:           plt.show(block=False)       
+            ax[2].plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'',linestyle='None', markersize=0)
+            ax[2].errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],linestyle='None', yerr=mnthVals['std'],ecolor='red')
+            ax[2].scatter(mnthVals['dates'],mnthVals['mnthlyAvg'],facecolors='red', edgecolors='black', s=35)
+            ax[2].grid(True)
+            ax[2].set_title('Monthly Averaged Time Series of DOF')
+            ax[2].set_ylabel('DOF')
+            ax[2].set_xlabel(xlabel)
+     
+            for pp in range(1,3):
+      
+                if yrsFlg:
+                    #plt.xticks(rotation=45)
+                    ax[pp].xaxis.set_major_locator(majorLc)
+                    ax[pp].xaxis.set_minor_locator(minorLc)
+                    ax[pp].xaxis.set_major_formatter(majorFmt) 
+                    ax[pp].xaxis.set_tick_params(which='major',labelsize=8)
+                    ax[pp].xaxis.set_tick_params(which='minor',labelbottom='off')
+                else:
+                    ax[pp].xaxis.set_major_locator(majorLc)
+                    ax[pp].xaxis.set_major_formatter(majorFmt)
+                    #ax[pp].xaxis.set_minor_locator(minorLc)
+
+            #fig.subplots_adjust(bottom=0.15,top=0.95, left=0.1, right=0.97)
+            
+            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False)       
             
         #----------------------------
         # Plot time series of CHI_2_Y
