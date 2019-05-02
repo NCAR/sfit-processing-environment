@@ -25,4 +25,4 @@ FILE_DOI                = None
 FILE_ACCESS             = PUBLIC
 FILE_PROJECT_ID         = None 
 FILE_ASSOCIATION        = None 
-FILE_META_VERSION       = 04R042;CUSTOM
+FILE_META_VERSION       = 04R043;CUSTOM
