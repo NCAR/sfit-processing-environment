@@ -1225,7 +1225,8 @@ class ReadOutputData(_DateRange):
                     indNPTSB = lines[ind2].strip().split().index('NPTSB')
                     indFOV   = lines[ind2].strip().split().index('FOVDIA')
                     indSNR   = lines[ind2].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
-                    indFitSNR= lines[ind2].strip().split().index('FIT_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
+                    #indFitSNR= lines[ind2].strip().split().index('FIT_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
+                    indFitSNR= lines[ind2].strip().split().index('MEAN_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
                     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
 
 
@@ -1730,7 +1731,7 @@ class ReadOutputData(_DateRange):
         ''' Reads data from the pbp file'''
         self.pbp = {}
 
-        if not fname: fname = 'pbpfile'
+        if not fname: fname = 'pbpfile.out'
         
         #-----------------------------------
         # Loop through collected directories
@@ -1752,6 +1753,7 @@ class ReadOutputData(_DateRange):
             #--------------------
             #nbands = int(lines[1].strip().split()[1])
             nbands = int(lines[1].strip().split()[0])   #IVAN - Change to read the first number, some retrieval fails for certain windows
+
 
             #-------------------------------------------------------
             # Loop through bands. Header of first band is on line[3]
@@ -2180,12 +2182,12 @@ class GatherHDF(ReadOutputData,DbInputFile):
             self.HDFintT[i] = tempSpecDB['Dur']
             self.HDFazi[i]  = tempSpecDB['SAzm']
 
-        print '\nConverting S-azimuth to N-Azimuth....\n'
-
         #----------------------------------------------
         # In the Database Solar Azimuth is defined as positive South. 
         # Convert to North Solar Azimuth (2016 GEOMS CONVENTION)
         #----------------------------------------------
+        print '\nConverting S-Azimuth to N-Azimuth....\n'
+        
         for i, az in enumerate(self.HDFazi):
             if az >= 180.0:
                 self.HDFazi[i] = np.abs(360. - az - 180.)
@@ -3702,6 +3704,7 @@ class PlotData(ReadOutputData):
         for i in range(1,nbands+1):
             snr[i]     = np.asarray(self.summary['SNR_'+str(i)])
             fitsnr[i]  = np.asarray(self.summary['FIT_SNR_'+str(i)])
+
         
         #-----------------
         # Get Total Errors 
