@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import matplotlib.dates as dates
 import matplotlib.gridspec as gridspec
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg,NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg,NavigationToolbar2Tk
 import numpy as np
 import os, pdb, string
 from load_tmp_h5 import load_tmph5
@@ -31,6 +31,10 @@ class show_tmph5:
         plt.axes(sharex=ax)
         self.vmr = plt.figure(figsize=(7,3))
 
+
+        self.show_error = True
+        self.num_aux = 0
+        
         self.tkroot = Tk()
         self.tkroot.wm_title('tmph5 result viewer')
 
@@ -44,7 +48,7 @@ class show_tmph5:
                              command = self.quit)
         button_quit.grid(row=0, column=0, sticky=E+W)
 
-        options = list(set(('CHI_Y_2', 'DOFS', 'CO2', 'E_TOT', 'SNR', 'SZA', 'H2O_TOT')))
+        options = ['CHI_Y_2', 'DOFS', 'CO2', 'E_TOT', 'SNR', 'SZA', 'H2O_TOT','AUX_RETR']
         frame_show = Frame(main_frame_1)
         frame_show.grid(row=1,column=0)    
 
@@ -66,12 +70,20 @@ class show_tmph5:
                              text = 'Auxiliary quantity', 
                              command = lambda:self.plot_aux_val())
         button_show.grid(row=0, column=1, sticky=E+W)
+
+        button_save = Button(frame_show, 
+                             text = 'Plot Total Error', 
+                             command = lambda:self.toggle_error())
+        button_save.grid(row=0, column=3, sticky=E+W)
         if len(options) == 0:
             button_show.config(state=DISABLED)
-#        self.button_spec_by_gas = button_spec
+            #        self.button_spec_by_gas = button_spec
 
-        frame_filter = Frame(main_frame_2)
-        frame_filter.grid(row=0,column=0)
+
+        main_frame_2_2 = Frame(main_frame_2)
+        main_frame_2_2.grid(row=1,column=0)
+        frame_filter = Frame(main_frame_2_2)
+        frame_filter.grid(row=1,column=1)
 
         self.min_dofs = Entry(frame_filter)
         self.min_dofs.insert(0,np.min(self.res.dofs))
@@ -152,7 +164,7 @@ class show_tmph5:
 
 
         
-        frame_check = Frame(main_frame_2)
+        frame_check = Frame(main_frame_2_2)
         frame_check.grid(row=9,column=0)
         filter_errcol = Button(frame_check, 
                                text = 'Error Covariances', 
@@ -176,9 +188,9 @@ class show_tmph5:
 
         
         self.canvas = FigureCanvasTkAgg(self.columns, master=frame2)
-        self.canvas.show()
+        self.canvas.draw()
         self.canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-        toolbar = NavigationToolbar2TkAgg( self.canvas, frame2 )
+        toolbar = NavigationToolbar2Tk( self.canvas, frame2 )
         toolbar.update()
         self.canvas._tkcanvas.pack(side=TOP, fill=BOTH, expand=0)
         self.plot_values()
@@ -186,37 +198,58 @@ class show_tmph5:
         frame3 = Frame(main_frame_1)
         frame3.grid(row=3,column=0)
         self.canvas2 = FigureCanvasTkAgg(self.aux, master=frame3)
-        self.canvas2.show()
+        self.canvas2.draw()
         self.canvas2.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-        toolbar = NavigationToolbar2TkAgg( self.canvas2, frame3 )
+        toolbar = NavigationToolbar2Tk( self.canvas2, frame3 )
         toolbar.update()
         self.canvas2._tkcanvas.pack(side=TOP, fill=BOTH, expand=1)
         self.plot_aux_val()
         
-        frame4 = Frame(main_frame_2)
-        frame4.grid(row=10,column=0)
-        self.canvas3 = FigureCanvasTkAgg(self.vmr, master=frame4)
-        self.canvas3.show()
+        main_frame_2_3 = Frame(main_frame_2)
+        main_frame_2_3.grid(row=2,columns=1)
+        frame4 = Frame(main_frame_2_3)
+        frame4.grid(row=1,column=0,sticky='S')
+
+        options_plot = ['VMR_all', 'COL_AVK_all']
+        frame_plot = Frame(frame4)
+        frame_plot.grid(row=1,column=0)    
+
+        self.plot_val = StringVar(frame_plot)
+        self.plot_val.set(options_plot[0])
+        self.menu2 = OptionMenu(frame_plot,self.plot_val, 
+                                *options_plot)
+        self.menu2.grid(row=0,column=2,stick=E+W)
+
+
+        button_plot = Button(frame_plot, 
+                             text = 'PLOT', 
+                             command = lambda:self.plot_vmr_val())
+        button_plot.grid(row=0, column=1, sticky=E+W)
+
+        frame5 = Frame(main_frame_2_3)
+        frame5.grid(row=2,column=0,sticky='S')
+        self.canvas3 = FigureCanvasTkAgg(self.vmr, master=frame5)
+        self.canvas3.draw()
         self.canvas3.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-        toolbar = NavigationToolbar2TkAgg( self.canvas3, frame4 )
+        toolbar = NavigationToolbar2Tk(self.canvas3, frame5 )
         toolbar.update()
         self.canvas3._tkcanvas.pack(side=TOP, fill=BOTH, expand=1)
-        self.plot_vmr()
-
+        self.plot_vmr_val()
         self.tkroot.mainloop()
 
     def printv(self):
-        print self.v1.get()
+        print (self.v1.get())
         
     def plot_values(self):
         self.columns.gca().cla()
         self.columns.gca().plot_date(self.res.dnum[self.valid_ind],
                                      self.res.col_rt[self.valid_ind])
-        self.columns.gca().errorbar(self.res.dnum[self.valid_ind],
-                                    self.res.col_rt[self.valid_ind],
-                                    self.res.err_tot[self.valid_ind],
-                                    color = 'b', fmt='none')        
-        self.canvas.show()
+        if self.show_error:
+            self.columns.gca().errorbar(self.res.dnum[self.valid_ind],
+                                        self.res.col_rt[self.valid_ind],
+                                        self.res.err_tot[self.valid_ind],
+                                        color = 'b', fmt='none')        
+        self.canvas.draw()
 
     def save_values(self):
         fid = open('columns_show_and_filter.dat', 'write')
@@ -238,11 +271,24 @@ class show_tmph5:
             
 
         
-    def plot_vmr(self):
-        self.vmr.clf()
-        self.vmr.gca().plot(self.res.vmr_rt[:,self.valid_ind], self.res.Z)
-        self.canvas3.show()
 
+    def plot_vmr_val(self):
+        aux = self.plot_val.get()
+        print(aux)
+        self.vmr.gca().cla()
+        if aux == 'VMR_all':
+            self.vmr.clf()
+            self.vmr.gca().plot(self.res.vmr_rt[:,self.valid_ind], self.res.Z)
+            self.canvas3.draw()
+        if aux == 'COL_AVK_all':
+            self.vmr.clf()
+            self.vmr.gca().plot(self.res.avk_col[:,self.valid_ind], self.res.Z)
+            self.canvas3.draw()
+
+    def toggle_error(self):
+        self.show_error = not self.show_error
+        self.plot_values()
+        
     def plot_aux_val(self):
         aux = self.aux_val.get()
         self.aux.gca().cla()
@@ -252,8 +298,8 @@ class show_tmph5:
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.c2y[self.valid_ind])
         elif aux == 'DOFS':
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.dofs[self.valid_ind])
-#        elif aux == 'CO2':
-#            self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.col_co2[self.valid_ind])
+        elif aux == 'CO2':
+            self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.col_co2[self.valid_ind])
         elif aux == 'E_TOT':
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.err_tot[self.valid_ind])
         elif aux == 'SNR':
@@ -261,7 +307,13 @@ class show_tmph5:
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.snr_the[self.valid_ind], label='SNR THE')
         elif aux == 'H2O_TOT':
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.col_h2o[self.valid_ind])
-        self.canvas2.show()
+        elif aux == 'AUX_RETR':
+            self.aux.gca().set_title(self.res.auxname[self.num_aux])
+            self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.aux_rt[self.num_aux,self.valid_ind])
+            self.num_aux += 1
+            if self.num_aux >= len(self.res.auxname):
+                self.num_aux = 0
+        self.canvas2.draw()
 
     def filter(self):
 
@@ -365,8 +417,8 @@ class show_tmph5:
                                 and np.min(self.res.avk_col[:,x]) >= minavkc
                                 and np.max(self.res.avk_col[:,x]) <= maxavkc
                                 and self.res.err_tot[x] <= errcol
-#                                and self.res.col_co2[x] >= minco2
-#                                and self.res.col_co2[x] <= maxco2
+                                and self.res.col_co2[x] >= minco2
+                                and self.res.col_co2[x] <= maxco2
                                 and self.res.sza[x] >= minsza
                                 and self.res.sza[x] <= maxsza, range(0,len(self.res.dnum)))
 
@@ -378,7 +430,7 @@ class show_tmph5:
 
         if self.v1:
             inds = []
-            print self.v1
+            print (self.v1)
             for v in self.valid_ind:
                 try:
                     np.linalg.cholesky(self.res.vmr_ran[:,:,v])
@@ -387,11 +439,11 @@ class show_tmph5:
                 except:
                     pass
 
-            print 'Error Cov not valid:%d'%(len(self.valid_ind)-len(inds))
+            print ('Error Cov not valid:%d'%(len(self.valid_ind)-len(inds)))
             
         self.plot_values()
         self.plot_aux_val()
-        self.plot_vmr()
+        self.plot_vmr_val()
 
         self.min_dofs.delete(0,END)
         self.min_dofs.insert(0,np.min(self.res.dofs[self.valid_ind]))
@@ -401,10 +453,10 @@ class show_tmph5:
         self.min_c2y.insert(0,np.min(self.res.c2y[self.valid_ind]))
         self.max_c2y.delete(0,END)
         self.max_c2y.insert(0,np.max(self.res.c2y[self.valid_ind]))
-#        self.min_co2.delete(0,END)
-#        self.min_co2.insert(0,np.min(self.res.col_co2[self.valid_ind]))
-#        self.max_co2.delete(0,END)
-#        self.max_co2.insert(0,np.max(self.res.col_co2[self.valid_ind]))
+        self.min_co2.delete(0,END)
+        self.min_co2.insert(0,np.min(self.res.col_co2[self.valid_ind]))
+        self.max_co2.delete(0,END)
+        self.max_co2.insert(0,np.max(self.res.col_co2[self.valid_ind]))
         self.min_vmr.delete(0,END)
         self.min_vmr.insert(0,np.min(self.res.vmr_rt[:,self.valid_ind]))
         self.max_vmr.delete(0,END)
