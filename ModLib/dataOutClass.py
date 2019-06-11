@@ -647,7 +647,7 @@ def fit_driftfourier(x, data, weights, degree, half_period=0.5):
         matrix of "coefficients"
     
     """
-    xmin = x.min()
+    xmin  = x.min()
     xnorm = x - xmin
     
     # coefficient matrix
@@ -1225,8 +1225,7 @@ class ReadOutputData(_DateRange):
                     indNPTSB = lines[ind2].strip().split().index('NPTSB')
                     indFOV   = lines[ind2].strip().split().index('FOVDIA')
                     indSNR   = lines[ind2].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
-                    #indFitSNR= lines[ind2].strip().split().index('FIT_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
-                    indFitSNR= lines[ind2].strip().split().index('MEAN_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
+                    indFitSNR= lines[ind2].strip().split().index('FIT_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
                     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
 
 
@@ -1731,7 +1730,7 @@ class ReadOutputData(_DateRange):
         ''' Reads data from the pbp file'''
         self.pbp = {}
 
-        if not fname: fname = 'pbpfile.out'
+        if not fname: fname = 'pbpfile'
         
         #-----------------------------------
         # Loop through collected directories
@@ -3704,7 +3703,7 @@ class PlotData(ReadOutputData):
         for i in range(1,nbands+1):
             snr[i]     = np.asarray(self.summary['SNR_'+str(i)])
             fitsnr[i]  = np.asarray(self.summary['FIT_SNR_'+str(i)])
-
+            
         
         #-----------------
         # Get Total Errors 
@@ -3750,11 +3749,11 @@ class PlotData(ReadOutputData):
         yrsFlg   = False
         monthFlg = False
 
-        years = [ singDate.year for singDate in dates]      # Find years for all date entries
+        years  = [ singDate.year for singDate in dates]      # Find years for all date entries
+        months = [ singDate.month for singDate in dates]
         
         if len(list(set(years))) > 1:  yrsFlg    = True         # Determine all unique years
         else: 
-            months = [ singDate.month for singDate in dates]
             if len(list(set(months))) > 1:  monthFlg    = True
            
         #-----------------

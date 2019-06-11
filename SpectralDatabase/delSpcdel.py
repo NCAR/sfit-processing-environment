@@ -45,7 +45,11 @@ import glob
 
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'delSpcdel.py [-y YYYY -s tab/mlo/fl0]'
+    print 'delSpcdel.py [-s tab/mlo/fl0 -d 20180515 -?]'
+    print '  -s             : Flag Must include location: mlo/tab/fl0 (only for otserver)'
+    print '  -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.'
+    print '  -?             : Show all flags'
+
 
 def subProcRun( sysCall, logF=False, shellFlg=False ):
     '''This runs a system command and directs the stdout and stderr'''
@@ -101,46 +105,20 @@ def main(argv):
                                                 #---------------------------------#
     #------------------------------------------------------------------------------------------------------------#
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'y:s:')
+        opts, args = getopt.getopt(sys.argv[1:], 's:d:?:')
 
     except getopt.GetoptError as err:
         print str(err)
         usage()
         sys.exit()
 
-    
-    #-----------------------------
+
+     #-----------------------------
     # Parse command line arguments
     #-----------------------------
     for opt, arg in opts:
-
-        #-----------
-        # Start Date
-        #-----------
-        if opt == '-y':
-
-            if len(arg) == 4:
-
-                dates   = arg.strip().split('_')
-
-                iyear   = int(dates[0][0:4])
-                imnth   = int(1)
-                iday    = int(1)
-
-                fyear   = iyear
-                fmnth   = int(12)
-                fday    = int(31)
-
-            else:
-                print 'Error in input year'
-                usage()
-                sys.exit()
-
-
-        #------------------
-        # Single site usage
-        #------------------
-        elif opt == '-s':
+        # Check input file flag and path
+        if opt == '-s':
 
             if   arg.strip().lower() == 'mlo': 
                 mloFlg = True
@@ -155,13 +133,103 @@ def main(argv):
                 print 'Site: ' + arg + ' not recognized. Options: mlo or tab or fl0'
                 sys.exit()
 
-        #------------------
-        # Unhandled options
-        #------------------
-        else:
-            print 'Unhandled option: ' + opt
+            loc = arg
+
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+
+            else:
+                print 'Error in input date'
+                usage()
+                sys.exit()
+
+        elif opt == '-?':
             usage()
             sys.exit()
+
+        else:
+            print 'Unhandled option: ' + opt
+            sys.exit()
+
+    
+    # #-----------------------------
+    # # Parse command line arguments
+    # #-----------------------------
+    # for opt, arg in opts:
+
+    #     #-----------
+    #     # Start Date
+    #     #-----------
+    #     if opt == '-y':
+
+    #         if len(arg) == 4:
+
+    #             dates   = arg.strip().split('_')
+
+    #             iyear   = int(dates[0][0:4])
+    #             imnth   = int(1)
+    #             iday    = int(1)
+
+    #             fyear   = iyear
+    #             fmnth   = int(12)
+    #             fday    = int(31)
+
+    #         else:
+    #             print 'Error in input year'
+    #             usage()
+    #             sys.exit()
+
+
+    #     #------------------
+    #     # Single site usage
+    #     #------------------
+    #     elif opt == '-s':
+
+    #         if   arg.strip().lower() == 'mlo': 
+    #             mloFlg = True
+    #             site   = 'mlo'
+    #         elif arg.strip().lower() == 'tab':
+    #             tabFlg = True
+    #             site  = 'tab'
+    #         elif arg.strip().lower() == 'fl0': 
+    #             fl0Flg = True
+    #             site   = 'fl0'
+    #         else:
+    #             print 'Site: ' + arg + ' not recognized. Options: mlo or tab or fl0'
+    #             sys.exit()
+
+    #    #------------------
+    #    # Unhandled options
+    #    #------------------
+    #    else:
+    #        print 'Unhandled option: ' + opt
+    #        usage()
+    #        sys.exit()
     #------------------------------------------------------------------------------------------------------------#
 
     #-------------------

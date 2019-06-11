@@ -25,6 +25,7 @@ from os.path import isfile, join, isdir
 import shutil
 import datetime as dt
 import DateRange as dr
+import getopt
 
                         #-------------------------------------#
                         # Define helper functions and classes #
@@ -79,27 +80,97 @@ def findFiles(Path):
                             #                            #
                             #----------------------------#
 
-def main():
+def usage():
+    ''' Prints to screen standard program usage'''
+    print 'mvSpectra.py [-s tab/mlo/fl0 -d 20180515 -?]'
+    print '  -s             : Flag Must include location: mlo/tab/fl0 (only for otserver)'
+    print '  -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.'
+    print '  -?             : Show all flags'
+
+
+def main(argv):
+
+    #--------------------------------
+    # Retrieve command line arguments
+    #--------------------------------
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 's:d:?:')
+
+    except getopt.GetoptError as err:
+        print str(err)
+        usage()
+        sys.exit()
+
+    #-----------------------------
+    # Parse command line arguments
+    #-----------------------------
+    for opt, arg in opts:
+        # Check input file flag and path
+        if opt == '-s':
+
+            loc = arg.lower()
+
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+
+            else:
+                print 'Error in input date'
+                usage()
+                sys.exit()
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
+
+        else:
+            print 'Unhandled option: ' + opt
+            sys.exit()
+
 
     #-------
     # Inputs
     #-------
-    loc     = 'fl0'
+    #loc     = 'mlo'
     inPath  = '/ya4/id/' + loc.lower() + '/'     # Input directory
-    outPath = '/data1/' + loc.lower() + '/'       # Working directory
+    outPath = '/data1/'  + loc.lower() + '/'       # Working directory
 
-    iyear   = 2018
-    imonth  = 11
-    iday    = 27
+    # iyear   = 2019
+    # imonth  = 1
+    # iday    = 1
 
-    fyear   = 2019
-    fmonth  = 1
-    fday    = 31
+    # fyear   = 2019
+    # fmonth  = 4
+    # fday    = 15
 
     #-------------------
     # Call to date class
     #-------------------
-    DOI      = dr.DateRange(iyear, imonth, iday, fyear, fmonth, fday)
+    DOI      = dr.DateRange(iyear, imnth, iday, fyear, fmnth, fday)
     daysList = DOI.dateList
 
     #----------------------
@@ -107,7 +178,7 @@ def main():
     #----------------------
     for i,snglDay in enumerate(daysList):
 
-        #print snglDay
+        print snglDay
 
         #---------------------------------
         # Determine input/output directory
@@ -166,7 +237,7 @@ def main():
                 os.chmod(join(outDir,f), 0o766)
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
 
 
 

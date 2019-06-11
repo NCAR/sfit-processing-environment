@@ -32,7 +32,7 @@ from sys import exit
 
 class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
-   def __init__(self,gasNameStr,outputDir,processingSfitVer,location, fileVersion, projectID, dType):
+   def __init__(self,gasNameStr,outputDir,processingSfitVer,location, fileVersion, projectID, dType,  dSource=False):
       super(HDFsave, self).__init__(gasNameStr)
       self.dType               = dType
       if   dType.lower() == 'float32': self.dTypeStr = 'REAL'
@@ -51,6 +51,9 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.fver                = fileVersion   #'003'
       self.projectID           = projectID
       self.locID               = 'NCAR002'
+
+      if dSource: self.dSource = dSource
+      else: self.dSource = False
       
 
 
@@ -86,7 +89,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DATA_DISCIPLINE']         = 'ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED'
       dataStr['DATA_GROUP']              = 'EXPERIMENTAL;PROFILE.STATIONARY'
       dataStr['DATA_LOCATION']           = self.loc.upper()
-      dataStr['DATA_SOURCE']             = 'FTIR.'+self.gasNameUpper+'_'+self.locID.upper()
+      if self.dSource: dataStr['DATA_SOURCE'] = self.dSource+';FTIR.'+self.gasNameUpper+'_'+self.locID.upper()
+      else: dataStr['DATA_SOURCE']       = 'FTIR.'+self.gasNameUpper+'_'+self.locID.upper()
       dataStr['DATA_VARIABLES']          = self.getDatetimeName()+';'+self.getLatitudeInstrumentName()+';'+self.getLongitudeInstrumentName()+';'+self.getAltitudeInstrumentName()+';'+ \
                                            self.getSurfacePressureIndependentName()+';'+       \
                                            self.getSurfaceTemperatureIndependentName()+';'+self.getAltitudeName()+';'+self.getAltitudeBoundariesName()+';'+self.getPressureIndependentName()+';'+                 \

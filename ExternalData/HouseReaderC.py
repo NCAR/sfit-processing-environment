@@ -32,6 +32,9 @@ import csv
 from itertools import islice
 import sys
 import subprocess  
+import numpy as np
+import time
+from scipy import interpolate
 
 def tryopen(fname):
     ''' Try to open a file and read contents'''
@@ -41,6 +44,30 @@ def tryopen(fname):
     except IOError as errmsg:
         print errmsg
         return False
+
+def toYearFraction(dates):
+    ''' Convert datetime to year and fraction of year'''
+
+    #def sinceEpoch(date): # returns seconds since epoch
+        #return time.mktime(date.timetuple())
+    #s = sinceEpoch
+    ep_fnc = lambda x: time.mktime(x.timetuple())
+    
+    retrnDates = np.zeros(len(dates))
+    
+    for i,sngDate in enumerate(dates):
+        year = sngDate.year
+        startOfThisYear = dt.datetime(year=year, month=1, day=1)
+        startOfNextYear = dt.datetime(year=year+1, month=1, day=1)
+    
+        yearElapsed = ep_fnc(sngDate) - ep_fnc(startOfThisYear)
+        yearDuration = ep_fnc(startOfNextYear) - ep_fnc(startOfThisYear)
+        fraction = yearElapsed/yearDuration
+        retrnDates[i] = sngDate.year + fraction
+
+
+    return retrnDates
+
 
 
 
@@ -82,7 +109,8 @@ class MLOread():
                      'UTC_offset':[],
                      'DOY':[],
                      'E_Radiance':[],
-                     'W_Radiance':[]}
+                     'W_Radiance':[],
+                     'Atm_Press':[]}
         
             
     def formatA(self,fileName,year,month,day):
@@ -156,6 +184,7 @@ class MLOread():
                 self.data['DOY'].extend([-999]*npoints)
                 self.data['E_Radiance'].extend([row[15] for row in data])
                 self.data['W_Radiance'].extend([row[16] for row in data])
+                self.data['Atm_Press'].extend([-9999]*npoints)
 
             except:
                 print 'Error in reading file: %s' % fileName
@@ -229,6 +258,7 @@ class MLOread():
             self.data['DOY'].extend([-999]*npoints)
             self.data['E_Radiance'].extend([row[17] for row in data])
             self.data['W_Radiance'].extend([row[18] for row in data])
+            self.data['Atm_Press'].extend([-9999]*npoints)
             
     def formatC(self,fileName,year,month,day):
         ''' '''
@@ -305,6 +335,7 @@ class MLOread():
             self.data['DOY'].extend([-999]*npoints)
             self.data['E_Radiance'].extend([row[17] for row in data])
             self.data['W_Radiance'].extend([row[18] for row in data])
+            self.data['Atm_Press'].extend([-9999]*npoints)
             
             
     def formatD(self,fileName,year,month,day):
@@ -368,7 +399,8 @@ class MLOread():
                 self.data['UTC_offset'].extend([row[24] for row in data])
                 self.data['DOY'].extend([row[25] for row in data])
                 self.data['E_Radiance'].extend([row[8] for row in data])
-                self.data['W_Radiance'].extend([row[9] for row in data])       
+                self.data['W_Radiance'].extend([row[9] for row in data])  
+                self.data['Atm_Press'].extend([-9999]*npoints)     
 
             except:
                 print 'Error in reading file: %s' % fileName
@@ -437,7 +469,114 @@ class MLOread():
         self.data['DOY'].extend([row[37] for row in data])
         self.data['E_Radiance'].extend([row[8] for row in data])
         self.data['W_Radiance'].extend([row[9] for row in data])     
-            
+    
+    def formatF(self,fileName,fileNameMet,year,month,day):
+        ''' '''
+        #------------------------
+        # Open file and read data
+        #------------------------        
+        data = tryopen(fileName)
+
+        if data:
+
+           #--------------------------
+            # Remove header information 
+            #--------------------------
+            data[:] = [ row.strip().split() for row in data if not '#' in row and len(row.strip().split()) >= 30 ]
+
+                                   
+            #---------------------------------
+            # Determine number of observations
+            #---------------------------------
+            npoints = len(data)
+                   
+            #------------------------------------------------
+            # Create DateTime entry in Dictionary for sorting
+            #------------------------------------------------
+            try:
+                self.data['DateTime'].extend([dt.datetime(int(time[0][0:4]),int(time[0][4:6]),int(time[0][6:8]),\
+                                                              int(time[1][0:2]),int(time[1][3:5]),int(time[1][6:8])) for time in data])             
+                
+                #------------------
+                # Update dictionary
+                #------------------
+                self.data['Date'].extend([row[0] for row in data])            
+                self.data['Time'].extend([row[1] for row in data])            
+                self.data['LN2_Dewar_P_volt'].extend([-9999]*npoints)   
+                self.data['LN2_Dewar_P_psi'].extend([row[2] for row in data])   
+                self.data['Optic_Bench_Baseplate_T'].extend([row[3] for row in data])   
+                self.data['Beamsplitter_T'].extend([row[4] for row in data])   
+                self.data['Front_T'].extend([-9999]*npoints)   
+                self.data['InSb_T'].extend([row[5] for row in data])   
+                self.data['MCT_T'].extend([row[6] for row in data])   
+                self.data['Laser_T'].extend([row[16] for row in data])   
+                #self.data['Outside_T'].extend([row[17] for row in data])              
+                self.data['Brucker_Optical_RH'].extend([row[7] for row in data])
+                #self.data['Outside_RH'].extend([row[12] for row in data])
+                self.data['Wind_Speed_volt'].extend([-9999]*npoints)
+                #self.data['Wind_Speed_mph'].extend([row[14] for row in data])
+                self.data['WindDir_volt'].extend([-9999]*npoints)  
+                #self.data['WindDir_E_of_N'].extend([row[15] for row in data]) 
+                self.data['Mid_IR_Cooler'].extend([row[19][1] for row in data])
+                self.data['LN2_Fill'].extend([row[19][2] for row in data])
+                self.data['Hatch_Relay'].extend([row[20][2] for row in data])
+                self.data['Solar_Seeker_ON_Relay'].extend([row[21][0] for row in data])
+                self.data['Solar_Seeker_OFF_Relay'].extend([row[21][1] for row in data])
+                self.data['Dyn_Mirror_Pwr'].extend([row[21][2] for row in data])
+                self.data['28V_Solar_Seeker_Pwr'].extend([row[22][2] for row in data])
+                self.data['DEC_A_Plug_Strip'].extend([row[21][3] for row in data])
+                self.data['Hatch_Position_bit'].extend([row[22][0] for row in data])
+                self.data['Hatch_Position_volt'].extend([-999]*npoints)
+                self.data['UTC_offset'].extend([row[24] for row in data])
+                self.data['DOY'].extend([row[25] for row in data])
+                self.data['E_Radiance'].extend([row[8] for row in data])
+                self.data['W_Radiance'].extend([row[9] for row in data]) 
+
+                doyhouse = toYearFraction(self.data['DateTime'])  
+
+
+                data2 = tryopen(fileNameMet)[1:]
+
+                if data2:
+
+                    data2[:] = [ row.strip().split() for row in data2 if not '#' in row ]
+
+                    Date = [row[0] for row in data2]
+                    Time = [row[1] for row in data2]
+                    Temp = [row[2] for row in data2]
+                    RelH = [row[3] for row in data2]
+                    Pres = [row[4] for row in data2]
+                    WinS = [row[5] for row in data2]
+                    WinG = [row[6] for row in data2]
+                    WinD = [row[7] for row in data2]
+
+                    WinS = 2.237 * WinS   # Conversion m/s to miles/h
+
+
+                    dateT =  [dt.datetime(int(time[0][0:4]),int(time[0][4:6]),int(time[0][6:8]),\
+                                                              int(time[1][0:2]),int(time[1][3:5]),int(time[1][6:8])) for time in data2]
+
+
+                    doyMet = toYearFraction(dateT)
+
+
+                    Temp_i           = interpolate.interp1d(doyMet, Temp, axis=0, fill_value=Temp[0], bounds_error=False, kind='linear')(doyhouse )
+                    RelH_i           = interpolate.interp1d(doyMet, RelH, axis=0, fill_value=Temp[0], bounds_error=False, kind='linear')(doyhouse )
+                    Pres_i           = interpolate.interp1d(doyMet, Pres, axis=0, fill_value=Temp[0], bounds_error=False, kind='linear')(doyhouse )
+                    WinS_i           = interpolate.interp1d(doyMet, WinS, axis=0, fill_value=Temp[0], bounds_error=False, kind='linear')(doyhouse )
+                    WinD_i           = interpolate.interp1d(doyMet, WinD, axis=0, fill_value=Temp[0], bounds_error=False, kind='linear')(doyhouse )
+
+                    self.data['Outside_T'].extend([i for i in Temp_i]) 
+                    self.data['Outside_RH'].extend([i for i in RelH_i]) 
+                    self.data['Atm_Press'].extend([i for i in Pres_i]) 
+                    self.data['Wind_Speed_mph'].extend([i for i in Pres_i]) 
+                    self.data['WindDir_E_of_N'].extend([i for i in WinD_i]) 
+
+
+            except:
+                print 'Error in reading file: %s' % fileName
+                pass
+                #sys.exit()
             
         
     def sortData(self):

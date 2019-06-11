@@ -60,9 +60,12 @@ from matplotlib.ticker import MultipleLocator
                         #-------------------------------------#
             
                                                      
+
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'MergPrf.py -i <File>'
+    print 'There are two options to run MergPrf.py:'
+    print '(1) MergPrf.py -i <File>. In this case the input file needs to be modified accordingly.'
+    print '(2) MergPrf.py -s tab/mlo/fl0 -y 2018'
 
         
 def ckDir(dirName):
@@ -100,13 +103,14 @@ def main(argv):
     # Set default flags
     #------------------
     logFile  = False    
+    inpFlg   = False
     
     #---------------------------------
     # Retrieve command line arguments 
     #---------------------------------
     #------------------------------------------------------------------------------------------------------------#                                             
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:l:')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:l:s:d:?:')
 
     except getopt.GetoptError as err:
         print str(err)
@@ -126,13 +130,50 @@ def main(argv):
             
             # Check if file exists
             ckFile(inputFile,True)
+
+            inpFlg  = True
             
         # Option for Log File
         elif opt == '-l':
             if arg: logDir = arg
             else:   logDir = os.getcwd() +'/'
             logFile = True        
-            
+        
+        elif opt == '-s':  
+
+            loc = arg.lower()
+
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
+
         #------------------
         # Unhandled options
         #------------------
@@ -151,9 +192,39 @@ def main(argv):
     # Read input file
     #----------------
     inputs = {}
-    execfile(inputFile, inputs)
-    if '__builtins__' in inputs:
-        del inputs['__builtins__']       
+
+    if inpFlg:
+        execfile(inputFile, inputs)
+        if '__builtins__' in inputs:
+            del inputs['__builtins__']  
+
+    else:
+
+        inputs['loc']          = loc
+
+        inputs['iyear']        = iyear
+        inputs['imnth']        = imnth
+        inputs['iday']         = iday
+        
+        inputs['fyear']        = fyear
+        inputs['fmnth']        = fmnth
+        inputs['fday']         = fday
+        
+        #------------
+        # Directories
+        #------------
+        inputs['NCEPDir']      = '/data/Campaign/' + loc.upper() + '/NCEP_nmc/'
+        inputs['outBaseDir']   = '/data1/' + loc.lower() + '/'
+        inputs['WACCMfile']    = '/data/Campaign/' + loc.upper() + '/waccm/WACCM_pTW-meanV6.' + loc.upper()
+
+        #------
+        # Flags
+        #------
+        inputs['npntSkip']     = 1
+        inputs['Pintrp']       = 3
+        inputs['Tintrp']       = 2
+        inputs['mvOld']        = False           # Flag to rename previous water profile files. (Files appened with .WACCM5)
+
         
     #-----------------------------------
     # Check the existance of directories

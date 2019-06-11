@@ -72,6 +72,11 @@ def ckFile(fName):
         print 'File %s does not exist' % (fName)
         sys.exit()
 
+def usage():
+    ''' Prints to screen standard program usage'''
+    print 'read_FL0_EOL_data.py [-y 2018 -?]'
+    print '  -?             : Show all flags'
+
 
                                     #----------------------------#
                                     #                            #
@@ -79,7 +84,40 @@ def ckFile(fName):
                                     #                            #
                                     #----------------------------#
 
-def main():
+def main(argv):
+
+    #------------------------------------------------------------------------------------------------------------#
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'y:?')
+
+    except getopt.GetoptError as err:
+        print str(err)
+        usage()
+        sys.exit()
+
+
+     #-----------------------------
+    # Parse command line arguments
+    #-----------------------------
+    for opt, arg in opts:
+        # Check input file flag and path
+
+        if opt == '-y':
+
+            yearstr   = str(arg)
+
+            else:
+                print 'Error in input year'
+                usage()
+                sys.exit()
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
+
+        else:
+            print 'Unhandled option: ' + opt
+            sys.exit()
 
     #----------------
     # Initializations
@@ -88,7 +126,7 @@ def main():
     dataFileTag = 'flab'
     fileExtTag  = 'cdf'
     outDataDir  = '/data1/ancillary_data/fl0/eol/'
-    yearstr     = '2018'
+    yearstr     = yearstr
 
     #--------------------------
     # Initialize variable lists
@@ -208,4 +246,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

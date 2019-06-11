@@ -44,6 +44,7 @@ import sfitClasses       as sc
 import numpy             as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+import getopt
 
 
 
@@ -84,12 +85,73 @@ def findCls(dataArray, val):
                             #                            #
                             #----------------------------#
 
-def main():
+def main(argv):
+
+    #--------------------------------
+    # Retrieve command line arguments
+    #--------------------------------
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 's:d:?:')
+
+    except getopt.GetoptError as err:
+        print str(err)
+        usage()
+        sys.exit()
+
+    #-----------------------------
+    # Parse command line arguments
+    #-----------------------------
+    for opt, arg in opts:
+        # Check input file flag and path
+        if opt == '-s':
+
+            loc = arg
+
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+
+            else:
+                print 'Error in input date'
+                usage()
+                sys.exit()
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
+
+        else:
+            print 'Unhandled option: ' + opt
+            sys.exit()
 
     #---------
     # Location
     #---------
-    loc = 'mlo'
+    #loc = 'fl0'
 
     #------------------------------------
     # Version number to append water file
@@ -104,12 +166,12 @@ def main():
     #-----------------------
     # Date Range of interest
     #-----------------------
-    iyear          = 2018
-    imnth          = 1
-    iday           = 1
-    fyear          = 2018
-    fmnth          = 12
-    fday           = 31
+    #iyear          = 2018
+    #imnth          = 12
+    #iday           = 1
+    #fyear          = 2018
+    #fmnth          = 12
+    #fday           = 31
 
     #---------------------------------------
     # Size of altitude grid for each station
@@ -250,4 +312,4 @@ def main():
         print 'Finished processing folder: {}'.format(sngDir)
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

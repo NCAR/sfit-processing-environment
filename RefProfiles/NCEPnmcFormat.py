@@ -60,7 +60,9 @@ import csv
                                                      
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'NCEPnmcFormat.py -i <File>'
+    print 'There are two options to run NCEPnmcFormat.py:'
+    print '(1) NCEPnmcFormat.py -i <File>. In this case the input file needs to be modified accordingly.'
+    print '(2) NCEPnmcFormat.py -s tab/mlo/fl0 -y 2018'
 
         
 def ckDir(dirName):
@@ -123,13 +125,15 @@ def main(argv):
     # Initializations and defaults
     #-----------------------------
 
+    inpFlg = False
+
     
                                                 #---------------------------------#
                                                 # Retrieve command line arguments #
                                                 #---------------------------------#
     #------------------------------------------------------------------------------------------------------------#                                             
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:D:')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:s:y:?:')
 
     except getopt.GetoptError as err:
         print str(err)
@@ -149,6 +153,20 @@ def main(argv):
             
             # Check if file exists
             ckFile(inputFile,True)
+
+            inpFlg = True
+
+        elif opt == '-s':  
+
+            loc = arg
+
+        elif opt == '-y':
+
+            year   = int(arg)
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
             
         #------------------
         # Unhandled options
@@ -158,29 +176,60 @@ def main(argv):
             usage()
             sys.exit()
     #------------------------------------------------------------------------------------------------------------#                       
-       
+    
+
     #----------------
     # Read input file
     #----------------
     inputs = {}
-    execfile(inputFile, inputs)
-    if '__builtins__' in inputs:
-        del inputs['__builtins__']       
-        
-    #-----------------------------------
-    # Check the existance of directories
-    # and files given in input file
-    #-----------------------------------
-    # Check base directory of NCEP nmc data
-    if 'dataDir' in inputs and inputs['dataDir']:                           
-        if not ckDir(inputs['dataDir']):
-            sys.exit()
-        # check if '/' is included at end of path
-        if not( inputs['dataDir'].endswith('/') ):
-            inputs['dataDir'] = inputs['dataDir'] + '/'    
 
-    # Check for station layer file if doing interpolation 
-    if inputs['IntrpFileFlg']: ckFile(inputs['stationlyrs'],True)
+    if inpFlg:
+        
+        execfile(inputFile, inputs)
+        if '__builtins__' in inputs:
+            del inputs['__builtins__']       
+            
+        #-----------------------------------
+        # Check the existance of directories
+        # and files given in input file
+        #-----------------------------------
+        # Check base directory of NCEP nmc data
+        if 'dataDir' in inputs and inputs['dataDir']:                           
+            if not ckDir(inputs['dataDir']):
+                sys.exit()
+            # check if '/' is included at end of path
+            if not( inputs['dataDir'].endswith('/') ):
+                inputs['dataDir'] = inputs['dataDir'] + '/'    
+
+        # Check for station layer file if doing interpolation 
+        if inputs['IntrpFileFlg']: ckFile(inputs['stationlyrs'],True)
+
+    else:
+
+        inputs['years'] = [year]
+        inputs['loc']   = loc
+
+        #------
+        # Flags
+        #------
+        inputs['IntrpFileFlg']    = False
+        inputs['NonIntrpFileFlg'] = True
+
+
+        #--------------------
+        # Base Data Directory
+        #--------------------
+        inputs['dataDir']   = '/data1/ancillary_data/NCEP_NMC/'    # Base directory with all external station data
+
+        #------
+        # Files
+        #------
+        #stationlyrs  = '/Users/ebaumer/Data/TestBed2/station.layers'                                # Station layers file
+        inputs['HgtBaseDir']      = '/data/Campaign/'+loc.upper()+'/NCEP_nmc/'   # Height nmc data
+        inputs['TempBaseDir']     = '/data/Campaign/'+loc.upper()+'/NCEP_nmc/'   # Temp nmc data
+        inputs['IntrpBaseDir']    = '/data/Campaign/'+loc.upper()+'/NCEP_nmc/'   # Interpolated Temperatures
+
+
        
     #-------------------
     # Loop through years

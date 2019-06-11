@@ -153,7 +153,7 @@ def main(argv):
        hdfsave =  __import__(hdfsaveFile)
 
     except Exception as errmsg:
-        print '!hdfsave does not exist: {} !!!'.format(hdfsaveFile)
+        print '!Error while importing hdfsave: {} !!!'.format(hdfsaveFile)
         exit()
 
     #------------------
@@ -180,6 +180,10 @@ def main(argv):
             print 'Error in loc ID'
             sys.exit()
 
+    if 'dSource' in Inputs: dSource = Inputs['dSource']
+    else: dSource =False
+
+
     
     #------------------------------------------------------------
     # Here we create an instance of the HDFsave object. We define
@@ -189,7 +193,7 @@ def main(argv):
     # specified in GEOMS: http://avdc.gsfc.nasa.gov/index.php?site=1989220925
     #------------------------------------------------------------
     
-    myhdf = hdfsave.HDFsave(Inputs['gasName'],Inputs['outDir'], Inputs['sfitVer'], locID, Inputs['fileVer'], Inputs['projectID'], dType='float32')
+    myhdf = hdfsave.HDFsave(Inputs['gasName'],Inputs['outDir'], Inputs['sfitVer'], locID, Inputs['fileVer'], Inputs['projectID'],  dType='float32', dSource=dSource)
 
     ErrYearFlg = False
     ErrYear    = []

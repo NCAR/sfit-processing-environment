@@ -31,6 +31,7 @@ import glob
 import DateRange as dr
 import HouseReaderC as hr
 import csv
+import getopt
                                     #-------------------------#
                                     # Define helper functions #
                                     #-------------------------#
@@ -57,12 +58,73 @@ def ckFile(fName):
                                     #                            #
                                     #----------------------------#
 
-def main():
+def main(argv):
+
+    #--------------------------------
+    # Retrieve command line arguments
+    #--------------------------------
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 's:d:?')
+
+    except getopt.GetoptError as err:
+        print str(err)
+        usage()
+        sys.exit()
+
+    #-----------------------------
+    # Parse command line arguments
+    #-----------------------------
+    for opt, arg in opts:
+        # Check input file flag and path
+        if opt == '-s':
+
+            loc = arg
+
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+
+            else:
+                print 'Error in input date'
+                usage()
+                sys.exit()
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
+
+        else:
+            print 'Unhandled option: ' + opt
+            sys.exit()
                                     
     #----------------
     # Initializations
     #----------------
-    statstr     = 'tab'
+    statstr     = loc
     dataDir     = '/data1/'+statstr.lower()+'/'
     #dataDir     = '/ya4/id/'+statstr.lower()+'/'
     outDataDir  = '/data/Campaign/'+statstr.upper()+'/House_Log_Files/'
@@ -71,14 +133,14 @@ def main():
     # Date Range of data to process
     #------------------------------
     # Starting 
-    iyear = 2018               # Year
-    imnth = 1                 # Month
-    iday  = 1                  # Day
+    #iyear = 2018               # Year
+    #imnth = 1                 # Month
+    #iday  = 1                  # Day
     
     # Ending
-    fyear = 2018               # Year
-    fmnth = 12                 # Month
-    fday  = 31                 # Day
+    #fyear = 2018               # Year
+    #fmnth = 12                 # Month
+    #fday  = 31                 # Day
     
     #-------------------
     # Call to date class
@@ -121,6 +183,8 @@ def main():
         daysYear = DOI.daysInYear(indvYear)        # Create a list of days within one year
         
         for indvDay in daysYear:
+
+            print indvDay
             
             # Find year month and day strings
             yrstr   = "{0:02d}".format(indvDay.year)
@@ -136,10 +200,18 @@ def main():
             # Log files changed name after Jan 21st, 2009
             #--------------------------------------------
             if (statstr.lower() == 'mlo'):
+                
                 if indvDay < dt.date(2009,1,21):
                     srchstr = yrstr + mnthstr + daystr + '.wth'
+                
+                elif indvDay >= dt.date(2019,05,03):
+                    
+                    srchstr  = 'house.log'
+                    srchstr2 = 'houseMet.log'
+
                 else:
                     srchstr = 'house.log'
+
             elif (statstr.lower() == 'tab'):
                 srchstr = 'house.log'
                 
@@ -174,9 +246,17 @@ def main():
                 elif dt.date(2011,8,2) <= indvDay < dt.date(2017,12,10):
                     houseData.formatD(houseFile,indvDay.year,indvDay.month,indvDay.day)
 
-                # Format D for date >= 20171210
-                elif indvDay >= dt.date(2017,12,10):
+                elif dt.date(2011,8,2) <= indvDay < dt.date(2019,05,02):
                     houseData.formatD(houseFile,indvDay.year,indvDay.month,indvDay.day)
+
+                elif indvDay >= dt.date(2019,05,03):
+                    houseFileMet = glob.glob( dayDir + srchstr2 )[0]
+
+                    houseData.formatF(houseFile,houseFileMet, indvDay.year,indvDay.month,indvDay.day)
+
+                # Format D for date >= 20171210
+                #elif indvDay >= dt.date(2017,12,10):
+                #    houseData.formatD(houseFile,indvDay.year,indvDay.month,indvDay.day)
 
           
             elif (statstr.lower() == 'tab'):
@@ -237,6 +317,7 @@ def main():
                 fopen.write('#   DOY                         DDD            29        -999         \n')                
                 fopen.write('#   E_Radiance                  volts          30        -9999        \n')
                 fopen.write('#   W_Radiance                  volts          31        -9999        \n')
+                fopen.write('#   Atm_Press                   mbar          32        -9999        \n')
                 fopen.write('#---------------------------------------------------------------------\n')
  
             elif (wmode == 'wb') and (statstr.lower() == 'tab'):
@@ -299,7 +380,7 @@ def main():
                          'WindDir_E_of_N':16,'Mid_IR_Cooler':17,'LN2_Fill':18,'Hatch_Relay':19,\
                          'Solar_Seeker_ON_Relay':20,'Solar_Seeker_OFF_Relay':21,'Dyn_Mirror_Pwr':22,\
                          'DEC_A_Plug_Strip':23,'28V_Solar_Seeker_Pwr':24,'Hatch_Position_bit':25,\
-                         'Hatch_Position_volt':26,'UTC_offset':27,'DOY':28,'E_Radiance':29,'W_Radiance':30}
+                         'Hatch_Position_volt':26,'UTC_offset':27,'DOY':28,'E_Radiance':29,'W_Radiance':30, 'Atm_Press':31}
             elif (statstr.lower() == 'tab'):
                 order = {'Date':0,'Time':1,'Opt_Bnch_Src_T':2,'Beamsplitter_T':3,\
                          'Det_Dewar_T':4,'Opt_Bnch_Det_T':5,'Dolores_Int_HD_T':6,'Dolores_Trans_T':7,\
@@ -317,4 +398,4 @@ def main():
         
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

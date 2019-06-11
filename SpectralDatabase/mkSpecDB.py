@@ -143,13 +143,14 @@ def main(argv):
     ckopus = '/data/bin/ckopus'          # Default path for ckopus executable. This is used for commandline option to 
                                          # just create a list of folders with OPUS data in them                                  
     datapath = False
+    inpFlg   = False
     
                                                 #---------------------------------#
                                                 # Retrieve command line arguments #
                                                 #---------------------------------#
     #------------------------------------------------------------------------------------------------------------#                                             
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:D:')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:D:s:d:?:')
 
     except getopt.GetoptError as err:
         print str(err)
@@ -169,6 +170,8 @@ def main(argv):
             
             # Check if file exists
             ckFile(inputFile)
+
+            inpFlg  = True
     
         #-------------------------------
         # Option to just create a list
@@ -188,7 +191,42 @@ def main(argv):
             print 'If not found, please change path under Initializations and defaults in python program'
             ckFile(ckopus)                       # Check if ckopus executable file given above under Initializations and defaults
                                                  # exists
-            print 'ckopus executable found'                                     
+            print 'ckopus executable found'  
+
+        elif opt == '-s':  
+
+            loc = arg.lower()
+
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+        elif opt == '-?':
+            usage()
+            sys.exit()                                   
 
         #------------------
         # Unhandled options
@@ -231,9 +269,71 @@ def main(argv):
     # Read input file
     #----------------
     DBinputs = {}
-    execfile(inputFile, DBinputs)
-    if '__builtins__' in DBinputs:
-        del DBinputs['__builtins__']       
+
+    if inpFlg:
+        execfile(inputFile, DBinputs)
+        if '__builtins__' in DBinputs:
+            del DBinputs['__builtins__'] 
+
+    else:
+
+        #---------------------
+        # Three letter station
+        # location
+        #---------------------
+        DBinputs['loc'] = loc
+
+        #----------------------------------
+        # Date Range of data to process
+        # Data processing includes starting
+        # and ending dates!!
+        #----------------------------------
+        # Starting
+        DBinputs['iyear'] = iyear               # Year
+        DBinputs['imnth'] = imnth                 # Month
+        DBinputs['iday']  = iday                  # Day
+
+        # Ending
+        DBinputs['fyear'] = fyear               # Year
+        DBinputs['fmnth'] = fmnth                 # Month
+        DBinputs['fday']  = fday                 # Day
+
+
+        #------------
+        # directories
+        #------------
+        DBinputs['dataBaseDir']   = '/data1/'+loc.lower()+'/'                                    # Base directory for OPUS data
+        DBinputs['DaysProcDir']   = '/data/Campaign/'+loc.upper()+'/Spectral_DB/'   # Path to write file that contains list of all folders processed
+
+        #------
+        # Files
+        #------
+        DBinputs['outputDBfile']  = '/data/Campaign/'+loc.upper()+'/Spectral_DB/spDB_'+loc.lower()+'_RD.dat'  # Path and filename of spectral database file
+        #Fckopus       = '/data/ebaumer/Code/sfit-ckopus/ckopus'
+        DBinputs['Fckopus']       = '/data/bin/ckopus'                                                    # ckopus executable file
+
+        #----------------------
+        # General Logical Flags
+        #----------------------
+        DBinputs['DaysProcFlg'] = False              # This flag controls whether a file containing a list of folders processed is written
+        DBinputs['bnrWriteFlg'] = True              # This flag controls whether ckopus is called to write bnr files
+
+        #-------------
+        # ckopus Flags
+        #-------------
+        DBinputs['bnrType']    = 'F'                # bnr type ckopus writes (F => Fortran, R => C)
+        DBinputs['SBlockType'] = 'NONE'             # Spectral block type [TRAN | SGN2 | IFG2 | EMIS | IFGM | PHAS | SNGC]
+                                        # If this value is None or an empty string, the program will take the
+                                        # default spectral block type given by ckopus
+
+        #------------------------------------------
+        # ckopus notes: Jan 15th 2009 clock changed
+        # to UTC time. Prior to that clock was on
+        # MLO time.
+        #------------------------------------------
+        #ckopusFlgs = ['-b2']                # For MLO 2009 - August 2011
+        #ckopusFlgs = ['-b6','-U','-pPHAS'] # For MLO 1995 - 2008
+        DBinputs['ckopusFlgs'] = ['-b5']               # For MLO after August 2011      
         
     #-----------------------------------
     # Check the existance of directories

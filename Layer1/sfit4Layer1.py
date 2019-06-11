@@ -152,12 +152,13 @@ def main(argv):
     logFile  = False
     lstFlg   = False
     pauseFlg = False
+    overDFlg = False
 
     #--------------------------------
     # Retrieve command line arguments
     #--------------------------------
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:P:L:l?')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:P:L:d:l?')
 
     except getopt.GetoptError as err:
         print str(err)
@@ -195,6 +196,41 @@ def main(argv):
         # Option for Log File
         elif opt == '-l':
             logFile = True
+
+         # Option for Log File
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+            else:
+                print 'Error in input date'
+                usage()
+                sys.exit()
+
+            overDFlg = True
 
 
         # Option for List file
@@ -272,6 +308,17 @@ def main(argv):
     # ctl files
     for ctlFile in mainInF.inputs['ctlList']:
         ckFile(ctlFile[0],logFlg=logFile,exit=True)
+
+    # overwrite dates
+    if overDFlg:
+        mainInF.inputs['iyear'] = iyear
+        mainInF.inputs['imnth'] = imnth
+        mainInF.inputs['iday']  = iday
+        
+        mainInF.inputs['fyear'] = fyear
+        mainInF.inputs['fmnth'] = fmnth
+        mainInF.inputs['fday']  = fday
+
 
 
     #--------------------------------------------

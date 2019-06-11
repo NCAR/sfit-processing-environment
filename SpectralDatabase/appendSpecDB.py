@@ -77,7 +77,7 @@ import csv
                                                      
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'mkSpecDB.py -i <File> -D <Directory>'
+    print 'appendSpecDB.py -i <File> -D <Directory>'
 
         
 def ckDir(dirName):
@@ -129,13 +129,14 @@ def main(argv):
     #-----------------------------
     statDirFlg = False             # Flag to indicate the presence of external station data
     houseFlg   = False             # Flag to indicate the presence of house data
+    inpFlg     = False
     
                                                 #---------------------------------#
                                                 # Retrieve command line arguments #
                                                 #---------------------------------#
     #------------------------------------------------------------------------------------------------------------#                                             
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:D:')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:s:y:?:')
 
     except getopt.GetoptError as err:
         print str(err)
@@ -155,6 +156,21 @@ def main(argv):
             
             # Check if file exists
             ckFile(inputFile,True)
+
+            inpFlg = True
+
+        elif opt == '-s':  
+
+            loc = arg.lower()
+
+        elif opt == '-y':
+
+            year   = int(arg)
+  
+
+        elif opt == '-?':
+            usage()
+            sys.exit()                               
             
         #------------------
         # Unhandled options
@@ -170,9 +186,57 @@ def main(argv):
     # Read input file
     #----------------
     DBinputs = {}
-    execfile(inputFile, DBinputs)
-    if '__builtins__' in DBinputs:
-        del DBinputs['__builtins__']       
+
+    if inpFlg:
+        execfile(inputFile, DBinputs)
+        if '__builtins__' in DBinputs:
+            del DBinputs['__builtins__']
+
+    else:
+
+        #---------------------
+        # Three letter station
+        # location
+        #---------------------
+        DBinputs['loc'] = loc
+
+        #----------------------------------
+        # Date Range of data to process
+        # Data processing includes starting
+        # and ending dates!!
+        #----------------------------------
+        # Starting
+        DBinputs['year'] = year               # Year
+       
+        # Flags
+        #------
+        DBinputs['readableFlg'] = True
+        DBinputs['csvFlg']      = False 
+
+        #------------
+        # directories
+        #------------
+        DBinputs['statDir']   = '/data1/ancillary_data/mlo/cmdl/Minute_Data/'   # Base directory with all external station data (mlo)
+        #statDir   = '/data/tools/gsfc/fl0/eol/'    # Base directory with all external station data (fl0)
+
+        #------
+        # Files
+        #------
+        DBinputs['specDBFile']         = '/data/Campaign/'+loc.upper()+'/Spectral_DB/spDB_'+loc.lower()+'_RD.dat'           # Old spectral database file
+        DBinputs['readableSpecDBFile'] = '/data/Campaign/'+loc.upper()+'/Spectral_DB/HRspDB_'+loc.lower()+'_RD.dat'         # Easily readable new spectral database file
+        DBinputs['csvSpecDBFile']      = '/data/Campaign/'+loc.upper()+'/Spectral_DB/CSVspDB_'+loc.lower()+'.dat'        # CSV new spectral database
+        DBinputs['houseFile']          = '/data/Campaign/'+loc.upper()+'/House_Log_Files/'+loc.upper()+'_HouseData_'+str(year)+'.dat'  # Yearly house data file
+
+        #----------------------
+        # Number of minutes to
+        # include for averaging
+        #----------------------
+        DBinputs['nminsStation'] = 10       # Number of minutes for averaging Temperature, Pressure, and RH from external station data (MLO)
+        #nminsStation = 90        # Number of minutes for averaging Temperature, Pressure, and RH from external station data (TAB)
+        DBinputs['nminsHouse']   = 10        # Number of minutes for averaging Temperature, Pressure, and RH from House log data
+
+
+
         
     #-----------------------------------
     # Check the existance of directories
@@ -242,7 +306,8 @@ def main(argv):
                             houseData.setdefault('W_Radiance',[]).append(float(row[30]))
                             
                             # These values are not present in the mlo house log data
-                            houseData.setdefault('Pres',[]).append(-9999)
+                            try:   houseData.setdefault('Pres',[]).append(float(row[31]))
+                            except: houseData.setdefault('Pres',[]).append(-9999)     
                             houseData.setdefault('Det_Intern_T_Swtch',[]).append(-9999)
                             houseData.setdefault('Ext_Solar_Sens',[]).append(-9999)
                             #houseData.setdefault('Quad_Sens',[]).append(-9999)                            
@@ -263,38 +328,40 @@ def main(argv):
     #--------------------------------------------------
     if statDirFlg:
         if DBinputs['loc'].lower() == 'mlo':
-            #   LABEL                       Units          Column    Missing Value
-            #---------------------------------------------------------------------
-            #   Year                        YYYY            2         NA           
-            #   Month                       MM              3         NA                 
-            #   Day                         DD              4         NA               
-            #   Hour                        HH              5         NA       
-            #   Minute                      MM              6         NA   
-            #   Barometric Pressure         hPa             9        -999.90
-            #   Temperature at 2m           C               10       -999.9
-            #   Relative Humidity           %               13       -99
-            #---------------------------------------------------------------------                                 
-            
-            #cmdlFiles = glob( DBinputs['statDir'] + str(DBinputs['year']) + '/' + \
-            #                  'met_mlo_insitu_1_obop_minute_'+ str(DBinputs['year']) + '*')
 
-            #---------CHANGED BELOW. AFTER 2015 THE MONTHLY FILES ARE NOT SAVED BY YEAR (IVAN)
-            cmdlFiles = glob( DBinputs['statDir']  + \
-                              'met_mlo_insitu_1_obop_minute_'+ str(DBinputs['year']) + '*')
-            #---------
+            if DBinputs['year'] < 2019:
+                #   LABEL                       Units          Column    Missing Value
+                #---------------------------------------------------------------------
+                #   Year                        YYYY            2         NA           
+                #   Month                       MM              3         NA                 
+                #   Day                         DD              4         NA               
+                #   Hour                        HH              5         NA       
+                #   Minute                      MM              6         NA   
+                #   Barometric Pressure         hPa             9        -999.90
+                #   Temperature at 2m           C               10       -999.9
+                #   Relative Humidity           %               13       -99
+                #---------------------------------------------------------------------                                 
+                
+                #cmdlFiles = glob( DBinputs['statDir'] + str(DBinputs['year']) + '/' + \
+                #                  'met_mlo_insitu_1_obop_minute_'+ str(DBinputs['year']) + '*')
 
-            
-            if not len(cmdlFiles) == 0:
-                statData = {}
-                for cmdlFile in cmdlFiles:
-                    with open(cmdlFile, 'r') as fopen:
-                        reader = csv.reader(fopen,delimiter=' ',skipinitialspace=True)
-                        for row in reader:
-                            statData.setdefault('DateTime',[]).append(dt.datetime(int(row[1]),int(row[2]),int(row[3]),\
-                                                                                  int(row[4]),int(row[5]),0))
-                            statData.setdefault('Pres',[]).append(float(row[9]))
-                            statData.setdefault('Temp',[]).append(float(row[10]))
-                            statData.setdefault('RH',[]).append(float(row[13]))
+                #---------CHANGED BELOW. AFTER 2015 THE MONTHLY FILES ARE NOT SAVED BY YEAR (IVAN)
+                cmdlFiles = glob( DBinputs['statDir']  + \
+                                  'met_mlo_insitu_1_obop_minute_'+ str(DBinputs['year']) + '*')
+                #---------
+
+                 
+                if not len(cmdlFiles) == 0:
+                    statData = {}
+                    for cmdlFile in cmdlFiles:
+                        with open(cmdlFile, 'r') as fopen:
+                            reader = csv.reader(fopen,delimiter=' ',skipinitialspace=True)
+                            for row in reader:
+                                statData.setdefault('DateTime',[]).append(dt.datetime(int(row[1]),int(row[2]),int(row[3]),\
+                                                                                      int(row[4]),int(row[5]),0))
+                                statData.setdefault('Pres',[]).append(float(row[9]))
+                                statData.setdefault('Temp',[]).append(float(row[10]))
+                                statData.setdefault('RH',[]).append(float(row[13]))
                             
         elif DBinputs['loc'].lower() == 'fl0':
             #   LABEL                       Units          Column    Missing Value
