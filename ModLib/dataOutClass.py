@@ -3546,14 +3546,17 @@ class PlotData(ReadOutputData):
 
         avkTC    = np.dot(np.dot(Airmass,avkSCF),AirMinv)
         
-        #axb.plot(np.sum(avkSCF,axis=0),alt,color='k')
-        axb.plot(avkTC, alt,color='k')
+        axb.plot(np.sum(avkSCF,axis=1),alt,color='b', label='Sum of AK')
+        axb.plot(avkTC, alt,color='k', label='TC AK')
+       
         axb.grid(True)
+        axb.legend(prop={'size':9})
         #axb.set_xlabel('Averaging Kernel Area')
         axb.set_xlabel('Total Column AK')
         #axb.tick_params(axis='x',which='both',labelsize=8)    
         axb.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1f'))      
         axb.tick_params(axis='x', which='major', labelrotation=45) 
+        axb.set_xlim(-0.5, 2.5)
 
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
         else:           plt.show(block=False)         
@@ -3586,10 +3589,11 @@ class PlotData(ReadOutputData):
 
         avkTCvmr    = np.dot(np.dot(Airmass,avkVMR),AirMinv)
         
-        axb.plot(avkTCvmr,alt,color='k')
-        #axb.plot(np.sum(avkVMR,axis=0),alt,color='k')
+        axb.plot(avkTCvmr,alt,color='k', label='TC AK')
+        axb.plot(np.sum(avkVMR,axis=1),alt,color='b' , label='Sum of AK')
         axb.grid(True)
         axb.set_xlabel('Total Column AK')
+        axb.legend(prop={'size':9})
         #axb.tick_params(axis='x',which='both',labelsize=8)  
         axb.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1f'))     
         axb.tick_params(axis='x', which='major',labelrotation=45)  

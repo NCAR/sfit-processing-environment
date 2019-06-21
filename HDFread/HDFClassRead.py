@@ -928,6 +928,7 @@ class ReadHDFData():
 
         #--------------------------
         DirFiles = glob.glob(dataDir + '*'+primGas.lower()+ '*'+locID+'*.hdf')
+        #DirFiles = glob.glob(dataDir + '*'+locID+'*.hdf')
         DirFiles.sort()
   
         for drs in DirFiles:
@@ -1748,7 +1749,7 @@ class PlotHDF(ReadHDFData):
                 #ax1.xaxis.set_tick_params(which='major', pad=15)  
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-                #fig1.autofmt_xdate()
+                fig1.autofmt_xdate()
             else:
                 ax1.xaxis.set_major_locator(monthsAll)
                 ax1.xaxis.set_major_formatter(DateFmt)
@@ -1794,7 +1795,7 @@ class PlotHDF(ReadHDFData):
                 #ax1.xaxis.set_tick_params(which='major', pad=15)  
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-                #fig1.autofmt_xdate() 
+                fig1.autofmt_xdate() 
             else:
                 ax1.xaxis.set_major_locator(monthsAll)
                 ax1.xaxis.set_major_formatter(DateFmt)
@@ -1841,7 +1842,7 @@ class PlotHDF(ReadHDFData):
                 #ax1.xaxis.set_tick_params(which='major', pad=15)  
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-                #fig1.autofmt_xdate() 
+                fig1.autofmt_xdate() 
             else:
                 ax1.xaxis.set_major_locator(monthsAll)
                 ax1.xaxis.set_major_formatter(DateFmt)

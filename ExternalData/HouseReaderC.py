@@ -473,7 +473,7 @@ class MLOread():
     def formatF(self,fileName,fileNameMet,year,month,day):
         ''' '''
         #------------------------
-        # Open file and read data
+        # Open house file and read data
         #------------------------        
         data = tryopen(fileName)
 
@@ -509,7 +509,7 @@ class MLOread():
                 self.data['Front_T'].extend([-9999]*npoints)   
                 self.data['InSb_T'].extend([row[5] for row in data])   
                 self.data['MCT_T'].extend([row[6] for row in data])   
-                self.data['Laser_T'].extend([row[16] for row in data])   
+                self.data['Laser_T'].extend([row[15] for row in data])   
                 #self.data['Outside_T'].extend([row[17] for row in data])              
                 self.data['Brucker_Optical_RH'].extend([row[7] for row in data])
                 #self.data['Outside_RH'].extend([row[12] for row in data])
@@ -517,6 +517,7 @@ class MLOread():
                 #self.data['Wind_Speed_mph'].extend([row[14] for row in data])
                 self.data['WindDir_volt'].extend([-9999]*npoints)  
                 #self.data['WindDir_E_of_N'].extend([row[15] for row in data]) 
+
                 self.data['Mid_IR_Cooler'].extend([row[19][1] for row in data])
                 self.data['LN2_Fill'].extend([row[19][2] for row in data])
                 self.data['Hatch_Relay'].extend([row[20][2] for row in data])
@@ -526,19 +527,43 @@ class MLOread():
                 self.data['28V_Solar_Seeker_Pwr'].extend([row[22][2] for row in data])
                 self.data['DEC_A_Plug_Strip'].extend([row[21][3] for row in data])
                 self.data['Hatch_Position_bit'].extend([row[22][0] for row in data])
-                self.data['Hatch_Position_volt'].extend([-999]*npoints)
-                self.data['UTC_offset'].extend([row[24] for row in data])
-                self.data['DOY'].extend([row[25] for row in data])
+
+
+                #self.data['Mid_IR_Cooler'].extend([row[24] for row in data])
+                #self.data['LN2_Fill'].extend([row[25] for row in data])
+                #self.data['Hatch_Relay'].extend([row[20][2] for row in data])
+                #self.data['Solar_Seeker_ON_Relay'].extend([row[31][0] for row in data])
+                #self.data['Solar_Seeker_OFF_Relay'].extend([row[32][1] for row in data])
+                #self.data['Dyn_Mirror_Pwr'].extend([-9999]*npoints)  
+                #self.data['28V_Solar_Seeker_Pwr'].extend([row[35] for row in data])
+                #self.data['DEC_A_Plug_Strip'].extend([row[33] for row in data])
+                #self.data['Hatch_Position_bit'].extend([row[34] for row in data])
+                self.data['Hatch_Position_volt'].extend([-9999]*npoints)
+                self.data['UTC_offset'].extend([row[36] for row in data])
+                self.data['DOY'].extend([row[37] for row in data])
                 self.data['E_Radiance'].extend([row[8] for row in data])
                 self.data['W_Radiance'].extend([row[9] for row in data]) 
+                #self.data['E_Radiance'].extend([row[10] for row in data])
+                #self.data['W_Radiance'].extend([row[11] for row in data]) 
 
                 doyhouse = toYearFraction(self.data['DateTime'])  
 
+            
+            except:
+                print 'Error in reading file: %s' % fileName
+                pass
 
-                data2 = tryopen(fileNameMet)[1:]
+            #------------------------
+            # Open house met file and read data
+            #------------------------ 
 
-                if data2:
+            data2 = tryopen(fileNameMet)[1:]
 
+            if data2:     
+
+                try:    
+
+                
                     data2[:] = [ row.strip().split() for row in data2 if not '#' in row ]
 
                     Date = [row[0] for row in data2]
@@ -550,7 +575,7 @@ class MLOread():
                     WinG = [row[6] for row in data2]
                     WinD = [row[7] for row in data2]
 
-                    WinS = 2.237 * WinS   # Conversion m/s to miles/h
+                    #WinS = 2.237 * np.asarray(WinS)   # Conversion m/s to miles/h
 
 
                     dateT =  [dt.datetime(int(time[0][0:4]),int(time[0][4:6]),int(time[0][6:8]),\
@@ -560,22 +585,37 @@ class MLOread():
                     doyMet = toYearFraction(dateT)
 
 
-                    Temp_i           = interpolate.interp1d(doyMet, Temp, axis=0, fill_value=Temp[0], bounds_error=False, kind='linear')(doyhouse )
-                    RelH_i           = interpolate.interp1d(doyMet, RelH, axis=0, fill_value=Temp[0], bounds_error=False, kind='linear')(doyhouse )
-                    Pres_i           = interpolate.interp1d(doyMet, Pres, axis=0, fill_value=Temp[0], bounds_error=False, kind='linear')(doyhouse )
-                    WinS_i           = interpolate.interp1d(doyMet, WinS, axis=0, fill_value=Temp[0], bounds_error=False, kind='linear')(doyhouse )
-                    WinD_i           = interpolate.interp1d(doyMet, WinD, axis=0, fill_value=Temp[0], bounds_error=False, kind='linear')(doyhouse )
+                    Temp_i           = interpolate.interp1d(doyMet, Temp, axis=0, fill_value=(Temp[0], Temp[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                    RelH_i           = interpolate.interp1d(doyMet, RelH, axis=0, fill_value=(RelH[0], RelH[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                    Pres_i           = interpolate.interp1d(doyMet, Pres, axis=0, fill_value=(Pres[0], Pres[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                    WinS_i           = interpolate.interp1d(doyMet, WinS, axis=0, fill_value=(WinS[0], WinS[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                    WinD_i           = interpolate.interp1d(doyMet, WinD, axis=0, fill_value=(WinD[0], WinD[-1]), bounds_error=False, kind='nearest')(doyhouse )
 
-                    self.data['Outside_T'].extend([i for i in Temp_i]) 
-                    self.data['Outside_RH'].extend([i for i in RelH_i]) 
-                    self.data['Atm_Press'].extend([i for i in Pres_i]) 
-                    self.data['Wind_Speed_mph'].extend([i for i in Pres_i]) 
-                    self.data['WindDir_E_of_N'].extend([i for i in WinD_i]) 
+                    WinS_i = 2.237 * WinS_i
 
+                    WinS_i = ["{0:03f}".format(i) for i in WinS_i]
+
+                    #self.data['Date'].extend(["{0:02d}".format(indvDate.year)+"{0:02d}".format(indvDate.month)+"{0:02d}".format(indvDate.day) for indvDate in datetimeTemp])
+
+                except:
+                    print 'Error in reading file: %s' % fileNameMet
+                    pass
+
+            try:
+
+ 
+                self.data['Outside_T'].extend([i for i in Temp_i]) 
+                self.data['Outside_RH'].extend([i for i in RelH_i]) 
+                self.data['Atm_Press'].extend([i for i in Pres_i]) 
+                self.data['Wind_Speed_mph'].extend([i for i in WinS_i]) 
+                self.data['WindDir_E_of_N'].extend([i for i in WinD_i]) 
 
             except:
-                print 'Error in reading file: %s' % fileName
+                print 'Error interpolating Met to house time : %s' % fileNameMet
                 pass
+
+
+            
                 #sys.exit()
             
         

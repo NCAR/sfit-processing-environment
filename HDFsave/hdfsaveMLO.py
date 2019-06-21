@@ -32,7 +32,7 @@ from sys import exit
 
 class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
-   def __init__(self,gasNameStr,outputDir,processingSfitVer,location, fileVersion, projectID, dType,  dSource=False):
+   def __init__(self,gasNameStr,outputDir,processingSfitVer,location, fileVersion, projectID, dType,  quality=False):
       super(HDFsave, self).__init__(gasNameStr)
       self.dType               = dType
       if   dType.lower() == 'float32': self.dTypeStr = 'REAL'
@@ -52,8 +52,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.projectID           = projectID
       self.locID               = 'NCAR002'
 
-      if dSource: self.dSource = dSource
-      else: self.dSource = False
+      if quality: self.quality = quality
+      else: self.quality = False
       
 
 
@@ -89,8 +89,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DATA_DISCIPLINE']         = 'ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED'
       dataStr['DATA_GROUP']              = 'EXPERIMENTAL;PROFILE.STATIONARY'
       dataStr['DATA_LOCATION']           = self.loc.upper()
-      if self.dSource: dataStr['DATA_SOURCE'] = self.dSource+';FTIR.'+self.gasNameUpper+'_'+self.locID.upper()
-      else: dataStr['DATA_SOURCE']       = 'FTIR.'+self.gasNameUpper+'_'+self.locID.upper()
+      dataStr['DATA_SOURCE']             = 'FTIR.'+self.gasNameUpper+'_'+self.locID.upper()
       dataStr['DATA_VARIABLES']          = self.getDatetimeName()+';'+self.getLatitudeInstrumentName()+';'+self.getLongitudeInstrumentName()+';'+self.getAltitudeInstrumentName()+';'+ \
                                            self.getSurfacePressureIndependentName()+';'+       \
                                            self.getSurfaceTemperatureIndependentName()+';'+self.getAltitudeName()+';'+self.getAltitudeBoundariesName()+';'+self.getPressureIndependentName()+';'+                 \
@@ -109,7 +108,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DATA_FILE_VERSION']       = self.fver
       dataStr['DATA_MODIFICATIONS']      = 'None'
       dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-002'
-      dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A. Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
+      
+      if self.quality: dataStr['DATA_QUALITY'] = self.quality+';HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A.: Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
+      else: dataStr['DATA_QUALITY']       = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A.: Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
+
+
       dataStr['DATA_CAVEATS']            = 'None'
       dataStr['DATA_RULES_OF_USE']       = 'Contact Hannigan;James'
       dataStr['DATA_ACKNOWLEDGEMENT']    = 'NCAR is sponsored by the National Science Foundation. This work is supported under contract by the National Aeronautics and Space Administration.'
@@ -118,7 +121,6 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['FILE_GENERATION_DATE']    = "{0:04d}{1:02d}{2:02d}T{3:02d}{4:02d}{5:02d}Z".format(fDOI.year,fDOI.month,fDOI.day,fDOI.hour,fDOI.minute,fDOI.second)
       dataStr['FILE_ACCESS']             = 'NDACC'
       dataStr['FILE_PROJECT_ID']         = self.projectID
-      #dataStr['FILE_PROJECT_ID']         = 'QA4ECV'   #TEMPORAL
       dataStr['FILE_ASSOCIATION']        = 'NDACC'
       dataStr['FILE_META_VERSION']       = '04R010;CUSTOM'
       

@@ -1,0 +1,11 @@
+Fri, 21 Jun 2019 13:57:49 INFO     **************** Starting Logging ***********************
+Fri, 21 Jun 2019 13:57:49 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Fri, 21 Jun 2019 13:57:49 INFO     Station location:       MLO
+Fri, 21 Jun 2019 13:57:49 INFO     Gas Name:               O3
+Fri, 21 Jun 2019 13:57:49 INFO     Dates:                  20190614_20190620
+Fri, 21 Jun 2019 13:57:49 INFO     Create HDF:             True
+Fri, 21 Jun 2019 13:57:49 INFO     Upload HDF:             True
+Fri, 21 Jun 2019 13:57:52 INFO     HDFCreate.py -i /data1/ebaumer/mlo/o3/input_HDFCreate.py -d 20190614_20190620
+Fri, 21 Jun 2019 13:57:54 INFO     Version: /data1/ebaumer/mlo/o3/HDF_Current_RD/
+Fri, 21 Jun 2019 13:57:54 INFO     HDF file to upload:      groundbased_ftir.o3_ncar002_mauna.loa.hi_20190614t195141z_20190620t202442z_004.hdf
+Fri, 21 Jun 2019 13:57:55 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/

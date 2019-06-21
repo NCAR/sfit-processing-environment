@@ -50,6 +50,13 @@ def ckFile(fName):
         print 'File %s does not exist' % (fName)
         sys.exit()
 
+def usage():
+    ''' Prints to screen standard program usage'''
+    print ' station_house_reader.py [-s tab/mlo/fl0 -d 20180515_20180530 -?]'
+    print '  -s <site>                             : Flag to specify location --> tab/mlo/fl0'
+    print '  -d <20180515> or <20180515_20180530>  : Flag to specify date(s)'
+    print '  -?                                    : Show all flags'
+
 
          
                                     #----------------------------#
@@ -313,11 +320,11 @@ def main(argv):
                 fopen.write('#   28V_Solar_Seeker_Pwr        bit            25         9           \n')
                 fopen.write('#   Hatch_Position_bit          bit            26         9           \n')
                 fopen.write('#   Hatch_Position_volt         volt           27        -9999        \n')
-                fopen.write('#   UTC_offset                  HH             28        -99          \n')
+                fopen.write('#   UTC_offset                  HH             28        -9999        \n')
                 fopen.write('#   DOY                         DDD            29        -999         \n')                
                 fopen.write('#   E_Radiance                  volts          30        -9999        \n')
                 fopen.write('#   W_Radiance                  volts          31        -9999        \n')
-                fopen.write('#   Atm_Press                   mbar          32        -9999        \n')
+                fopen.write('#   Atm_Press                   mbar           32        -9999        \n')
                 fopen.write('#---------------------------------------------------------------------\n')
  
             elif (wmode == 'wb') and (statstr.lower() == 'tab'):

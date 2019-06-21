@@ -51,7 +51,7 @@ from   matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.gridspec as gridspec
 import time
 from cycler import cycler
-
+from scipy import interpolate
 import getopt
     
     
@@ -82,6 +82,29 @@ def ckDir(dirName,exitFlg=False):
     else:
         return True
 
+def toYearFraction(dates):
+    ''' Convert datetime to year and fraction of year'''
+
+    #def sinceEpoch(date): # returns seconds since epoch
+        #return time.mktime(date.timetuple())
+    #s = sinceEpoch
+    ep_fnc = lambda x: time.mktime(x.timetuple())
+    
+    retrnDates = np.zeros(len(dates))
+    
+    for i,sngDate in enumerate(dates):
+        year = sngDate.year
+        startOfThisYear = dt.datetime(year=year, month=1, day=1)
+        startOfNextYear = dt.datetime(year=year+1, month=1, day=1)
+    
+        yearElapsed = ep_fnc(sngDate) - ep_fnc(startOfThisYear)
+        yearDuration = ep_fnc(startOfNextYear) - ep_fnc(startOfThisYear)
+        fraction = yearElapsed/yearDuration
+        retrnDates[i] = sngDate.year + fraction
+
+
+    return retrnDates
+
 class RemoteHK():
 
 
@@ -107,7 +130,6 @@ class RemoteHK():
         if self.pdfFlg:
             pdfPath  = os.path.dirname(self.dir + self.date)
             pdfFile  = pdfPath + "/HousePlots.pdf"
-            print pdfFile
 
             #if ckFile(pdfFile): os.remove(pdfFile)
                 
@@ -130,7 +152,7 @@ class RemoteHK():
     #----------------------------
     # READ HK DEF
     #----------------------------
-    def readHK(self, iyear='',iday='', imnth='', showID=False):
+    def readHK(self, showID=True):
 
         #self.date  = str(iyear) + str(imnth) + str(iday) 
         
@@ -142,6 +164,7 @@ class RemoteHK():
         self.vars = {}
 
         self.hkFlg  = False
+        self.flgMet = False
 
         #-----------------------------------------------
         # 
@@ -167,22 +190,22 @@ class RemoteHK():
             #---------------
             # Handling Error in format
             #---------------
-            site = os.path.dirname(self.fname).split('/')[3]
+            # site = os.path.dirname(self.fname).split('/')[3]
 
-            if site.lower() == 'mlo':
-                #---------------
-                # DUE TO BUGS IN FORMAT OF LOG FILE HEADERS ARE HARD CODED
-                #---------------
-                print('------------------------------')
-                print('READING HEADERS: WARNING!')        
-                print('DUE TO BUGS IN FORMAT OF LOG FILE HEADERS ARE HARD CODED')
-                print('------------------------------')
+            # if site.lower() == 'mlo':
+            #     #---------------
+            #     # DUE TO BUGS IN FORMAT OF LOG FILE HEADERS ARE HARD CODED
+            #     #---------------
+            #     print('------------------------------')
+            #     print('READING HEADERS: WARNING!')        
+            #     print('DUE TO BUGS IN FORMAT OF LOG FILE HEADERS ARE HARD CODED')
+            #     print('------------------------------')
 
-                hdrs = ['LN2_Dewar_Pressure', 'Optic_Bench_Base_T', 'Beamsplitter_Body_T', 'INSB_Body_T', 'MCT_Body_T', 'Bruker_Optic_RH', 'Extern_E_Radiance', 'Extern_W_Radiance', 
-                'Extern_E_RadianceS', 'Extern_W_RadianceS', 'Atm_Rel_Humidity', 'Laser_PS_T', 'Atm_Wind_Speed', 'ATM_Wind_Dir_E_of_N', 'Laser_T', 'Atm_Temperature', 
-                'N/A', 'N/A', 'N/A','DEC_B_Elec_Control', 'N/A', 'N/A', 'Mid-IR_Cooler', 'LN2_Fill_Switch', 'Vacuum_Valve', 'Vacuum_Reset', 'Vacuum_Pump', 'SolSeek_Hatch_Relay', 
-                'Vacuum_Pump_Control', 'SolSeek_ON_Relay', 'SolSeek_OFF_Relay', 'DEC_A_Bruker', 'SolSeek_Hatch_Position', 'SolSeek_28V', 
-                'utcoff', 'doy', 'daymin', 'dayfrac', 'szenith', 'sazimuth']
+            #     hdrs = ['LN2_Dewar_Pressure', 'Optic_Bench_Base_T', 'Beamsplitter_Body_T', 'INSB_Body_T', 'MCT_Body_T', 'Bruker_Optic_RH', 'Extern_E_Radiance', 'Extern_W_Radiance', 
+            #     'Extern_E_RadianceS', 'Extern_W_RadianceS', 'Atm_Rel_Humidity', 'Laser_PS_T', 'Atm_Wind_Speed', 'ATM_Wind_Dir_E_of_N', 'Laser_T', 'Atm_Temperature', 
+            #     'N/A', 'N/A', 'N/A','DEC_B_Elec_Control', 'N/A', 'N/A', 'Mid-IR_Cooler', 'LN2_Fill_Switch', 'Vacuum_Valve', 'Vacuum_Reset', 'Vacuum_Pump', 'SolSeek_Hatch_Relay', 
+            #     'Vacuum_Pump_Control', 'SolSeek_ON_Relay', 'SolSeek_OFF_Relay', 'DEC_A_Bruker', 'SolSeek_Hatch_Position', 'SolSeek_28V', 
+            #     'utcoff', 'doy', 'daymin', 'dayfrac', 'szenith', 'sazimuth']
 
              
             #-------------------------
@@ -193,7 +216,8 @@ class RemoteHK():
             for i,v in enumerate(hdrs):
                 ii.append(ii)
                 idVal.append(v)
-                if showID: print "{0:4}= {1:}".format(i,v)
+                #if showID: 
+                print "{0:4}= {1:}".format(i,v)
           
 
             #----------------------
@@ -211,17 +235,80 @@ class RemoteHK():
                     self.vars.setdefault(v,[]).append(np.array([float(line.strip().split()[i+2]) for line in lines[:-2] if not line.startswith("#")]))
                 except ValueError:
                     self.vars.setdefault(v,[]).append(np.array([line.strip().split()[i+2] for line in lines[:-2] if not line.startswith("#")]))
-            self.hkFlg  = True  
+
+            for i, v in enumerate(idVal):
+                self.vars[v] = self.vars[v][0]
             
+            self.hkFlg  = True  
+                
         except Exception as errmsg:
             print 'Error reading house.log: ', errmsg
-           
+
+
+        if dt.date(int(self.iyear), int(self.imnth), int(self.iday) ) >= dt.date(2019,05,05):
+
+            try:
+                self.fname2 = self.dir + self.date + '/houseMet.log'
+
+                with open(self.fname2,"r") as fopen: lines = fopen.readlines()
+                
+                #---------------
+                # Read in Header
+                #---------------
+                #for line in lines:
+                    #if line.strip().startswith("#$"):
+                    #   hdrs = [ val for val in line.strip().split()[3:]]
+                
+                hdrs = [ val for val in lines[0].strip().split()[2:]]
+                
+                #-------------------------
+                # Choose variables to plot
+                #-------------------------
+                ii    = []
+                idValMet = []
+                for i,v in enumerate(hdrs):
+                    ii.append(ii)
+                    idValMet.append(v)
+                    print "{0:4}= {1:}".format(i,v)
+
+                #----------------------
+                # Read in date and time
+                #----------------------
+                #self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
+                #                            int(line[17:19]),int(line[20:22]),int(line[23:25])) for line in lines[1:-2] if (not line.startswith("#"))])
+                
+                self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
+                                    int(line[13:15]),int(line[16:18]),int(line[19:21])) for line in lines[1:-2] if (not line.startswith("#"))])
+
+                for i, v in enumerate(idValMet):
+                    try:
+                        self.vars.setdefault(v,[]).append(np.array([float(line.strip().split()[i+2]) for line in lines[1:-2] if not line.startswith("#")]))
+                        #self.vars[v] = np.interp(self.obsTime, self.obsTime2, np.asarray(self.vars[v]) )
+                    except ValueError:
+                        print v
+                        self.vars.setdefault(v,[]).append(np.array([line.strip().split()[i+2] for line in lines[1:-2] if not line.startswith("#")]))
+
+                doyhouse = toYearFraction(self.obsTime)
+                doyMet   = toYearFraction(self.obsTime2)  
+
+
+                for i, v in enumerate(idValMet):
+
+                    self.vars[v]  = interpolate.interp1d(doyMet, self.vars[v][0], axis=0, fill_value=(self.vars[v][0][0], self.vars[v][0][-1]), bounds_error=False, kind='nearest')(doyhouse )
+
+
+                self.flgMet = True
+
+            except Exception as errmsg:
+                print 'Error reading houseMet.log: ', errmsg
+
+            
     #----------------------------
     # PLOT HK DEF
     #----------------------------
-    def plt_HK(self, iyear='',iday='', imnth='', Groups= False, Groups_Lab= False, showID=False):
+    def plt_HK(self, Groups= False, Groups_Lab= False, showID=False):
 
-        self.readHK(iyear=iyear,iday=iday, imnth=imnth, showID=showID)
+        self.readHK( showID=showID)
 
         if self.hkFlg:
         
@@ -241,7 +328,7 @@ class RemoteHK():
             if Groups:
 
                 clr1            = ['b', 'g', 'brown', 'yellow']
-                clr2           = ['r', 'k', 'b', 'g']
+                clr2           = ['r', 'k', 'pink', 'gray']
 
                 Npanels        = len(Groups)
 
@@ -254,7 +341,7 @@ class RemoteHK():
 
                             for j, k in enumerate(v):
 
-                                pltVal  = np.asarray(self.vars[k][0])
+                                pltVal  = np.asarray(self.vars[k])
                                 if pltVal.dtype is np.dtype(np.float64):
                                     ax1[vi].plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr1[j])
                                 else:
@@ -290,14 +377,14 @@ class RemoteHK():
 
                             if i == 0:
                                 for j, k in enumerate(v):
-                                    pltVal  = np.asarray(self.vars[k][0])
+                                    pltVal  = np.asarray(self.vars[k])
 
                                     ax1[vi].plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr1[j])
 
                             if i == 1:
 
                                 for j, k in enumerate(v):
-                                    pltVal  = np.asarray(self.vars[k][0])
+                                    pltVal  = np.asarray(self.vars[k])
                                     axr.plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr2[j])
 
                     #----------
@@ -355,6 +442,20 @@ class RemoteHK():
             # Open and read file
             #-------------------
             with open(self.fname,"r") as fopen: lines = fopen.readlines()
+
+            # hdrs = [ val for val in lines[0].strip().split('\t')[:]]
+            
+            # #-------------------------
+            # # Choose variables to plot
+            # #-------------------------
+            # ii    = []
+            # idValMet = []
+            # for i,v in enumerate(hdrs):
+            #     ii.append(ii)
+            #     idValMet.append(v)
+            #     print "{0:4}= {1:}".format(i,v)
+
+            # exit()
             
             #---------------
             # Read in Header
@@ -386,6 +487,9 @@ class RemoteHK():
                 except:
                     self.vars.setdefault(v,[]).append(np.asarray([line.strip().split()[i] for line in lines[1:-2] ]) )
 
+            for i, v in enumerate(idVal):
+                self.vars[v] = self.vars[v][0]
+
             self.MeasFlg  = True   
 
         except Exception as errmsg:
@@ -414,12 +518,12 @@ class RemoteHK():
 
                 for i, fl in enumerate(fltid):
 
-                    fileName = [str(flt[0:2]) for flt in self.vars['Filename'][0]]
+                    fileName = [str(flt[0:2]) for flt in self.vars['Filename']]
                     inds = np.where(np.asarray(fileName) == str(fl))[0]
 
                     if len(inds) >= 1:
 
-                        pltVal = self.vars['SNR_RMS'][0][inds]
+                        pltVal = self.vars['SNR_RMS'][inds]
                         DT     = self.vars['DT_Meas'][inds]
 
                         ax1.plot(DT, pltVal, "o" ,markersize=5, linestyle='-', label= fl)
@@ -503,7 +607,7 @@ def main(argv):
             
             pdfFlg = True
 
-        elif opt == '-l':
+        elif opt == '-l':               
 
             site = arg.lower()
 

@@ -1,0 +1,11 @@
+Fri, 21 Jun 2019 11:37:07 INFO     **************** Starting Logging ***********************
+Fri, 21 Jun 2019 11:37:07 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Fri, 21 Jun 2019 11:37:07 INFO     Station location:       FL0
+Fri, 21 Jun 2019 11:37:07 INFO     Gas Name:               CO
+Fri, 21 Jun 2019 11:37:07 INFO     Dates:                  20190614_20190620
+Fri, 21 Jun 2019 11:37:07 INFO     Create HDF:             True
+Fri, 21 Jun 2019 11:37:07 INFO     Upload HDF:             True
+Fri, 21 Jun 2019 11:37:10 INFO     HDFCreate.py -i /data1/ebaumer/fl0/co/input_HDFCreate.py -d 20190614_20190620
+Fri, 21 Jun 2019 11:37:12 INFO     Version: /data1/ebaumer/fl0/co/HDF_Current_v3_RD/
+Fri, 21 Jun 2019 11:37:12 INFO     HDF file to upload:      groundbased_ftir.co_ncar003_boulder.co_20190619t151207z_20190620t173308z_003.hdf
+Fri, 21 Jun 2019 11:37:13 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/

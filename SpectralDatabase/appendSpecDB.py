@@ -216,7 +216,9 @@ def main(argv):
         #------------
         # directories
         #------------
-        DBinputs['statDir']   = '/data1/ancillary_data/mlo/cmdl/Minute_Data/'   # Base directory with all external station data (mlo)
+        if loc.lower() == 'mlo':     DBinputs['statDir']   = '/data1/ancillary_data/mlo/cmdl/Minute_Data/'   # Base directory with all external station data (mlo)
+        elif loc.lower() == 'fl0':   DBinputs['statDir']   = '/data1/ancillary_data/fl0/eol/'
+        #else:                        DBinputs['statDir'] = ''
         #statDir   = '/data/tools/gsfc/fl0/eol/'    # Base directory with all external station data (fl0)
 
         #------

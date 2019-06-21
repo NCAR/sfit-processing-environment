@@ -76,7 +76,8 @@ def ckscreen(screenname):
         return False
                             
 def main(argv):  
-
+    
+    goFlg = True
     #--------------------------------
     # Retrieve command line arguments
     #--------------------------------
@@ -151,72 +152,87 @@ def main(argv):
 
     while True:
 
-        #if ckFile(doneFilePr):
-        #if not (ckscreen('nrtPre'+loc.lower())) or (ckscreen('nrtPre'+loc.upper())) :
+        ##if ckFile(doneFilePr):
+        if (ckscreen('nrtPre'+loc.lower())) or (ckscreen('nrtPre'+loc.upper())) :
+
+            print '\nWaiting for nrtPre '+loc.upper() +' to Finish at {}'.format(dt.datetime.utcnow())
+            goFlg = False
+            sleep(10)
+
+        else:
+
+            if goFlg:
          
-        print '***********************************************************************'
-        print '************* Begin sfit4Layer1 Analysis ******************************'
-        print '***********************************************************************' 
+                print '***********************************************************************'
+                print '************* Begin sfit4Layer1 Analysis ******************************'
+                print '***********************************************************************' 
 
-        # if gas.lower() == 'h2o':
-        #     if ckFile(doneFileWV):
-        #         os.remove(doneFileWV) 
+                # if gas.lower() == 'h2o':
+                #     if ckFile(doneFileWV):
+                #         os.remove(doneFileWV) 
 
-        # else: 
-        #     if not ckFile(doneFileWV):
-        #         print '\nWaiting for Water Vapor to Finish at {}'.format(dt.datetime.utcnow())
-        #         sleep(10)
-        #         continue
+                # else: 
+                #     if not ckFile(doneFileWV):
+                #         print '\nWaiting for Water Vapor to Finish at {}'.format(dt.datetime.utcnow())
+                #         sleep(10)
+                #         continue
 
-        if gas.lower() != 'h2o':
-            if (ckscreen('nrtH2O'+loc.lower()) ) or (ckscreen('nrtH2O'+loc.upper())):
-                print '\nWaiting for Water Vapor to Finish at {}'.format(dt.datetime.utcnow())
-                sleep(10)
-                continue
+                #--------------------------------
+                # The following check whether the analysis is ran through the nrt.sh --> check for screens
+                #--------------------------------
+
+                if (ckscreen('nrt'+gas.upper()+loc.upper()) ) or (ckscreen('nrt'+gas.lower()+loc.lower()) ): 
+
+                    if gas.lower() != 'h2o':
+                        if (ckscreen('nrtH2O'+loc.lower()) ) or (ckscreen('nrtH2O'+loc.upper())):
+                            print '\nWaiting for Water Vapor to Finish at {}'.format(dt.datetime.utcnow())
+                            sleep(10)
+                            continue
+                        
+                #----------------
+                # Starting sfit4Layer1.py
+                #----------------
+                print '\nStarting sfit4Layer1.py: {} analysis'.format(gas)
                 
-        #----------------
-        # Starting sfit4Layer1.py
-        #----------------
-        print '\nStarting sfit4Layer1.py: {} analysis'.format(gas)
-        try:
-            os.system('sfit4Layer1.py -i /data1/ebaumer/'+loc.lower()+'/'+gas.lower()+'/'+loc.upper()+'_'+gas.lower()+'_Input_RD.py' + ' -d '+ dates)
-        except OSError as errmsg:
-            print errmsg
-            sys.exit()
+                try:
+                    os.system('sfit4Layer1.py -i /data1/ebaumer/'+loc.lower()+'/'+gas.lower()+'/'+loc.upper()+'_'+gas.lower()+'_Input_RD.py' + ' -d '+ dates)
+                except OSError as errmsg:
+                    print errmsg
+                    sys.exit()
 
-        if gas.lower() == 'h2o':
-  
-            #----------------
-            # Starting retWaterPrf.py
-            #----------------
-            print '\nStarting retWaterPrf.py: Create Water Profiles in data directory'
-            try:
-                os.system('retWaterPrf.py -s'+str(loc)+ ' -d '+ str(dates) + ' -v Current_NCEP')
-            except OSError as errmsg:
-                print errmsg
-                sys.exit()
+                if gas.lower() == 'h2o':
+          
+                    #----------------
+                    # Starting retWaterPrf.py
+                    #----------------
+                    print '\nStarting retWaterPrf.py: Create Water Profiles in data directory'
+                    try:
+                        os.system('retWaterPrf.py -s'+str(loc)+ ' -d '+ str(dates) + ' -v Current_NCEP')
+                    except OSError as errmsg:
+                        print errmsg
+                        sys.exit()
 
-            #----------------
-            # Starting retWaterPrfDaily.py
-            #----------------
-            print '\nStarting retWaterPrfDaily.py: Create Water Profiles in data directory'
-            try:
-                os.system('retWaterPrfDaily.py -s'+str(loc)+ ' -d '+ dates)
-            except OSError as errmsg:
-                print errmsg
-                sys.exit()
+                    #----------------
+                    # Starting retWaterPrfDaily.py
+                    #----------------
+                    print '\nStarting retWaterPrfDaily.py: Create Water Profiles in data directory'
+                    try:
+                        os.system('retWaterPrfDaily.py -s'+str(loc)+ ' -d '+ dates)
+                    except OSError as errmsg:
+                        print errmsg
+                        sys.exit()
 
-            #f=open(doneFileWV, 'w')
-            #f.close
+                    #f=open(doneFileWV, 'w')
+                    #f.close
 
-            print '\nWater Vapor completed'
+                    print '\nWater Vapor completed'
 
-        exit()
+                exit()
 
-        #else:
-            
-        #    print '\nWaiting for Pre-Processing to Finish at {}'.format(dt.datetime.utcnow())
-        #    sleep(10)
+            goFlg = True
+                
+
+
 
 
 if __name__ == "__main__":

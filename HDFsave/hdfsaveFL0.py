@@ -31,7 +31,7 @@ import hdfInitData
 
 class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
 
-   def __init__(self,gasNameStr,outputDir,processingSfitVer,location, fileVersion, projectID, dType='float32', dSource=False):
+   def __init__(self,gasNameStr,outputDir,processingSfitVer,location, fileVersion, projectID, dType='float32', quality=False):
       super(HDFsave, self).__init__(gasNameStr)
       self.dType               = dType
       if   dType.lower() == 'float32': self.dTypeStr = 'REAL'
@@ -49,8 +49,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.projectID           = projectID
       self.locID               = 'NCAR003'
 
-      if dSource: self.dSource = dSource
-      else: self.dSource = False
+      if quality: self.quality = quality
+      else: self.quality = False
 
 
    def glblAttrbs(self,fDOI,idate,fdate):
@@ -67,7 +67,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['PI_EMAIL']                = 'jamesw@ucar.edu'
       dataStr['DO_NAME']                 = 'Hannigan;James'
       dataStr['DO_AFFILIATION']          = 'National Center for Atmospheric Research;NCAR'
-      dataStr['DO_ADDRESS']              = '3450 Mitchell Lane;Boulder CO 80305; UNITED STATES'
+      dataStr['DO_ADDRESS']              = '3450 Mitchell Lane;Boulder CO 80305;UNITED STATES'
       dataStr['DO_EMAIL']                = 'jamesw@ucar.edu'
       dataStr['DS_NAME']                 = 'Ortega;Ivan'
       dataStr['DS_AFFILIATION']          = 'National Center for Atmospheric Research;NCAR'
@@ -85,8 +85,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DATA_DISCIPLINE']         = 'ATMOSPHERIC.CHEMISTRY;REMOTE.SENSING;GROUNDBASED'
       dataStr['DATA_GROUP']              = 'EXPERIMENTAL;PROFILE.STATIONARY'
       dataStr['DATA_LOCATION']           = self.loc.upper()
-      if self.dSource: dataStr['DATA_SOURCE'] = self.dSource+';FTIR.'+self.gasNameUpper+'_'+self.locID.upper()
-      else: dataStr['DATA_SOURCE']       = 'FTIR.'+self.gasNameUpper+'_'+self.locID.upper()
+
+      dataStr['DATA_SOURCE']             = 'FTIR.'+self.gasNameUpper+'_'+self.locID.upper()
       dataStr['DATA_VARIABLES']          = self.getDatetimeName()+';'+self.getLatitudeInstrumentName()+';'+self.getLongitudeInstrumentName()+';'+self.getAltitudeInstrumentName()+';'+ \
                                            self.getSurfacePressureIndependentName()+';'+       \
                                            self.getSurfaceTemperatureIndependentName()+';'+self.getAltitudeName()+';'+self.getAltitudeBoundariesName()+';'+self.getPressureIndependentName()+';'+                 \
@@ -105,7 +105,10 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DATA_FILE_VERSION']       = self.fver
       dataStr['DATA_MODIFICATIONS']      = 'None'
       dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-002'
-      dataStr['DATA_QUALITY']            = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A.: Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
+            
+      if self.quality: dataStr['DATA_QUALITY'] = self.quality+';HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A.: Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
+      else: dataStr['DATA_QUALITY']       = 'HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A.: Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
+
       dataStr['DATA_CAVEATS']            = 'None'
       dataStr['DATA_RULES_OF_USE']       = 'Contact Hannigan;James'
       dataStr['DATA_ACKNOWLEDGEMENT']    = 'NCAR is sponsored by the National Science Foundation. This work is supported under contract by the National Aeronautics and Space Administration.'

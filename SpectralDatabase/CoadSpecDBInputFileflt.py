@@ -19,9 +19,9 @@
 # Three letter station location, year and FLT ID
 #---------------------
 loc           = 'mlo'
-iyear         = 2002
-fyear         = 2009
-fltID         = '1'
+iyear         = 2017
+fyear         = 2017
+fltID         = '5'
 
 #------------
 # directories
@@ -51,7 +51,7 @@ szaFlg        = True                   # If False will coadd all SZA
 szaRange      = [ [40, 45], [45, 50], [50, 55], [55, 60], [60, 65], [65, 70], [70, 75], [75, 80], [80, 85], [85, 90]]  # Ranges of SZAs
 
 DaysFlg       = True                   # If FALSE will coadd daily
-NumDays       = 14
+NumDays       = 7
 
 SpccNumFlg   = True                    # Only continue if number of spectra is greater or equal to this number
 NumSpc       = 4
@@ -59,7 +59,7 @@ NumSpc       = 4
 cpPrfFlg     = True                  # Flag to copy profiles (water, waccm and zpt) from dataBaseDir to new DaysOutDir
  
 outputDBDir  = '/data/Campaign/'+loc.upper()+'/Spectral_DB/coadd/'
-outputDBid   = ['CoaddspDB_'+loc.lower()+'_' , '_flt'+fltID+'_1_v2.dat']  # Path and filename of Output spectral database file (coadded)
+outputDBid   = ['CoaddspDB_'+loc.lower()+'_' , '_flt'+fltID+'_v2.dat']  # Path and filename of Output spectral database file (coadded)
 
 
 

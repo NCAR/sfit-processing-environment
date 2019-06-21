@@ -56,6 +56,7 @@ import datetime as dt
 import numpy as np
 import sys
 import glob
+import getopt
                                     #-------------------------#
                                     # Define helper functions #
                                     #-------------------------#
@@ -105,11 +106,7 @@ def main(argv):
         if opt == '-y':
 
             yearstr   = str(arg)
-
-            else:
-                print 'Error in input year'
-                usage()
-                sys.exit()
+            
 
         elif opt == '-?':
             usage()
@@ -118,6 +115,12 @@ def main(argv):
         else:
             print 'Unhandled option: ' + opt
             sys.exit()
+
+    if not 'yearstr' in locals():
+        print 'Error in input year'
+        usage()
+        sys.exit()
+
 
     #----------------
     # Initializations

@@ -1,0 +1,11 @@
+Fri, 21 Jun 2019 11:39:25 INFO     **************** Starting Logging ***********************
+Fri, 21 Jun 2019 11:39:25 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Fri, 21 Jun 2019 11:39:25 INFO     Station location:       MLO
+Fri, 21 Jun 2019 11:39:25 INFO     Gas Name:               CO
+Fri, 21 Jun 2019 11:39:25 INFO     Dates:                  20190614_20190620
+Fri, 21 Jun 2019 11:39:25 INFO     Create HDF:             True
+Fri, 21 Jun 2019 11:39:25 INFO     Upload HDF:             True
+Fri, 21 Jun 2019 11:39:28 INFO     HDFCreate.py -i /data1/ebaumer/mlo/co/input_HDFCreate.py -d 20190614_20190620
+Fri, 21 Jun 2019 11:39:30 INFO     Version: /data1/ebaumer/mlo/co/HDF_Current_B3_RD/
+Fri, 21 Jun 2019 11:39:30 INFO     HDF file to upload:      groundbased_ftir.co_ncar002_mauna.loa.hi_20190615t174754z_20190620t201242z_004.hdf
+Fri, 21 Jun 2019 11:39:31 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
