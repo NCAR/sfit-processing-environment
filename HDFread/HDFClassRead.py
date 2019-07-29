@@ -819,6 +819,8 @@ def jdf_2_datetime(jdf, MJD2000=True):
     mm=t4+2L-12L*t1
     yyyy=100L*(t2-49L)+t3+t1
 
+    print hh[hh>23]
+
     datestimes = [dt.datetime(int(y), int(mm[i]), int(dd[i]), int(hh[i]), int(mn[i]), int(ss[i])) for i, y in enumerate(yyyy)]
 
     return datestimes
@@ -953,18 +955,18 @@ class ReadHDFData():
             
             for var in Vars.keys():
 
-                try:
-                    data  = hdfid.select(var)
-                    #units       = data.units
-                    units       = data.VAR_UNITS
-                    conv        = data.VAR_SI_CONVERSION.strip().split(';')
+                #try:
+                data  = hdfid.select(var)
+                #units       = data.units
+                units       = data.VAR_UNITS
+                conv        = data.VAR_SI_CONVERSION.strip().split(';')
 
-                    self.HDF.setdefault(var,[]).append(data)
-                    self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
-                    self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
-                
-                except Exception as errmsg:
-                    print errmsg, ' : ', var
+                self.HDF.setdefault(var,[]).append(data)
+                self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
+                self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
+            
+                #except Exception as errmsg:
+                #    print errmsg, ' : ', var
                     #exit()
         #---------------------------------
         #FLATTENED THE ARRAYS
@@ -1182,26 +1184,26 @@ class PlotHDF(ReadHDFData):
         #----------------------------------------
         #DEFINE VARIABLES
         #----------------------------------------
-        try:
-            datesJD2K    = self.HDF[self.getDatetimeName()]
-            dates        = jdf_2_datetime(datesJD2K)
-            alt          = self.HDF[self.getAltitudeName()]
-            sza          = self.HDF[self.getAngleSolarZenithAstronomicalName()]
-            conv         = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName()+'VAR_SI_CONVERSION']            
-            rPrf         = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName()]*float(conv[0][1])*sclfct
-            aprPrf       = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAprioriName()]*float(conv[0][1])*sclfct
-            totClmn      = self.HDF[self.PrimaryGas.upper()+'.'+self.getColumnAbsorptionSolarName()]
-            #convTC       = self.HDF[self.PrimaryGas.upper()+'.'+self.getColumnAbsorptionSolarName()+'VAR_UNITS']
-              
-            avkVMR       = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAvkName()]
+        #try:
+        datesJD2K    = self.HDF[self.getDatetimeName()]
+        dates        = jdf_2_datetime(datesJD2K)
+        alt          = self.HDF[self.getAltitudeName()]
+        sza          = self.HDF[self.getAngleSolarZenithAstronomicalName()]
+        conv         = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName()+'VAR_SI_CONVERSION']            
+        rPrf         = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName()]*float(conv[0][1])*sclfct
+        aprPrf       = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAprioriName()]*float(conv[0][1])*sclfct
+        totClmn      = self.HDF[self.PrimaryGas.upper()+'.'+self.getColumnAbsorptionSolarName()]
+        #convTC       = self.HDF[self.PrimaryGas.upper()+'.'+self.getColumnAbsorptionSolarName()+'VAR_UNITS']
+          
+        avkVMR       = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAvkName()]
 
-            lat          = self.HDF[self.getLatitudeInstrumentName()]
-            lon          = self.HDF[self.getLongitudeInstrumentName()]
-            altinstr     = self.HDF[self.getAltitudeInstrumentName()]
+        lat          = self.HDF[self.getLatitudeInstrumentName()]
+        lon          = self.HDF[self.getLongitudeInstrumentName()]
+        altinstr     = self.HDF[self.getAltitudeInstrumentName()]
 
 
-        except Exception as errmsg:
-            print '\nError: ', errmsg
+        #except Exception as errmsg:
+        #    print '\nError: ', errmsg
         
 
         nobs         = rPrf.shape[0]

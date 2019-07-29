@@ -216,10 +216,9 @@ def main(argv):
     # Pause so user can look at plots
     #--------------------------------
     if pltInputs['saveFlg']: gas.closeFig()
-
-    if not pltInputs['saveFlg']:
+    else: 
         user_input = raw_input('Press any key to exit >>> ')
-        sys.exit()           # Exit program        
+        sys.exit()    
 
 
 if __name__ == "__main__":
