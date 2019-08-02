@@ -795,7 +795,7 @@ def jdf_2_datetime(jdf, MJD2000=True):
     hh        = (df+0.5)*24.0
     q         = np.where(hh >= 24.0)[0]
     
-    if len(q) > 1:
+    if len(q) >= 1:
         hh[q]  = hh[q]-24.0
         jdi[q] = jdi[q] + 1
 
@@ -819,7 +819,6 @@ def jdf_2_datetime(jdf, MJD2000=True):
     mm=t4+2L-12L*t1
     yyyy=100L*(t2-49L)+t3+t1
 
-    print hh[hh>23]
 
     datestimes = [dt.datetime(int(y), int(mm[i]), int(dd[i]), int(hh[i]), int(mn[i]), int(ss[i])) for i, y in enumerate(yyyy)]
 
@@ -955,18 +954,18 @@ class ReadHDFData():
             
             for var in Vars.keys():
 
-                #try:
-                data  = hdfid.select(var)
-                #units       = data.units
-                units       = data.VAR_UNITS
-                conv        = data.VAR_SI_CONVERSION.strip().split(';')
+                try:
+                    data  = hdfid.select(var)
+                    #units       = data.units
+                    units       = data.VAR_UNITS
+                    conv        = data.VAR_SI_CONVERSION.strip().split(';')
 
-                self.HDF.setdefault(var,[]).append(data)
-                self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
-                self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
+                    self.HDF.setdefault(var,[]).append(data)
+                    self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
+                    self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
             
-                #except Exception as errmsg:
-                #    print errmsg, ' : ', var
+                except Exception as errmsg:
+                    print errmsg, ' : ', var
                     #exit()
         #---------------------------------
         #FLATTENED THE ARRAYS

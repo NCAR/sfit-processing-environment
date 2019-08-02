@@ -30,3 +30,14 @@ Fri, 12 Jul 2019 15:02:29 INFO     HDFCreate.py -i /data1/ebaumer/fl0/o3/input_H
 Fri, 12 Jul 2019 15:02:31 INFO     Version: /data1/ebaumer/fl0/o3/HDF_Current_WP_RD/
 Fri, 12 Jul 2019 15:02:31 INFO     HDF file to upload:      groundbased_ftir.o3_ncar003_boulder.co_20190702t152334z_20190710t232211z_003.hdf
 Fri, 12 Jul 2019 15:02:32 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Thu, 01 Aug 2019 15:07:31 INFO     **************** Starting Logging ***********************
+Thu, 01 Aug 2019 15:07:31 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Thu, 01 Aug 2019 15:07:31 INFO     Station location:       FL0
+Thu, 01 Aug 2019 15:07:31 INFO     Gas Name:               O3
+Thu, 01 Aug 2019 15:07:31 INFO     Dates:                  20190711_20190731
+Thu, 01 Aug 2019 15:07:31 INFO     Create HDF:             True
+Thu, 01 Aug 2019 15:07:31 INFO     Upload HDF:             True
+Thu, 01 Aug 2019 15:07:35 INFO     HDFCreate.py -i /data1/ebaumer/fl0/o3/input_HDFCreate.py -d 20190711_20190731
+Thu, 01 Aug 2019 15:07:38 INFO     Version: /data1/ebaumer/fl0/o3/HDF_Current_WP_RD/
+Thu, 01 Aug 2019 15:07:38 INFO     HDF file to upload:      groundbased_ftir.o3_ncar003_boulder.co_20190711t144809z_20190731t182311z_003.hdf
+Thu, 01 Aug 2019 15:07:39 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/

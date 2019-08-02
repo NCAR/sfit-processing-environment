@@ -31,3 +31,14 @@ Fri, 12 Jul 2019 13:47:39 INFO     HDFCreate.py -i /data1/ebaumer/mlo/ch4/input_
 Fri, 12 Jul 2019 13:47:42 INFO     Version: /data1/ebaumer/mlo/ch4/HDF_Current_WP_RD/
 Fri, 12 Jul 2019 13:47:42 INFO     HDF file to upload:      groundbased_ftir.ch4_ncar002_mauna.loa.hi_20190704t191255z_20190710t193326z_003.hdf
 Fri, 12 Jul 2019 13:47:43 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Thu, 01 Aug 2019 12:23:29 INFO     **************** Starting Logging ***********************
+Thu, 01 Aug 2019 12:23:29 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Thu, 01 Aug 2019 12:23:29 INFO     Station location:       MLO
+Thu, 01 Aug 2019 12:23:29 INFO     Gas Name:               CH4
+Thu, 01 Aug 2019 12:23:29 INFO     Dates:                  20190711_20190731
+Thu, 01 Aug 2019 12:23:29 INFO     Create HDF:             True
+Thu, 01 Aug 2019 12:23:29 INFO     Upload HDF:             True
+Thu, 01 Aug 2019 12:23:33 INFO     HDFCreate.py -i /data1/ebaumer/mlo/ch4/input_HDFCreate.py -d 20190711_20190731
+Thu, 01 Aug 2019 12:23:36 INFO     Version: /data1/ebaumer/mlo/ch4/HDF_Current_WP_RD/
+Thu, 01 Aug 2019 12:23:36 INFO     HDF file to upload:      groundbased_ftir.ch4_ncar002_mauna.loa.hi_20190711t175548z_20190727t195254z_003.hdf
+Thu, 01 Aug 2019 12:23:36 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/

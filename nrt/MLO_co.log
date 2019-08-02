@@ -31,3 +31,14 @@ Fri, 12 Jul 2019 13:47:30 INFO     HDFCreate.py -i /data1/ebaumer/mlo/co/input_H
 Fri, 12 Jul 2019 13:47:33 INFO     Version: /data1/ebaumer/mlo/co/HDF_Current_B3_RD/
 Fri, 12 Jul 2019 13:47:33 INFO     HDF file to upload:      groundbased_ftir.co_ncar002_mauna.loa.hi_20190704t192658z_20190710t174253z_004.hdf
 Fri, 12 Jul 2019 13:47:34 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Thu, 01 Aug 2019 12:25:10 INFO     **************** Starting Logging ***********************
+Thu, 01 Aug 2019 12:25:10 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Thu, 01 Aug 2019 12:25:10 INFO     Station location:       MLO
+Thu, 01 Aug 2019 12:25:10 INFO     Gas Name:               CO
+Thu, 01 Aug 2019 12:25:10 INFO     Dates:                  20190711_20190731
+Thu, 01 Aug 2019 12:25:10 INFO     Create HDF:             True
+Thu, 01 Aug 2019 12:25:10 INFO     Upload HDF:             True
+Thu, 01 Aug 2019 12:25:14 INFO     HDFCreate.py -i /data1/ebaumer/mlo/co/input_HDFCreate.py -d 20190711_20190731
+Thu, 01 Aug 2019 12:25:16 INFO     Version: /data1/ebaumer/mlo/co/HDF_Current_B3_RD/
+Thu, 01 Aug 2019 12:25:16 INFO     HDF file to upload:      groundbased_ftir.co_ncar002_mauna.loa.hi_20190711t174154z_20190727t200657z_004.hdf
+Thu, 01 Aug 2019 12:25:17 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/

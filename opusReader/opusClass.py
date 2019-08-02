@@ -521,7 +521,7 @@ class readOPUS:
         self.spc_dw=np.abs(w[1]-w[0])
         return w
 
-    def control(self):
+    def controlNCAR(self):
 
         noiserange         = [600., 620.]
         self.waverange     = [700, 6000]

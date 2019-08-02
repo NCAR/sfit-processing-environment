@@ -4,7 +4,7 @@
 #        ckopusGUI.py
 #
 # Purpose:
-#       GUI Python program to check quaility of spectra
+#       - GUI Python program to check quaility of spectra
 #
 # Notes:
 #       1) 
@@ -431,15 +431,21 @@ class ckopusGUI(tk.Frame):
         self.fname = self.opusFiles[self.event_num]
 
         
-        self.opus = op.readOPUS(self.fname)
+        self.opus  = op.readOPUS(self.fname)
 
         self.opus.readspec(verbFlg=False)
         self.opus.readOPT(verbFlg=False)
         self.opus.getspc()
         #opus.opt.sort()
 
-        self.opus.control()
+        #-----------------------
+        # ControlNCAR -- NCAR specific
+        #-----------------------
+        self.opus.controlNCAR()
 
+        #-----------------------
+        # ControlNCAR -- NCAR specific
+        #-----------------------
         self.textCallBack("File: {0:}\n".format(self.fname))
 
         optOFI = ['APT','BMS','DTC','LPF', 'OPF', 'SRC', 'VEL']
@@ -460,7 +466,6 @@ class ckopusGUI(tk.Frame):
         self.textCallBack2("{0:<15} = {1:<.4f}\n".format('Ratio (n/p)',self.opus.Ratio))
         self.textCallBack2("{0:<15} = {1:}\n".format('Quality Comment',self.opus.comment)) 
         self.textCallBack2("{0:<15} = {1:}\n".format('Quality Flag',self.opus.qflag)) 
-
 
         # #-------------
         # #-------------
