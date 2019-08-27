@@ -430,75 +430,82 @@ class ckopusGUI(tk.Frame):
 
         self.fname = self.opusFiles[self.event_num]
 
+        file_size = os.path.getsize(self.fname)
         
-        self.opus  = op.readOPUS(self.fname)
+        if file_size/1e6 <= 1.: 
+            print 'Size of opus file {} is < 1e6 bytes'.format(self.fname)
+            self.DeleteButton()
 
-        self.opus.readspec(verbFlg=False)
-        self.opus.readOPT(verbFlg=False)
-        self.opus.getspc()
-        #opus.opt.sort()
+        else:
+            
+            self.opus  = op.readOPUS(self.fname)
 
-        #-----------------------
-        # ControlNCAR -- NCAR specific
-        #-----------------------
-        self.opus.controlNCAR()
+            self.opus.readspec(verbFlg=False)
+            self.opus.readOPT(verbFlg=False)
+            self.opus.getspc()
+            #opus.opt.sort()
 
-        #-----------------------
-        # ControlNCAR -- NCAR specific
-        #-----------------------
-        self.textCallBack("File: {0:}\n".format(self.fname))
+            #-----------------------
+            # ControlNCAR -- NCAR specific
+            #-----------------------
+            self.opus.controlNCAR()
 
-        optOFI = ['APT','BMS','DTC','LPF', 'OPF', 'SRC', 'VEL']
+            #-----------------------
+            # ControlNCAR -- NCAR specific
+            #-----------------------
+            self.textCallBack("File: {0:}\n".format(self.fname))
 
-        for k in optOFI:
-            self.textCallBack("{0:} = {1:}\n".format(k,self.opus.opt[k])) 
+            optOFI = ['APT','BMS','DTC','LPF', 'OPF', 'SRC', 'VEL']
 
-        optOFI = ['TPX','FXV', 'LXV', 'MNY', 'MXY', 'DXU', 'DAT', 'TIM']
+            for k in optOFI:
+                self.textCallBack("{0:} = {1:}\n".format(k,self.opus.opt[k])) 
 
-        for k in optOFI:
-            self.textCallBack("{0:} = {1:}\n".format(k,self.opus.spc[k])) 
+            optOFI = ['TPX','FXV', 'LXV', 'MNY', 'MXY', 'DXU', 'DAT', 'TIM']
 
-        self.textCallBack2("{0:<15} = {1:<.3f}\n".format('Signal (maxY)',self.opus.signal)) 
-        self.textCallBack2("{0:<15} = {1:<.5f}\n".format('Noise (rms)  ',self.opus.noiseRMS))
-        self.textCallBack2("{0:<15} = {1:<.5f}\n".format('Noise (std)',self.opus.noiseSD)) 
-        self.textCallBack2("{0:<15} = {1:<.3f}\n".format('SNR (rms)',self.opus.SNRrms)) 
-        self.textCallBack2("{0:<15} = {1:<.3f}\n".format('SNR (std)',self.opus.SNRsd))
-        self.textCallBack2("{0:<15} = {1:<.4f}\n".format('Ratio (n/p)',self.opus.Ratio))
-        self.textCallBack2("{0:<15} = {1:}\n".format('Quality Comment',self.opus.comment)) 
-        self.textCallBack2("{0:<15} = {1:}\n".format('Quality Flag',self.opus.qflag)) 
+            for k in optOFI:
+                self.textCallBack("{0:} = {1:}\n".format(k,self.opus.spc[k])) 
 
-        # #-------------
-        # #-------------
-        # #    PLOT
-        # #-------------
-        # #-------------
-        fig,ax1  = plt.subplots(figsize=(10,4.5))
-        #fig,ax1  = plt.subplots()
- 
-        ax1.plot(self.opus.spc['w'][self.opus.indsS], self.opus.spc['ORG'][self.opus.indsS], linewidth=1.0)
-        ax1.set_title(self.fname)
-        #ax.set_xlim((np.min(dataSpec['WaveN_'+x]),np.max(dataSpec['WaveN_'+x])))    
-        ax1.grid(True, alpha=0.5)
-        ax1.tick_params(which='both',labelsize=12)
-        #ax1.legend(prop={'size':11})
-        ax1.set_ylabel('Intensity [a.u]', fontsize=12)
-        ax1.set_xlabel('Wavenumber [cm$^{-1}$]', fontsize=12)
-        ax1.set_xlim(self.opus.waverange[0], self.opus.waverange[1])
-        ax1.annotate('SNR$_{0:}$:{1:.1f}'.format('{std}',self.opus.SNRsd), xy=(0.025, 0.95), xycoords='axes fraction', fontsize=14, ha='left')
-        ax1.annotate('Ratio:{0:.4f}'.format(self.opus.Ratio), xy=(0.025, 0.88), xycoords='axes fraction', fontsize=14, ha='left')
-        ax1.annotate('qComm:{0:}'.format(self.opus.comment), xy=(0.025, 0.81), xycoords='axes fraction', fontsize=14, ha='left')
+            self.textCallBack2("{0:<15} = {1:<.3f}\n".format('Signal (maxY)',self.opus.signal)) 
+            self.textCallBack2("{0:<15} = {1:<.5f}\n".format('Noise (rms)  ',self.opus.noiseRMS))
+            self.textCallBack2("{0:<15} = {1:<.5f}\n".format('Noise (std)',self.opus.noiseSD)) 
+            self.textCallBack2("{0:<15} = {1:<.3f}\n".format('SNR (rms)',self.opus.SNRrms)) 
+            self.textCallBack2("{0:<15} = {1:<.3f}\n".format('SNR (std)',self.opus.SNRsd))
+            self.textCallBack2("{0:<15} = {1:<.4f}\n".format('Ratio (n/p)',self.opus.Ratio))
+            self.textCallBack2("{0:<15} = {1:}\n".format('Quality Comment',self.opus.comment)) 
+            self.textCallBack2("{0:<15} = {1:}\n".format('Quality Flag',self.opus.qflag)) 
 
-        fig.subplots_adjust(left=0.1, bottom=0.15, right=0.95, top=0.93)
-        #ax1.set_ylim(ymin=)
+            # #-------------
+            # #-------------
+            # #    PLOT
+            # #-------------
+            # #-------------
+            fig,ax1  = plt.subplots(figsize=(10,4.5))
+            #fig,ax1  = plt.subplots()
+     
+            ax1.plot(self.opus.spc['w'][self.opus.indsS], self.opus.spc['ORG'][self.opus.indsS], linewidth=1.0)
+            ax1.set_title(self.fname)
+            #ax.set_xlim((np.min(dataSpec['WaveN_'+x]),np.max(dataSpec['WaveN_'+x])))    
+            ax1.grid(True, alpha=0.5)
+            ax1.tick_params(which='both',labelsize=12)
+            #ax1.legend(prop={'size':11})
+            ax1.set_ylabel('Intensity [a.u]', fontsize=12)
+            ax1.set_xlabel('Wavenumber [cm$^{-1}$]', fontsize=12)
+            ax1.set_xlim(self.opus.waverange[0], self.opus.waverange[1])
+            ax1.annotate('SNR$_{0:}$:{1:.1f}'.format('{std}',self.opus.SNRsd), xy=(0.025, 0.95), xycoords='axes fraction', fontsize=14, ha='left')
+            ax1.annotate('Ratio:{0:.4f}'.format(self.opus.Ratio), xy=(0.025, 0.88), xycoords='axes fraction', fontsize=14, ha='left')
+            ax1.annotate('qComm:{0:}'.format(self.opus.comment), xy=(0.025, 0.81), xycoords='axes fraction', fontsize=14, ha='left')
 
-        canvas = FigureCanvasTkAgg(fig, self.parent)
-        
-        canvas.get_tk_widget().grid(row=4,column=0)
-        #canvas.show()
+            fig.subplots_adjust(left=0.1, bottom=0.15, right=0.95, top=0.93)
+            #ax1.set_ylim(ymin=)
 
-        canvas.draw()
+            canvas = FigureCanvasTkAgg(fig, self.parent)
+            
+            canvas.get_tk_widget().grid(row=4,column=0)
+            #canvas.show()
 
-        #plt.show(block=True)
+            canvas.draw()
+
+            #plt.show(block=True)
 
             
         #toolbar = NavigationToolbar2TkAgg(canvas, self)

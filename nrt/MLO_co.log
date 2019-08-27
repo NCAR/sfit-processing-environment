@@ -42,3 +42,13 @@ Thu, 01 Aug 2019 12:25:14 INFO     HDFCreate.py -i /data1/ebaumer/mlo/co/input_H
 Thu, 01 Aug 2019 12:25:16 INFO     Version: /data1/ebaumer/mlo/co/HDF_Current_B3_RD/
 Thu, 01 Aug 2019 12:25:16 INFO     HDF file to upload:      groundbased_ftir.co_ncar002_mauna.loa.hi_20190711t174154z_20190727t200657z_004.hdf
 Thu, 01 Aug 2019 12:25:17 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Fri, 16 Aug 2019 10:36:19 INFO     **************** Starting Logging ***********************
+Fri, 16 Aug 2019 10:36:19 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Fri, 16 Aug 2019 10:36:19 INFO     Station location:       MLO
+Fri, 16 Aug 2019 10:36:19 INFO     Gas Name:               CO
+Fri, 16 Aug 2019 10:36:19 INFO     Dates:                  20190801_20190815
+Fri, 16 Aug 2019 10:36:19 INFO     Create HDF:             True
+Fri, 16 Aug 2019 10:36:19 INFO     Upload HDF:             True
+Fri, 16 Aug 2019 10:36:24 INFO     HDFCreate.py -i /data1/ebaumer/mlo/co/input_HDFCreate.py -d 20190801_20190815
+Fri, 16 Aug 2019 10:36:27 INFO     Version: /data1/ebaumer/mlo/co/HDF_Current_B3_RD/
+Fri, 16 Aug 2019 10:36:28 ERROR    No HDFs in date range

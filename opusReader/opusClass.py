@@ -613,13 +613,19 @@ class readOPUS:
         # 
         #------------------------------
 
-        indsPos = np.where(self.spc['ORG'][self.indsS ] > 0.)[0]
-        indsNeg = np.where(self.spc['ORG'][self.indsS ] < 0.)[0]
+        try:
 
-        AreaPos = simps(self.spc['ORG'][self.indsS][indsPos])
-        AreaNeg = simps(np.abs(self.spc['ORG'][self.indsS][indsNeg]))
+            indsPos = np.where(self.spc['ORG'][self.indsS ] > 0.)[0]
+            indsNeg = np.where(self.spc['ORG'][self.indsS ] < 0.)[0]
 
-        self.Ratio  = np.divide(AreaNeg,AreaPos)
+            AreaPos = simps(self.spc['ORG'][self.indsS][indsPos])
+            AreaNeg = simps(np.abs(self.spc['ORG'][self.indsS][indsNeg]))
+
+            self.Ratio  = np.divide(AreaNeg,AreaPos)
+
+        except Exception as errmsg:
+            print errmsg
+            self.Ratio = 1e-6    
 
         #------------------------------
         # 

@@ -1,6 +1,4 @@
 #!/usr/bin/python
-##! /usr/local/python-2.7/bin/python
-
 # Change the above line to point to the location of your python executable
 
 #----------------------------------------------------------------------------------------
@@ -187,11 +185,11 @@ def main(argv):
             # Check if directory exists
             ckDir(datapath)
             
-            print 'Searching for ckopus executable file specified in mkSpecDB.py'
-            print 'If not found, please change path under Initializations and defaults in python program'
-            ckFile(ckopus)                       # Check if ckopus executable file given above under Initializations and defaults
+            #print 'Searching for ckopus executable file specified in mkSpecDB.py'
+            #print 'If not found, please change path under Initializations and defaults in python program'
+            #ckFile(ckopus)                       # Check if ckopus executable file given above under Initializations and defaults
                                                  # exists
-            print 'ckopus executable found'  
+            #print 'ckopus executable found'  
 
         elif opt == '-s':  
 
