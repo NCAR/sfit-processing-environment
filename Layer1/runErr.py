@@ -126,6 +126,16 @@ def main():
     #----------------------------------------------------
     sbCtlFile = sc.CtlInputFile(sbFileName)
     sbCtlFile.getInputs()    
+
+    if 'sbdefaults' in sbCtlFile.inputs:
+
+        ckFile(sbCtlFile.inputs['sbdefaults'][0],logFlg=logFile,exit=True)
+        sbctldefaults = sc.CtlInputFile(sbCtlFile.inputs['sbdefaults'][0])
+        sbctldefaults.getInputs()
+
+    else:
+        sbctldefaults = False 
+
     
     #--------------------------------------------
     # Walk through first level of directories and
@@ -165,7 +175,7 @@ def main():
             # Run error analysis
             #-------------------
             print curDir
-            rtn = errAnalysis(ctlFile,sbCtlFile,curDir)
+            rtn = errAnalysis(ctlFile,sbCtlFile,sbctldefaults,curDir)
             if not rtn: print 'Unable to run error analysis in directory = {}'.format(curDir)
 
             

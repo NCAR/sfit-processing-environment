@@ -41,7 +41,9 @@ import matplotlib.cm as mplcm
 import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
 
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+#import matplotlib.backends.backend_tkagg as tkagg
+
 
 import opusClass as op
 import shutil
@@ -168,7 +170,14 @@ class ckopusGUI(tk.Frame):
         
         #self.loopCam()
         self.centerWindow()
+
+        #self.main_container = tk.Frame(self.parent, height=10, width=100)
+        #self.main_container.pack(side="top", fill="both", expand=True)
+        #self.matplotlib_frame = tk.Frame(self.main_container)
+
         #self.ReadSpc()
+        self.addPltBox()
+        self.addPltBox2()
         
     def textCallBack(self,textString):
         self.textBox.insert(tk.END,textString)
@@ -291,23 +300,60 @@ class ckopusGUI(tk.Frame):
 
     def addPltBox(self):
 
-        self.event_num = int(self.valgoto.get())
+        #self.event_num = int(self.valgoto.get())
         
-        self.fig, self.ax = plt.subplots()
+        #self.fig, self.ax = plt.subplots()
+
+        self.fig, self.ax1  = plt.subplots(figsize=(10,4.5))
+
+        self.plt = []
         
-        self.canvas=FigureCanvasTkAgg(self.fig,self.parent)
-        self.canvas.get_tk_widget().grid(row=6,column=0)
+        self.canvas=FigureCanvasTkAgg(self.fig, self.parent)
+        self.canvas.get_tk_widget().grid(row=4,column=0)
+
+        #self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+
+        self.ax1.axis("off")
+
+        #self.toolbar = NavigationToolbar2Tk(self.canvas, self.parent)
+        #self.toolbar.update()
+        #self.canvas._tkcanvas.pack(anchor=tk.W, side=tk.TOP, fill=tk.BOTH, expand=1)
+
+
+        
+        #canvas.get_tk_widget().grid(row=4,column=0)
+        #self.canvas.draw()
         
 
-        self.line,       = self.ax.plot(self.spc['wn'][self.event_num],self.spc['int'][self.event_num])
-
-        self.canvas.show()
+        #self.line,       = self.ax.plot(self.spc['wn'][self.event_num],self.spc['int'][self.event_num])
+        #self.canvas.show()
 
         #self.plotbutton=tk.Button(self.parent, text="Start", command=lambda: self.plot(canvas,ax))
         #self.plotbutton.grid(row=1,column=2)
 
         #self.plotbutton=tk.Button(self.parent, text="Delete", command=lambda: self.plot(canvas,ax))
         #self.plotbutton.grid(row=0,column=0)
+
+    def addPltBox2(self):
+
+        #self.event_num = int(self.valgoto.get())
+        
+        #self.fig, self.ax = plt.subplots()
+
+        self.fig2, self.ax2  = plt.subplots(figsize=(10,3))
+
+        self.plt2 = []
+        
+        self.canvas2=FigureCanvasTkAgg(self.fig2, self.parent)
+        self.canvas2.get_tk_widget().grid(row=5,column=0)
+
+        #self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+
+        self.ax2.axis("off")
+
+        #self.colormap = plt.cm.gist_ncar
 
     def quitGUI(self):
 
@@ -479,31 +525,43 @@ class ckopusGUI(tk.Frame):
             # #    PLOT
             # #-------------
             # #-------------
-            fig,ax1  = plt.subplots(figsize=(10,4.5))
-            #fig,ax1  = plt.subplots()
-     
-            ax1.plot(self.opus.spc['w'][self.opus.indsS], self.opus.spc['ORG'][self.opus.indsS], linewidth=1.0)
-            ax1.set_title(self.fname)
-            #ax.set_xlim((np.min(dataSpec['WaveN_'+x]),np.max(dataSpec['WaveN_'+x])))    
-            ax1.grid(True, alpha=0.5)
-            ax1.tick_params(which='both',labelsize=12)
-            #ax1.legend(prop={'size':11})
-            ax1.set_ylabel('Intensity [a.u]', fontsize=12)
-            ax1.set_xlabel('Wavenumber [cm$^{-1}$]', fontsize=12)
-            ax1.set_xlim(self.opus.waverange[0], self.opus.waverange[1])
-            ax1.annotate('SNR$_{0:}$:{1:.1f}'.format('{std}',self.opus.SNRsd), xy=(0.025, 0.95), xycoords='axes fraction', fontsize=14, ha='left')
-            ax1.annotate('Ratio:{0:.4f}'.format(self.opus.Ratio), xy=(0.025, 0.88), xycoords='axes fraction', fontsize=14, ha='left')
-            ax1.annotate('qComm:{0:}'.format(self.opus.comment), xy=(0.025, 0.81), xycoords='axes fraction', fontsize=14, ha='left')
 
-            fig.subplots_adjust(left=0.1, bottom=0.15, right=0.95, top=0.93)
+            self.ax1.axis('on')
+            self.ax1.clear()
+            #self.fig.draw()
+     
+            self.ax1.plot(self.opus.spc['w'][self.opus.indsS], self.opus.spc['ORG'][self.opus.indsS], linewidth=1.0)
+            self.ax1.set_title(self.fname)
+            #ax.set_xlim((np.min(dataSpec['WaveN_'+x]),np.max(dataSpec['WaveN_'+x])))    
+            self.ax1.grid(True, alpha=0.5)
+            self.ax1.tick_params(which='both',labelsize=12)
+            #ax1.legend(prop={'size':11})
+            self.ax1.set_ylabel('Intensity [a.u]', fontsize=12)
+            self.ax1.set_xlabel('Wavenumber [cm$^{-1}$]', fontsize=12)
+            self.ax1.set_xlim(self.opus.waverange[0], self.opus.waverange[1])
+            self.ax1.annotate('SNR$_{0:}$:{1:.1f}'.format('{std}',self.opus.SNRsd), xy=(0.025, 0.95), xycoords='axes fraction', fontsize=14, ha='left')
+            self.ax1.annotate('Ratio:{0:.4f}'.format(self.opus.Ratio), xy=(0.025, 0.88), xycoords='axes fraction', fontsize=14, ha='left')
+            self.ax1.annotate('qComm:{0:}'.format(self.opus.comment), xy=(0.025, 0.81), xycoords='axes fraction', fontsize=14, ha='left')
+
+            self.fig.subplots_adjust(left=0.1, bottom=0.15, right=0.95, top=0.93)
             #ax1.set_ylim(ymin=)
 
-            canvas = FigureCanvasTkAgg(fig, self.parent)
+            #canvas = FigureCanvasTkAgg(fig, self.parent)
             
-            canvas.get_tk_widget().grid(row=4,column=0)
-            #canvas.show()
+            #canvas.get_tk_widget().grid(row=4,column=0)
+            self.canvas.draw()
+            #canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
-            canvas.draw()
+
+            # toolbar = NavigationToolbar2Tk(canvas, self.parent)
+            # toolbar.update()
+
+            # #canvas._tkcanvas.pack(anchor=tk.W, side=tk.BOTTOM, fill=tk.X, expand=False)
+            # canvas._tkcanvas.pack(side=tk.BOTTOM, expand=False)
+
+
+            #canvas.mpl_connect("key_press_event", self.on_key_press)
+#            canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
             #plt.show(block=True)
 
@@ -521,6 +579,13 @@ class ckopusGUI(tk.Frame):
         #print 'Start Button'
 
         #self.addPltBox()
+
+    def on_key_press(event):
+        print("you pressed {}".format(event.key))
+        key_press_handler(event, canvas, toolbar)
+
+
+    
 
     #----------------------
     # Define button actions
@@ -545,11 +610,15 @@ class ckopusGUI(tk.Frame):
 
         mVars = readMeas(LogFname)
 
-        fig, ax1 = plt.subplots(figsize=(10,3))
+        #fig, ax1 = plt.subplots(figsize=(10,3))
 
         colormap = plt.cm.gist_ncar
+
+        
+        self.ax2.axis('on')
+        self.ax2.clear()
        #clrs = plt.gca().set_color_cycle([colormap(i) for i in np.linspace(0, 0.9, len(fltid))])
-        ax1.set_prop_cycle( cycler('color', [colormap(i) for i in np.linspace(0, 0.9, len(fltid))] ) )
+        self.ax2.set_prop_cycle( cycler('color', [colormap(i) for i in np.linspace(0, 0.9, len(fltid))] ) )
 
 
         for i, fl in enumerate(fltid):
@@ -562,25 +631,30 @@ class ckopusGUI(tk.Frame):
                 pltVal = mVars['SNR_RMS'][inds]
                 DT     = mVars['Time_Meas'][inds]
 
-                ax1.plot(DT, pltVal, "o" ,markersize=5, linestyle='-', label= fl)
+                self.ax2.plot(DT, pltVal, "o" ,markersize=5, linestyle='-', label= fl)
 
-        ax1.set_ylabel('SNR', fontsize=12)
-        ax1.grid(True)
-        ax1.set_xlabel("UT Time[Hours]", fontsize=12)
-        ax1.xaxis.set_major_locator(HourLocator())
-        ax1.xaxis.set_major_formatter(DateFormatter("%H"))
-        ax1.xaxis.set_minor_locator(AutoMinorLocator())
-        ax1.tick_params(which='both',labelsize=12)
+        self.ax2.set_ylabel('SNR', fontsize=12)
+        self.ax2.grid(True)
+        self.ax2.set_xlabel("UT Time[Hours]", fontsize=12)
+        self.ax2.xaxis.set_major_locator(HourLocator())
+        self.ax2.xaxis.set_major_formatter(DateFormatter("%H"))
+        self.ax2.xaxis.set_minor_locator(AutoMinorLocator())
+        self.ax2.tick_params(which='both',labelsize=12)
         #ax1[vi].set_title("Date = {:%Y-%B-%d}".format(self.obsTime[2]))
-        ax1.legend(prop={'size':9}, loc=1)
-        fig.subplots_adjust(left=0.1, bottom=0.19, right=0.95, top=0.93)
+        self.ax2.legend(prop={'size':9}, loc=1)
+        self.fig2.subplots_adjust(left=0.1, bottom=0.19, right=0.95, top=0.93)
 
-        canvas = FigureCanvasTkAgg(fig, self.parent)
+        #canvas = FigureCanvasTkAgg(fig, self.parent)
         
-        canvas.get_tk_widget().grid(row=5,column=0)
+        #canvas.get_tk_widget().grid(row=5,column=0)
         #canvas.show()
 
-        canvas.draw()
+        self.canvas2.draw()
+
+        # toolbar = NavigationToolbar2Tk(canvas, self.parent)
+        # toolbar.update()
+
+        # canvas.mpl_connect("key_press_event", self.on_key_press)
 
         #plt.show()
 

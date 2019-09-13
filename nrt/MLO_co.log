@@ -52,3 +52,24 @@ Fri, 16 Aug 2019 10:36:19 INFO     Upload HDF:             True
 Fri, 16 Aug 2019 10:36:24 INFO     HDFCreate.py -i /data1/ebaumer/mlo/co/input_HDFCreate.py -d 20190801_20190815
 Fri, 16 Aug 2019 10:36:27 INFO     Version: /data1/ebaumer/mlo/co/HDF_Current_B3_RD/
 Fri, 16 Aug 2019 10:36:28 ERROR    No HDFs in date range
+Thu, 05 Sep 2019 11:41:52 INFO     **************** Starting Logging ***********************
+Thu, 05 Sep 2019 11:41:52 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Thu, 05 Sep 2019 11:41:52 INFO     Station location:       MLO
+Thu, 05 Sep 2019 11:41:52 INFO     Gas Name:               CO
+Thu, 05 Sep 2019 11:41:52 INFO     Dates:                  20190816_20190831
+Thu, 05 Sep 2019 11:41:52 INFO     Create HDF:             True
+Thu, 05 Sep 2019 11:41:52 INFO     Upload HDF:             True
+Thu, 05 Sep 2019 11:41:56 INFO     HDFCreate.py -i /data1/ebaumer/mlo/co/input_HDFCreate.py -d 20190816_20190831
+Thu, 05 Sep 2019 11:41:59 INFO     Version: /data1/ebaumer/mlo/co/HDF_Current_B3_RD/
+Thu, 05 Sep 2019 11:41:59 ERROR    No HDFs in date range
+Fri, 06 Sep 2019 14:05:37 INFO     **************** Starting Logging ***********************
+Fri, 06 Sep 2019 14:05:37 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Fri, 06 Sep 2019 14:05:37 INFO     Station location:       MLO
+Fri, 06 Sep 2019 14:05:37 INFO     Gas Name:               CO
+Fri, 06 Sep 2019 14:05:37 INFO     Dates:                  20190816_20190831
+Fri, 06 Sep 2019 14:05:37 INFO     Create HDF:             True
+Fri, 06 Sep 2019 14:05:37 INFO     Upload HDF:             True
+Fri, 06 Sep 2019 14:05:46 INFO     HDFCreate.py -i /data1/ebaumer/mlo/co/input_HDFCreate.py -d 20190816_20190831
+Fri, 06 Sep 2019 14:05:48 INFO     Version: /data1/ebaumer/mlo/co/HDF_Current_B3_RD/
+Fri, 06 Sep 2019 14:05:49 INFO     HDF file to upload:      groundbased_ftir.co_ncar002_mauna.loa.hi_20190821t191608z_20190831t192154z_004.hdf
+Fri, 06 Sep 2019 14:05:49 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/

@@ -53,3 +53,25 @@ Fri, 16 Aug 2019 13:36:33 INFO     HDFCreate.py -i /data1/ebaumer/tab/co/input_H
 Fri, 16 Aug 2019 13:36:35 INFO     Version: /data1/ebaumer/tab/co/HDF_Current_B3_RD/
 Fri, 16 Aug 2019 13:36:35 INFO     HDF file to upload:      groundbased_ftir.co_ncar001_thule_20190801t010715z_20190815t014840z_004.hdf
 Fri, 16 Aug 2019 13:36:36 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Thu, 05 Sep 2019 11:49:24 INFO     **************** Starting Logging ***********************
+Thu, 05 Sep 2019 11:49:24 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Thu, 05 Sep 2019 11:49:24 INFO     Station location:       TAB
+Thu, 05 Sep 2019 11:49:24 INFO     Gas Name:               CO
+Thu, 05 Sep 2019 11:49:24 INFO     Dates:                  20190816_20190831
+Thu, 05 Sep 2019 11:49:24 INFO     Create HDF:             True
+Thu, 05 Sep 2019 11:49:24 INFO     Upload HDF:             True
+Thu, 05 Sep 2019 11:49:40 INFO     HDFCreate.py -i /data1/ebaumer/tab/co/input_HDFCreate.py -d 20190816_20190831
+Thu, 05 Sep 2019 11:49:42 INFO     Version: /data1/ebaumer/tab/co/HDF_Current_B3_RD/
+Thu, 05 Sep 2019 11:49:42 INFO     HDF file to upload:      groundbased_ftir.co_ncar001_thule_20190816t185336z_20190816t224338z_004.hdf
+Thu, 05 Sep 2019 11:49:43 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Fri, 06 Sep 2019 14:22:36 INFO     **************** Starting Logging ***********************
+Fri, 06 Sep 2019 14:22:36 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Fri, 06 Sep 2019 14:22:36 INFO     Station location:       TAB
+Fri, 06 Sep 2019 14:22:36 INFO     Gas Name:               CO
+Fri, 06 Sep 2019 14:22:36 INFO     Dates:                  20190816_20190831
+Fri, 06 Sep 2019 14:22:36 INFO     Create HDF:             True
+Fri, 06 Sep 2019 14:22:36 INFO     Upload HDF:             True
+Fri, 06 Sep 2019 14:22:58 INFO     HDFCreate.py -i /data1/ebaumer/tab/co/input_HDFCreate.py -d 20190816_20190831
+Fri, 06 Sep 2019 14:23:00 INFO     Version: /data1/ebaumer/tab/co/HDF_Current_B3_RD/
+Fri, 06 Sep 2019 14:23:00 INFO     HDF file to upload:      groundbased_ftir.co_ncar001_thule_20190816t185336z_20190831t200226z_004.hdf
+Fri, 06 Sep 2019 14:23:01 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/

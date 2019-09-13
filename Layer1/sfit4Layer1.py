@@ -21,14 +21,17 @@
 #       1) Command line arguments tell the program where the Layer 1
 #          input file resides and where to write the log file
 #       2) The hbin file must be created prior to running Layer1
-#       23 Options include:
-#            -i <file> : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file
-#            -l        : Flag to create log files of processing. Path to write log files is specified in input file 
-#            -L <0/1>  : Flag to create output list file. Path to write list files is specified in input file. 
-#                             0 = Use consistent file name 'testing.lst'
-#                             1 = Uses date and time stamp for list file name 'YYYYMMDD_HHMMSS.lst'
-#            -P <int>  : Pause run starting at run number <int>. <int> is an integer to start processing at
-#            -?        : Show all flags
+#       3 Options include:
+#            -i <file>                              : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file
+#            -l                                     : Flag to create log files of processing. Path to write log files is specified in input file 
+#            -L <0/1>                               : Flag to create output list file. Path to write list files is specified in input file. 
+#                                                   0 = Use consistent file name 'testing.lst'
+#                                                   1 = Uses date and time stamp for list file name 'YYYYMMDD_HHMMSS.lst'
+#            -P <int>                               : Pause run starting at run number <int>. <int> is an integer to start processing at
+#            -?                                     : Show all flags
+#            -d <20190101> or <20190101_20191231>   : Date or Date range'
+#                                                   -d is optional and if used these dates will overwrite dates in input file for Layer 1 processing 
+#                                                    Note: Created mainly for near-real time analysis 
 #
 #
 # Usage:
@@ -42,6 +45,9 @@
 #
 # Version History:
 #       Created, May, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
+#       Version history stored in git repository
+#       
+#       Edited, 2019  Ivan Ortega (iortega@ucar.edu)
 #       Version history stored in git repository
 #
 #
@@ -92,12 +98,13 @@ import matplotlib.pyplot as plt
                         #-------------------------#
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'sfit4Layer1.py -i <file> -l -L0 -P <int> -?'
-    print '  -i <file> : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file'
-    print '  -l        : Flag to create log files of processing. Path to write log files is specified in input file '
-    print '  -L <0/1>  : Flag to create output list file. Path to write list files is specified in input file'
-    print '  -P <int>  : Pause run starting at run number <int>. <int> is an integer to start processing at'
-    print '  -?        : Show all flags'
+    print 'sfit4Layer1.py -i <file> -l -L0 -P <int> -d <20190101_20191231> -?'
+    print '  -i <file>                              : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file'
+    print '  -l                                     : Flag to create log files of processing. Path to write log files is specified in input file '
+    print '  -L <0/1>                               : Flag to create output list file. Path to write list files is specified in input file'
+    print '  -P <int>                               : Pause run starting at run number <int>. <int> is an integer to start processing at'
+    print '  -d <20190101> or <20190101_20191231>   : Date or Date range'
+    print '  -?                                     : Show all flags'
 
 def convertList(varList):
     ''' Converts numbers represented as a string in a list to float '''
@@ -319,8 +326,6 @@ def main(argv):
         mainInF.inputs['fmnth'] = fmnth
         mainInF.inputs['fday']  = fday
 
-
-
     #--------------------------------------------
     # Program Looping structure. See Notes
     #      Level1 - LOC             (Input/Output)
@@ -380,9 +385,23 @@ def main(argv):
         # instance and get inputs (sb.ctl)
         #---------------------------------
         if mainInF.inputs['errFlg']:
+
             ckFile(mainInF.inputs['sbCtlFile'],logFlg=logFile,exit=True)
             SbctlFileVars = sc.CtlInputFile(mainInF.inputs['sbCtlFile'])
-            SbctlFileVars.getInputs()            
+            SbctlFileVars.getInputs()    
+
+            #---------------------------------
+            # Check if there are defaults
+            # instance and get inputs (sbctldefaults.ctl)
+            #---------------------------------        
+            if 'sbdefaults' in SbctlFileVars.inputs:
+
+                ckFile(SbctlFileVars.inputs['sbdefaults'][0],logFlg=logFile,exit=True)
+                sbctldefaults = sc.CtlInputFile(SbctlFileVars.inputs['sbdefaults'][0])
+                sbctldefaults.getInputs()
+
+            else:
+                sbctldefaults = False
 
         #--------------------------------------
         # Level 2 -- Loop through control files
@@ -496,6 +515,7 @@ def main(argv):
             # Level 3 -- Loop through spectral db lines
             #------------------------------------------
             nobs = len(dbFltData_2['Date'])
+
             for spcDBind in range(0, nobs):  
 
                 #-----------------------------------------------------------
@@ -509,6 +529,7 @@ def main(argv):
 
 
                 brkFlg = True    # Flag to break out of while statement
+
                 while True:      # While statement is for the repeat function 
                     print '\n\n\n'
                     print '*************************************************'
@@ -609,14 +630,8 @@ def main(argv):
 
 
                     # Create instance of local control file (ctl file in working directory)
-                    ctlFileLcl = sc.CtlInputFile(wrkOutputDir3 + 'sfit4.ctl',logFile)
-
-                                       
-                          
-                    # Create instance of local control file (ctl file in working directory)
-                    ctlFileLcl = sc.CtlInputFile(wrkOutputDir3 + 'sfit4.ctl',logFile)
+                    ctlFileLcl = sc.CtlInputFile(wrkOutputDir3 + 'sfit4.ctl',logFile)                        
                              
-
                     #-------------------------------------------------
                     # Determine whether to use ILS file. Empty string
                     # '' => no ILS file.
@@ -715,12 +730,15 @@ def main(argv):
                         # Run Refmaker
                         #-------------
 
-                        if mainInF.inputs['waccmFlg']:
-                            ckDir( mainInF.inputs['WACCMfolder'], logFlg=logFile, exit=True )
-                            waccmFile = mainInF.inputs['WACCMfolder'] + 'WACCMref_V6-'+mnthstr+'.dat'
+                        if 'waccmFlg' in mainInF.inputs:
+                            if mainInF.inputs['waccmFlg']:
+                                ckDir( mainInF.inputs['WACCMfolder'], logFlg=logFile, exit=True )
+                                waccmFile = mainInF.inputs['WACCMfolder'] + 'WACCMref_V6-'+mnthstr+'.dat'
+                            else: waccmFile = mainInF.inputs['WACCMfile']
 
                         else:
                             waccmFile = mainInF.inputs['WACCMfile']
+
 
                         print '*****************************************************'
                         print 'Running REFMKRNCAR for ctl file: %s' % msgstr1
@@ -804,11 +822,11 @@ def main(argv):
                                 lstFile.info("{0:<13}".format(int(dbFltData_2['Date'][spcDBind])) + "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + '       ' + wrkOutputDir3)
 
 
-                                #----------------------------#
-                                #                            #
-                                #   --- Error Analysis ---   #
-                                #                            #
-                                #----------------------------#
+                        #----------------------------#
+                        #                            #
+                        #   --- Error Analysis ---   #
+                        #                            #
+                        #----------------------------#
                         if mainInF.inputs['errFlg']:
                             if logFile: 
                                 logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)                            
@@ -816,7 +834,7 @@ def main(argv):
                             #-----------------------------------
                             # Enter into Error Analysis function
                             #-----------------------------------
-                            rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, logFile )  
+                            rtn = errAnalysis( ctlFileGlb, SbctlFileVars, sbctldefaults, wrkOutputDir3, logFile )  
 
                         #---------------------------
                         # Continuation for Pause flg

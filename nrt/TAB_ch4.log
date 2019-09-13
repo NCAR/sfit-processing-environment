@@ -53,3 +53,25 @@ Fri, 16 Aug 2019 12:27:53 INFO     HDFCreate.py -i /data1/ebaumer/tab/ch4/input_
 Fri, 16 Aug 2019 12:27:55 INFO     Version: /data1/ebaumer/tab/ch4/HDF_Current_WP_RD/
 Fri, 16 Aug 2019 12:27:55 INFO     HDF file to upload:      groundbased_ftir.ch4_ncar001_thule_20190801t010140z_20190815t013837z_003.hdf
 Fri, 16 Aug 2019 12:27:56 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Thu, 05 Sep 2019 11:44:13 INFO     **************** Starting Logging ***********************
+Thu, 05 Sep 2019 11:44:13 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Thu, 05 Sep 2019 11:44:13 INFO     Station location:       TAB
+Thu, 05 Sep 2019 11:44:13 INFO     Gas Name:               CH4
+Thu, 05 Sep 2019 11:44:13 INFO     Dates:                  20190816_20190831
+Thu, 05 Sep 2019 11:44:13 INFO     Create HDF:             True
+Thu, 05 Sep 2019 11:44:13 INFO     Upload HDF:             True
+Thu, 05 Sep 2019 11:44:22 INFO     HDFCreate.py -i /data1/ebaumer/tab/ch4/input_HDFCreate.py -d 20190816_20190831
+Thu, 05 Sep 2019 11:44:24 INFO     Version: /data1/ebaumer/tab/ch4/HDF_Current_WP_RD/
+Thu, 05 Sep 2019 11:44:24 INFO     HDF file to upload:      groundbased_ftir.ch4_ncar001_thule_20190816t192933z_20190816t223336z_003.hdf
+Thu, 05 Sep 2019 11:44:25 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Fri, 06 Sep 2019 13:56:01 INFO     **************** Starting Logging ***********************
+Fri, 06 Sep 2019 13:56:01 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Fri, 06 Sep 2019 13:56:01 INFO     Station location:       TAB
+Fri, 06 Sep 2019 13:56:01 INFO     Gas Name:               CH4
+Fri, 06 Sep 2019 13:56:01 INFO     Dates:                  20190816_20190831
+Fri, 06 Sep 2019 13:56:01 INFO     Create HDF:             True
+Fri, 06 Sep 2019 13:56:01 INFO     Upload HDF:             True
+Fri, 06 Sep 2019 13:56:11 INFO     HDFCreate.py -i /data1/ebaumer/tab/ch4/input_HDFCreate.py -d 20190816_20190831
+Fri, 06 Sep 2019 13:56:14 INFO     Version: /data1/ebaumer/tab/ch4/HDF_Current_WP_RD/
+Fri, 06 Sep 2019 13:56:14 INFO     HDF file to upload:      groundbased_ftir.ch4_ncar001_thule_20190816t192933z_20190831t171013z_003.hdf
+Fri, 06 Sep 2019 13:56:15 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/

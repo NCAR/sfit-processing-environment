@@ -181,13 +181,15 @@ def main(argv):
                 # The following check whether the analysis is ran through the nrt.sh --> check for screens
                 #--------------------------------
 
-                if (ckscreen('nrt'+gas.upper()+loc.upper()) ) or (ckscreen('nrt'+gas.lower()+loc.lower()) ): 
+                #if (ckscreen('nrt'+gas.upper()+loc.upper()) ) or (ckscreen('nrt'+gas.lower()+loc.lower()) ): 
 
-                    if gas.lower() != 'h2o':
-                        if (ckscreen('nrtH2O'+loc.lower()) ) or (ckscreen('nrtH2O'+loc.upper())):
-                            print '\nWaiting for Water Vapor to Finish at {}'.format(dt.datetime.utcnow())
-                            sleep(10)
-                            continue
+
+                if gas.lower() != 'h2o':
+                    if (ckscreen('nrtH2O'+loc.lower()) ) or (ckscreen('nrtH2O'+loc.upper())):
+                        print '\nWaiting for Water Vapor to Finish at {}'.format(dt.datetime.utcnow())
+                        sleep(10)
+                        print 'sleeping 1'
+                        continue
                         
                 #----------------
                 # Starting sfit4Layer1.py

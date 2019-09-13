@@ -53,3 +53,24 @@ Fri, 16 Aug 2019 10:51:00 INFO     HDFCreate.py -i /data1/ebaumer/mlo/o3/input_H
 Fri, 16 Aug 2019 10:51:03 INFO     Version: /data1/ebaumer/mlo/o3/HDF_Current_RD/
 Fri, 16 Aug 2019 10:51:03 INFO     HDF file to upload:      groundbased_ftir.o3_ncar002_mauna.loa.hi_20190809t194736z_20190809t204645z_004.hdf
 Fri, 16 Aug 2019 10:51:04 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Thu, 05 Sep 2019 11:42:32 INFO     **************** Starting Logging ***********************
+Thu, 05 Sep 2019 11:42:32 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Thu, 05 Sep 2019 11:42:32 INFO     Station location:       MLO
+Thu, 05 Sep 2019 11:42:32 INFO     Gas Name:               O3
+Thu, 05 Sep 2019 11:42:32 INFO     Dates:                  20190816_20190831
+Thu, 05 Sep 2019 11:42:32 INFO     Create HDF:             True
+Thu, 05 Sep 2019 11:42:32 INFO     Upload HDF:             True
+Thu, 05 Sep 2019 11:42:37 INFO     HDFCreate.py -i /data1/ebaumer/mlo/o3/input_HDFCreate.py -d 20190816_20190831
+Thu, 05 Sep 2019 11:42:39 INFO     Version: /data1/ebaumer/mlo/o3/HDF_Current_RD/
+Thu, 05 Sep 2019 11:42:39 ERROR    No HDFs in date range
+Fri, 06 Sep 2019 18:03:17 INFO     **************** Starting Logging ***********************
+Fri, 06 Sep 2019 18:03:17 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Fri, 06 Sep 2019 18:03:17 INFO     Station location:       MLO
+Fri, 06 Sep 2019 18:03:17 INFO     Gas Name:               O3
+Fri, 06 Sep 2019 18:03:17 INFO     Dates:                  20190816_20190831
+Fri, 06 Sep 2019 18:03:17 INFO     Create HDF:             True
+Fri, 06 Sep 2019 18:03:17 INFO     Upload HDF:             True
+Fri, 06 Sep 2019 18:03:31 INFO     HDFCreate.py -i /data1/ebaumer/mlo/o3/input_HDFCreate.py -d 20190816_20190831
+Fri, 06 Sep 2019 18:03:33 INFO     Version: /data1/ebaumer/mlo/o3/HDF_Current_RD/
+Fri, 06 Sep 2019 18:03:34 INFO     HDF file to upload:      groundbased_ftir.o3_ncar002_mauna.loa.hi_20190819t192937z_20190831t194838z_004.hdf
+Fri, 06 Sep 2019 18:03:35 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/

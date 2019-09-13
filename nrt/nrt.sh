@@ -18,9 +18,9 @@
 # Log:
 # Last Dates:  
 #
-# TAB - 20190711_20190731
-# MLO - 20190711_20190731
-# FL0 - 20190711_20190731
+# TAB - 20190816_20190831
+# MLO - 20190816_20190831
+# FL0 - 20190816_20190831
 #
 ############################################################################
 ############################################################################
@@ -73,7 +73,7 @@ screen -ls
 echo 'Start nrt HDF Creation/Upload for O3'
 /usr/bin/screen -dmS nrtO3hdf$site python /data/pbin/Dev_Ivan/nrt/nrtHDFUpload.py -s $site  -g o3 -d $dates -H -U -l
 sleep 5
-screen -ls
+#screen -ls
 
 #------------------------
 # Launch nrtLayer1 program for CH4

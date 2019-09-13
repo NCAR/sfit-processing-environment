@@ -523,7 +523,7 @@ class readOPUS:
 
     def controlNCAR(self):
 
-        noiserange         = [600., 620.]
+        noiserange         = [650., 670.]
         self.waverange     = [700, 6000]
         SNR_limit          = 0
         Ratio_limit        = 0.0015

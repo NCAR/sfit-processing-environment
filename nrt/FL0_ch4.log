@@ -53,3 +53,35 @@ Fri, 16 Aug 2019 11:25:14 INFO     HDFCreate.py -i /data1/ebaumer/fl0/ch4/input_
 Fri, 16 Aug 2019 11:25:16 INFO     Version: /data1/ebaumer/fl0/ch4/HDF_Current_WP_RD/
 Fri, 16 Aug 2019 11:25:16 INFO     HDF file to upload:      groundbased_ftir.ch4_ncar003_boulder.co_20190802t153342z_20190815t220847z_003.hdf
 Fri, 16 Aug 2019 11:25:17 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Thu, 05 Sep 2019 11:43:53 INFO     **************** Starting Logging ***********************
+Thu, 05 Sep 2019 11:43:53 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Thu, 05 Sep 2019 11:43:53 INFO     Station location:       FL0
+Thu, 05 Sep 2019 11:43:53 INFO     Gas Name:               CH4
+Thu, 05 Sep 2019 11:43:53 INFO     Dates:                  20190816_20190831
+Thu, 05 Sep 2019 11:43:53 INFO     Create HDF:             True
+Thu, 05 Sep 2019 11:43:53 INFO     Upload HDF:             True
+Thu, 05 Sep 2019 11:43:57 INFO     HDFCreate.py -i /data1/ebaumer/fl0/ch4/input_HDFCreate.py -d 20190816_20190831
+Thu, 05 Sep 2019 11:43:59 INFO     Version: /data1/ebaumer/fl0/ch4/HDF_Current_WP_RD/
+Thu, 05 Sep 2019 11:44:00 INFO     HDF file to upload:      groundbased_ftir.ch4_ncar003_boulder.co_20190816t154504z_20190816t173106z_003.hdf
+Thu, 05 Sep 2019 11:44:00 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Fri, 06 Sep 2019 11:42:05 INFO     **************** Starting Logging ***********************
+Fri, 06 Sep 2019 11:42:05 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Fri, 06 Sep 2019 11:42:05 INFO     Station location:       FL0
+Fri, 06 Sep 2019 11:42:05 INFO     Gas Name:               CH4
+Fri, 06 Sep 2019 11:42:05 INFO     Dates:                  20190816_20190831
+Fri, 06 Sep 2019 11:42:05 INFO     Create HDF:             True
+Fri, 06 Sep 2019 11:42:05 INFO     Upload HDF:             True
+Fri, 06 Sep 2019 11:42:21 INFO     HDFCreate.py -i /data1/ebaumer/fl0/ch4/input_HDFCreate.py -d 20190816_20190831
+Fri, 06 Sep 2019 11:42:24 INFO     Version: /data1/ebaumer/fl0/ch4/HDF_Current_WP_RD/
+Fri, 06 Sep 2019 11:42:24 ERROR    More than one HDFs in date range
+Fri, 06 Sep 2019 12:43:47 INFO     **************** Starting Logging ***********************
+Fri, 06 Sep 2019 12:43:47 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Fri, 06 Sep 2019 12:43:47 INFO     Station location:       FL0
+Fri, 06 Sep 2019 12:43:47 INFO     Gas Name:               CH4
+Fri, 06 Sep 2019 12:43:47 INFO     Dates:                  20190816_20190831
+Fri, 06 Sep 2019 12:43:47 INFO     Create HDF:             True
+Fri, 06 Sep 2019 12:43:47 INFO     Upload HDF:             True
+Fri, 06 Sep 2019 12:43:50 INFO     HDFCreate.py -i /data1/ebaumer/fl0/ch4/input_HDFCreate.py -d 20190816_20190831
+Fri, 06 Sep 2019 12:43:52 INFO     Version: /data1/ebaumer/fl0/ch4/HDF_Current_WP_RD/
+Fri, 06 Sep 2019 12:43:52 INFO     HDF file to upload:      groundbased_ftir.ch4_ncar003_boulder.co_20190816t154504z_20190828t213413z_003.hdf
+Fri, 06 Sep 2019 12:43:53 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/

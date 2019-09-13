@@ -727,7 +727,7 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
                             #  -- Error Analysis --   #
                             #                         #
                             #-------------------------#    
-def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
+def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=False):
     """
     Calculates systematic and random uncertainty covariance matrix 
     using output from sfit4 and sb values from ctl file
