@@ -35,6 +35,7 @@ import subprocess
 import numpy as np
 import time
 from scipy import interpolate
+from scipy.interpolate import interp1d
 
 def tryopen(fname):
     ''' Try to open a file and read contents'''
@@ -584,12 +585,31 @@ class MLOread():
 
                     doyMet = toYearFraction(dateT)
 
+                  
+                    Temp = np.asarray(Temp, dtype=np.float)
+                    RelH = np.asarray(RelH, dtype=np.float)
+                    Pres = np.asarray(Pres, dtype=np.float)
+                    WinS = np.asarray(WinS, dtype=np.float)
+                    WinD = np.asarray(WinD, dtype=np.float)
 
-                    Temp_i           = interpolate.interp1d(doyMet, Temp, axis=0, fill_value=(Temp[0], Temp[-1]), bounds_error=False, kind='nearest')(doyhouse )
-                    RelH_i           = interpolate.interp1d(doyMet, RelH, axis=0, fill_value=(RelH[0], RelH[-1]), bounds_error=False, kind='nearest')(doyhouse )
-                    Pres_i           = interpolate.interp1d(doyMet, Pres, axis=0, fill_value=(Pres[0], Pres[-1]), bounds_error=False, kind='nearest')(doyhouse )
-                    WinS_i           = interpolate.interp1d(doyMet, WinS, axis=0, fill_value=(WinS[0], WinS[-1]), bounds_error=False, kind='nearest')(doyhouse )
-                    WinD_i           = interpolate.interp1d(doyMet, WinD, axis=0, fill_value=(WinD[0], WinD[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                    try:
+
+                        Temp_i           = interp1d(doyMet, Temp, axis=0, fill_value=(Temp[0], Temp[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                        RelH_i           = interp1d(doyMet, RelH, axis=0, fill_value=(RelH[0], RelH[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                        Pres_i           = interp1d(doyMet, Pres, axis=0, fill_value=(Pres[0], Pres[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                        WinS_i           = interp1d(doyMet, WinS, axis=0, fill_value=(WinS[0], WinS[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                        WinD_i           = interp1d(doyMet, WinD, axis=0, fill_value=(WinD[0], WinD[-1]), bounds_error=False, kind='nearest')(doyhouse )
+
+                    except:
+
+                        Temp_i           = np.interp(doyhouse, doyMet, Temp, left=Temp[0], right= Temp[-1])
+                        RelH_i           = np.interp(doyhouse, doyMet, Temp, left=Temp[0], right= Temp[-1])
+                        Temp_i           = np.interp(doyhouse, doyMet, RelH, left=RelH[0], right= RelH[-1])
+                        Pres_i           = np.interp(doyhouse, doyMet, Pres, left=Pres[0], right= Pres[-1])
+                        WinS_i           = np.interp(doyhouse, doyMet, WinS, left=WinS[0], right= WinS[-1])
+                        WinD_i           = np.interp(doyhouse, doyMet, WinD, left=WinD[0], right= WinD[-1])
+
+                    
 
                     WinS_i = 2.237 * WinS_i
 

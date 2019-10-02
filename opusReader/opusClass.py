@@ -24,10 +24,10 @@ import fileinput
 import platform
 from datetime import datetime, date, time, timedelta
 import time
-import urllib2
+#import urllib2
 import pickle
 import copy
-import pyximport; pyximport.install()
+#import pyximport; pyximport.install()
 #import ifgtoolsc
 from scipy.integrate import simps
 
@@ -119,7 +119,7 @@ class readOPUS:
         try:
             index1=blockidarr.index('DBS')
         except ValueError:
-            print 'EXCEPTION #1 readdir()'
+            print('EXCEPTION #1 readdir()')
             
         xunit= get_param_idx.get_param_idx(f,index1,'DXU')
         if xunit == 'PN':
@@ -129,7 +129,7 @@ class readOPUS:
         try:
             index1=blockidarr.index('DBS')
         except ValueError:
-            print 'EXCEPTION #2 readdir()'
+            print ('EXCEPTION #2 readdir()')
             
         xunit= get_param_idx.get_param_idx(f,index1,'DXU')
         if xunit == 'PN':
@@ -144,7 +144,7 @@ class readOPUS:
             else:
                 blockidarr[index1]= blockidarr[index1]+'_dbs'
         except ValueError:
-            print 'EXCEPTION #3 readdir()'
+            print ('EXCEPTION #3 readdir()')
 
         try:
             index1=blockidarr.index('DBS')
@@ -153,17 +153,17 @@ class readOPUS:
                 blockidarr[index1]= blockidarr[index1]+'_spc'
             else:
                 if xunit == 'PN':
-                    print xunit
+                    print(xunit)
                 else:
                     blockidarr[index1]= blockidarr[index1]+'_dbs'
         except ValueError:
-            print 'EXCEPTION #4 readdir()'
+            print ('EXCEPTION #4 readdir()')
 
         try:
             index1=blockidarr.index('DBS_spc2')
             blockidarr[index1]= 'DBS_spc'
         except ValueError:
-            print 'EXCEPTION #5 readdir()'
+            print ('EXCEPTION #5 readdir()')
 
         f.close 
         self.blockidarr=blockidarr
@@ -185,7 +185,7 @@ class readOPUS:
                 self.opt.setdefault(par,[]).append(get_param_idx.get_param_idx(f,idx,par))
 
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue
 
         f.close()
@@ -193,7 +193,7 @@ class readOPUS:
         if verbFlg:
 
             for par in optParms:
-                print par, self.opt[par][0] 
+                print (par, self.opt[par][0])
 
         self.optFlg = True
     
@@ -215,7 +215,7 @@ class readOPUS:
                 self.fft.setdefault(par,[]).append(get_param_idx.get_param_idx(f,idx,par))
 
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue   
 
         f.close()
@@ -223,7 +223,7 @@ class readOPUS:
         if verbFlg: 
 
             for par in optParms:
-                print par, self.fft[par][0] 
+                print (par, self.fft[par][0]) 
 
         self.fftFlg = True
         
@@ -245,7 +245,7 @@ class readOPUS:
                 self.acq.setdefault(par,[]).append(get_param_idx.get_param_idx(f,idx,par))
 
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue   
 
         f.close()
@@ -253,7 +253,7 @@ class readOPUS:
         if verbFlg: 
 
             for par in optParms:
-                print par, self.acq[par][0] 
+                print (par, self.acq[par][0])
 
         self.acqFlg = True
 
@@ -275,13 +275,13 @@ class readOPUS:
                 self.opu.setdefault(par,[]).append(get_param_idx.get_param_idx(f,idx,par))
 
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue    
         f.close()
         
         if verbFlg:
             for par in optParms:
-                print par, self.opu[par][0] 
+                print (par, self.opu[par][0])
 
         self.opuFlg = True
 
@@ -306,14 +306,14 @@ class readOPUS:
                 self.ins.setdefault(par,[]).append(get_param_idx.get_param_idx(f,idx,par))
 
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue    
 
         f.close()
 
         if verbFlg:
             for par in optParms:
-                print par, self.ins[par][0]
+                print (par, self.ins[par][0])
 
         if self.optFlg:
             try:
@@ -321,7 +321,7 @@ class readOPUS:
                 self.SEMIFOV=self.FOV/2.0
 
             except ValueError:
-                print 'Error calculating FOV)'
+                print ('Error calculating FOV)')
 
         self.insFlg = True
 
@@ -344,7 +344,7 @@ class readOPUS:
                 self.spc.setdefault(par,[]).append(get_param_idx.get_param_idx(f,idx,par))
 
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue    
 
         f.close()
@@ -354,7 +354,7 @@ class readOPUS:
             self.spc[k] = self.spc[k][0]
 
             if verbFlg:
-                print k, self.spc[k]
+                print (k, self.spc[k])
         
         dummy_v = self.spc['FXV']   
         self.ud_flag = 0
@@ -591,7 +591,7 @@ class readOPUS:
             self.waverange     = [2600, 2950]  
 
         else:
-            print 'Filter Not Identified'
+            print ('Filter Not Identified')
 
         self.indsS               = np.where( (self.spc['w'] >= self.waverange[0]) & (self.spc['w'] <= self.waverange[1]) )[0]
         self.indsN               = np.where( (self.spc['w'] >= noiserange[0]) & (self.spc['w'] <= noiserange[1]) )[0]
@@ -624,7 +624,7 @@ class readOPUS:
             self.Ratio  = np.divide(AreaNeg,AreaPos)
 
         except Exception as errmsg:
-            print errmsg
+            print (errmsg)
             self.Ratio = 1e-6    
 
         #------------------------------

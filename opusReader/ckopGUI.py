@@ -55,7 +55,7 @@ from   matplotlib.dates import DateFormatter, MonthLocator, YearLocator, DayLoca
 def ckDir(dirName,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print('Input Directory %s does not exist' % (dirName))
         if exit: sys.exit()
         return False
     else:
@@ -64,7 +64,7 @@ def ckDir(dirName,exit=False):
 def ckFile(fName,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exit: sys.exit()
         return False
     else:
@@ -125,7 +125,7 @@ def readMeas(fname):
         #----------------------
         # Read in date and time
         #----------------------
-        vars['Time_Meas'] = np.array([dt.datetime(2019,07,01, int(line[0:2]),int(line[3:5]),int(line[6:8])) for line in lines[1:-2] ])
+        vars['Time_Meas'] = np.array([dt.datetime(2019,7,1, int(line[0:2]),int(line[3:5]),int(line[6:8])) for line in lines[1:-2] ])
 
         if len(vars['Time_Meas']) >= 1: MeasFlg = True
 
@@ -143,7 +143,7 @@ def readMeas(fname):
         return vars
 
     except Exception as errmsg:
-        print 'Error reading Measurement.log: ', errmsg
+        print('Error reading Measurement.log: ', errmsg)
         return False
 
 
@@ -248,7 +248,7 @@ class ckopusGUI(tk.Frame):
         #------------------------
         # Add find ellipse button
         #------------------------
-        StartButton =  ttk.Button(self,text="Start",command=self.StartButton)
+        StartButton =  tk.Button(self,text="Start",command=self.StartButton)
         StartButton.grid(row=3,column=0)
 
         #--------------------------
@@ -257,44 +257,44 @@ class ckopusGUI(tk.Frame):
         #DeleteButton =  tk.Button(self,text="Delete", fg='white', bg='red', command=self.DeleteButton)
         #DeleteButton.grid(row=3,column=1)
 
-        DeleteButton =  ttk.Button(self,text="Delete", command=self.DeleteButton)
+        DeleteButton =  tk.Button(self,text="Delete", command=self.DeleteButton)
         DeleteButton.grid(row=3,column=1)
         
 
         #----------------
         # Add quit button
         #----------------
-        quitButton = ttk.Button(self,text="Quit",command=self.quitGUI)
+        quitButton = tk.Button(self,text="Quit",command=self.quitGUI)
         quitButton.grid(row=3,column=2)
 
         #------------------------
         # Add find ellipse button
         #------------------------
-        NextButton =  ttk.Button(self,text="Next >",command=self.NextButton)
+        NextButton =  tk.Button(self,text="Next >",command=self.NextButton)
         NextButton.grid(row=4,column=0)
 
         #------------------------
         # Add find ellipse button
         #------------------------
-        PreviousButton =  ttk.Button(self,text="Previous <",command=self.PreviousButton)
+        PreviousButton =  tk.Button(self,text="Previous <",command=self.PreviousButton)
         PreviousButton.grid(row=4,column=1)
 
         #------------------------
         # Add find ellipse button
         #------------------------
-        PrintButton =  ttk.Button(self,text="Print",command=self.PrintButton)
+        PrintButton =  tk.Button(self,text="Print",command=self.PrintButton)
         PrintButton.grid(row=4,column=2)
 
         #------------------------
         # Add plt Measurement log
         #------------------------
-        PltMeasButton =  ttk.Button(self,text="PltLog",command=self.PltMeasButton)
+        PltMeasButton =  tk.Button(self,text="PltLog",command=self.PltMeasButton)
         PltMeasButton.grid(row=4,column=3)
 
         #------------------------
         # Add Auto Check
         #------------------------
-        AutoCheck =  ttk.Button(self,text="Auto-Check",command=self.AutoCheck)
+        AutoCheck =  tk.Button(self,text="Auto-Check",command=self.AutoCheck)
         AutoCheck.grid(row=3,column=4)
 
 
@@ -479,7 +479,7 @@ class ckopusGUI(tk.Frame):
         file_size = os.path.getsize(self.fname)
         
         if file_size/1e6 <= 1.: 
-            print 'Size of opus file {} is < 1e6 bytes'.format(self.fname)
+            print ('Size of opus file {} is < 1e6 bytes'.format(self.fname))
             self.DeleteButton()
 
         else:
@@ -680,7 +680,7 @@ class ckopusGUI(tk.Frame):
         self.readPltSpc()
 
     def AutoCheck(self):
-        print 'In Construction'
+        print('In Construction')
 
 
 

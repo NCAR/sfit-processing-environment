@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 ##! /usr/local/python-2.7/bin/python
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
@@ -98,13 +98,13 @@ import matplotlib.pyplot as plt
                         #-------------------------#
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'sfit4Layer1.py -i <file> -l -L0 -P <int> -d <20190101_20191231> -?'
-    print '  -i <file>                              : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file'
-    print '  -l                                     : Flag to create log files of processing. Path to write log files is specified in input file '
-    print '  -L <0/1>                               : Flag to create output list file. Path to write list files is specified in input file'
-    print '  -P <int>                               : Pause run starting at run number <int>. <int> is an integer to start processing at'
-    print '  -d <20190101> or <20190101_20191231>   : Date or Date range'
-    print '  -?                                     : Show all flags'
+    print ( 'sfit4Layer1.py -i <file> -l -L0 -P <int> -d <20190101_20191231> -?\n'
+            '  -i <file>                              : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file\n'
+            '  -l                                     : Flag to create log files of processing. Path to write log files is specified in input file\n'
+            '  -L <0/1>                               : Flag to create output list file. Path to write list files is specified in input file\n'
+            '  -P <int>                               : Pause run starting at run number <int>. <int> is an integer to start processing at\n'
+            '  -d <20190101> or <20190101_20191231>   : Date or Date range\n'
+            '  -?                                     : Show all flags\n')
 
 def convertList(varList):
     ''' Converts numbers represented as a string in a list to float '''
@@ -127,7 +127,7 @@ def ckDirMk(dirName,logFlg=False):
 def ckDir(dirName,logFlg=False,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if logFlg: logFlg.error('Directory %s does not exist' % dirName)
         if exit: sys.exit()
         return False
@@ -137,7 +137,7 @@ def ckDir(dirName,logFlg=False,exit=False):
 def ckFile(fName,logFlg=False,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if logFlg: logFlg.error('Unable to find file: %s' % fName)
         if exit: sys.exit()
         return False
@@ -168,7 +168,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 'i:P:L:d:l?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
 
@@ -192,7 +192,7 @@ def main(argv):
                 nskips = int(arg) - 1
                 if nskips < 0: raise ValueError
             except ValueError:
-                print 'Argument for -P flag: %s, needs to be an integer > 0' % arg
+                print ('Argument for -P flag: %s, needs to be an integer > 0' % arg)
                 sys.exit()
 
         # Show all command line flags
@@ -233,7 +233,7 @@ def main(argv):
                 fday    = int(dates[0][15:17])
 
             else:
-                print 'Error in input date'
+                print ('Error in input date')
                 usage()
                 sys.exit()
 
@@ -249,7 +249,7 @@ def main(argv):
             lstFnameFlg = int(arg)
 
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             sys.exit()
 
     #----------------------------------------------
@@ -531,10 +531,10 @@ def main(argv):
                 brkFlg = True    # Flag to break out of while statement
 
                 while True:      # While statement is for the repeat function 
-                    print '\n\n\n'
-                    print '*************************************************'
-                    print '*************Begin New Retrieval*****************'
-                    print '*************************************************'                    
+                    print ('\n\n\n'
+                     '*************************************************\n'
+                     '*************Begin New Retrieval*****************\n'
+                     '*************************************************\n')                    
 
                     #-------------------------------------------------------------
                     # If pause after skip flag is initialized, do several things:
@@ -544,7 +544,7 @@ def main(argv):
                     # 3) Pause after first run
                     #-------------------------------------------------------------
                     if pauseFlg and (nskips > len(dbFltData_2['Date'])):
-                        print 'Specified starting point in -P option (%d) is greater than number of observations in filtered database (%d)' %(nskips,nobs)
+                        print ('Specified starting point in -P option (%d) is greater than number of observations in filtered database (%d)' %(nskips,nobs))
                         if logFile: logFile.critical('Specified starting point in -P option (%d) is greater than number of observations in filtered database (%d)' %(nskips,nobs))
                         sys.exit()
 
@@ -594,7 +594,7 @@ def main(argv):
                     try:
                         shutil.copyfile(mainInF.inputs['ctlList'][ctl_ind][0], wrkOutputDir3 + 'sfit4.ctl')
                     except IOError:
-                        print 'Unable to copy template ctl file to working directory: %s' % wrkOutputDir3
+                        print ('Unable to copy template ctl file to working directory: %s' % wrkOutputDir3)
                         if logFile: logFile.critical('Unable to copy template ctl file to working directory: %s' % wrkOutputDir3)
                         sys.exit()
 
@@ -606,7 +606,7 @@ def main(argv):
                         try:
                             shutil.copyfile(mainInF.inputs['sbCtlFile'], wrkOutputDir3 + 'sb.ctl')
                         except IOError:
-                            print 'Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3
+                            print ('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
                             if logFile: logFile.critical('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
                             sys.exit()                    
 
@@ -619,13 +619,13 @@ def main(argv):
                     try:
                         shutil.copyfile(ctlPath + '/hbin.dtl', wrkOutputDir3 + '/hbin.dtl')            # Copy hbin.dtl file
                     except IOError:
-                        print 'Unable to copy file: %s' % (ctlPath + '/hbin.dtl')
+                        print ('Unable to copy file: %s' % (ctlPath + '/hbin.dtl'))
                         if logFile: logFile.error(IOError)
 
                     try:
                         shutil.copyfile(ctlPath + '/hbin.input', wrkOutputDir3 + '/hbin.input')          # Copy hbin.input file
                     except IOError:
-                        print 'Unable to copy file: %s' % (ctlPath + '/hbin.input')
+                        print ('Unable to copy file: %s' % (ctlPath + '/hbin.input'))
                         if logFile: logFile.error(IOError)
 
 
@@ -708,10 +708,10 @@ def main(argv):
                                         #                            #
                                         #----------------------------#
                     if mainInF.inputs['pspecFlg']:    
-                        print '*****************************************************'
-                        print 'Running PSPEC for ctl file: %s' % msgstr1
-                        print 'Processing spectral observation date: %s' % msgstr2
-                        print '*****************************************************'
+                        print ('*****************************************************')
+                        print ('Running PSPEC for ctl file: %s' % msgstr1)
+                        print ('Processing spectral observation date: %s' % msgstr2)
+                        print ('*****************************************************')
 
                         rtn = t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir3, mainInF, spcDBind, ctl_ind, logFile)
 
@@ -740,11 +740,11 @@ def main(argv):
                             waccmFile = mainInF.inputs['WACCMfile']
 
 
-                        print '*****************************************************'
-                        print 'Running REFMKRNCAR for ctl file: %s' % msgstr1
-                        if mainInF.inputs['waccmFlg']: print 'Using ' + waccmFile + ' WACCM Monthly Profile'
-                        print 'Processing spectral observation date: %s' % msgstr2
-                        print '*****************************************************'
+                        print ('*****************************************************')
+                        print ('Running REFMKRNCAR for ctl file: %s' % msgstr1)
+                        if mainInF.inputs['waccmFlg']: print ('Using ' + waccmFile + ' WACCM Monthly Profile')
+                        print ('Processing spectral observation date: %s' % msgstr2)
+                        print ('*****************************************************')
 
                         rtn = refMkrNCAR(wrkInputDir2, waccmFile, wrkOutputDir3, \
                                          mainInF.inputs['refMkrLvl'], mainInF.inputs['wVer'], mainInF.inputs['zptFlg'],\
@@ -763,11 +763,11 @@ def main(argv):
                     # Call to sfit4
                     #--------------                        
                     if mainInF.inputs['sfitFlg']:
-                        print '*****************************************************'
-                        print 'Running SFIT4 for ctl file: %s' % msgstr1
-                        print 'Processing spectral observation date: %s' % msgstr2
-                        print 'Ouput Directory: %s' % wrkOutputDir3
-                        print '*****************************************************'
+                        print ('*****************************************************')
+                        print ('Running SFIT4 for ctl file: %s' % msgstr1)
+                        print ('Processing spectral observation date: %s' % msgstr2)
+                        print ('Ouput Directory: %s' % wrkOutputDir3)
+                        print ('*****************************************************')
 
                         if logFile: 
                             logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)
@@ -803,7 +803,7 @@ def main(argv):
                         # working directory
                         #-----------------------------------
                         for f in glob.glob(wrkOutputDir3 + '*'):
-                            os.chmod(f,0777)
+                            os.chmod(f,0o777)
 
                         #----------------------------------------------
                         # If succesfull run, write details to list file
@@ -842,12 +842,12 @@ def main(argv):
                         if pauseFlg:
                             while True:
 
-                                user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 show plot retrieval results, 4 save plot retrievals in pdf\n >>> ')
+                                user_input = input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 show plot retrieval results, 4 save plot retrievals in pdf\n >>> ')
                                 plt.close('all')
                                 try:
                                     user_input = int(user_input)
                                     if not any(user_input == val for val in [-1,0,1,2,3, 4]): raise ValueError
-                                except ValueError: print 'Please enter -1, 0, 1, 2, 3, or 4'
+                                except ValueError: print ('Please enter -1, 0, 1, 2, 3, or 4')
 
                                 if   user_input == 0:  sys.exit()           # Exit program
                                 elif user_input == 1:                       # Exit while loop (Do not repeat)
@@ -883,16 +883,16 @@ def main(argv):
                                     try:
                                         if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  gas.pltAvk()                                
                                     except:
-                                        print "Unable to plot AVK!!"
+                                        print ("Unable to plot AVK!!")
                                     #-----------------------------
                                     # Print summary file to screen
                                     #-----------------------------
                                     if ckFile(wrkOutputDir3+'summary'):
                                         with open(wrkOutputDir3+'summary','r') as fopen: info = fopen.read()
 
-                                        print '****************SUMMARY FILE****************'
+                                        print ('****************SUMMARY FILE****************')
                                         print (info)
-                                        print '****************END OF SUMMARY FILE****************'
+                                        print ('****************END OF SUMMARY FILE****************')
 
                                         if user_input == 4:
 
@@ -912,9 +912,9 @@ def main(argv):
                                         try:
                                             with open(wrkOutputDir3+'Errorsummary.output','r') as fopen: info = fopen.read()
                                         
-                                            print '\n******************SUMMARY ERROR*********************\n'
+                                            print ('\n******************SUMMARY ERROR*********************\n')
                                             print (info)
-                                            print '\n****************END OF SUMMARY ERROR****************\n'
+                                            print ('\n****************END OF SUMMARY ERROR****************\n')
 
                                             if user_input == 4:
 
@@ -929,12 +929,12 @@ def main(argv):
                                                 gas.pdfsav.savefig(fig,dpi=200)
                                                 
                                         except:
-                                            print '\n*************ERROR IS NOT CALCULATED****************\n'
+                                            print ('\n*************ERROR IS NOT CALCULATED****************\n')
 
                                     if user_input == 4: 
-                                        print '\n****************PDF FILE SAVED****************\n'
-                                        print wrkOutputDir3+'pltRet.pdf'
-                                        print '\n*********************END**********************\n'
+                                        print ('\n****************PDF FILE SAVED****************\n')
+                                        print (wrkOutputDir3+'pltRet.pdf')
+                                        print ('\n*********************END**********************\n')
                                         gas.closeFig()
 
                                 elif user_input == -1:                      # Repeat loop

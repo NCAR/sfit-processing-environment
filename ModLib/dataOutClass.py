@@ -101,7 +101,7 @@ def sortDict(DataDict,keyval,excld=[]):
 def ckDir(dirName,logFlg=False,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if logFlg: logFlg.error('Directory %s does not exist' % dirName)
         if exitFlg: sys.exit()
         return False
@@ -111,7 +111,7 @@ def ckDir(dirName,logFlg=False,exitFlg=False):
 def ckFile(fName,logFlg=False,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if logFlg: logFlg.error('Unable to find file: %s' % fName)
         if exitFlg: sys.exit()
         return False
@@ -124,7 +124,7 @@ def tryopen(fname):
         with open(fname, 'r' ) as fopen:
             return fopen.readlines()
     except IOError as errmsg:
-        print errmsg
+        print (errmsg)
         return False
 
 def convrtD(rhs):
@@ -153,7 +153,7 @@ def dbFilterUL(fltrParam,lwrVal=False,uprVal=False):
     # At least one bound must be set. Check this
     #-------------------------------------------
     if (not lwrVal) and (not uprVal):
-        print "Must specify at least one bound in dbFilterUL"
+        print ("Must specify at least one bound in dbFilterUL")
         return
 
     #----------------------------------------
@@ -218,7 +218,7 @@ def bias(xData,yData):
     # Make sure arrays are same size
     #-------------------------------
     if ( yData.shape[0] != xData.shape[0] ): 
-        print 'Data sets must have same size in corrcoef: xData = {}, yData = {}'.format(xData.shape[0],yData.shape[0])
+        print ('Data sets must have same size in corrcoef: xData = {}, yData = {}'.format(xData.shape[0],yData.shape[0]))
         sys.exit() 
 
     biasCalc = sum( yData - xData ) / len(yData) 
@@ -239,7 +239,7 @@ def rmse(xData, yData):
     # Make sure arrays are same size
     #-------------------------------
     if ( yData.shape[0] != xData.shape[0] ): 
-        print 'Data sets must have same size in corrcoef: xData = {}, yData = {}'.format(xData.shape[0],yData.shape[0])
+        print ('Data sets must have same size in corrcoef: xData = {}, yData = {}'.format(xData.shape[0],yData.shape[0]))
         sys.exit() 
 
     #---------------------------------
@@ -759,7 +759,7 @@ def readstatlayer(stfile):
         
         for line in lines:
             line = line.strip()
-            print line
+            print (line)
             exit()  
 
             #---------------------------------------------
@@ -826,7 +826,7 @@ class _DateRange(object):
             newyears = [inYear for inYear in self.dateList if inYear.year == year]
             return newyears
         else:
-            print 'Error!! Year must be type int for daysInYear'
+            print ('Error!! Year must be type int for daysInYear')
             return False
 
 
@@ -836,7 +836,7 @@ class ReadOutputData(_DateRange):
     def __init__(self,dataDir,primGas='',ctlF='',iyear=False,imnth=False,iday=False,fyear=False,fmnth=False,fday=False,incr=1):
         
         if (not primGas) and (not ctlF):
-            print 'Either primGas or ctlF needs to be specify'
+            print ('Either primGas or ctlF needs to be specify')
             return False
         
         self.PrimaryGas = primGas            
@@ -930,7 +930,7 @@ class ReadOutputData(_DateRange):
             if 'gas.profile.list' in self.ctl: self.gasList += self.ctl['gas.profile.list'] 
             if 'gas.column.list' in self.ctl:  self.gasList += self.ctl['gas.column.list']
             if not self.gasList: 
-                print 'No gases listed in column or profile list....exiting'
+                print ('No gases listed in column or profile list....exiting')
                 sys.exit()
                 
             self.gasList = filter(None,self.gasList)  # Filter out all empty strings
@@ -962,7 +962,7 @@ class ReadOutputData(_DateRange):
         # Filter Data
         #------------
         nobs = len(np.asarray(self.summary[gasName+'_FITRMS']))
-        print 'Number of total observations before filtering = {}'.format(nobs)
+        print ('Number of total observations before filtering = {}'.format(nobs))
                 
         #---------------------------------
         # Filter based on specified months

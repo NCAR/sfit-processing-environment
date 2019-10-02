@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 #----------------------------------------------------------------------------------------
 # Name:
 #        pltHKDynamic.py
@@ -53,21 +53,26 @@ import time
 from cycler import cycler
 from scipy import interpolate
 import getopt
-    
+import matplotlib
+from dateutil import tz
+#import matplotlib.backends.backend_tkagg as tkagg
+#matplotlib.get_backend()
+#'TkAgg'
+matplotlib.use("TkAgg")
     
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'pltHKDinamyc.py [-d 20180515 -m30 -S -?]'
-    print '  -d <20180515>  : Flag to specify input Date. If not Date is specified current date is used.'
-    print '  -m <30>        : Flag to specify Dynamic Time in N seconds to create plot. Defauls is not Dynamic'
-    print '  -S             : Flag to Save PDF. Default is not to save PDF'
-    print '  -l             : Flag Must include location: mlo/tab/fl0 (only for otserver)'
-    print '  -?             : Show all flags'
+    print('pltHKDinamyc.py [-d 20180515 -m30 -S -?]')
+    print('  -d <20180515>  : Flag to specify input Date. If not Date is specified current date is used.')
+    print('  -m <30>        : Flag to specify Dynamic Time in N seconds to create plot. Defauls is not Dynamic')
+    print('  -S             : Flag to Save PDF. Default is not to save PDF')
+    print('  -l             : Flag Must include location: mlo/tab/fl0 (only for otserver)')
+    print('  -?             : Show all flags')
 
 def ckFile(fName,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        #print 'File %s does not exist' % (fName)
         if exitFlg: sys.exit()
         return False
     else:
@@ -76,7 +81,7 @@ def ckFile(fName,exitFlg=False):
 def ckDir(dirName,exitFlg=False):
     ''' Check the existence of a directory'''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        #print 'Input Directory %s does not exist' % (dirName)
         if exitFlg:      sys.exit()
         return False
     else:
@@ -104,6 +109,18 @@ def toYearFraction(dates):
 
 
     return retrnDates
+
+def utc2local(utc):
+
+    N = len(utc)
+    #if N > 1:
+    epoch = time.mktime(utc[0].timetuple())
+    offset = dt.datetime.fromtimestamp(epoch) - dt.datetime.utcfromtimestamp(epoch)
+    print(offset)
+
+    exit()
+    return utc[0] + offset
+
 
 class RemoteHK():
 
@@ -146,7 +163,7 @@ class RemoteHK():
         
     def closeFig(self):
         self.pdfSave.close()
-        print 'PDF saved'
+        print('PDF saved')
         
     
     #----------------------------
@@ -217,7 +234,7 @@ class RemoteHK():
                 ii.append(ii)
                 idVal.append(v)
                 #if showID: 
-                print "{0:4}= {1:}".format(i,v)
+                print("{0:4}= {1:}".format(i,v))
           
 
             #----------------------
@@ -242,69 +259,78 @@ class RemoteHK():
             self.hkFlg  = True  
                 
         except Exception as errmsg:
-            print 'Error reading house.log: ', errmsg
+            print('Error reading house.log: ', errmsg)
 
 
-        if dt.date(int(self.iyear), int(self.imnth), int(self.iday) ) >= dt.date(2019,05,05):
+        if dt.date(int(self.iyear), int(self.imnth), int(self.iday) ) >= dt.date(2019,5,5):
 
-            try:
-                self.fname2 = self.dir + self.date + '/houseMet.log'
+            #try:
+            self.fname2 = self.dir + self.date + '/houseMet.log'
 
-                with open(self.fname2,"r") as fopen: lines = fopen.readlines()
-                
-                #---------------
-                # Read in Header
-                #---------------
-                #for line in lines:
-                    #if line.strip().startswith("#$"):
-                    #   hdrs = [ val for val in line.strip().split()[3:]]
-                
-                hdrs = [ val for val in lines[0].strip().split()[2:]]
-                
-                #-------------------------
-                # Choose variables to plot
-                #-------------------------
-                ii    = []
-                idValMet = []
-                for i,v in enumerate(hdrs):
-                    ii.append(ii)
-                    idValMet.append(v)
-                    print "{0:4}= {1:}".format(i,v)
-
-                #----------------------
-                # Read in date and time
-                #----------------------
-                #self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
-                #                            int(line[17:19]),int(line[20:22]),int(line[23:25])) for line in lines[1:-2] if (not line.startswith("#"))])
-                
-                self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
-                                    int(line[13:15]),int(line[16:18]),int(line[19:21])) for line in lines[1:-2] if (not line.startswith("#"))])
-
-                for i, v in enumerate(idValMet):
-                    try:
-                        self.vars.setdefault(v,[]).append(np.array([float(line.strip().split()[i+2]) for line in lines[1:-2] if not line.startswith("#")]))
-                        #self.vars[v] = np.interp(self.obsTime, self.obsTime2, np.asarray(self.vars[v]) )
-                    except ValueError:
-                        print v
-                        self.vars.setdefault(v,[]).append(np.array([line.strip().split()[i+2] for line in lines[1:-2] if not line.startswith("#")]))
-
-                doyhouse = toYearFraction(self.obsTime)
-                doyMet   = toYearFraction(self.obsTime2)  
-
-
-                for i, v in enumerate(idValMet):
-
-                    self.vars[v]  = interpolate.interp1d(doyMet, self.vars[v][0], axis=0, fill_value=(self.vars[v][0][0], self.vars[v][0][-1]), bounds_error=False, kind='nearest')(doyhouse )
-
-
-                self.flgMet = True
-
-            except Exception as errmsg:
-                print 'Error reading houseMet.log: ', errmsg
-
+            with open(self.fname2,"r") as fopen: lines = fopen.readlines()
             
+            #---------------
+            # Read in Header
+            #---------------
+            #for line in lines:
+                #if line.strip().startswith("#$"):
+                #   hdrs = [ val for val in line.strip().split()[3:]]
+            
+            hdrs = [ val for val in lines[0].strip().split()[2:]]
+            
+            #-------------------------
+            # Choose variables to plot
+            #-------------------------
+            ii    = []
+            idValMet = []
+            for i,v in enumerate(hdrs):
+                ii.append(ii)
+                idValMet.append(v)
+                print("{0:4}= {1:}".format(i,v))
+
+            #----------------------
+            # Read in date and time
+            #----------------------
+            #self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
+            #                            int(line[17:19]),int(line[20:22]),int(line[23:25])) for line in lines[1:-2] if (not line.startswith("#"))])
+            
+            self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
+                                int(line[13:15]),int(line[16:18]),int(line[19:21])) for line in lines[1:-2] if (not line.startswith("#"))])
+
+            for i, v in enumerate(idValMet):
+                try:
+                    self.vars.setdefault(v,[]).append(np.array([float(line.strip().split()[i+2]) for line in lines[1:-2] if not line.startswith("#")]))
+                    #self.vars[v] = np.interp(self.obsTime, self.obsTime2, np.asarray(self.vars[v]) )
+                except ValueError:
+                    #print v
+                    self.vars.setdefault(v,[]).append(np.array([line.strip().split()[i+2] for line in lines[1:-2] if not line.startswith("#")]))
+
+            doyhouse = toYearFraction(self.obsTime)
+            doyMet   = toYearFraction(self.obsTime2)  
+
+            #----------------------
+            # UTC to Local Time
+            #----------------------
+            from_zone = tz.gettz('UTC')
+            to_zone   = tz.gettz('Pacific/Honolulu')
+            # America/Thule   Greenland 
+
+            self.obsTimelt = [ i.replace(tzinfo=from_zone).astimezone(to_zone) for i in self.obsTime]
+
+            #----------------------
+
+            for i, v in enumerate(idValMet):
+
+                self.vars[v]  = interpolate.interp1d(doyMet, self.vars[v][0], axis=0, fill_value=(self.vars[v][0][0], self.vars[v][0][-1]), bounds_error=False, kind='nearest')(doyhouse )
+
+
+            self.flgMet = True
+
+            #except Exception as errmsg:
+            #    print('Error reading houseMet.log: ', errmsg)
+
     #----------------------------
-    # PLOT HK DEF
+    # PLOT HK DEF - 24h
     #----------------------------
     def plt_HK(self, Groups= False, Groups_Lab= False, showID=False):
 
@@ -333,6 +359,8 @@ class RemoteHK():
                 Npanels        = len(Groups)
 
                 fig1, ax1 = plt.subplots(Npanels, figsize=(8,10), sharex=True)
+
+                ax2 = ax1[-1].twiny()
 
                 for vi, varsGroup in enumerate(Groups):
 
@@ -364,12 +392,18 @@ class RemoteHK():
                                             else:
                                                 pltVal2.append(-1) 
                                         except ValueError:
-                                            print 'ValueError'
+                                            print('ValueError')
 
                                     ax1[vi].plot(self.obsTime,pltVal2,"." ,markersize=4, label= k, color=clr1[j])
                                     ax1[vi].text(0.05,0.8,'0 = OFF/CLOSE', transform=ax1[vi].transAxes, )
                                     ax1[vi].text(0.05,0.7,'1 = ON/OPEN', transform=ax1[vi].transAxes)
                                     ax1[vi].text(0.05,0.6,'-1 = UNKN/OTHER', transform=ax1[vi].transAxes)
+
+                                    if vi == len(Groups)-1:
+                                        ax2.plot(self.obsTimelt,pltVal2,"." ,markersize=0, label = k, color=clr1[j])
+
+                                        #print(self.obsTimelt[0])
+                                        #print(self.obsTime[0])
 
                     elif len(varsGroup) == 2:
                         axr = ax1[vi].twinx()
@@ -377,9 +411,14 @@ class RemoteHK():
 
                             if i == 0:
                                 for j, k in enumerate(v):
+                                    #print k
                                     pltVal  = np.asarray(self.vars[k])
 
+                                    if k == 'szenith':
+                                        pltVal = 90.-pltVal
+
                                     ax1[vi].plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr1[j])
+                                    ax1[vi].axhline(y=0, color='k', linewidth=2)
 
                             if i == 1:
 
@@ -390,22 +429,201 @@ class RemoteHK():
                     #----------
                     ax1[vi].set_ylabel(Groups_Lab[vi][0])
                     ax1[vi].grid(True)
-                    ax1[-1].set_xlabel("UT Time[Hours]")
-                    ax1[vi].xaxis.set_major_locator(HourLocator())
-                    ax1[vi].xaxis.set_major_formatter(DateFormatter("%H"))
-                    ax1[vi].xaxis.set_minor_locator(AutoMinorLocator())
+                    #ax1[-1].set_xlabel("UT [Hours]")
+                    ax1[vi].xaxis.set_major_locator(HourLocator(interval = 3))
+                    #ax1[vi].xaxis.set_major_formatter(DateFormatter("%m/%d %H"))
+                    #ax1[vi].xaxis.set_minor_locator(AutoMinorLocator())
                     #ax1[vi].set_title("Date = {:%Y-%B-%d}".format(self.obsTime[2]))
-                    ax1[vi].legend(prop={'size':9}, loc=3)
-                    #ax1.set_ylim(6.5, 7.5)
+                    #ax1[vi].legend(prop={'size':9}, loc=3)
+                    ax1[vi].legend(prop={'size':8}, loc='upper left', bbox_to_anchor=(-0.05, 1.2), shadow=False, ncol=len(v), handletextpad=0.1)
+                    #ax1[vi].set_xlim(xmin=self.obsTimelt[0]+dt.timedelta(hours=5), xmax=self.obsTimelt[-1]-dt.timedelta(hours=5))
+
+                    ax1[vi].set_xlim(self.obsTime[0], self.obsTime[-1])
+                    #ax1[0].set_ylim(ymin=-15, ymax=90)
+                    ax1[1].set_ylim(ymin=-0.5, ymax=10.5)
                     
+                    
+                    # Move twinned axis ticks and label from top to bottom
+                    ax2.xaxis.set_ticks_position("bottom")
+                    ax2.xaxis.set_label_position("bottom")
+
+                    # Offset the twin axis below the host
+                    ax2.spines["bottom"].set_position(("axes", -0.25))
+
+                    ax2.set_frame_on(True)
+                    ax2.patch.set_visible(False)
+
+                    #for sp in ax2.spines.itervalues():
+                    #    sp.set_visible(False)
+                    ax2.spines["bottom"].set_visible(True)
+                    #ax2.set_xticks(self.obsTime)
+                    ax2.xaxis.set_major_locator(HourLocator(interval = 3))
+                    #ax2.xaxis.set_major_formatter(DateFormatter("%m/%d %H"))
+                    #ax2.xaxis.set_minor_locator(AutoMinorLocator())
+                    ax2.set_xlabel("UTC (top); Local Time (bottom)")
+
+                    #ax2.set_xlim(xmin=dt.datetime(self.obsTimelt[-1].year, self.obsTime[-1].month,self.obsTime[-1].day, 5, 0, 0), xmax=dt.datetime(self.obsTime[-1].year, self.obsTime[-1].month, self.obsTime[-1].day, 13, 59, 0))
+                    ax2.set_xlim(self.obsTimelt[0], self.obsTimelt[-1])
+           
                     if len(varsGroup) == 2: 
                         axr.set_ylabel(Groups_Lab[vi][1])
-                        axr.legend(prop={'size':9}, loc=4)
+                        #axr.legend(prop={'size':9}, loc=4)
+                        axr.legend(prop={'size':8}, loc='upper right', bbox_to_anchor=(1.05, 1.2), shadow=False, ncol=len(v), handletextpad=0.1)
 
                 plt.suptitle("Date = {:%Y-%B-%d}".format(self.obsTime[2]), fontsize=16)
 
                 #fig1.autofmt_xdate()
-                fig1.subplots_adjust(left=0.1, bottom=0.05, right=0.9, top=0.95)
+                fig1.subplots_adjust(left=0.1, bottom=0.085, right=0.9, top=0.95)
+
+                    
+                if self.pdfFlg: 
+                    self.pdfSave.savefig(fig1,dpi=600, bbox_inches='tight')
+                else:
+                    plt.show(block=False)
+
+            
+    #----------------------------
+    # PLOT HK DEF - Observing time
+    #----------------------------
+    def plt_HK_Day(self, Groups= False, Groups_Lab= False, showID=False):
+
+        #self.readHK( showID=showID)
+
+        if self.hkFlg:
+        
+            #--------------------
+            # Option to save file
+            #--------------------        
+            # if self.pdfFlg:
+            #     pdfPath  = os.path.dirname(self.fname)
+            #     pdfFile  = pdfPath + "/HousePlots.pdf"
+
+            #     #if ckFile(pdfFile): os.remove(pdfFile)
+                    
+            #     ckDir(os.path.dirname(pdfFile),exitFlg=True)
+            #     pdfSave = PdfPages(pdfFile)
+
+            
+            if Groups:
+
+                clr1            = ['b', 'g', 'brown', 'yellow']
+                clr2           = ['r', 'k', 'pink', 'gray']
+
+                Npanels        = len(Groups)
+
+                fig1, ax1 = plt.subplots(Npanels, figsize=(8,10), sharex=True)
+
+                ax2 = ax1[-1].twiny()
+
+                for vi, varsGroup in enumerate(Groups):
+
+                    if len(varsGroup) == 1:
+                        for i, v in enumerate(varsGroup):
+
+                            for j, k in enumerate(v):
+
+                                pltVal  = np.asarray(self.vars[k])
+                                if pltVal.dtype is np.dtype(np.float64):
+                                    ax1[vi].plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr1[j])
+                                else:
+                                    pltVal2 = []
+                                    for vs in pltVal:
+                                        
+                                        try:
+                                            if vs.lower() == 'open':
+                                                pltVal2.append(1)
+                                            elif vs.lower() == 'close':
+                                                pltVal2.append(0)
+                                            elif vs.lower() == 'clos':
+                                                pltVal2.append(0)
+                                            elif vs.lower() == 'unkn':
+                                                pltVal2.append(-1)
+                                            elif vs.lower() == 'on':
+                                                pltVal2.append(1)
+                                            elif vs.lower() == 'off':
+                                                pltVal2.append(0)
+                                            else:
+                                                pltVal2.append(-1) 
+                                        except ValueError:
+                                            print('ValueError')
+
+                                    ax1[vi].plot(self.obsTime,pltVal2,"." ,markersize=4, label= k, color=clr1[j])
+                                    ax1[vi].text(0.05,0.8,'0 = OFF/CLOSE', transform=ax1[vi].transAxes, )
+                                    ax1[vi].text(0.05,0.7,'1 = ON/OPEN', transform=ax1[vi].transAxes)
+                                    ax1[vi].text(0.05,0.6,'-1 = UNKN/OTHER', transform=ax1[vi].transAxes)
+
+                                    if vi == len(Groups)-1:
+                                        ax2.plot(self.obsTimelt,pltVal2,"." ,markersize=0, label = k, color=clr1[j])
+
+                    elif len(varsGroup) == 2:
+                        axr = ax1[vi].twinx()
+                        for i, v in enumerate(varsGroup):
+
+                            if i == 0:
+                                for j, k in enumerate(v):
+                                    #print k
+                                    pltVal  = np.asarray(self.vars[k])
+
+                                    if k == 'szenith':
+                                        pltVal = 90.-pltVal
+
+                                    ax1[vi].plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr1[j])
+                                    ax1[vi].axhline(y=0, color='k', linewidth=2)
+
+                            if i == 1:
+
+                                for j, k in enumerate(v):
+                                    pltVal  = np.asarray(self.vars[k])
+                                    axr.plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr2[j])
+
+                    #----------
+                    ax1[vi].set_ylabel(Groups_Lab[vi][0])
+                    ax1[vi].grid(True)
+                    #ax1[-1].set_xlabel("UT [Hours]")
+                    ax1[vi].xaxis.set_major_locator(HourLocator())
+                    ax1[vi].xaxis.set_major_formatter(DateFormatter("%H"))
+                    ax1[vi].xaxis.set_minor_locator(AutoMinorLocator())
+                    #ax1[vi].set_title("Date = {:%Y-%B-%d}".format(self.obsTime[2]))
+                    #ax1[vi].legend(prop={'size':9}, loc=3)
+                    ax1[vi].legend(prop={'size':8}, loc='upper left', bbox_to_anchor=(-0.05, 1.2), shadow=False, ncol=len(v), handletextpad=0.1)
+                    #ax1[vi].set_xlim(xmin=self.obsTimelt[0]+dt.timedelta(hours=5), xmax=self.obsTimelt[-1]-dt.timedelta(hours=5))
+
+                    ax1[vi].set_xlim(xmin=dt.datetime(self.obsTime[-1].year, self.obsTime[-1].month,self.obsTime[-1].day, 15, 0, 0), xmax=dt.datetime(self.obsTime[-1].year, self.obsTime[-1].month, self.obsTime[-1].day, 23, 59, 0))
+                    ax1[0].set_ylim(ymin=-15, ymax=90)
+                    ax1[1].set_ylim(ymin=-0.5, ymax=10.5)
+                    
+
+                    # Move twinned axis ticks and label from top to bottom
+                    ax2.xaxis.set_ticks_position("bottom")
+                    ax2.xaxis.set_label_position("bottom")
+
+                    # Offset the twin axis below the host
+                    ax2.spines["bottom"].set_position(("axes", -0.25))
+
+                    ax2.set_frame_on(True)
+                    ax2.patch.set_visible(False)
+
+                    #for sp in ax2.spines.itervalues():
+                    #    sp.set_visible(False)
+                    ax2.spines["bottom"].set_visible(True)
+                    #ax2.set_xticks(self.obsTime)
+                    ax2.xaxis.set_major_locator(HourLocator())
+                    ax2.xaxis.set_major_formatter(DateFormatter("%H"))
+                    ax2.xaxis.set_minor_locator(AutoMinorLocator())
+                    ax2.set_xlabel("UTC (top); Local Time (bottom)")
+
+                    ax2.set_xlim(xmin=dt.datetime(self.obsTimelt[-1].year, self.obsTimelt[-1].month,self.obsTimelt[-1].day, 5, 0, 0), xmax=dt.datetime(self.obsTimelt[-1].year, self.obsTimelt[-1].month, self.obsTimelt[-1].day, 13, 59, 0))
+                    
+           
+                    if len(varsGroup) == 2: 
+                        axr.set_ylabel(Groups_Lab[vi][1])
+                        #axr.legend(prop={'size':9}, loc=4)
+                        axr.legend(prop={'size':8}, loc='upper right', bbox_to_anchor=(1.05, 1.2), shadow=False, ncol=len(v), handletextpad=0.1)
+
+                plt.suptitle("Date = {:%Y-%B-%d}".format(self.obsTime[2]), fontsize=16)
+
+                #fig1.autofmt_xdate()
+                fig1.subplots_adjust(left=0.1, bottom=0.085, right=0.9, top=0.95)
 
                     
                 if self.pdfFlg: 
@@ -418,6 +636,138 @@ class RemoteHK():
             #else:
             #    user_input = raw_input('Press any key to exit >>> ')
             #    sys.exit()
+
+    # #----------------------------
+    # # PLOT HK DEF
+    # #----------------------------  
+    # def plt_HK_SolSen(self, Groups= False, Groups_Lab= False, showID=False):
+
+    #     #self.readHK( showID=showID)
+
+    #     if self.hkFlg:
+        
+    #         #--------------------
+    #         # Option to save file
+    #         #--------------------        
+    #         # if self.pdfFlg:
+    #         #     pdfPath  = os.path.dirname(self.fname)
+    #         #     pdfFile  = pdfPath + "/HousePlots.pdf"
+
+    #         #     #if ckFile(pdfFile): os.remove(pdfFile)
+                    
+    #         #     ckDir(os.path.dirname(pdfFile),exitFlg=True)
+    #         #     pdfSave = PdfPages(pdfFile)
+
+            
+    #         if Groups:
+
+
+    #             clr1            = ['b', 'g', 'brown', 'yellow']
+    #             clr2           = ['r', 'k', 'pink', 'gray']
+
+    #             Npanels        = len(Groups)
+
+    #             fig1, ax1 = plt.subplots(Npanels, figsize=(8,10), sharex=True)
+
+    #             for vi, varsGroup in enumerate(Groups):
+
+    #                 if len(varsGroup) == 1:
+    #                     for i, v in enumerate(varsGroup):
+
+    #                         for j, k in enumerate(v):
+
+    #                             pltVal  = np.asarray(self.vars[k])
+    #                             if pltVal.dtype is np.dtype(np.float64):
+    #                                 ax1[vi].plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr1[j])
+    #                             else:
+    #                                 pltVal2 = []
+    #                                 for vs in pltVal:
+                                        
+    #                                     try:
+    #                                         if vs.lower() == 'open':
+    #                                             pltVal2.append(1)
+    #                                         elif vs.lower() == 'close':
+    #                                             pltVal2.append(0)
+    #                                         elif vs.lower() == 'clos':
+    #                                             pltVal2.append(0)
+    #                                         elif vs.lower() == 'unkn':
+    #                                             pltVal2.append(-1)
+    #                                         elif vs.lower() == 'on':
+    #                                             pltVal2.append(1)
+    #                                         elif vs.lower() == 'off':
+    #                                             pltVal2.append(0)
+    #                                         else:
+    #                                             pltVal2.append(-1) 
+    #                                     except ValueError:
+    #                                         print ('ValueError')
+
+    #                                 ax1[vi].plot(self.obsTime,pltVal2,"." ,markersize=4, label= k, color=clr1[j])
+    #                                 ax1[vi].text(0.05,0.8,'0 = OFF/CLOSE', transform=ax1[vi].transAxes, )
+    #                                 ax1[vi].text(0.05,0.7,'1 = ON/OPEN', transform=ax1[vi].transAxes)
+    #                                 ax1[vi].text(0.05,0.6,'-1 = UNKN/OTHER', transform=ax1[vi].transAxes)
+
+    #                 elif len(varsGroup) == 2:
+    #                     axr = ax1[vi].twinx()
+    #                     for i, v in enumerate(varsGroup):
+
+
+    #                         if i == 0:
+    #                             for j, k in enumerate(v):
+    #                                 pltVal  = np.asarray(self.vars[k])
+
+    #                                 if k == 'szenith':
+    #                                     pltVal = 90.-pltVal
+                                       
+
+    #                                 if k == 'Extern_E_Radiance':
+
+    #                                     rad   = np.radians(np.asarray(self.vars['szenith']))
+    #                                     #pltVal = pltVal * ((np.asarray(np.cos(rad))))    #*np.cos(rad)
+
+    #                                 ax1[vi].plot(self.obsTime,pltVal ,"." ,markersize=4, label = k, color=clr1[j])
+    #                                 ax1[vi].axhline(y=0, color='k', linewidth=2)
+
+    #                         if i == 1:
+
+    #                             for j, k in enumerate(v):
+    #                                 pltVal  = np.asarray(self.vars[k])
+    #                                 axr.plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr2[j])
+
+    #                 #----------
+    #                 ax1[vi].set_ylabel(Groups_Lab[vi][0])
+    #                 ax1[vi].grid(True)
+    #                 ax1[-1].set_xlabel("Local Time [Hours]")
+    #                 ax1[vi].xaxis.set_major_locator(HourLocator())
+    #                 ax1[vi].xaxis.set_major_formatter(DateFormatter("%H"))
+    #                 ax1[vi].xaxis.set_minor_locator(AutoMinorLocator())
+    #                 #ax1[vi].set_title("Date = {:%Y-%B-%d}".format(self.obsTime[2]))
+    #                 #ax1[vi].legend(prop={'size':9}, loc=3)
+    #                 ax1[vi].legend(prop={'size':8}, loc='upper left', bbox_to_anchor=(-0.05, 1.1), shadow=False, ncol=len(v), handletextpad=0.1)
+    #                 #ax1.set_ylim(6.5, 7.5)
+
+                    
+                    
+    #                 if len(varsGroup) == 2: 
+    #                     axr.set_ylabel(Groups_Lab[vi][1])
+    #                     #axr.legend(prop={'size':9}, loc=4)
+    #                     axr.legend(prop={'size':8}, loc='upper right', bbox_to_anchor=(1.05, 1.1), shadow=False, ncol=len(v), handletextpad=0.1)
+
+    #             plt.suptitle("Date = {:%Y-%B-%d}".format(self.obsTime[2]), fontsize=16)
+
+    #             #fig1.autofmt_xdate()
+    #             fig1.subplots_adjust(left=0.1, bottom=0.05, right=0.9, top=0.95)
+
+    #             #print "Date = {:%Y-%B-%d}".format(self.obsTime[2])
+
+                    
+    #             if self.pdfFlg: 
+    #                 self.pdfSave.savefig(fig1,dpi=600, bbox_inches='tight')
+    #                 pdfPath  = os.path.dirname(self.dir + self.date)
+    #                 pngFile  = pdfPath + "/HousePlots.png"
+
+    #                 fig1.savefig(pngFile, bbox_inches='tight')
+    #             else:
+    #                 plt.show(block=False)
 
     #----------------------------
     # READ MEASUREMENT LOG FILE
@@ -493,7 +843,7 @@ class RemoteHK():
             self.MeasFlg  = True   
 
         except Exception as errmsg:
-            print 'Error reading Measurement.log: ', errmsg
+            print('Error reading Measurement.log: ', errmsg)
 
         
     #----------------------------
@@ -507,7 +857,7 @@ class RemoteHK():
 
             try:
             
-                print 'Plotting Measurement.log!'
+                print('Plotting Measurement.log!')
             
                 fig1, ax1 = plt.subplots(figsize=(8,5))
 
@@ -548,7 +898,7 @@ class RemoteHK():
                     plt.show(block=False)
 
             except Exception as errmsg:
-                print 'Error plotting Measurement.log: ', errmsg
+                print('Error plotting Measurement.log: ', errmsg)
 
     
 #if __name__ == "__main__":
@@ -578,7 +928,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 'd:m:l:S?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print(str(err))
         usage()
         sys.exit()
 
@@ -598,7 +948,7 @@ def main(argv):
                 iday    = str(dates[0][6:8])
 
             else:
-                print 'Error in input date'
+                print('Error in input date')
                 usage()
                 sys.exit()
 
@@ -621,7 +971,7 @@ def main(argv):
             sys.exit()
 
         else:
-            print 'Unhandled option: ' + opt
+            print('Unhandled option: ' + opt)
             sys.exit()
 
     try:
@@ -647,7 +997,7 @@ def main(argv):
         Group_5       = [ ['Vacuum_Valve', 'LN2_Fill_Switch', 'SolSeek_Hatch_Position']]
 
         # LABELS FOR EACH AXIS OF THE ABOVE GROUPS
-        Group_1_label = ['Zenith Angle', 'Azimuth Angle']
+        Group_1_label = ['Solar Elevation Angle', 'Azimuth Angle']
         Group_2_label = ['Radiance (large sensors)', 'Radiance (small sensors)']
         Group_3_label = ['LN2 Dewar Pressure', 'Temperature']
         Group_4_label = ['Wind Speed', 'Temperature']
@@ -690,7 +1040,7 @@ def main(argv):
 
 
     else:
-        print '!! ERROR !!: Include Site:' 
+        print('!! ERROR !!: Include Site:')
         exit()
 
     
@@ -710,8 +1060,8 @@ def main(argv):
             
             if pdfFlg: d.openFig()
         
-            print 'Plot HK File on: {}-{}-{}'.format(iyear, imnth, iday)
-            print 'plotting Date/Time: {}'.format(now)
+            #print 'Plot HK File on: {}-{}-{}'.format(iyear, imnth, iday)
+            #print 'plotting Date/Time: {}'.format(now)
             
             d.plt_HK(Groups=Groups, Groups_Lab=Groups_Lab )
             d.plt_Meas(fltid=fltid)
@@ -730,17 +1080,19 @@ def main(argv):
         
         if pdfFlg: d.openFig()
         
-        print 'Plot HK File on: {}-{}-{}'.format(iyear, imnth, iday)
-        print 'plotting Date/Time: {}'.format(now)
+        #print 'Plot HK File on: {}-{}-{}'.format(iyear, imnth, iday)
+        #print 'plotting Date/Time: {}'.format(now)
         
         d.plt_HK(Groups=Groups , Groups_Lab=Groups_Lab )
+        d.plt_HK_Day(Groups=Groups , Groups_Lab=Groups_Lab )
+        #d.plt_HK_SolSen(Groups=[Group_1, Group_2] , Groups_Lab=[Group_1_label, Group_2_label] )
         d.plt_Meas(fltid=fltid)
         
 
         if pdfFlg: 
             d.closeFig()
         else:
-            user_input = raw_input('Press any key to exit >>> ')
+            user_input = input('Press any key to exit >>> ')
             sys.exit() 
         
 

@@ -52,10 +52,10 @@ def get_param_idx(fff,idx,paramname):
             #print  'listo'
             #print  value
             if bytes(value) == bytes('None'):
-                print  'value todavia -1',value
+                print  ('value todavia -1',value)
               
             else:
-                print  'value not -1',value
+                print  ('value not -1',value)
                 return value
                 #return value
                 

@@ -75,3 +75,35 @@ Fri, 06 Sep 2019 14:22:58 INFO     HDFCreate.py -i /data1/ebaumer/tab/co/input_H
 Fri, 06 Sep 2019 14:23:00 INFO     Version: /data1/ebaumer/tab/co/HDF_Current_B3_RD/
 Fri, 06 Sep 2019 14:23:00 INFO     HDF file to upload:      groundbased_ftir.co_ncar001_thule_20190816t185336z_20190831t200226z_004.hdf
 Fri, 06 Sep 2019 14:23:01 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Mon, 30 Sep 2019 16:34:58 INFO     **************** Starting Logging ***********************
+Mon, 30 Sep 2019 16:34:58 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Mon, 30 Sep 2019 16:34:58 INFO     Station location:       TAB
+Mon, 30 Sep 2019 16:34:58 INFO     Gas Name:               CO
+Mon, 30 Sep 2019 16:34:58 INFO     Dates:                  20190901_20190915
+Mon, 30 Sep 2019 16:34:58 INFO     Create HDF:             True
+Mon, 30 Sep 2019 16:34:58 INFO     Upload HDF:             True
+Mon, 30 Sep 2019 16:35:15 INFO     HDFCreate.py -i /data1/ebaumer/tab/co/input_HDFCreate.py -d 20190901_20190915
+Mon, 30 Sep 2019 16:35:17 INFO     Version: /data1/ebaumer/tab/co/HDF_Current_B3_RD/
+Mon, 30 Sep 2019 16:35:17 INFO     HDF file to upload:      groundbased_ftir.co_ncar001_thule_20190901t085736z_20190914t154436z_004.hdf
+Mon, 30 Sep 2019 16:35:18 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
+Tue, 01 Oct 2019 13:12:14 INFO     **************** Starting Logging ***********************
+Tue, 01 Oct 2019 13:12:14 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Tue, 01 Oct 2019 13:12:14 INFO     Station location:       TAB
+Tue, 01 Oct 2019 13:12:14 INFO     Gas Name:               CO
+Tue, 01 Oct 2019 13:12:14 INFO     Dates:                  20190916_20190930
+Tue, 01 Oct 2019 13:12:14 INFO     Create HDF:             True
+Tue, 01 Oct 2019 13:12:14 INFO     Upload HDF:             True
+Tue, 01 Oct 2019 13:12:50 INFO     HDFCreate.py -i /data1/ebaumer/tab/co/input_HDFCreate.py -d 20190916_20190930
+Tue, 01 Oct 2019 13:12:52 INFO     Version: /data1/ebaumer/tab/co/HDF_Current_B3_RD/
+Tue, 01 Oct 2019 13:12:52 ERROR    No HDFs in date range
+Tue, 01 Oct 2019 16:03:40 INFO     **************** Starting Logging ***********************
+Tue, 01 Oct 2019 16:03:40 INFO     Log file path:          /data/pbin/Dev_Ivan/nrt/
+Tue, 01 Oct 2019 16:03:40 INFO     Station location:       TAB
+Tue, 01 Oct 2019 16:03:40 INFO     Gas Name:               CO
+Tue, 01 Oct 2019 16:03:40 INFO     Dates:                  20190916_20190930
+Tue, 01 Oct 2019 16:03:40 INFO     Create HDF:             True
+Tue, 01 Oct 2019 16:03:40 INFO     Upload HDF:             True
+Tue, 01 Oct 2019 16:04:07 INFO     HDFCreate.py -i /data1/ebaumer/tab/co/input_HDFCreate.py -d 20190916_20190930
+Tue, 01 Oct 2019 16:04:09 INFO     Version: /data1/ebaumer/tab/co/HDF_Current_B3_RD/
+Tue, 01 Oct 2019 16:04:09 INFO     HDF file to upload:      groundbased_ftir.co_ncar001_thule_20190917t124335z_20190930t201416z_004.hdf
+Tue, 01 Oct 2019 16:04:12 INFO     File succesfully uploaded at FTP /pub/incoming/ndacc/
