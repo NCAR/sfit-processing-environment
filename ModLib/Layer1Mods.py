@@ -860,19 +860,25 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     x_start = int( lines[1].strip().split()[2] )
     n_layer = int( lines[1].strip().split()[3] )
     x_stop  = x_start + n_layer
-    K       = np.array([[float(x) for x in row.split()] for row in lines[3:]])
-
+    K       = np.array([[float(x) for x in row.split()] for row in lines[3:]]
+    
     #--------------------
-    # Read in Gain matrix
+    # Read in or calculate Gain matrix
     #--------------------
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.g_matrix'][0], logFile)
-    if not lines: 
-        print 'file.out.g_matrix missing for observation, directory: ' + wrkingDir
-        if logFile: logFile.error('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
-        return False    # Critical file, if missing terminate program   
+    if not lines:
+      print 'file.out.g_matrix missing for observation, directory: ' + wrkingDir
+      D=K.dot(seinv.dot(k.t)) #=retdata['shat'].dot(retdata['k'].T).dot(diag(retdata['seinv']))
+                              # but the first calculation is much faster
+      logFile.info('Calculated the contribution matrix G')
+#      if logFile: logFile.error('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
+#      return False    # Critical file, if missing terminate program   
+    else:
+      D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
 
-    D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
 
+
+    
     #------------------
     # Read in Kb matrix
     #------------------   
