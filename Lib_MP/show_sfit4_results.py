@@ -321,8 +321,8 @@ class show_results:
         ctl = sfit4.sfit4_ctl() 
         ctl.read(ctlfile)
         ak_m = ctl.get_value('file.out.ak_matrix')
+        print(ctl.get_value('gas.profile.list'))
         tgas = ctl.get_value('gas.profile.list').split()[0]
-        print tgas
         logretrieval = ctl.get_value('gas.profile.%s.logstate'%tgas)
         if logretrieval == 'T':
             norm_prof = os.path.join(direc,'rprfs.table')

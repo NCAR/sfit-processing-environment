@@ -1,6 +1,7 @@
 import numpy as np
 import read_from_file as rn
 import os, string
+from read_result_sfit4 import statevec
 
 def create_station_layer(z, st_file):
     # create the sfit4 station layer profile from altitudes Z
@@ -33,7 +34,26 @@ def create_station_layer(z, st_file):
 
 class reference_prf:
     def __init__(self):
-        pass
+        self.gas_default = ['H2O',     'CO2',     'O3',     'N2O',     'CO',     
+                            'CH4',     'O2',      'NO',     'SO2',     'NO2',      
+                            'NH3',     'HNO3',    'OH',     'HF',      'HCL',     
+                            'HBR',     'HI',      'CLO',    'OCS',     'CH2O',     
+                            'HOCL',    'HO2',     'H2O2',   'HONO',    'HO2NO2',  
+                            'N2O5',    'CLONO2',  'HCN',    'CH3F',    'CH3CL',    
+                            'CF4',     'CCL2F2',  'CCL3F',  'CH3CCL3', 'CCL4',    
+                            'COF2',    'COCLF',   'C2H6',   'C2H4',    'C2H2',     
+                            'N2',      'CHF2CL',  'COCL2',  'CH3BR',   'CH3I',    
+                            'HCOOH',   'H2S',     'CHCL2F', 'O2CIA',   'SF6',      
+                            'NF3',     'OTHER',   'OTHER',  'OTHER',   'OTHER',   
+                            'OTHER',   'OTHER',   'OCLO',   'F134A',   'C3H8',     
+                            'F142B',   'CFC113',  'F141B',  'CH3OH',   'CH3CNPL', 
+                            'C2H6PL',  'PAN',     'CH3CHO' ,'CH3CN',   'CHF3',    
+                            'CH3COOH', 'C5H8',    'MVK',    'MACR',    'C3H6',    
+                            'C4H8',    'OTHER',   'OTHER',  'OTHER',   'OTHER',    
+                            'OTHER',   'OTHER',   'OTHER',  'OTHER',   'OTHER',   
+                            'OTHER',   'OTHER',   'OTHER',  'OTHER',   'OTHER',    
+                            'OTHER',   'OTHER',   'OTHER',  'OTHER',   'OTHER',   
+                            'OTHER',   'OTHER',   'OTHER',  'OTHER']
     
     def split_reference_prf(self, reffile, refdir):
 
@@ -94,7 +114,17 @@ class reference_prf:
         self.vmr[gas_nr-1,:] = vmr[::-1]
         self.gasname[gas_nr-1]=gas_name
         self.notes[gas_nr-1] = note
- 
+
+    def insert_vmr_from_statevec(self, stvfile):
+        # reads the statevec file (created by sfit4) and
+        # inserts the VMR into the reference profile
+        
+        stv = statevec(stvfile)
+        for gasname, vmr in zip(stv.gas, stv.rt_vmr):
+            vmr_n = np.array([stv.Z, stv.rt_vmr[0]]).T
+            gas_nr = self.gasname.index(gasname)+1
+            self.insert_vmr(vmr_n, gas_nr, gasname, 'inserted from statevec')
+        
     def insert_vmr(self, prf, gas_nr, gas_name, note):
         # reads the two column profile (z,vmr) from prffile, interpolates 
         # it to the altitude grid contained in self.z and inserts gas_nr, gas_name, notes and vmr in self
@@ -191,26 +221,6 @@ class reference_prf:
     def create_ref_from_WACCM(self, direc,default=None):
         # inserts WACCM output in reference. gasnames musst be defined already
         # interpolates to the altitude grid already defined in the class
-        gas_default = ['H2O',     'CO2',     'O3',     'N2O',     'CO',     
-                       'CH4',     'O2',      'NO',     'SO2',     'NO2',      
-                       'NH3',     'HNO3',    'OH',     'HF',      'HCL',     
-                       'HBR',     'HI',      'CLO',    'OCS',     'CH2O',     
-                       'HOCL',    'HO2',     'H2O2',   'HONO',    'HO2NO2',  
-                       'N2O5',    'CLONO2',  'HCN',    'CH3F',    'CH3CL',    
-                       'CF4',     'CCL2F2',  'CCL3F',  'CH3CCL3', 'CCL4',    
-                       'COF2',    'COCLF',   'C2H6',   'C2H4',    'C2H2',     
-                       'N2',      'CHF2CL',  'COCL2',  'CH3BR',   'CH3I',    
-                       'HCOOH',   'H2S',     'CHCL2F', 'O2CIA',   'SF6',      
-                       'NF3',     'OTHER',   'OTHER',  'OTHER',   'OTHER',   
-                       'OTHER',   'OTHER',   'OCLO',   'F134A',   'C3H8',     
-                       'F142B',   'CFC113',  'F141B',  'CH3OH',   'CH3CNPL', 
-                       'C2H6PL',  'PAN',     'CH3CHO' ,'CH3CN',   'CHF3',    
-                       'CH3COOH', 'C5H8',    'MVK',    'MACR',    'C3H6',    
-                       'C4H8',    'OTHER',   'OTHER',  'OTHER',   'OTHER',    
-                       'OTHER',   'OTHER',   'OTHER',  'OTHER',   'OTHER',   
-                       'OTHER',   'OTHER',   'OTHER',  'OTHER',   'OTHER',    
-                       'OTHER',   'OTHER',   'OTHER',  'OTHER',   'OTHER',   
-                       'OTHER',   'OTHER',   'OTHER',  'OTHER']
 
         if (default != None):
             defref = reference_prf()
@@ -219,7 +229,7 @@ class reference_prf:
             defref = -1
             
             
-        self.nr_gas = len(gas_default)
+        self.nr_gas = len(self.gas_default)
         self.gas_nr = np.zeros(self.nr_gas)
         self.gasname = []
         self.notes = []
@@ -231,11 +241,11 @@ class reference_prf:
         self.p = np.array(vmr)
         self.vmr = np.zeros((self.nr_gas, self.nr_layers))
         for nr in range(0,self.nr_gas):
-            waccm_file = '%s/%s.txt'%(direc,gas_default[nr])
+            waccm_file = '%s/%s.txt'%(direc,self.gas_default[nr])
             self.gas_nr[nr] = nr + 1
-            if gas_default[nr] == 'CH2O':
-                gas_default[nr] = 'H2CO'
-            self.gasname.append(gas_default[nr])
+            if self.gas_default[nr] == 'CH2O':
+                self.gas_default[nr] = 'H2CO'
+            self.gasname.append(self.gas_default[nr])
             self.notes.append('created by sfit4_setup')
             if os.path.exists(waccm_file):
                 print (waccm_file)
@@ -244,7 +254,7 @@ class reference_prf:
                 self.notes[-1] = note
             else:
                 if (defref != -1):
-                    self.vmr[nr,0:self.nr_layers] = defref.get_gas_from_refprofile(gas_default[nr], z=self.z)
+                    self.vmr[nr,0:self.nr_layers] = defref.get_gas_from_refprofile(self.gas_default[nr], z=self.z)
                     self.notes[-1] = 'copied from default.ref'
                 else:
                     self.notes[-1] = 'create by sfit4_setup'

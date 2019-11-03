@@ -2,6 +2,35 @@ import numpy as np
 import pdb
 import matplotlib.dates as dates
 
+def daily_index(ds, ts = 'daily'):
+
+    mean_inds = {}
+    
+    if ts == 'daily':
+        dd_mean = list(set(ds.round()))
+        #        col_mean = np.zeros((cols.shape[0],0))
+        #        col_mean = []
+
+    if ts == 'monthly':
+        mdates = dates.num2date(ds)
+        dss = map(lambda x: x.replace(day=1,hour=0,minute=0), mdates)
+        dss = dates.date2num(dss)
+        dd_mean = list(set(dss))
+        year = np.array(map(lambda x: x.year, mdates))
+        month = np.array(map(lambda x: x.month, mdates))
+
+    for ndd in dd_mean:
+        if ts =='monthly':
+            d_this = dates.num2date(ndd)
+            inds = np.where(np.all((year==d_this.year,month==d_this.month),axis=0))[0]
+        elif ts == 'daily':
+            inds = np.int16(np.nonzero(abs(ndd - ds)<1))
+
+        mean_inds[ndd] = inds 
+
+    return(mean_inds)
+
+            
 def daily_mean(ds, cols, ecols, ts='daily'):
 
     cols = np.array(cols)
