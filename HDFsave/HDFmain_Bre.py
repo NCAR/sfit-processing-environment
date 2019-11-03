@@ -126,7 +126,7 @@ def main(args):
     elif loc1.lower() == 'ispra':
         loc = 'ISPRA'
         instrument        = 'iup003'
-        attribute_file = os.path.join(script_dir, 'bremen_attr.txt.%s'%quality)
+        attribute_file = os.path.join(script_dir, 'ispra_attr.txt.%s'%quality)
     elif loc1.lower() == 'jfj':
         loc            = 'Jungfraujoch'
         instrument         = 'ULG002'
@@ -134,7 +134,7 @@ def main(args):
     elif loc1.lower() == 'palau':
         loc            = 'Palau'
         instrument         = 'AWI019'
-        attribute_file = os.path.join(script_dir, 'palau.txt.final')
+        attribute_file = os.path.join(script_dir, 'palau.txt.%s'%quality)
 
 
     if gasName.lower() == 'nh3':
@@ -419,7 +419,7 @@ def main(args):
     # Here we are actually creating the HDF file.
     # We can create either and HDF4 or HDF5 file
     #--------------------------------------------
-    filename = myhdf.createHDF4()
+    filename = myhdf.createHDF5()
     #myhdf.createHDF5()
     
     print 'Finished creating HDF file'

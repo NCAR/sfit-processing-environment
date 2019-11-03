@@ -25,7 +25,7 @@
 #----------------------------------------------------------------------------------------
 import datetime as dt
 import numpy as np
-import abc
+import abc, os
 import hdfCrtFile
 
 
@@ -351,7 +351,7 @@ class HDFbaseRetDat(object):
         #-----------------------------------
         # Create HDF file
         #-----------------------------------
-        hdfFile.createFile(self.outDir+hdfFname.lower(),hdfHdr)
+        hdfFile.createFile(os.path.join(self.outDir,hdfFname.lower()),hdfHdr)
 
         #------------------------------------
         # Create Datetime dataset (variable)

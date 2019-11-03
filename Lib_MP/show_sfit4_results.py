@@ -321,6 +321,14 @@ class show_results:
         ctl = sfit4.sfit4_ctl() 
         ctl.read(ctlfile)
         ak_m = ctl.get_value('file.out.ak_matrix')
+        tgas = ctl.get_value('gas.profile.list').split()[0]
+        print tgas
+        logretrieval = ctl.get_value('gas.profile.%s.logstate'%tgas)
+        if logretrieval == 'T':
+            norm_prof = os.path.join(direc,'rprfs.table')
+        else:
+            norm_prof = os.path.join(direc,'aprfs.table')
+        print norm_prof
         if ak_m == -1:
             ak_m = 'ak.out' # Default name of ak_matrix
         self.retprf = sfit4.read_table(direc+'/rprfs.table')
@@ -332,7 +340,11 @@ class show_results:
         else:
             self.sp = sfit4.pbp(direc+'/'+pbp_m)
         if os.path.exists(direc+'/'+ak_m):
-            self.avk = sfit4.avk(direc+'/'+ak_m, direc+'/aprfs.table')
+            self.avk = sfit4.avk(direc+'/'+ak_m, norm_prof)
+        elif os.path.exists(direc+'/ak.target'):
+            self.avk = sfit4.avk(direc+'/ak.target', norm_prof)
+        elif os.path.exists(direc+'/avk.output'):
+            self.avk = sfit4.avk(direc+'/avk.output', norm_prof)
         else:
             self.avk = -1
 
@@ -455,17 +467,19 @@ class show_results:
         
     def show_fft(self,band_nr = 1,gas=None):
         def oncall1(event):
-            dnum = event.artist.get_xdata()
-            mdnum = event.mouseevent.xdata
-            ind = np.argmin(np.abs(dnum-mdnum))
-            print (self.sp.mw_stop[band_nr-1] - self.sp.mw_start[band_nr-1])/(ind/10.0)
+            print ('bla')
+            ex = event.xdata
+            ey = event.ydata
+#            dnum = self.winfft.get_xdata()
+#            ind = np.argmin(np.abs(dnum-mdnum))
+            print (self.sp.mw_stop[band_nr-1] - self.sp.mw_start[band_nr-1])/(ex/10.0)
         self.winfft.clf()
         fsp = np.fft.fft(self.sp.dif[band_nr-1],
                          10*self.sp.dif[band_nr-1].size)
         spacing = self.sp.mw_res[band_nr-1]
         xax = np.fft.fftfreq(fsp.size, spacing)
         self.winfft.gca().plot(np.abs(fsp[xax>0]),picker=5)
-        self.winfft.canvas.mpl_connect('pick_event', oncall1)
+        self.winfft.canvas.mpl_connect('button_press_event', oncall1)
         self.winfft.show()
 
             
