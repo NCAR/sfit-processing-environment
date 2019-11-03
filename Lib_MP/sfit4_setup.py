@@ -147,7 +147,7 @@ class reference_prf:
         
     def get_gas_from_refprofile(self, gasname, z=np.array([])):
         if self.gasname.count == 0:
-            print 'Gas '+gansmae+' not in reference file'
+            print ('Gas '+gansmae+' not in reference file')
         ind = self.gasname.index(gasname)
         vmr = self.vmr[ind]
         if z.size > 0:
@@ -238,7 +238,7 @@ class reference_prf:
             self.gasname.append(gas_default[nr])
             self.notes.append('created by sfit4_setup')
             if os.path.exists(waccm_file):
-                print waccm_file
+                print (waccm_file)
                 alts, vmr, note = self.load_waccmfile(waccm_file)
                 self.vmr[nr,0:self.nr_layers] = vmr
                 self.notes[-1] = note
@@ -302,7 +302,7 @@ class sfit4_ctl:
         if self.value.has_key(tag):
             return self.value[tag].strip()
         else:
-            print 'key ' + tag.strip() + ' not found'
+            print ('key ' + tag.strip() + ' not found')
             return(-1)
 
     def get_keys(self, level=''):
@@ -330,7 +330,7 @@ class sfit4_ctl:
         if self.value.has_key(tag):
             self.value[tag] = value.strip()
         else:
-            print 'key ' + tag.strip() + ' not found'
+            print ('key ' + tag.strip() + ' not found')
 
     def replace_in_file(self, ctlfile, newtag, newvalue):
         fido = open(ctlfile, 'r')
