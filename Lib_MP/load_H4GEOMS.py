@@ -402,7 +402,7 @@ class load_hdf:
 #        ax2 = ax.twinx()
         for hf in src_hdf:
             dd = dates.date2num(hf.dates)
-            rt2,ap,er,es = hf.get_columns('H2O')
+#            rt2,ap,er,es = hf.get_columns('H2O')
  #           ax2.plot(dd, rt2,'go',)
             rt,ap,er,es = hf.get_columns(gas)
             print (dates.num2date(dd[0]))

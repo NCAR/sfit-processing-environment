@@ -419,7 +419,7 @@ def main(args):
     # Here we are actually creating the HDF file.
     # We can create either and HDF4 or HDF5 file
     #--------------------------------------------
-    filename = myhdf.createHDF5()
+    filename = myhdf.createHDF4()
     #myhdf.createHDF5()
     
     print 'Finished creating HDF file'

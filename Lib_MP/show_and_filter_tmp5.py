@@ -1,7 +1,11 @@
 import sys
 sys.path.append('/data/sfit-processing-environment/Lib_MP/')
 import read_result_sfit4 as sfit4
-from Tkinter import *
+if  sys.version_info.major == 2:
+    from Tkinter import *
+else:
+    from tkinter import *
+
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import matplotlib.dates as dates
@@ -20,17 +24,23 @@ class show_tmph5:
         self.valid_ind = range(0,len(self.res.dnum))
 
         
+
+        
         # out.level = 1
         plt.rcParams['font.size'] = 18
 #        plt.rc('text', usetex=True)
 
-        # Find a free figure for profile
+       # Find a free figure for profile
         self.columns = plt.figure(figsize=(7,3))#figsize=(24,12))
         ax = plt.axes()
         self.aux = plt.figure(figsize=(7,3))
         plt.axes(sharex=ax)
         self.vmr = plt.figure(figsize=(7,3))
 
+        if type(self.res.col_co2) == int:
+            self.co2_col = False
+        else:
+            self.co2_col = True
 
         self.show_error = True
         self.num_aux = 0
@@ -252,7 +262,7 @@ class show_tmph5:
         self.canvas.draw()
 
     def save_values(self):
-        fid = open('columns_show_and_filter.dat', 'write')
+        fid = open('columns_show_and_filter.dat', 'w')
         fid.write('date dnum retr apr ran, sys, aircol, P_S, T_S, DOFS, Min_VMR\n')
         min_vmr = np.min(self.res.vmr_rt,axis=0)
         for d,r,a,rr,ss,ac,ps,ts,do,mv in zip(self.res.dnum[self.valid_ind],
@@ -299,7 +309,8 @@ class show_tmph5:
         elif aux == 'DOFS':
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.dofs[self.valid_ind])
         elif aux == 'CO2':
-            self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.col_co2[self.valid_ind])
+            if self.co2_col:
+                self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.col_co2[self.valid_ind])
         elif aux == 'E_TOT':
             self.aux.gca().plot_date(self.res.dnum[self.valid_ind], self.res.err_tot[self.valid_ind])
         elif aux == 'SNR':
@@ -321,72 +332,73 @@ class show_tmph5:
         mindofs = self.min_dofs.get()
         maxdofs = self.max_dofs.get()
         try:
-            mindofs = string.atof(mindofs)
+            mindofs = float(mindofs)
         except:
             mindofs = 0.0
         try:
-            maxdofs = string.atof(maxdofs)
+            maxdofs = float(maxdofs)
         except:
             maxdofs = 100.0
         
         minc2y = self.min_c2y.get()
         maxc2y = self.max_c2y.get()
         try:
-            minc2y = string.atof(minc2y)
+            minc2y = float(minc2y)
         except:
             minc2y = -1000.0
         try:
-            maxc2y = string.atof(maxc2y)
+            maxc2y = float(maxc2y)
         except:
             maxc2y = 1000.0
 
         minco2 = self.min_co2.get()
         maxco2 = self.max_co2.get()
         try:
-            minco2 = string.atof(minco2)
+            minco2 = float(minco2)
         except:
             minco2 = -1000.0
         try:
-            maxco2 = string.atof(maxco2)
+            maxco2 = float(maxco2)
         except:
             maxco2 = 1000.0
 
         minvmr = self.min_vmr.get()
         maxvmr = self.max_vmr.get()
         try:
-            minvmr = string.atof(minvmr)
+            minvmr = float(minvmr)
         except:
             minvmr = -1.0
         try:
-            maxvmr = string.atof(maxvmr)
+            maxvmr = float(maxvmr)
         except:
             maxvmr = 1.0
 
         minavkc = self.min_avkc.get()
         maxavkc = self.max_avkc.get()
         try:
-            minavkc = string.atof(minavkc)
+            minavkc = float(minavkc)
         except:
             minavkc = -10.0
         try:
-            maxavkc = string.atof(maxavkc)
+            maxavkc = float(maxavkc)
         except:
             maxavkc = 10.0
 
         errcol = self.err_col.get()
         try:
-            errcol = string.atof(errcol)
+            errcol = float(errcol)
         except:
             errcol = 1.0e99
 
         minsza = self.min_sza.get()
         maxsza = self.max_sza.get()
         try:
-            minsza = string.atof(minsza)
+            
+            minsza = float(minsza)
         except:
             minsza = -1.0
         try:
-            maxsza = string.atof(maxsza)
+            maxsza = float(maxsza)
         except:
             maxsza = 1.0
 
@@ -408,25 +420,34 @@ class show_tmph5:
         #     import ipdb
         #     ipdb.set_trace()
             
-        self.valid_ind = filter(lambda x: self.res.dofs[x] >= mindofs
-                                and self.res.dofs[x] <= maxdofs
-                                and self.res.c2y[x] >= minc2y
-                                and self.res.c2y[x] <= maxc2y
-                                and np.min(self.res.vmr_rt[:,x]) >= minvmr
-                                and np.max(self.res.vmr_rt[:,x]) <= maxvmr
-                                and np.min(self.res.avk_col[:,x]) >= minavkc
-                                and np.max(self.res.avk_col[:,x]) <= maxavkc
-                                and self.res.err_tot[x] <= errcol
-                                and self.res.col_co2[x] >= minco2
-                                and self.res.col_co2[x] <= maxco2
-                                and self.res.sza[x] >= minsza
-                                and self.res.sza[x] <= maxsza, range(0,len(self.res.dnum)))
-
-        
-
-        
-#        self.valid_ind = np.array(self.valid_ind)
-
+        if self.co2_col:
+            self.valid_ind = filter(lambda x: self.res.dofs[x] >= mindofs
+                                    and self.res.dofs[x] <= maxdofs
+                                    and self.res.c2y[x] >= minc2y
+                                    and self.res.c2y[x] <= maxc2y
+                                    and np.min(self.res.vmr_rt[:,x]) >= minvmr
+                                    and np.max(self.res.vmr_rt[:,x]) <= maxvmr
+                                    and np.min(self.res.avk_col[:,x]) >= minavkc
+                                    and np.max(self.res.avk_col[:,x]) <= maxavkc
+                                    and self.res.err_tot[x] <= errcol
+                                    and self.res.col_co2[x] >= minco2
+                                    and self.res.col_co2[x] <= maxco2
+                                    and self.res.sza[x] >= minsza
+                                    and self.res.sza[x] <= maxsza, range(0,len(self.res.dnum)))
+        else:
+            self.valid_ind = filter(lambda x: self.res.dofs[x] >= mindofs
+                                    and self.res.dofs[x] <= maxdofs
+                                    and self.res.c2y[x] >= minc2y
+                                    and self.res.c2y[x] <= maxc2y
+                                    and np.min(self.res.vmr_rt[:,x]) >= minvmr
+                                    and np.max(self.res.vmr_rt[:,x]) <= maxvmr
+                                    and np.min(self.res.avk_col[:,x]) >= minavkc
+                                    and np.max(self.res.avk_col[:,x]) <= maxavkc
+                                    and self.res.err_tot[x] <= errcol
+                                    and self.res.sza[x] >= minsza
+                                    and self.res.sza[x] <= maxsza, range(0,len(self.res.dnum)))
+            
+        self.valid_ind = list(self.valid_ind)
 
         if self.v1:
             inds = []
@@ -453,10 +474,11 @@ class show_tmph5:
         self.min_c2y.insert(0,np.min(self.res.c2y[self.valid_ind]))
         self.max_c2y.delete(0,END)
         self.max_c2y.insert(0,np.max(self.res.c2y[self.valid_ind]))
-        self.min_co2.delete(0,END)
-        self.min_co2.insert(0,np.min(self.res.col_co2[self.valid_ind]))
-        self.max_co2.delete(0,END)
-        self.max_co2.insert(0,np.max(self.res.col_co2[self.valid_ind]))
+        if self.co2_col:
+            self.min_co2.delete(0,END)
+            self.min_co2.insert(0,np.min(self.res.col_co2[self.valid_ind]))
+            self.max_co2.delete(0,END)
+            self.max_co2.insert(0,np.max(self.res.col_co2[self.valid_ind]))
         self.min_vmr.delete(0,END)
         self.min_vmr.insert(0,np.min(self.res.vmr_rt[:,self.valid_ind]))
         self.max_vmr.delete(0,END)

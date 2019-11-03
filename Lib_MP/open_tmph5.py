@@ -19,9 +19,8 @@ class load_tmph5:
                      'ivmr_rt': 'ivmr_rt',
                      'vmr_ap': 'vmr_ap',
                      'ivmr_ap': 'ivmr_ap',
-                     'err_ran':'col_ran',   
-                     'err_sys':'col_sys',   
-                     'err_tot':'',
+                     'col_ran':'col_ran',   
+                     'col_sys':'col_sys',   
                      'vmr_ran':'cov_vmr_ran',
                      'vmr_sys':'cov_vmr_sys',
                      'latitude':'lat',
@@ -56,16 +55,11 @@ class load_tmph5:
 
     def get_values(self):
         return(self.vars.keys())
-        
+
     def return_value(self, value):
         if value not in self.vars.keys():
             print ('value %s not defined in tmp.h5'%(value))
             return
-
-        # values not in the scheme
-        if value == 'err_tot':
-            return(np.sqrt(diag(self.h5f.root.cov_vmr_ran[:,:,self.valid] +
-                                self.h5f.root.cov_vmr_sys[:,:,self.valid])))
 
         igasnames =self.h5f.root.gasnames[:]
         if value == 'gasnames':

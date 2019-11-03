@@ -144,7 +144,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
          dataStr[val[0].strip()] = str(val[1].strip())
       fid.close()
 
-      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+file_idateStr+'_'+file_fdateStr+'_'+dataStr['DATA_FILE_VERSION']+'.h5'
+      dataStr['FILE_NAME']               = 'groundbased_ftir.'+self.gasName.lower()+'_'+self.locID.lower()+'_'+self.loc.lower()+'_'+file_idateStr+'_'+file_fdateStr+'_'+dataStr['DATA_FILE_VERSION']+'.hdf'
       print dataStr['FILE_NAME']
 
       
