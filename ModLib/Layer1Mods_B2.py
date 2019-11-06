@@ -592,6 +592,11 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     
     
     Kb_labels=dict(map(lambda x: x.split()[:2],Kb_info.split('\n')))
+
+    for k in Kb_labels.keys():
+        print k
+
+    exit()
     #----------------------------------
     # Adapt label definitions according to version
     #----------------------------------
@@ -770,6 +775,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     sumVars.readPbp(ctlFileVars.inputs['file.out.pbpfile'][0])                                 # Read pbpfile (to get sza)
     sumVars.readPrf(ctlFileVars.inputs['file.out.retprofiles'][0], primgas)                    # Read retreived profile file
     sumVars.readPrf(ctlFileVars.inputs['file.out.aprprofiles'][0], primgas, retapFlg=0)        # Read a priori profile file
+
+
+
 
     #----------------------------------
     # Insert retrieval grid in sbctldefaults and substitute default values for SbctlFileVars

@@ -43,7 +43,7 @@ def tryopen(fname):
         with open(fname, 'r' ) as fopen:
             return fopen.readlines()
     except IOError as errmsg:
-        print errmsg
+        print (errmsg)
         return False
 
 def toYearFraction(dates):
@@ -188,7 +188,7 @@ class MLOread():
                 self.data['Atm_Press'].extend([-9999]*npoints)
 
             except:
-                print 'Error in reading file: %s' % fileName
+                print ('Error in reading file: %s' % fileName)
                 pass
                 #sys.exit() 
         
@@ -404,7 +404,7 @@ class MLOread():
                 self.data['Atm_Press'].extend([-9999]*npoints)     
 
             except:
-                print 'Error in reading file: %s' % fileName
+                print ('Error in reading file: %s' % fileName)
                 pass
                 #sys.exit()
 
@@ -433,7 +433,7 @@ class MLOread():
             self.data['DateTime'].extend([dt.datetime(int(time[0][0:4]),int(time[0][4:6]),int(time[0][6:8]),\
                                                       int(time[1][0:2]),int(time[1][3:5]),int(time[1][6:8])) for time in data])
         except:
-            print 'Error in reading file: %s' % fileName
+            print ('Error in reading file: %s' % fileName)
             sys.exit()            
             
         #------------------
@@ -480,6 +480,8 @@ class MLOread():
 
         if data:
 
+            
+
            #--------------------------
             # Remove header information 
             #--------------------------
@@ -495,8 +497,17 @@ class MLOread():
             # Create DateTime entry in Dictionary for sorting
             #------------------------------------------------
             try:
+                print('House File: {}'.format(fileName))
+
                 self.data['DateTime'].extend([dt.datetime(int(time[0][0:4]),int(time[0][4:6]),int(time[0][6:8]),\
-                                                              int(time[1][0:2]),int(time[1][3:5]),int(time[1][6:8])) for time in data])             
+                                                              int(time[1][0:2]),int(time[1][3:5]),int(time[1][6:8])) for time in data])
+
+              
+
+                datehouse  = [dt.datetime(int(time[0][0:4]),int(time[0][4:6]),int(time[0][6:8]),\
+                                                              int(time[1][0:2]),int(time[1][3:5]),int(time[1][6:8])) for time in data]   
+
+                doyhouse = toYearFraction(datehouse)         
                 
                 #------------------
                 # Update dictionary
@@ -547,11 +558,9 @@ class MLOread():
                 #self.data['E_Radiance'].extend([row[10] for row in data])
                 #self.data['W_Radiance'].extend([row[11] for row in data]) 
 
-                doyhouse = toYearFraction(self.data['DateTime'])  
-
             
             except:
-                print 'Error in reading file: %s' % fileName
+                print ('Error in reading file: %s' % fileName)
                 pass
 
             #------------------------
@@ -560,11 +569,12 @@ class MLOread():
 
             data2 = tryopen(fileNameMet)[1:]
 
-            if data2:     
+            if data2:    
 
                 try:    
 
-                
+                    print('Meteo File: {}'.format(fileNameMet))
+
                     data2[:] = [ row.strip().split() for row in data2 if not '#' in row ]
 
                     Date = [row[0] for row in data2]
@@ -576,16 +586,12 @@ class MLOread():
                     WinG = [row[6] for row in data2]
                     WinD = [row[7] for row in data2]
 
-                    #WinS = 2.237 * np.asarray(WinS)   # Conversion m/s to miles/h
-
-
                     dateT =  [dt.datetime(int(time[0][0:4]),int(time[0][4:6]),int(time[0][6:8]),\
                                                               int(time[1][0:2]),int(time[1][3:5]),int(time[1][6:8])) for time in data2]
 
 
                     doyMet = toYearFraction(dateT)
-
-                  
+     
                     Temp = np.asarray(Temp, dtype=np.float)
                     RelH = np.asarray(RelH, dtype=np.float)
                     Pres = np.asarray(Pres, dtype=np.float)
@@ -603,22 +609,25 @@ class MLOread():
                     except:
 
                         Temp_i           = np.interp(doyhouse, doyMet, Temp, left=Temp[0], right= Temp[-1])
-                        RelH_i           = np.interp(doyhouse, doyMet, Temp, left=Temp[0], right= Temp[-1])
-                        Temp_i           = np.interp(doyhouse, doyMet, RelH, left=RelH[0], right= RelH[-1])
+                        RelH_i           = np.interp(doyhouse, doyMet, RelH, left=RelH[0], right= RelH[-1])
                         Pres_i           = np.interp(doyhouse, doyMet, Pres, left=Pres[0], right= Pres[-1])
                         WinS_i           = np.interp(doyhouse, doyMet, WinS, left=WinS[0], right= WinS[-1])
                         WinD_i           = np.interp(doyhouse, doyMet, WinD, left=WinD[0], right= WinD[-1])
 
                     
 
-                    WinS_i = 2.237 * WinS_i
+                    WinS_i = 2.237 * WinS_i # Conversion m/s to miles/h
+                    WinS_i = ["{0:.3f}".format(i) for i in WinS_i]
 
-                    WinS_i = ["{0:03f}".format(i) for i in WinS_i]
+                    Temp_i = ["{0:.3f}".format(i) for i in Temp_i]
+                    RelH_i = ["{0:.3f}".format(i) for i in RelH_i]
+                    Pres_i = ["{0:.3f}".format(i) for i in Pres_i]
+                    WinD_i = ["{0:.3f}".format(i) for i in WinD_i]
 
                     #self.data['Date'].extend(["{0:02d}".format(indvDate.year)+"{0:02d}".format(indvDate.month)+"{0:02d}".format(indvDate.day) for indvDate in datetimeTemp])
 
                 except:
-                    print 'Error in reading file: %s' % fileNameMet
+                    print ('Error in reading file: %s' % fileNameMet)
                     pass
 
             try:
@@ -631,7 +640,7 @@ class MLOread():
                 self.data['WindDir_E_of_N'].extend([i for i in WinD_i]) 
 
             except:
-                print 'Error interpolating Met to house time : %s' % fileNameMet
+                print ('Error interpolating Met to house time : %s' % fileNameMet)
                 pass
 
 
@@ -712,7 +721,7 @@ class TABread():
             # observations out.
             #-----------------------------------------
             if len(data) <= 50:
-                print 'Error in reading file: %s' % fileName
+                print ('Error in reading file: %s' % fileName)
                 return
                   
             #-----------------------------------
@@ -854,7 +863,7 @@ class TABread():
                 self.data['Temp_Lin_Actuator'].extend([row[7] for row in data])
 
             except:
-                print 'Error in reading file: %s' % fileName
+                print ('Error in reading file: %s' % fileName)
                 pass 
 
 

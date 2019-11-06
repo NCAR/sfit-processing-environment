@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 ##! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
@@ -18,7 +18,7 @@
 #
 #
 # Notes:
-#       1)
+#       1) compatible with python 2.7 or later
 #
 #
 # Usage:
@@ -55,10 +55,18 @@ import getopt
                         # Define helper functions and classes #
                         #-------------------------------------#
 
+def usage():
+    ''' Prints to screen standard program usage'''
+    print ('\nNCEPwaterPrf.py [-s tab/mlo/fl0 -d 20180515 -?')
+    print ('  -s             : Flag Must include location: e.g., mlo/tab/fl0')
+    print ('  -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.')
+    print ('  -?             : Show all flags')
+    print ('Note: Additional hardcoded inputs are in NCEPwaterPrf.py\n')
+
 def ckDir(dirName,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -67,7 +75,7 @@ def ckDir(dirName,exitFlg=False):
 def ckFile(fName,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -75,6 +83,10 @@ def ckFile(fName,exitFlg=False):
 
 def segmnt(seq,n):
     '''Yeilds successive n-sized segments from seq'''
+    try:
+        xrange
+    except NameError:
+        xrange = range
     for i in xrange(0,len(seq),n): yield seq[i:i+n]
 
 def findCls(dataArray, val):
@@ -97,7 +109,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 's:d:?:')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
 
@@ -139,7 +151,7 @@ def main(argv):
 
 
             else:
-                print 'Error in input date'
+                print ('Error in input date')
                 usage()
                 sys.exit()
 
@@ -148,7 +160,7 @@ def main(argv):
             sys.exit()
 
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             sys.exit()
 
 
@@ -175,15 +187,6 @@ def main(argv):
     intrpOrder = 1            # Order of interpolation
     logFlg     = True         # Flag to do interpolation of log of water
 
-    #-----------------------
-    # Date Range of interest
-    #-----------------------
-    # iyear          = 2018
-    # imnth          = 1
-    # iday           = 1
-    # fyear          = 2018
-    # fmnth          = 12
-    # fday           = 31
 
     #-------------------------------
     # NCEP Reanalysis data directory
@@ -195,8 +198,6 @@ def main(argv):
     # Data Directory
     #---------------
     dataDir  = '/data1/'+loc.lower()+'/'
-    #dataDir  = '/data1/iortega/WYO/'
-
 
     #-------------------------
     # WACCM monthly means file
@@ -284,7 +285,8 @@ def main(argv):
     # data directory and collect directory names
     #--------------------------------------------
     dirLst = []
-    for drs in os.walk(dataDir).next()[1]:
+    #for drs in os.walk(dataDir).next()[1]:
+    for drs in next(iter(os.walk(dataDir)))[1]: 
 
         #-------------------------------------------
         # Test directory to make sure it is a number
@@ -497,9 +499,7 @@ def main(argv):
 
             pdfsav.close()
 
-            print 'Finished processing folder: {}'.format(sngDir)
-            #########
-
+            print ('Finished processing folder: {}'.format(sngDir))
 
 if __name__ == "__main__":
     main(sys.argv[1:])

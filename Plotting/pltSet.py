@@ -1,4 +1,5 @@
-#! /usr/bin/python
+#! /usr/bin/python3
+##! /usr/bin/python 
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
 # Name:
@@ -35,7 +36,7 @@
 #       Created, May, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
 #       Version history stored in git repository
 #
-#       Modified, Ivan Ortega (iortega@ucar.edu)
+#       Modified, Sep 2019, Ivan Ortega (iortega@ucar.edu)
 #
 #
 # License:
@@ -70,14 +71,14 @@ import time
 
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'pltSet.py -i <inputfile> -?'
-    print '  -i <file> : Run pltSet.py with specified input file'
-    print '  -?        : Show all flags'
+    print ('pltSet.py -i <inputfile> -?')
+    print ('  -i <file> : Run pltSet.py with specified input file')
+    print ('  -?        : Show all flags')
 
 def ckDir(dirName,logFlg=False,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if logFlg: logFlg.error('Directory %s does not exist' % dirName)
         if exit: sys.exit()
         return False
@@ -87,7 +88,7 @@ def ckDir(dirName,logFlg=False,exit=False):
 def ckFile(fName,logFlg=False,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if logFlg: logFlg.error('Unable to find file: %s' % fName)
         if exit: sys.exit()
         return False
@@ -103,7 +104,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 'i:?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
 
@@ -121,8 +122,10 @@ def main(argv):
             try:
                 execfile(arg, pltInputs)
             except IOError as errmsg:
-                print errmsg + ' : ' + arg
+                print (errmsg + ' : ' + arg)
                 sys.exit()
+            except:
+                exec(compile(open(arg, "rb").read(), arg, 'exec'), pltInputs)
 
             if '__builtins__' in pltInputs:
                 del pltInputs['__builtins__']               
@@ -134,7 +137,7 @@ def main(argv):
             sys.exit()
 
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             sys.exit()
 
 
@@ -172,7 +175,7 @@ def main(argv):
                   tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],szaFlg=pltInputs['szaFlg'],
                   chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'],tcMMflg=pltInputs['tcMMFlg'])
     except:
-        print "Unable to plot AVK!!" 
+        print ("Unable to plot AVK!!")
 
     #-------------------
     # Plot total columns
@@ -187,9 +190,9 @@ def main(argv):
     # Plot Spectral fit
     #------------------
     gas.pltSpectra(fltr=pltInputs['fltrFlg'],minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],minTC=pltInputs['minTC'],maxTC=pltInputs['maxTC'],
-                    maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'],maxCHI=pltInputs['maxCHI'],dofFlg=pltInputs['dofFlg'],
-                    rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],mnthFltr=pltInputs["mnths"],mnthFltFlg=pltInputs["mnthFlg"],
-                    szaFlg=pltInputs['szaFlg'],chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'],tcMMflg=pltInputs['tcMMFlg'])
+                   maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'],maxCHI=pltInputs['maxCHI'],dofFlg=pltInputs['dofFlg'],
+                   rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],mnthFltr=pltInputs["mnths"],mnthFltFlg=pltInputs["mnthFlg"],
+                   szaFlg=pltInputs['szaFlg'],chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'],tcMMflg=pltInputs['tcMMFlg'])
 
     #--------------------
     # Create yearly plots
@@ -217,7 +220,8 @@ def main(argv):
     #--------------------------------
     if pltInputs['saveFlg']: gas.closeFig()
     else: 
-        user_input = raw_input('Press any key to exit >>> ')
+        try:    user_input = raw_input('Press any key to exit >>> ')
+        except: user_input = input('Press any key to exit >>> ')
         sys.exit()    
 
 

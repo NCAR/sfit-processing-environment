@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 #----------------------------------------------------------------------------------------
 # Name:
 #        HDFCreate.py
@@ -33,14 +33,14 @@ import sys
 
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'HDFCreate.py -i <inputfile> -?'
-    print '  -i <file> : Run HDFCreate.py with specified input file'
-    print '  -?        : Show all flags'
+    print ('HDFCreate.py -i <inputfile> -?')
+    print ('  -i <file> : Run HDFCreate.py with specified input file')
+    print ('  -?        : Show all flags')
 
 def ckDir(dirName,logFlg=False,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if logFlg: logFlg.error('Directory %s does not exist' % dirName)
         if exit: sys.exit()
         return False
@@ -50,7 +50,7 @@ def ckDir(dirName,logFlg=False,exit=False):
 def ckFile(fName,logFlg=False,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if logFlg: logFlg.error('Unable to find file: %s' % fName)
         if exit: sys.exit()
         return False
@@ -77,7 +77,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 'i:d:?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
 
@@ -95,8 +95,10 @@ def main(argv):
             try:
                 execfile(arg, Inputs)
             except IOError as errmsg:
-                print errmsg + ' : ' + arg
+                print (errmsg + ' : ' + arg)
                 sys.exit()
+            except:
+                exec(compile(open(arg, "rb").read(), arg, 'exec'), Inputs)
 
             if '__builtins__' in Inputs:
                 del Inputs['__builtins__'] 
@@ -129,7 +131,7 @@ def main(argv):
                 fday    = int(dates[0][15:17])
 
             else:
-                print 'Error in input date'
+                print ('Error in input date')
                 usage()
                 sys.exit()
 
@@ -141,7 +143,7 @@ def main(argv):
             sys.exit()
 
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             sys.exit()
     
     if overDFlg:
@@ -168,7 +170,6 @@ def main(argv):
     ckDirMk(Inputs['outDir'])
 
     
-
     #------------------
     # For IDL interface
     #------------------
@@ -187,7 +188,7 @@ def main(argv):
             hdfsaveFile = os.path.splitext(os.path.split(Inputs['hdfMeta'])[1])[0]
 
         else:
-            print Inputs['hdfMeta']
+            print (Inputs['hdfMeta'])
             hdfsaveFile = os.path.splitext(Inputs['hdfMeta'])[0]
     
     else:    
@@ -195,10 +196,10 @@ def main(argv):
 
     try:
 
-       hdfsave =  __import__(hdfsaveFile)
+        hdfsave =  __import__(hdfsaveFile)
 
     except Exception as errmsg:
-        print '!Error while importing hdfsave: {} !!!'.format(hdfsaveFile)
+        print ('!Error while importing hdfsave: {} !!!'.format(hdfsaveFile))
         exit()
 
     #------------------
@@ -222,7 +223,7 @@ def main(argv):
         elif Inputs['loc'].lower() == "hrt":
             locID            = 'HARESTUA'
         else: 
-            print 'Error in loc ID'
+            print ('Error in loc ID')
             sys.exit()
 
     if 'dQuality' in Inputs: dQuality = Inputs['dQuality']
@@ -261,36 +262,36 @@ def main(argv):
             # using our pre-defined interface
             #------------------------------------------------
             if Inputs['pyFlg'] == False:
-                print '\n'
-                print '*************************************************'
-                print '*************Using IDL Interface*****************'
-                print '*************************************************'
-                print '\n'
+                print ('\n')
+                print ('*************************************************')
+                print ('*************Using IDL Interface*****************')
+                print ('*************************************************')
+                print ('\n')
                 
                 myhdf.initIDL(Inputs['idlFname'],iyear,imonth,iday,fyear,fmonth,fday)
             
             if Inputs['pyFlg'] == True:
-                print '\n'
-                print '*************************************************'
-                print '*************Using Python Interface**************'
-                print '*************************************************'
-                print '\n' 
+                print ('\n')
+                print ('*************************************************')
+                print ('*************Using Python Interface**************')
+                print ('*************************************************')
+                print ('\n') 
 
                 print("Creating HDF file for year: " + str(year) + '\n')
 
-                try:
-                    myhdf.initPy(Inputs['dataDir'],Inputs['ctlFile'],Inputs['spcDBFile'],Inputs['statLyrFile'],iyear,imonth,iday,fyear,fmonth,fday,
-                        mxRMS=Inputs['maxRMS'], minDOF=Inputs['minDOF'],minSZA=Inputs['minSZA'],mxSZA=Inputs['maxSZA'],maxCHI=Inputs['maxCHI'],minTC=Inputs['minTC'],
-                        maxTC=Inputs['maxTC'], dofFlg=Inputs['dofFlg'],rmsFlg=Inputs['rmsFlg'],tcFlg=Inputs['tcNegFlg'],pcFlg=Inputs['pcNegFlg'],cnvFlg=Inputs['cnvrgFlg'],
-                        szaFlg=Inputs['szaFlg'], chiFlg=Inputs['chiFlg'],errFlg=Inputs['errFlg'],tcMMflg=Inputs['tcMMFlg'], h2oFlg=Inputs['h2oFlg'])
+                #try:
+                myhdf.initPy(Inputs['dataDir'],Inputs['ctlFile'],Inputs['spcDBFile'],Inputs['statLyrFile'],iyear,imonth,iday,fyear,fmonth,fday,
+                    mxRMS=Inputs['maxRMS'], minDOF=Inputs['minDOF'],minSZA=Inputs['minSZA'],mxSZA=Inputs['maxSZA'],maxCHI=Inputs['maxCHI'],minTC=Inputs['minTC'],
+                    maxTC=Inputs['maxTC'], dofFlg=Inputs['dofFlg'],rmsFlg=Inputs['rmsFlg'],tcFlg=Inputs['tcNegFlg'],pcFlg=Inputs['pcNegFlg'],cnvFlg=Inputs['cnvrgFlg'],
+                    szaFlg=Inputs['szaFlg'], chiFlg=Inputs['chiFlg'],errFlg=Inputs['errFlg'],tcMMflg=Inputs['tcMMFlg'], h2oFlg=Inputs['h2oFlg'])
                 
-                except Exception as errmsg:
-                        print '!!! Seomething went wrong with year: {} !!!'.format(iyear)
-                        print 'Error: {}'.format(errmsg)
-                        ErrYearFlg = True
-                        ErrYear.append(iyear)
+                # except Exception as errmsg:
+                #     print ('!!! Seomething went wrong with year: {} !!!'.format(iyear))
+                #     print ('Error: {}'.format(errmsg))
+                #     ErrYearFlg = True
+                #     ErrYear.append(iyear)
 
-                        continue
+                #     continue
 
             #--------------------------------------------
             # Here we are actually creating the HDF file.
@@ -299,33 +300,33 @@ def main(argv):
             myhdf.createHDF4()
             #myhdf.createHDF5()
 
-            print '\nHDF created for year: {}'.format(iyear)
+            print ('\nHDF created for year: {}'.format(iyear))
 
         if ErrYearFlg:
             for y in ErrYear:
-                print '\nError detected in year: {}'.format(y)
+                print ('\nError detected in year: {}'.format(y))
         else:
-            print '\nHDF file(s) successfully created'
+            print ('\nHDF file(s) successfully created')
 
     else:
 
         idateStr = "{0:04d}{1:02d}{2:02d}".format(Inputs['iyear'],Inputs['imnth'],Inputs['iday'])
         fdateStr = "{0:04d}{1:02d}{2:02d}".format(Inputs['fyear'],Inputs['fmnth'],Inputs['fday'])
 
-        #try:
-        myhdf.initPy(Inputs['dataDir'],Inputs['ctlFile'],Inputs['spcDBFile'],Inputs['statLyrFile'],Inputs['iyear'],Inputs['imnth'],Inputs['iday'],Inputs['fyear'],Inputs['fmnth'],Inputs['fday'],
-            mxRMS=Inputs['maxRMS'], minDOF=Inputs['minDOF'],minSZA=Inputs['minSZA'],mxSZA=Inputs['maxSZA'],maxCHI=Inputs['maxCHI'],minTC=Inputs['minTC'],
-            maxTC=Inputs['maxTC'], dofFlg=Inputs['dofFlg'],rmsFlg=Inputs['rmsFlg'],tcFlg=Inputs['tcNegFlg'],pcFlg=Inputs['pcNegFlg'],cnvFlg=Inputs['cnvrgFlg'],
-            szaFlg=Inputs['szaFlg'], chiFlg=Inputs['chiFlg'],errFlg=Inputs['errFlg'],tcMMflg=Inputs['tcMMFlg'], h2oFlg=Inputs['h2oFlg'])
+        try:
+            myhdf.initPy(Inputs['dataDir'],Inputs['ctlFile'],Inputs['spcDBFile'],Inputs['statLyrFile'],Inputs['iyear'],Inputs['imnth'],Inputs['iday'],Inputs['fyear'],Inputs['fmnth'],Inputs['fday'],
+                mxRMS=Inputs['maxRMS'], minDOF=Inputs['minDOF'],minSZA=Inputs['minSZA'],mxSZA=Inputs['maxSZA'],maxCHI=Inputs['maxCHI'],minTC=Inputs['minTC'],
+                maxTC=Inputs['maxTC'], dofFlg=Inputs['dofFlg'],rmsFlg=Inputs['rmsFlg'],tcFlg=Inputs['tcNegFlg'],pcFlg=Inputs['pcNegFlg'],cnvFlg=Inputs['cnvrgFlg'],
+                szaFlg=Inputs['szaFlg'], chiFlg=Inputs['chiFlg'],errFlg=Inputs['errFlg'],tcMMflg=Inputs['tcMMFlg'], h2oFlg=Inputs['h2oFlg'])
 
-        myhdf.createHDF4()
+            myhdf.createHDF4()
 
-        print '\nHDF file(s) successfully created'
+            print ('\nHDF file(s) successfully created')
         
-        #except Exception as errmsg:
-        #    print '!!! Seomething went wrong with date range: {} !!!'.format(idateStr+'_'+fdateStr)
-        #    print 'Error: {}'.format(errmsg)
-        #    exit()
+        except Exception as errmsg:
+            print ('!!! Seomething went wrong with date range: {} !!!'.format(idateStr+'_'+fdateStr))
+            print ('Error: {}'.format(errmsg))
+            exit()
 
         
 

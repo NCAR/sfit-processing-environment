@@ -200,15 +200,21 @@ class Layer1InputFile():
     def getInputs(self,logFile=False):
         ''' Layer 1 input file is treated as a python
             script '''
+
         try:
             execfile(self.fname, self.inputs)
+
         except IOError as errmsg:
             print (errmsg)
             if logFile: logFile.error(errmsg)
             sys.exit()
 
+        except:
+            exec(compile(open(self.fname, "rb").read(), self.fname, 'exec'), self.inputs)
+
         if '__builtins__' in self.inputs:
             del self.inputs['__builtins__']          
+
 
 #----------------------------------------CtlInputFile-------------------------------------------------------
 class CtlInputFile():
@@ -369,7 +375,8 @@ class DbInputFile():
             that the delimiter is a single space. csv reader automatically
             reads everything in as a string. Certain values must be converted
             to floats'''
-        with open(self.fname,'rb') as fname:
+        with open(self.fname,'rt') as fname:
+
             # Currently only reads white space delimited file. Need to make general****
             reader = csv.DictReader(fname,delimiter=' ',skipinitialspace=True)                   # Read csv file
             for row in reader:
@@ -379,7 +386,8 @@ class DbInputFile():
                 #------------------------------------------------------
                 if None in row: del row[None]                    
 
-                for col,val in row.iteritems():
+                #for col,val in row.iteritems():
+                for col,val in row.items():
                     try:
                         val = float(val)                                                         # Convert string to float
                     except ValueError:
@@ -401,7 +409,8 @@ class DbInputFile():
             #datestmp = [int(x) for x in val.split('/')]                                         # Convert date to integer (For date delimited by '/'
             if DateRangeClass.inRange(datestmp[0], datestmp[1], datestmp[2]):                    # Check if date stamp in spectral db is within range
                 inds.append(ind)
-        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())  # Rebuild filtered dictionary. Syntax compatible with python 2.6   
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items())      # Rebuild filtered dictionary. Syntax compatible with python 3 and 2.7
+        #dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())  # Rebuild filtered dictionary. Syntax compatible with python 2.6      
         #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
         return dbFltInputs
 
@@ -417,7 +426,8 @@ class DbInputFile():
             if   ( scnFlg == 1) and (int(gbs) == 0): inds.append(ind)              # If only foward scan flag (1) and number of backscans == 0
             elif ( scnFlg == 2) and (int(gfs) == 0): inds.append(ind)              # If only backward scan flag (2) and number of forward scans == 0
 
-        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items())   # Rebuild filtered dictionary. Syntax compatible with python 3 and 2.7
+        #dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
         #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
         return dbFltInputs
 
@@ -429,7 +439,8 @@ class DbInputFile():
         if not fltDict:
             fltDict = self.dbInputs
 
-        for ind,(date,time) in enumerate(itertools.izip(fltDict['Date'],fltDict['Time'])):
+        #for ind,(date,time) in enumerate(itertools.izip(fltDict['Date'],fltDict['Time'])):
+        for ind,(date,time) in enumerate(zip(fltDict['Date'],fltDict['Time'])):
             date = str(int(date))
             HH   = time.strip().split(':')[0]
             MM   = time.strip().split(':')[1]
@@ -444,7 +455,8 @@ class DbInputFile():
             DBtime = datetime.datetime(int(date[0:4]),int(date[4:6]),int(date[6:]),int(HH),int(MM),int(SS))
 
             if DBtime == singlDate:
-                dbFltInputs = dict((key, val[ind] ) for (key, val) in fltDict.iteritems())
+                dbFltInputs = dict((key, val[ind] ) for (key, val) in fltDict.items())
+                #dbFltInputs = dict((key, val[ind] ) for (key, val) in fltDict.iteritems())
                 return dbFltInputs
 
         return False
@@ -457,11 +469,13 @@ class DbInputFile():
         if not fltDict:
             fltDict = self.dbInputs
 
-        for ind,(val1,val2) in enumerate(itertools.izip(fltDict['LWN'],fltDict['HWN'])):
+        #for ind,(val1,val2) in enumerate(itertools.izip(fltDict['LWN'],fltDict['HWN'])):
+        for ind,(val1,val2) in enumerate(zip(fltDict['LWN'],fltDict['HWN'])):
             if ( nuLower >= val1 and nuUpper <= val2 ):                                          # Check if wavenumber is within range of ctl files
                 inds.append(ind)
 
-        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items())
+        #dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
         #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
         return dbFltInputs
 
@@ -479,7 +493,8 @@ class DbInputFile():
                 if str(val) == str(fltrID):
                     inds.append(ind)                
 
-        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items()) 
+        #dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
 
         return dbFltInputs
 
@@ -494,7 +509,8 @@ class DbInputFile():
             if ( val >= minSZA and val <= maxSZA ):                                          # Check if wavenumber is within range of ctl files
                 inds.append(ind)
 
-        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items())  
+        #dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
         #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
         return dbFltInputs
 

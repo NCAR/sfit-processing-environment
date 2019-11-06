@@ -111,14 +111,13 @@ def toYearFraction(dates):
     return retrnDates
 
 def utc2local(utc):
+    ''' Convert utc to local time using current time of working script'''
 
     N = len(utc)
     #if N > 1:
     epoch = time.mktime(utc[0].timetuple())
     offset = dt.datetime.fromtimestamp(epoch) - dt.datetime.utcfromtimestamp(epoch)
     print(offset)
-
-    exit()
     return utc[0] + offset
 
 
@@ -462,6 +461,8 @@ class RemoteHK():
                     #ax2.xaxis.set_minor_locator(AutoMinorLocator())
                     ax2.set_xlabel("UTC (top); Local Time (bottom)")
 
+                    
+
                     #ax2.set_xlim(xmin=dt.datetime(self.obsTimelt[-1].year, self.obsTime[-1].month,self.obsTime[-1].day, 5, 0, 0), xmax=dt.datetime(self.obsTime[-1].year, self.obsTime[-1].month, self.obsTime[-1].day, 13, 59, 0))
                     ax2.set_xlim(self.obsTimelt[0], self.obsTimelt[-1])
            
@@ -487,7 +488,7 @@ class RemoteHK():
     #----------------------------
     def plt_HK_Day(self, Groups= False, Groups_Lab= False, showID=False):
 
-        #self.readHK( showID=showID)
+        self.readHK( showID=showID)
 
         if self.hkFlg:
         
@@ -567,6 +568,7 @@ class RemoteHK():
                                     if k == 'szenith':
                                         pltVal = 90.-pltVal
 
+                    
                                     ax1[vi].plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr1[j])
                                     ax1[vi].axhline(y=0, color='k', linewidth=2)
 
@@ -637,137 +639,174 @@ class RemoteHK():
             #    user_input = raw_input('Press any key to exit >>> ')
             #    sys.exit()
 
-    # #----------------------------
-    # # PLOT HK DEF
-    # #----------------------------  
-    # def plt_HK_SolSen(self, Groups= False, Groups_Lab= False, showID=False):
+    #----------------------------
+    # PLOT HK DEF - Observing time
+    #----------------------------
+    def plt_HK_Day2(self, Groups= False, Groups_Lab= False, showID=False):
 
-    #     #self.readHK( showID=showID)
+        #self.readHK( showID=showID)
 
-    #     if self.hkFlg:
+        if self.hkFlg:
         
-    #         #--------------------
-    #         # Option to save file
-    #         #--------------------        
-    #         # if self.pdfFlg:
-    #         #     pdfPath  = os.path.dirname(self.fname)
-    #         #     pdfFile  = pdfPath + "/HousePlots.pdf"
+            #--------------------
+            # Option to save file
+            #--------------------        
+            # if self.pdfFlg:
+            #     pdfPath  = os.path.dirname(self.fname)
+            #     pdfFile  = pdfPath + "/HousePlots.pdf"
 
-    #         #     #if ckFile(pdfFile): os.remove(pdfFile)
+            #     #if ckFile(pdfFile): os.remove(pdfFile)
                     
-    #         #     ckDir(os.path.dirname(pdfFile),exitFlg=True)
-    #         #     pdfSave = PdfPages(pdfFile)
+            #     ckDir(os.path.dirname(pdfFile),exitFlg=True)
+            #     pdfSave = PdfPages(pdfFile)
 
             
-    #         if Groups:
+            if Groups:
 
+                clr1            = ['b', 'g', 'brown', 'yellow']
+                clr2           = ['r', 'k', 'pink', 'gray']
 
-    #             clr1            = ['b', 'g', 'brown', 'yellow']
-    #             clr2           = ['r', 'k', 'pink', 'gray']
+                Npanels        = len(Groups)
 
-    #             Npanels        = len(Groups)
+                fig1, ax1 = plt.subplots(Npanels, figsize=(8,10), sharex=True)
+                #fig3, ax3 = plt.subplots()
 
-    #             fig1, ax1 = plt.subplots(Npanels, figsize=(8,10), sharex=True)
+                ax2 = ax1[-1].twiny()
 
-    #             for vi, varsGroup in enumerate(Groups):
+                for vi, varsGroup in enumerate(Groups):
 
-    #                 if len(varsGroup) == 1:
-    #                     for i, v in enumerate(varsGroup):
+                    if len(varsGroup) == 1:
+                        for i, v in enumerate(varsGroup):
 
-    #                         for j, k in enumerate(v):
+                            for j, k in enumerate(v):
 
-    #                             pltVal  = np.asarray(self.vars[k])
-    #                             if pltVal.dtype is np.dtype(np.float64):
-    #                                 ax1[vi].plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr1[j])
-    #                             else:
-    #                                 pltVal2 = []
-    #                                 for vs in pltVal:
+                                pltVal  = np.asarray(self.vars[k])
+                                if pltVal.dtype is np.dtype(np.float64):
+                                    ax1[vi].plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr1[j])
+                                else:
+                                    pltVal2 = []
+                                    for vs in pltVal:
                                         
-    #                                     try:
-    #                                         if vs.lower() == 'open':
-    #                                             pltVal2.append(1)
-    #                                         elif vs.lower() == 'close':
-    #                                             pltVal2.append(0)
-    #                                         elif vs.lower() == 'clos':
-    #                                             pltVal2.append(0)
-    #                                         elif vs.lower() == 'unkn':
-    #                                             pltVal2.append(-1)
-    #                                         elif vs.lower() == 'on':
-    #                                             pltVal2.append(1)
-    #                                         elif vs.lower() == 'off':
-    #                                             pltVal2.append(0)
-    #                                         else:
-    #                                             pltVal2.append(-1) 
-    #                                     except ValueError:
-    #                                         print ('ValueError')
+                                        try:
+                                            if vs.lower() == 'open':
+                                                pltVal2.append(1)
+                                            elif vs.lower() == 'close':
+                                                pltVal2.append(0)
+                                            elif vs.lower() == 'clos':
+                                                pltVal2.append(0)
+                                            elif vs.lower() == 'unkn':
+                                                pltVal2.append(-1)
+                                            elif vs.lower() == 'on':
+                                                pltVal2.append(1)
+                                            elif vs.lower() == 'off':
+                                                pltVal2.append(0)
+                                            else:
+                                                pltVal2.append(-1) 
+                                        except ValueError:
+                                            print('ValueError')
 
-    #                                 ax1[vi].plot(self.obsTime,pltVal2,"." ,markersize=4, label= k, color=clr1[j])
-    #                                 ax1[vi].text(0.05,0.8,'0 = OFF/CLOSE', transform=ax1[vi].transAxes, )
-    #                                 ax1[vi].text(0.05,0.7,'1 = ON/OPEN', transform=ax1[vi].transAxes)
-    #                                 ax1[vi].text(0.05,0.6,'-1 = UNKN/OTHER', transform=ax1[vi].transAxes)
+                                    ax1[vi].plot(self.obsTime,pltVal2,"." ,markersize=4, label= k, color=clr1[j])
+                                    ax1[vi].text(0.05,0.8,'0 = OFF/CLOSE', transform=ax1[vi].transAxes, )
+                                    ax1[vi].text(0.05,0.7,'1 = ON/OPEN', transform=ax1[vi].transAxes)
+                                    ax1[vi].text(0.05,0.6,'-1 = UNKN/OTHER', transform=ax1[vi].transAxes)
 
-    #                 elif len(varsGroup) == 2:
-    #                     axr = ax1[vi].twinx()
-    #                     for i, v in enumerate(varsGroup):
+                                    if vi == len(Groups)-1:
+                                        ax2.plot(self.obsTimelt,pltVal2,"." ,markersize=0, label = k, color=clr1[j])
+
+                    elif len(varsGroup) == 2:
+                        axr = ax1[vi].twinx()
+                        for i, v in enumerate(varsGroup):
+
+                            if i == 0:
+                                for j, k in enumerate(v):
+                                    #print k
+                                    pltVal  = np.asarray(self.vars[k])
+
+                                    if k == 'szenith':
+                                        pltVal = 90.-pltVal
+
+                                    if k == 'Extern_E_Radiance':
+
+                                        zenrad   = np.radians(np.asarray(self.vars['szenith']))
+                                        azirad   = np.radians(np.asarray(self.vars['sazimuth']))
+
+                                        #print (np.cos(np.radians([85., 70., 50., 30.])))
+
+                                        pltVal   = pltVal * ((np.asarray(np.cos(zenrad))))#* ((np.asarray(np.cos(azirad))))  
+
+                                        #ax3.plot(np.asarray(self.vars['sazimuth']),pltVal,"." ,markersize=4, label = k, color=clr1[j])
+
+                                    ax1[vi].plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr1[j])
+                                    ax1[vi].axhline(y=0, color='k', linewidth=2)
 
 
-    #                         if i == 0:
-    #                             for j, k in enumerate(v):
-    #                                 pltVal  = np.asarray(self.vars[k])
 
-    #                                 if k == 'szenith':
-    #                                     pltVal = 90.-pltVal
-                                       
+                            if i == 1:
 
-    #                                 if k == 'Extern_E_Radiance':
+                                for j, k in enumerate(v):
+                                    pltVal  = np.asarray(self.vars[k])
+                                    axr.plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr2[j])
 
-    #                                     rad   = np.radians(np.asarray(self.vars['szenith']))
-    #                                     #pltVal = pltVal * ((np.asarray(np.cos(rad))))    #*np.cos(rad)
+                    #----------
+                    ax1[vi].set_ylabel(Groups_Lab[vi][0])
+                    ax1[vi].grid(True)
+                    #ax1[-1].set_xlabel("UT [Hours]")
+                    ax1[vi].xaxis.set_major_locator(HourLocator())
+                    ax1[vi].xaxis.set_major_formatter(DateFormatter("%H"))
+                    ax1[vi].xaxis.set_minor_locator(AutoMinorLocator())
+                    #ax1[vi].set_title("Date = {:%Y-%B-%d}".format(self.obsTime[2]))
+                    #ax1[vi].legend(prop={'size':9}, loc=3)
+                    ax1[vi].legend(prop={'size':8}, loc='upper left', bbox_to_anchor=(-0.05, 1.2), shadow=False, ncol=len(v), handletextpad=0.1)
+                    #ax1[vi].set_xlim(xmin=self.obsTimelt[0]+dt.timedelta(hours=5), xmax=self.obsTimelt[-1]-dt.timedelta(hours=5))
 
-    #                                 ax1[vi].plot(self.obsTime,pltVal ,"." ,markersize=4, label = k, color=clr1[j])
-    #                                 ax1[vi].axhline(y=0, color='k', linewidth=2)
+                    ax1[vi].set_xlim(xmin=dt.datetime(self.obsTime[-1].year, self.obsTime[-1].month,self.obsTime[-1].day, 15, 0, 0), xmax=dt.datetime(self.obsTime[-1].year, self.obsTime[-1].month, self.obsTime[-1].day, 23, 59, 0))
+                    ax1[0].set_ylim(ymin=-15, ymax=90)
+                    #ax1[1].set_ylim(ymin=-0.5, ymax=70)
+                    
 
-    #                         if i == 1:
+                    # Move twinned axis ticks and label from top to bottom
+                    ax2.xaxis.set_ticks_position("bottom")
+                    ax2.xaxis.set_label_position("bottom")
 
-    #                             for j, k in enumerate(v):
-    #                                 pltVal  = np.asarray(self.vars[k])
-    #                                 axr.plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr2[j])
+                    # Offset the twin axis below the host
+                    ax2.spines["bottom"].set_position(("axes", -0.25))
 
-    #                 #----------
-    #                 ax1[vi].set_ylabel(Groups_Lab[vi][0])
-    #                 ax1[vi].grid(True)
-    #                 ax1[-1].set_xlabel("Local Time [Hours]")
-    #                 ax1[vi].xaxis.set_major_locator(HourLocator())
-    #                 ax1[vi].xaxis.set_major_formatter(DateFormatter("%H"))
-    #                 ax1[vi].xaxis.set_minor_locator(AutoMinorLocator())
-    #                 #ax1[vi].set_title("Date = {:%Y-%B-%d}".format(self.obsTime[2]))
-    #                 #ax1[vi].legend(prop={'size':9}, loc=3)
-    #                 ax1[vi].legend(prop={'size':8}, loc='upper left', bbox_to_anchor=(-0.05, 1.1), shadow=False, ncol=len(v), handletextpad=0.1)
-    #                 #ax1.set_ylim(6.5, 7.5)
+                    ax2.set_frame_on(True)
+                    ax2.patch.set_visible(False)
+
+                    #for sp in ax2.spines.itervalues():
+                    #    sp.set_visible(False)
+                    ax2.spines["bottom"].set_visible(True)
+                    #ax2.set_xticks(self.obsTime)
+                    ax2.xaxis.set_major_locator(HourLocator())
+                    ax2.xaxis.set_major_formatter(DateFormatter("%H"))
+                    ax2.xaxis.set_minor_locator(AutoMinorLocator())
+                    ax2.set_xlabel("UTC (top); Local Time (bottom)")
+
+                    ax2.set_xlim(xmin=dt.datetime(self.obsTimelt[-1].year, self.obsTimelt[-1].month,self.obsTimelt[-1].day, 5, 0, 0), xmax=dt.datetime(self.obsTimelt[-1].year, self.obsTimelt[-1].month, self.obsTimelt[-1].day, 13, 59, 0))
+                    
+           
+                    if len(varsGroup) == 2: 
+                        axr.set_ylabel(Groups_Lab[vi][1])
+                        #axr.legend(prop={'size':9}, loc=4)
+                        axr.legend(prop={'size':8}, loc='upper right', bbox_to_anchor=(1.05, 1.2), shadow=False, ncol=len(v), handletextpad=0.1)
+
+                plt.suptitle("Date = {:%Y-%B-%d}".format(self.obsTime[2]), fontsize=16)
+
+                #fig1.autofmt_xdate()
+                fig1.subplots_adjust(left=0.1, bottom=0.085, right=0.9, top=0.95)
 
                     
-                    
-    #                 if len(varsGroup) == 2: 
-    #                     axr.set_ylabel(Groups_Lab[vi][1])
-    #                     #axr.legend(prop={'size':9}, loc=4)
-    #                     axr.legend(prop={'size':8}, loc='upper right', bbox_to_anchor=(1.05, 1.1), shadow=False, ncol=len(v), handletextpad=0.1)
+                if self.pdfFlg: 
+                    self.pdfSave.savefig(fig1,dpi=600, bbox_inches='tight')
+                else:
+                    plt.show(block=False)
 
-    #             plt.suptitle("Date = {:%Y-%B-%d}".format(self.obsTime[2]), fontsize=16)
-
-    #             #fig1.autofmt_xdate()
-    #             fig1.subplots_adjust(left=0.1, bottom=0.05, right=0.9, top=0.95)
-
-    #             #print "Date = {:%Y-%B-%d}".format(self.obsTime[2])
-
-                    
-    #             if self.pdfFlg: 
-    #                 self.pdfSave.savefig(fig1,dpi=600, bbox_inches='tight')
-    #                 pdfPath  = os.path.dirname(self.dir + self.date)
-    #                 pngFile  = pdfPath + "/HousePlots.png"
-
-    #                 fig1.savefig(pngFile, bbox_inches='tight')
-    #             else:
-    #                 plt.show(block=False)
+            #if self.pdfFlg: 
+            #    pdfSave.close()
+            #else:
+            #    user_input = raw_input('Press any key to exit >>> ')
+            #    sys.exit()
 
     #----------------------------
     # READ MEASUREMENT LOG FILE
@@ -1080,13 +1119,12 @@ def main(argv):
         
         if pdfFlg: d.openFig()
         
-        #print 'Plot HK File on: {}-{}-{}'.format(iyear, imnth, iday)
-        #print 'plotting Date/Time: {}'.format(now)
         
-        d.plt_HK(Groups=Groups , Groups_Lab=Groups_Lab )
+        #d.plt_HK(Groups=Groups , Groups_Lab=Groups_Lab )
         d.plt_HK_Day(Groups=Groups , Groups_Lab=Groups_Lab )
-        #d.plt_HK_SolSen(Groups=[Group_1, Group_2] , Groups_Lab=[Group_1_label, Group_2_label] )
-        d.plt_Meas(fltid=fltid)
+        d.plt_HK_Day2(Groups=Groups , Groups_Lab=Groups_Lab )
+
+        #d.plt_Meas(fltid=fltid)
         
 
         if pdfFlg: 

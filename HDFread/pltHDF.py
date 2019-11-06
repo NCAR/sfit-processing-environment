@@ -1,13 +1,17 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 #----------------------------------------------------------------------------------------
 # Name:
 #        pltHDF.py
 #
 # Purpose:
-#
-#
-#----------------------------------------------------------------------------------------
+#       plot results from a set of HDF files.
+#       Standars plot include profiles, errors, AKs, and time series
 
+# Version History:
+#       Created, July, 2018  Ivan Ortega (iortega@ucar.edu)
+#
+#
+#---------------------------------------------------------------------------------------- 
 
 #---------------
 # Import modules
@@ -21,14 +25,14 @@ import time
 
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'pltSet.py -i <inputfile> -?'
-    print '  -i <file> : Run pltSet.py with specified input file'
-    print '  -?        : Show all flags'
+    print ('pltHDF.py -i <inputfile> -?')
+    print ('  -i <file> : Run pltSet.py with specified input file')
+    print ('  -?        : Show all flags')
 
 def ckDir(dirName,logFlg=False,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if logFlg: logFlg.error('Directory %s does not exist' % dirName)
         if exit: sys.exit()
         return False
@@ -38,7 +42,7 @@ def ckDir(dirName,logFlg=False,exit=False):
 def ckFile(fName,logFlg=False,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if logFlg: logFlg.error('Unable to find file: %s' % fName)
         if exit: sys.exit()
         return False
@@ -54,7 +58,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 'i:?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
 
@@ -72,7 +76,7 @@ def main(argv):
             try:
                 execfile(arg, pltInputs)
             except IOError as errmsg:
-                print errmsg + ' : ' + arg
+                print (errmsg + ' : ' + arg)
                 sys.exit()
 
             if '__builtins__' in pltInputs:
@@ -85,7 +89,7 @@ def main(argv):
             sys.exit()
 
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             sys.exit()
 
 
@@ -110,8 +114,6 @@ def main(argv):
             tcFlg=pltInputs['tcNegFlg'], pcFlg=pltInputs['pcNegFlg'], szaFlg=pltInputs['szaFlg'],tcMMFlg=pltInputs['tcMMFlg'], dateFlg=pltInputs['dateFlg'])
 
 
-
-    ##----
     if pltInputs['saveFlg']: gas.closeFig()
 
     print('\nFinished Plots.......\n')
@@ -120,7 +122,9 @@ def main(argv):
     # Pause so user can look at plots
     #--------------------------------
     if not pltInputs['saveFlg']:
-        user_input = raw_input('Press any key to exit >>> ')
+        try: user_input = raw_input('Press any key to exit >>> ')
+        except: user_input = input('Press any key to exit >>> ')
+        
         sys.exit()           # Exit program        
 
 

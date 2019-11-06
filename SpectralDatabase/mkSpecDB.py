@@ -1,6 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # Change the above line to point to the location of your python executable
-
 #----------------------------------------------------------------------------------------
 # Name:
 #        mkSpecDB.py
@@ -32,6 +31,7 @@
 #              Initializations and Defaults section of main program
 #       2) Currently when running ckopus with -C option, ckopus will pass back a return
 #          code of 1 or 3 if file is not an OPUS file
+#       3) compatible with python 2.7 or later
 #
 #
 # Usage:
@@ -46,7 +46,7 @@
 #
 # Version History:
 #  1.0     Created, July, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
-#
+#          Modified, Sep 2019, Ivan Ortega (iortega@ucar.edu)
 #
 # License:
 #    Copyright (c) 2013-2014 NDACC/IRWG
@@ -88,13 +88,23 @@ import sfitClasses as sc
                                                      
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'mkSpecDB.py -i <File> -D <Directory>'
+    print ('\nmkSpecDB.py [-i <File> -D <Directory> -s tab/mlo/fl0 -d 20180515 -?')
+    print ('There are two options to run mkSpecDB.py:')
+    print ('(1) mkSpecDB.py -i <File>. In this case the input file needs to be modified accordingly.')
+    print ('(2) mkSpecDB.py -s tab/mlo/fl0 -d 20180515 -?')
+    print ('  -i             : input File')
+    print ('  -D             : only creates a processed folder list with opus files')
+    print ('  -s             : Flag Must include location: e.g., mlo/tab/fl0')
+    print ('  -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.')
+    print ('  -?             : Show all flags')
+    print ('Note: if input file is provided the location, dates, etc need to be modified accordingly')
+    print ('Note: if input file is not provided the location, dates, are taken from -s -d, and additional hardcoded inputs are in mkSpecDB.py\n')
 
         
 def ckDir(dirName):
     '''Check if a directory exists'''
     if not os.path.exists( dirName ):
-        print 'Directory %s does not exist' % (dirName)
+        print ('Directory %s does not exist' % (dirName))
         return False
     else:
         return True
@@ -102,7 +112,7 @@ def ckDir(dirName):
 def ckFile(fName):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         sys.exit()       
         
 def findFiles(Path):
@@ -148,10 +158,10 @@ def main(argv):
                                                 #---------------------------------#
     #------------------------------------------------------------------------------------------------------------#                                             
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:D:s:d:?:')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:D:s:d:?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
         
@@ -230,7 +240,7 @@ def main(argv):
         # Unhandled options
         #------------------
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             usage()
             sys.exit()
     #------------------------------------------------------------------------------------------------------------#                       
@@ -260,7 +270,7 @@ def main(argv):
                         fopen.write('%s\n' % dirs)
                         break
                     
-        print 'Finished creating processed folder list....'
+        print ('Finished creating processed folder list....')
         sys.exit()
         
     #----------------
@@ -269,7 +279,17 @@ def main(argv):
     DBinputs = {}
 
     if inpFlg:
-        execfile(inputFile, DBinputs)
+
+        try:
+            execfile(inputFile, DBinputs)
+
+        except IOError as errmsg:
+            print (errmsg)
+            sys.exit()
+
+        except:
+            exec(compile(open(inputFile, "rb").read(), inputFile, 'exec'), DBinputs)
+
         if '__builtins__' in DBinputs:
             del DBinputs['__builtins__'] 
 
@@ -384,10 +404,15 @@ def main(argv):
         rtn = sp.Popen( [DBinputs['Fckopus'],'-H'], stdout=sp.PIPE, stderr=sp.PIPE )
         stdoutHeader, stderr = rtn.communicate()        
         outstrHdr            = stdoutHeader.strip().split()
+        #-------------------------------------------
+        # Decoding for python 3.>
+        #-------------------------------------------
+        stdoutHeader         = stdoutHeader.decode('utf-8')
+        outstrHdr            = [i.decode('utf-8') for i in outstrHdr] 
 
         if (wmode == 'w'):                       
             strformat = ['{0:<15}'] + [' {'+str(i)+':<12}' for i in range(1,len(outstrHdr))]
-            strformat = ''.join(strformat).lstrip().rstrip() + '\n'            
+            strformat = ''.join(strformat).lstrip().rstrip() + '\n'    
             
             fopen.write(strformat.format(*outstrHdr))
 
@@ -403,7 +428,7 @@ def main(argv):
         procList = []
         for indvday in daysList:
 
-            print indvday
+            print(('Processsing day: {}').format(indvday))
                         
             # Find year month and day strings
             yrstr   = "{0:02d}".format(indvday.year)
@@ -458,6 +483,11 @@ def main(argv):
                     
                 rtn = sp.Popen( paramList, stdout=sp.PIPE, stderr=sp.PIPE )
                 stdoutParam, stderr = rtn.communicate()
+
+                #-------------------------------------------
+                # Decoding for python 3.>
+                #-------------------------------------------
+                stdoutParam            = stdoutParam.decode('utf-8')
                 
                 # Some OPUS files may not contain any data and therefore
                 # pass back an error
@@ -505,10 +535,10 @@ def main(argv):
                     #fopen.write( stdoutParam )
                 else:
                     newDayDir = DBinputs['dataBaseDir'] + opusFileDate + '/'
-                    print 'File: ' + dayDir + os.path.basename(indvfile) + ' In wrong directory. Moving to: ' + newDayDir + os.path.basename(indvfile)
+                    print ('File: ' + dayDir + os.path.basename(indvfile) + ' In wrong directory. Moving to: ' + newDayDir + os.path.basename(indvfile))
                     if ckDir(newDayDir): shutil.move(dayDir + os.path.basename(indvfile), newDayDir + os.path.basename(indvfile))
                     else:              
-                        print 'Creating directory: ' + newDayDir 
+                        print ('Creating directory: ' + newDayDir)
                         os.mkdir(newDayDir)
                         shutil.move(dayDir + os.path.basename(indvfile), newDayDir + os.path.basename(indvfile))
                     continue
@@ -560,15 +590,22 @@ def main(argv):
                         #paramList    = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-'+DBinputs['bnrType']+SBlock,indvfile]
                     
                     rtn = sp.Popen( paramList, stdout=sp.PIPE, stderr=sp.PIPE )
-                    stdoutParam, stderr = rtn.communicate()       
+                    stdoutParam, stderr = rtn.communicate()   
+
+                    #-------------------------------------------
+                    # Decoding for python 3.>
+                    #-------------------------------------------
+                    stdoutParam            = stdoutParam.decode('utf-8')   
                     
                     #-----------------------------------------------------
                     # Find name of file. This may not correspond to SBlock
                     # name if SBlock name is set to NONE. Name of file
                     # is printed in stderr of subprocess
                     #-----------------------------------------------------
-                    ind = stderr.find('Closed bnr file:')
+                    ind = stderr.find(b'Closed bnr file:')
                     bnrFname = stderr[ind:].strip().split()[-1]
+
+                    bnrFname = bnrFname.decode('utf-8') 
                                         
                     #------------------------------------------------
                     # Change name of file to correspond to time stamp
@@ -576,7 +613,7 @@ def main(argv):
                     if os.path.isfile('/'.join([fpath,bnrFname])):
                         shutil.move(fpath+'/'+bnrFname, fpath+'/'+TStamp+'.bnr')
                     else:
-                        print 'Unable to move file: %s to %s' %(indvfile,fpath+'/'+TStamp+'.bnr')
+                        print ('Unable to move file: %s to %s' %(indvfile,fpath+'/'+TStamp+'.bnr'))
                     
     #-------------------------------------------
     # Write list of folders that where processed

@@ -23,6 +23,9 @@ projectID    = 'QA4ECV'
 #------
 pyFlg        = True
 
+yrlFlg       = True                  # If True will create yearly files from Jan 1 to Dec 31; if False will create use single file from date range below
+
+
 #------
 # If pyFlg is True the below files are needed
 #------
@@ -82,6 +85,6 @@ ctlFile      = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/'+'x.'+gasNam
 # OPTIONAL
 #-----
 
-dSource = 'RD'    # Data_Source - Created for Rapid Delivery
+dQuality = 'RD'    # Data_Source - Created for Rapid Delivery
 
        

@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 ###! /usr/bin/python2.7
 
 #----------------------------------------------------------------------------------------
@@ -64,19 +64,21 @@ import getopt
 def ckDir(dirName):
     '''Check if a directory exists'''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         sys.exit()
 
 def ckFile(fName):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         sys.exit()
 
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'read_FL0_EOL_data.py [-y 2018 -?]'
-    print '  -?             : Show all flags'
+    print ('read_FL0_EOL_data.py [-y 2018 -?]')
+    print ('  -?             : Show all flags')
+    print ('Note: Additional paths are hardcoded in read_FL0_EOL_data.py')
+
 
 
                                     #----------------------------#
@@ -92,12 +94,12 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 'y:?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
 
 
-     #-----------------------------
+    #-----------------------------
     # Parse command line arguments
     #-----------------------------
     for opt, arg in opts:
@@ -113,11 +115,11 @@ def main(argv):
             sys.exit()
 
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             sys.exit()
 
     if not 'yearstr' in locals():
-        print 'Error in input year'
+        print ('Error in input year')
         usage()
         sys.exit()
 
@@ -151,10 +153,10 @@ def main(argv):
     #--------------------
     files = glob.glob(dataDir + 'flab.' + yearstr + '*.' + fileExtTag)
     if not files:
-        print 'No files found for year: %s' % yearstr
+        print ('No files found for year: %s' % yearstr)
         sys.exit()
     else:
-        print ' %d files found for year: %s' % (len(files),yearstr)
+        print (' %d files found for year: %s' % (len(files),yearstr))
 
     #-------------------------
     # Loop through found files

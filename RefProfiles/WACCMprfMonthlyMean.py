@@ -44,6 +44,11 @@ def ckFile(fName,logFlg=False,exit=False):
 
 def segmnt(seq,n):
     '''Yeilds successive n-sized segments from seq'''
+    try:
+        xrange
+    except NameError:
+        xrange = range
+        
     for i in xrange(0,len(seq),n):
         yield seq[i:i+n]  
 

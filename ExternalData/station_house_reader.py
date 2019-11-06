@@ -1,14 +1,19 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 #----------------------------------------------------------------------------------------
 # Name:
 #        station_house_reader.py
 #
 # Purpose:
-#        The purpose of this program is to daily house.log data from mlo and convert to
+#        The purpose of this program is to read daily house.log data from and convert to
 #        a yearly ascii table. 
 #
 # Notes:
-#
+#       1) Output file name is, e.g.:  'MLO_HouseData_2018.dat'
+#       2) Command line arguments
+#            -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.
+#            -s             : Flag Must include location: mlo/tab/fl0 (only for otserver)
+#            -?             : Show all flags'
+#       3)  Compatible with python 2.7 or later
 #
 #
 # Version History:
@@ -39,7 +44,7 @@ import getopt
 def ckDir(dirName):
     '''Check if a directory exists'''
     if not os.path.exists( dirName ):
-        print 'Directory %s does not exist' % (dirName)
+        print ('Directory %s does not exist' % (dirName))
         return False
     else:
         return True
@@ -47,15 +52,16 @@ def ckDir(dirName):
 def ckFile(fName):
     '''Check if a file exists'''
     if not os.path.isfile(fName)    :
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         sys.exit()
 
 def usage():
     ''' Prints to screen standard program usage'''
-    print ' station_house_reader.py [-s tab/mlo/fl0 -d 20180515_20180530 -?]'
-    print '  -s <site>                             : Flag to specify location --> tab/mlo/fl0'
-    print '  -d <20180515> or <20180515_20180530>  : Flag to specify date(s)'
-    print '  -?                                    : Show all flags'
+    print ('\nstation_house_reader.py [-s tab/mlo/fl0 -d 20180515_20180530 -?]')
+    print ('  -s <site>                             : Flag to specify location --> tab/mlo/fl0')
+    print ('  -d <20180515> or <20180515_20180530>  : Flag to specify date(s)')
+    print ('  -?                                    : Show all flags')
+    print ('Note: Additional paths are hardcoded in station_house_reader.py\n')
 
 
          
@@ -74,7 +80,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 's:d:?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
 
@@ -116,7 +122,7 @@ def main(argv):
 
 
             else:
-                print 'Error in input date'
+                print ('Error in input date')
                 usage()
                 sys.exit()
 
@@ -125,7 +131,7 @@ def main(argv):
             sys.exit()
 
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             sys.exit()
                                     
     #----------------
@@ -136,23 +142,13 @@ def main(argv):
     #dataDir     = '/ya4/id/'+statstr.lower()+'/'
     outDataDir  = '/data/Campaign/'+statstr.upper()+'/House_Log_Files/'
     
-    #------------------------------
-    # Date Range of data to process
-    #------------------------------
-    # Starting 
-    #iyear = 2018               # Year
-    #imnth = 1                 # Month
-    #iday  = 1                  # Day
-    
-    # Ending
-    #fyear = 2018               # Year
-    #fmnth = 12                 # Month
-    #fday  = 31                 # Day
     
     #-------------------
     # Call to date class
     #-------------------
     DOI = dr.DateRange(iyear,imnth,iday,fyear,fmnth,fday)
+
+    
         
     #----------------------------
     # Create list of unique years
@@ -172,9 +168,9 @@ def main(argv):
         # Determine if yearly house data file already exists
         #---------------------------------------------------
         if os.path.isfile(houseFileNew):
-            wmode = 'ab'
+            wmode = 'a'
         else:
-            wmode = 'wb'        
+            wmode = 'w'        
     
         #--------------------------------------
         # Create house data dictionary instance
@@ -188,10 +184,9 @@ def main(argv):
         # Loop through days/folders within year
         #--------------------------------------
         daysYear = DOI.daysInYear(indvYear)        # Create a list of days within one year
+
         
         for indvDay in daysYear:
-
-            print indvDay
             
             # Find year month and day strings
             yrstr   = "{0:02d}".format(indvDay.year)
@@ -211,7 +206,7 @@ def main(argv):
                 if indvDay < dt.date(2009,1,21):
                     srchstr = yrstr + mnthstr + daystr + '.wth'
                 
-                elif indvDay >= dt.date(2019,05,03):
+                elif indvDay >= dt.date(2019,5,3):
                     
                     srchstr  = 'house.log'
                     srchstr2 = 'houseMet.log'
@@ -253,10 +248,10 @@ def main(argv):
                 elif dt.date(2011,8,2) <= indvDay < dt.date(2017,12,10):
                     houseData.formatD(houseFile,indvDay.year,indvDay.month,indvDay.day)
 
-                elif dt.date(2011,8,2) <= indvDay < dt.date(2019,05,02):
+                elif dt.date(2011,8,2) <= indvDay < dt.date(2019,5,2):
                     houseData.formatD(houseFile,indvDay.year,indvDay.month,indvDay.day)
 
-                elif indvDay >= dt.date(2019,05,03):
+                elif indvDay >= dt.date(2019,5,3):
                     houseFileMet = glob.glob( dayDir + srchstr2 )[0]
 
                     houseData.formatF(houseFile,houseFileMet, indvDay.year,indvDay.month,indvDay.day)
@@ -267,8 +262,8 @@ def main(argv):
 
           
             elif (statstr.lower() == 'tab'):
-                # Format A for (TAB) date < 20150101
                 if indvDay < dt.date(2015,1,1):
+                # Format A for (TAB) date < 20150101
                     houseData.formatA(houseFile,indvDay.year,indvDay.month,indvDay.day)
                # Format A for (TAB) date >= 20150101
                 elif indvDay >= dt.date(2015,1,1):
@@ -286,7 +281,7 @@ def main(argv):
         with open(houseFileNew, wmode) as fopen:
             writer = csv.writer(fopen, delimiter='\t',lineterminator='\n')
             
-            if (wmode == 'wb') and (statstr.lower() == 'mlo'):
+            if (wmode == 'w') and (statstr.lower() == 'mlo'):
                 
                 #-------------
                 # Print header
@@ -327,7 +322,7 @@ def main(argv):
                 fopen.write('#   Atm_Press                   mbar           32        -9999        \n')
                 fopen.write('#---------------------------------------------------------------------\n')
  
-            elif (wmode == 'wb') and (statstr.lower() == 'tab'):
+            elif (wmode == 'w') and (statstr.lower() == 'tab'):
                 #-------------
                 # Print header
                 #-------------

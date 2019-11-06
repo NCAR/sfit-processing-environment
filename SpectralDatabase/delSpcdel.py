@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 # #! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
@@ -13,6 +13,8 @@
 #       1) Command line arguments
 #            -y   YYYY                 : Specify the year.
 #            -s     tab/mlo/fl0        : Specify the location to process either tab/mlo/fl0
+#      
+#       2) compatible with python 2.7 or later
 #                                    
 #
 # Usage:
@@ -45,10 +47,11 @@ import glob
 
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'delSpcdel.py [-s tab/mlo/fl0 -d 20180515 -?]'
-    print '  -s             : Flag Must include location: mlo/tab/fl0 (only for otserver)'
-    print '  -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.'
-    print '  -?             : Show all flags'
+    print ('delSpcdel.py [-s tab/mlo/fl0 -d 20180515 -?]')
+    print ('  -s             : Flag Must include location: mlo/tab/fl0 (only for otserver)')
+    print ('  -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.')
+    print ('  -?             : Show all flags')
+    print ('Note: Input and Output paths are hardcoded in mvSpectra.py')
 
 
 def subProcRun( sysCall, logF=False, shellFlg=False ):
@@ -81,7 +84,7 @@ def chMod(PrntPath):
 def ckDir(dirName,logFlg=False,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if logFlg: logFlg.error('Directory %s does not exist' % dirName)
         if exit: sys.exit()
         return False
@@ -105,10 +108,10 @@ def main(argv):
                                                 #---------------------------------#
     #------------------------------------------------------------------------------------------------------------#
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 's:d:?:')
+        opts, args = getopt.getopt(sys.argv[1:], 's:d:?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
 
@@ -130,7 +133,7 @@ def main(argv):
                 fl0Flg = True
                 site   = 'fl0'
             else:
-                print 'Site: ' + arg + ' not recognized. Options: mlo or tab or fl0'
+                print ('Site: ' + arg + ' not recognized. Options: mlo or tab or fl0')
                 sys.exit()
 
             loc = arg
@@ -164,7 +167,7 @@ def main(argv):
 
 
             else:
-                print 'Error in input date'
+                print ('Error in input date')
                 usage()
                 sys.exit()
 
@@ -173,64 +176,8 @@ def main(argv):
             sys.exit()
 
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             sys.exit()
-
-    
-    # #-----------------------------
-    # # Parse command line arguments
-    # #-----------------------------
-    # for opt, arg in opts:
-
-    #     #-----------
-    #     # Start Date
-    #     #-----------
-    #     if opt == '-y':
-
-    #         if len(arg) == 4:
-
-    #             dates   = arg.strip().split('_')
-
-    #             iyear   = int(dates[0][0:4])
-    #             imnth   = int(1)
-    #             iday    = int(1)
-
-    #             fyear   = iyear
-    #             fmnth   = int(12)
-    #             fday    = int(31)
-
-    #         else:
-    #             print 'Error in input year'
-    #             usage()
-    #             sys.exit()
-
-
-    #     #------------------
-    #     # Single site usage
-    #     #------------------
-    #     elif opt == '-s':
-
-    #         if   arg.strip().lower() == 'mlo': 
-    #             mloFlg = True
-    #             site   = 'mlo'
-    #         elif arg.strip().lower() == 'tab':
-    #             tabFlg = True
-    #             site  = 'tab'
-    #         elif arg.strip().lower() == 'fl0': 
-    #             fl0Flg = True
-    #             site   = 'fl0'
-    #         else:
-    #             print 'Site: ' + arg + ' not recognized. Options: mlo or tab or fl0'
-    #             sys.exit()
-
-    #    #------------------
-    #    # Unhandled options
-    #    #------------------
-    #    else:
-    #        print 'Unhandled option: ' + opt
-    #        usage()
-    #        sys.exit()
-    #------------------------------------------------------------------------------------------------------------#
 
     #-------------------
     # Set some constants
@@ -297,7 +244,7 @@ def main(argv):
                     # Remove if needed:
                     #--------------------------------------------
                     if s in spc:
-                        print "Found File in Deleted folder: {}".format(dirSpc + s)
+                        print ("Found File in Deleted folder: {}".format(dirSpc + s))
                         if logFile: logFile.info('Deleting File: ' + dirSpc + s)
                         os.remove(dirSpc + s)
 

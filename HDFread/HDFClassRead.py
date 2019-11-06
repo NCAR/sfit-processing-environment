@@ -69,7 +69,7 @@ import glob
 
 from pyhdf.SD import SD, SDC
 from pyhdf.SD import *
-import coda
+#import coda
 from cycler import cycler
 
 import h5py
@@ -106,7 +106,7 @@ def sortDict(DataDict,keyval,excld=[]):
 def ckDir(dirName,logFlg=False,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if logFlg: logFlg.error('Directory %s does not exist' % dirName)
         if exitFlg: sys.exit()
         return False
@@ -116,7 +116,7 @@ def ckDir(dirName,logFlg=False,exitFlg=False):
 def ckFile(fName,logFlg=False,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if logFlg: logFlg.error('Unable to find file: %s' % fName)
         if exitFlg: sys.exit()
         return False
@@ -129,7 +129,7 @@ def tryopen(fname):
         with open(fname, 'r' ) as fopen:
             return fopen.readlines()
     except IOError as errmsg:
-        print errmsg
+        print (errmsg)
         return False
 
 def convrtD(rhs):
@@ -158,7 +158,7 @@ def dbFilterUL(fltrParam,lwrVal=False,uprVal=False):
     # At least one bound must be set. Check this
     #-------------------------------------------
     if (not lwrVal) and (not uprVal):
-        print "Must specify at least one bound in dbFilterUL"
+        print ("Must specify at least one bound in dbFilterUL")
         return
 
     #----------------------------------------
@@ -223,7 +223,7 @@ def bias(xData,yData):
     # Make sure arrays are same size
     #-------------------------------
     if ( yData.shape[0] != xData.shape[0] ): 
-        print 'Data sets must have same size in corrcoef: xData = {}, yData = {}'.format(xData.shape[0],yData.shape[0])
+        print ('Data sets must have same size in corrcoef: xData = {}, yData = {}'.format(xData.shape[0],yData.shape[0]))
         sys.exit() 
 
     biasCalc = sum( yData - xData ) / len(yData) 
@@ -244,7 +244,7 @@ def rmse(xData, yData):
     # Make sure arrays are same size
     #-------------------------------
     if ( yData.shape[0] != xData.shape[0] ): 
-        print 'Data sets must have same size in corrcoef: xData = {}, yData = {}'.format(xData.shape[0],yData.shape[0])
+        print ('Data sets must have same size in corrcoef: xData = {}, yData = {}'.format(xData.shape[0],yData.shape[0]))
         sys.exit() 
 
     #---------------------------------
@@ -763,8 +763,6 @@ def readstatlayer(stfile):
         
         for line in lines:
             line = line.strip()
-            print line
-            exit()  
 
             #---------------------------------------------
             # Lines which start with comments and comments
@@ -807,17 +805,17 @@ def jdf_2_datetime(jdf, MJD2000=True):
     ss  = t3
 
     #Determine YYYY, MM, DD
-    t1=jdi+68569L
-    t2=(4*t1)/146097L
-    t1=t1-(146097L*t2+3L)/4L
-    t3=(4000L*(t1+1L))/1461001L
-    t1=t1-(1461L*t3)/4L + 31L
-    t4=(80L*t1)/2447L
+    t1=jdi+int(68569)
+    t2=(int(4)*t1)/int(146097)
+    t1=t1-(int(146097)*t2+int(3))/int(4)
+    t3=(int(4000)*(t1+int(1)))/int(1461001)
+    t1=t1-(int(1461)*t3)/int(4) + int(31)
+    t4=(int(80)*t1)/int(2447)
 
-    dd=t1-(2447L*t4)/80L
-    t1=t4/11L
-    mm=t4+2L-12L*t1
-    yyyy=100L*(t2-49L)+t3+t1
+    dd=t1-(int(2447)*t4)/int(80)
+    t1=t4/int(11)
+    mm=t4+int(2)-int(12)*t1
+    yyyy=int(100)*(t2-int(49))+t3+t1
 
 
     datestimes = [dt.datetime(int(y), int(mm[i]), int(dd[i]), int(hh[i]), int(mn[i]), int(ss[i])) for i, y in enumerate(yyyy)]
@@ -873,7 +871,7 @@ class _DateRange(object):
             newyears = [inYear for inYear in self.dateList if inYear.year == year]
             return newyears
         else:
-            print 'Error!! Year must be type int for daysInYear'
+            print ('Error!! Year must be type int for daysInYear')
             return False
 
 
@@ -934,7 +932,7 @@ class ReadHDFData():
   
         for drs in DirFiles:
 
-            print '\nReading HDF File: %s' % (drs)
+            print ('\nReading HDF File: %s' % (drs))
 
             #--------------------------
             #TEST FOR HDF5 
@@ -965,7 +963,7 @@ class ReadHDFData():
                     self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
             
                 except Exception as errmsg:
-                    print errmsg, ' : ', var
+                    print (errmsg, ' : ', var)
                     #exit()
         #---------------------------------
         #FLATTENED THE ARRAYS
@@ -1072,7 +1070,7 @@ class ReadHDFData():
         # Filter Data
         #------------
         nobs = len(np.asarray(self.HDF[self.getDatetimeName()]))
-        print '\nNumber of total observations before filtering = {}'.format(nobs)
+        print ('\nNumber of total observations before filtering = {}'.format(nobs))
 
         #-----------------------------
         # Find dates out of range
@@ -1109,8 +1107,8 @@ class ReadHDFData():
             indsT1 = np.where(np.asarray(self.HDF[self.PrimaryGas.upper()+'.'+self.getColumnAbsorptionSolarName()]) < minTC)[0]
             indsT2 = np.where(np.asarray(self.HDF[self.PrimaryGas.upper()+'.'+self.getColumnAbsorptionSolarName()]) > maxTC)[0]
             indsT  = np.union1d(indsT1,indsT2)
-            print "Total number of observations found with total column < minTotalColumn = {}".format(len(indsT1))
-            print "Total number of observations found with total column > maxTotalColumn = {}".format(len(indsT2))
+            print ("Total number of observations found with total column < minTotalColumn = {}".format(len(indsT1)))
+            print ("Total number of observations found with total column > maxTotalColumn = {}".format(len(indsT2)))
             self.inds = np.union1d(indsT, self.inds)        
                      
         #-----------------------------------
@@ -1131,18 +1129,18 @@ class ReadHDFData():
             sza_inds1 = np.where(self.HDF[self.getAngleSolarZenithAstronomicalName()] > mxsza)[0]
             sza_inds2 = np.where(self.HDF[self.getAngleSolarZenithAstronomicalName()] < minsza)[0]
             sza_inds  = np.union1d(sza_inds1, sza_inds2)
-            print 'Total number of observations with SZA greater than {0:} = {1:}'.format(mxsza,len(sza_inds1))
-            print 'Total number of observations with SZA less than    {0:} = {1:}'.format(minsza,len(sza_inds2))
+            print ('Total number of observations with SZA greater than {0:} = {1:}'.format(mxsza,len(sza_inds1)))
+            print ('Total number of observations with SZA less than    {0:} = {1:}'.format(minsza,len(sza_inds2)))
             self.inds = np.union1d(sza_inds,self.inds)
 
     
         self.inds = np.array(self.inds)
-        print 'Total number of observations filtered = {}'.format(len(self.inds))
+        print ('Total number of observations filtered = {}'.format(len(self.inds)))
         
         self.fltrFlg = True
         
         if nobs == len(self.inds):
-            print '!!!! All observations have been filtered....'
+            print ('!!!! All observations have been filtered....')
             self.empty = True
             return False
         else: self.empty = False
@@ -1216,9 +1214,9 @@ class PlotHDF(ReadHDFData):
             alt          = alt[0:n_layer]
 
         #----------------------------------------
-        print 'Latitude          = {}'.format(lat[0])
-        print 'Longitude         = {}'.format(lon[0])
-        print 'Altitude of Instr = {}'.format(altinstr[0])
+        print ('Latitude          = {}'.format(lat[0]))
+        print ('Longitude         = {}'.format(lon[0]))
+        print ('Altitude of Instr = {}'.format(altinstr[0]))
 
         #----------------------------------------
         #CREATE A FILE WITH DATE AND TIME (TO SEND AND GET BACK THE TROPOPAUSE HEIGHT)
@@ -1252,7 +1250,7 @@ class PlotHDF(ReadHDFData):
 
             dofs         = np.asarray([np.trace(aki) for aki in avkSCF])
         except Exception as errmsg:
-            print '\nError: ', errmsg
+            print ('\nError: ', errmsg)
 
         #----------------------------------------
         #OBTAIN ERROR VARIABLES
@@ -1297,7 +1295,7 @@ class PlotHDF(ReadHDFData):
             avkSCF   = np.delete(avkSCF, self.inds, axis=0)
 
         except Exception as errmsg:
-            print '\nError: ', errmsg
+            print ('\nError: ', errmsg)
 
         if errFlg:
             try:
@@ -1309,7 +1307,7 @@ class PlotHDF(ReadHDFData):
                 tot_sys      = np.delete(tot_sys,self.inds)
                 tot_std      = np.delete(tot_std,self.inds)
             except Exception as errmsg:
-                print '\nError: ', errmsg
+                print ('\nError: ', errmsg)
 
         try: 
             prfMean    = np.nanmean(rPrf,axis=0)
@@ -1319,7 +1317,7 @@ class PlotHDF(ReadHDFData):
             MeanTotCol = np.nanmean(totClmn, axis=0)
             dofs_cs = np.cumsum(np.diag(avkSCFAv)[::-1])[::-1]
         except Exception as errmsg:
-            print '\nError: ', errmsg
+            print ('\nError: ', errmsg)
 
         if errFlg:
             try:
@@ -1331,14 +1329,14 @@ class PlotHDF(ReadHDFData):
                 Mean_rnd    = np.nanmean(tot_rnd,axis=0)
                 Mean_sys    = np.nanmean(tot_sys,axis=0)
 
-                print '\nMean Rnd Total Column Error: {0:.3e} [molec/cm2]'.format(Mean_rnd)
-                print 'Mean Sys Total Column Error: {0:.3e} [molec/cm2]'.format(Mean_sys)
-                print 'Mean Total Column Error:     {0:.3e} [molec/cm2]'.format(Mean_Err)
-                print 'Fraction of total error:     {0:.3e}'.format(Mean_Err/MeanTotCol)
+                print ('\nMean Rnd Total Column Error: {0:.3e} [molec/cm2]'.format(Mean_rnd))
+                print ('Mean Sys Total Column Error: {0:.3e} [molec/cm2]'.format(Mean_sys))
+                print ('Mean Total Column Error:     {0:.3e} [molec/cm2]'.format(Mean_Err))
+                print ('Fraction of total error:     {0:.3e}'.format(Mean_Err/MeanTotCol))
 
                 #print 'Mean Rnd Total Column Error: {0:} [{1:4s}]'.format(prfMean_Err*sclfct, sclname)
             except Exception as errmsg:
-                print '\nError: ', errmsg
+                print ('\nError: ', errmsg)
 
         #----------------------------
         # Determine if multiple years
@@ -1352,7 +1350,7 @@ class PlotHDF(ReadHDFData):
         #----------------------------------------------------------------------------------------------------------------------------------------------------------------
         #                                                           PLOTS
         #----------------------------------------------------------------------------------------------------------------------------------------------------------------
-        print '\nPrinting Plots.......\n'
+        print ('\nPrinting Plots.......\n')
         
         #-------------------------------
         # Single Profile or Mean Profile
@@ -1390,7 +1388,7 @@ class PlotHDF(ReadHDFData):
             else:      plt.show(block=False)
 
         except Exception:
-            print 'Error in PrfMean plot: PrfMean Not found'
+            print ('Error in PrfMean plot: PrfMean Not found')
 
         #user_input = raw_input('Press any key to exit >>> ')
         #sys.exit()           # Exit program                
@@ -1558,7 +1556,7 @@ class PlotHDF(ReadHDFData):
                     else:           plt.show(block=False)
 
         except Exception:
-            print 'Error in Profiles plot'
+            print ('Error in Profiles plot')
 
         if errFlg:
             #try:
@@ -1643,10 +1641,8 @@ class PlotHDF(ReadHDFData):
             else:           plt.show(block=False)
 
         except Exception:
-            print 'Error in AKSC and AKVMR plot'
+            print ('Error in AKSC and AKVMR plot')
 
-        #user_input = raw_input('Press any key to exit >>> ')
-        #sys.exit()
 
         #-----------
         # AVK Matrix
@@ -1710,7 +1706,7 @@ class PlotHDF(ReadHDFData):
             else:           plt.show(block=False)
 
         except Exception:
-            print 'Error in AKVMR plot'
+            print ('Error in AKVMR plot')
 
 
         #----------------------------
@@ -1762,7 +1758,7 @@ class PlotHDF(ReadHDFData):
             else:           plt.show(block=False)
 
         except Exception:
-            print 'Error in Column plots: all ata' 
+            print ('Error in Column plots: all ata')
 
         try:
             #------
@@ -1808,7 +1804,7 @@ class PlotHDF(ReadHDFData):
             else:           plt.show(block=False)
 
         except Exception:
-            print 'Error in Column plots: daily columns' 
+            print ('Error in Column plots: daily columns')
 
             #------
             # Time Series of Monthly Averaged Total Column
@@ -1855,6 +1851,6 @@ class PlotHDF(ReadHDFData):
             else:           plt.show(block=False)
 
         except Exception:
-            print 'Error in Column plots: Monthly columns'     
+            print ('Error in Column plots: Monthly columns')    
 
         

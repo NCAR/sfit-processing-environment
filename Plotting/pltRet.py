@@ -1,4 +1,5 @@
-#! /usr/bin/python
+#! /usr/bin/python3
+##! /usr/bin/python
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
 # Name:
@@ -89,13 +90,20 @@ import matplotlib.cm as mplcm
 import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
 
+
+try:
+    import warnings
+    warnings.filterwarnings("ignore", category=RuntimeWarning) 
+except:
+    pass
+
 #------------------------
 # Define helper functions
 #------------------------
 def usage():
-        print 'pltRet.py [-i <str> ] '
-        print '-i <dir>     Data directory. Optional: default is current working directory'
-        print '-S           Flag to save results in pltRet.pdf. Optional: default is False'    
+        print ('pltRet.py [-i <str> ] ')
+        print ('-i <dir>     Data directory. Optional: default is current working directory')
+        print ('-S           Flag to save results in pltRet.pdf. Optional: default is False')
         sys.exit()
 
 
@@ -117,7 +125,7 @@ def main(argv):
                 opts, args = getopt.getopt(sys.argv[1:], 'i:S?')
 
         except getopt.GetoptError as err:
-                print str(err)
+                print (str(err))
                 usage()
                 sys.exit()
 
@@ -140,7 +148,7 @@ def main(argv):
                     sys.exit()                        
 
                 else:
-                    print 'Unhandled option: {}'.format(opt)
+                    print ('Unhandled option: {}'.format(opt))
                     sys.exit()
 
 
@@ -179,28 +187,30 @@ def main(argv):
         #-----------------
         if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  gas.pltAvk()   
 
-        #gas.pltSummary()   
-
         #-----------------------------
         # Print summary file to screen
         #-----------------------------
-        with open(wrkDir+'summary','r') as fopen: info = fopen.read()
-        
-        print '\n******************SUMMARY FILE*********************\n'
-        print (info)
-        print '\n****************END OF SUMMARY FILE****************\n'
+        try:
+            with open(wrkDir+'summary','r') as fopen: info = fopen.read()
+            
+            print ('\n******************SUMMARY FILE*********************\n')
+            print (info)
+            print ('\n****************END OF SUMMARY FILE****************\n')
 
-        fig, ax = plt.subplots(figsize=(10,8))  
+            fig, ax = plt.subplots(figsize=(10,8))  
 
-        ax.text(0.0,0.05,info, ha='left', fontsize=10, color='b')
+            ax.text(0.0,0.05,info, ha='left', fontsize=10, color='b')
+           
+            ax.get_xaxis().set_visible(False)
+            ax.get_yaxis().set_visible(False)
+            ax.axis('off')
 
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
-        ax.axis('off')
+            
+            if saveFlg: gas.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False) 
 
-        
-        if saveFlg: gas.pdfsav.savefig(fig,dpi=200)
-        else:           plt.show(block=False) 
+        except: 
+            print ('\n*************ERROR IN SUMMARY****************\n')
 
         #-----------------------------
         # Print Error summary file to screen
@@ -208,35 +218,38 @@ def main(argv):
         try:
             with open(wrkDir+'Errorsummary.output','r') as fopen: info = fopen.read()
         
-            print '\n******************SUMMARY ERROR*********************\n'
+            print ('\n******************SUMMARY ERROR*********************\n')
             print (info)
-            print '\n****************END OF SUMMARY ERROR****************\n'
+            print ('\n****************END OF SUMMARY ERROR****************\n')
+
+            fig, ax = plt.subplots(figsize=(10,8))    
+
+            ax.text(0.0,0.05,info, ha='left', fontsize=10, color='b')
+            
+            ax.get_xaxis().set_visible(False)
+            ax.get_yaxis().set_visible(False)
+            ax.axis('off')
+
+            if saveFlg: gas.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False) 
+
         except:
-            print '\n*************ERROR IS NOT CALCULATED****************\n'
+            print ('\n*************ERROR IS NOT CALCULATED****************\n')
 
-        fig, ax = plt.subplots(figsize=(10,8))    
-
-        ax.text(0.0,0.05,info, ha='left', fontsize=10, color='b')
-
-        ax.get_xaxis().set_visible(False)
-        ax.get_yaxis().set_visible(False)
-        ax.axis('off')
-
-        
-        if saveFlg: gas.pdfsav.savefig(fig,dpi=200)
-        else:           plt.show(block=False) 
 
         #--------------------------------
         # Pause so user can look at plots
         #--------------------------------
         if saveFlg: 
             gas.closeFig()
-            print '\n****************PDF FILE SAVED****************\n'
-            print wrkDir+pltFile
-            print '\n*********************END**********************\n'
+            print ('\n****************PDF FILE SAVED****************\n')
+            print (wrkDir+pltFile)
+            print ('\n*********************END**********************\n')
             
         else:
-            user_input = raw_input('Press any key to exit >>> ')
+            try:user_input = raw_input('Press any key to exit >>> ')
+            except: 
+                user_input = input('Press any key to exit >>> ')
             sys.exit() 
 
 

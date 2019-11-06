@@ -1,4 +1,4 @@
-#! /usr/bin/python2.7
+#! /usr/bin/python3
 ##! /usr/local/python-2.7/bin/python
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
@@ -10,6 +10,12 @@
 #
 # Usage:
 #       Copy files from /ya4/id/mlo(tab,fl0) to /data1/mlo(tab, fl0)
+# Notes:
+#       1) Command line arguments
+#            -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.
+#            -s             : Flag Must include location: mlo/tab/fl0 (only for otserver)
+#            -?             : Show all flags'
+#      2)  Compatible with python 2.7 or later
 #
 #----------------------------------------------------------------------------------------
 
@@ -55,7 +61,7 @@ def ckDirMk(dirName,logFlg=False):
 def ckFile(fName,logFlg=False,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if logFlg: logFlg.error('Unable to find file: %s' % fName)
         if exit: sys.exit()
         return False
@@ -82,10 +88,11 @@ def findFiles(Path):
 
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'mvSpectra.py [-s tab/mlo/fl0 -d 20180515 -?]'
-    print '  -s             : Flag Must include location: mlo/tab/fl0 (only for otserver)'
-    print '  -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.'
-    print '  -?             : Show all flags'
+    print ('mvSpectra.py [-s tab/mlo/fl0 -d 20180515 -?]')
+    print ('  -s             : Flag Must include location: mlo/tab/fl0 (only for otserver)')
+    print ('  -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.')
+    print ('  -?             : Show all flags')
+    print ('Note: Input and Output paths are hardcoded in mvSpectra.py')
 
 
 def main(argv):
@@ -97,7 +104,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 's:d:?:')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
 
@@ -139,7 +146,7 @@ def main(argv):
 
 
             else:
-                print 'Error in input date'
+                print ('Error in input date')
                 usage()
                 sys.exit()
 
@@ -148,28 +155,20 @@ def main(argv):
             sys.exit()
 
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             sys.exit()
 
 
     #-------
     # Inputs
     #-------
-    #loc     = 'mlo'
     inPath  = '/ya4/id/' + loc.lower() + '/'     # Input directory
     outPath = '/data1/'  + loc.lower() + '/'       # Working directory
-
-    # iyear   = 2019
-    # imonth  = 1
-    # iday    = 1
-
-    # fyear   = 2019
-    # fmonth  = 4
-    # fday    = 15
 
     #-------------------
     # Call to date class
     #-------------------
+
     DOI      = dr.DateRange(iyear, imnth, iday, fyear, fmnth, fday)
     daysList = DOI.dateList
 
@@ -177,8 +176,6 @@ def main(argv):
     # Loop through day list
     #----------------------
     for i,snglDay in enumerate(daysList):
-
-        print snglDay
 
         #---------------------------------
         # Determine input/output directory
@@ -189,6 +186,8 @@ def main(argv):
         yyyymmddstr = yearstr + mnthstr + daystr
         inDir       = inPath + yyyymmddstr + '/'
         outDir      = outPath + yyyymmddstr + '/'
+
+        print ('Copying folder: {} to {}'.format(inDir,outDir))
 
         #------------------------------
         # If input directory is missing
@@ -221,8 +220,9 @@ def main(argv):
 
                 fnamesDel = [ k for k in listdir(join(inDir,f)) if (join(join(inDir,k),k) and not k.startswith('.') ) ]
 
+                print ('Copying folder: {} to {}'.format(join(inDir,f),join(outDir,f)))
+
                 for k in fnamesDel:
-                    print 'Copying file: {} to {}'.format(join(inDir,f),join(outDir,f))
                     shutil.copy(join(join(inDir,f),k),join(join(outDir,f),k))
                     os.chmod(join(join(outDir,f),k), 0o766)
 
@@ -233,13 +233,9 @@ def main(argv):
             else:  
  
                 try: shutil.copy(join(inDir,f),join(outDir,f))
-                except IOError: print 'Unable to move file: {} to {}'.format(join(inDir,f),join(outDir,f))
+                except IOError: print ('Unable to move file: {} to {}'.format(join(inDir,f),join(outDir,f)))
                 os.chmod(join(outDir,f), 0o766)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-
-
-
-
 

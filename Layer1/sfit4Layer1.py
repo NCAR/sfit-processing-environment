@@ -87,7 +87,7 @@ import sfitClasses as sc
 import dataOutClass as dc
 import shutil
 from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis  
-####from Layer1Mods_B2 import refMkrNCAR, t15ascPrep, errAnalysis   
+#from Layer1Mods_v2 import refMkrNCAR, t15ascPrep, errAnalysis  
 import matplotlib.pyplot as plt
 
 
@@ -98,12 +98,14 @@ import matplotlib.pyplot as plt
                         #-------------------------#
 def usage():
     ''' Prints to screen standard program usage'''
-    print ( 'sfit4Layer1.py -i <file> -l -L0 -P <int> -d <20190101_20191231> -?\n'
+    print ( '\nsfit4Layer1.py -i <file> -l -L0 -P <int> -d <20190101_20191231> -?\n'
             '  -i <file>                              : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file\n'
             '  -l                                     : Flag to create log files of processing. Path to write log files is specified in input file\n'
             '  -L <0/1>                               : Flag to create output list file. Path to write list files is specified in input file\n'
             '  -P <int>                               : Pause run starting at run number <int>. <int> is an integer to start processing at\n'
-            '  -d <20190101> or <20190101_20191231>   : Date or Date range\n'
+            '  -d <20190101> or <20190101_20191231>   : Date or Date range\n' 
+            '                                         -d is optional and if used these dates will overwrite dates in input file for Layer 1 processing\n'
+#                                                    Note: Created mainly for near-real time analysis \n'
             '  -?                                     : Show all flags\n')
 
 def convertList(varList):
@@ -842,7 +844,9 @@ def main(argv):
                         if pauseFlg:
                             while True:
 
-                                user_input = input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 show plot retrieval results, 4 save plot retrievals in pdf\n >>> ')
+                                try: user_input = input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 show plot retrieval results, 4 save plot retrievals in pdf\n >>> ')
+                                except: user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 show plot retrieval results, 4 save plot retrievals in pdf\n >>> ')
+
                                 plt.close('all')
                                 try:
                                     user_input = int(user_input)

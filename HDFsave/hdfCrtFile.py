@@ -97,7 +97,8 @@ class HDF4File(object):
       #--------------------------------
       # Write global attributes to file
       #--------------------------------
-      for k,val in attrDict.iteritems():
+      #for k,val in attrDict.iteritems():   # Syntax compatible with python 2x
+      for k,val in attrDict.items():        # Syntax compatible with python 3
          setattr(self.fopen,k,val)
 
    
@@ -122,7 +123,7 @@ class HDF4File(object):
       # Store data in file
       #------------------- 
       if not np.size(data):
-         print 'Variable: {} is empty. Unable to write empty variable. Terminating program'.format(dataSetName)
+         print ('Variable: {} is empty. Unable to write empty variable. Terminating program'.format(dataSetName))
          sys.exit()      
       else: 
          dtSet[:] = data
@@ -131,7 +132,8 @@ class HDF4File(object):
       # Store attributes in file. Rules state that numerical meta-data
       # must have same data-type as data set.
       #---------------------------------------------------------------
-      for k,val in attrDict.iteritems():
+      #for k,val in attrDict.iteritems():     # Syntax compatible with python 2x
+      for k,val in attrDict.items():          # Syntax compatible with python 3
          
          #-------------------------------------------
          # Determine if attribute is string or number

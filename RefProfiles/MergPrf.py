@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 ##! /usr/local/python-2.7/bin/python
 #----------------------------------------------------------------------------------------
 # Name:
@@ -21,6 +21,7 @@
 #
 # Notes:
 #       1) The altitude grid is taken from WACCM monthly mean file.
+#       2) compatible with python 2.7 or later
 #
 #
 # Usage:
@@ -63,15 +64,22 @@ from matplotlib.ticker import MultipleLocator
 
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'There are two options to run MergPrf.py:'
-    print '(1) MergPrf.py -i <File>. In this case the input file needs to be modified accordingly.'
-    print '(2) MergPrf.py -s tab/mlo/fl0 -y 2018'
+    print ('\nMergPrf.py [-i <File> -s tab/mlo/fl0 -d 20180515 -l -?')
+    print ('There are two options to run MergPrf.py:')
+    print ('(1) MergPrf.py -i <File>. In this case the input file needs to be modified accordingly.')
+    print ('(2) MergPrf.py -s tab/mlo/fl0 -d 20180515')
+    print ('  -i             : input File')
+    print ('  -s             : Flag Must include location: e.g., mlo/tab/fl0')
+    print ('  -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.')
+    print ('  -l             : Log File')
+    print ('  -?             : Show all flags')
+    print ('Note: if input file is not provided the location, dates, are taken from -s -d, and additional hardcoded inputs are in MergPrf.py\n')
 
         
 def ckDir(dirName):
     '''Check if a directory exists'''
     if not os.path.exists( dirName ):
-        print 'Directory %s does not exist' % (dirName)
+        print ('Directory %s does not exist' % (dirName))
         return False
     else:
         return True
@@ -79,7 +87,7 @@ def ckDir(dirName):
 def ckFile(fName,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exit:
             sys.exit()
         return False
@@ -88,6 +96,11 @@ def ckFile(fName,exit=False):
                 
 def segmnt(seq,n):
     '''Yeilds successive n-sized segments from seq'''
+    try:
+        xrange
+    except NameError:
+        xrange = range
+
     for i in xrange(0,len(seq),n):
         yield seq[i:i+n]
 
@@ -113,7 +126,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 'i:l:s:d:?:')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
         
@@ -178,7 +191,7 @@ def main(argv):
         # Unhandled options
         #------------------
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             usage()
             sys.exit()
     #------------------------------------------------------------------------------------------------------------#                                
@@ -194,7 +207,17 @@ def main(argv):
     inputs = {}
 
     if inpFlg:
-        execfile(inputFile, inputs)
+
+        try:
+            execfile(inputFile, inputs)
+
+        except IOError as errmsg:
+            print (errmsg)
+            sys.exit()
+
+        except:
+            exec(compile(open(inputFile, "rb").read(), inputFile, 'exec'), inputs)
+
         if '__builtins__' in inputs:
             del inputs['__builtins__']  
 
@@ -232,7 +255,7 @@ def main(argv):
     #-----------------------------------
     # Check directory of NCEP nmc data                         
     if not ckDir(inputs['NCEPDir']):
-        print 'NCEP nmc directory does not exist: ' + inputs['NCEPDir']
+        print ('NCEP nmc directory does not exist: ' + inputs['NCEPDir'])
         sys.exit()
         
     # check if '/' is included at end of path
@@ -241,7 +264,7 @@ def main(argv):
         
     # Check directory for output                         
     if not ckDir(inputs['outBaseDir']):
-        print 'Output base directory does not exist: ' + inputs['outBaseDir']
+        print ('Output base directory does not exist: ' + inputs['outBaseDir'])
         sys.exit()
         
     # check if '/' is included at end of path
@@ -251,7 +274,7 @@ def main(argv):
     if logFile:
         # Check directory for log file                         
         if not ckDir(logDir):
-            print 'Log File directory does not exist: ' + logDir
+            print ('Log File directory does not exist: ' + logDir)
             sys.exit()
             
         # check if '/' is included at end of path
@@ -541,8 +564,8 @@ def main(argv):
     # nmc data is incomplete => WACCM used
     #-------------------------------------
     if logFile:
-            for yrs in misngCnt:
-                logFile.info('Missing days for year ({:4}) = {:4}'.format(yrs,misngCnt[yrs]))
+        for yrs in misngCnt:
+            logFile.info('Missing days for year ({:4}) = {:4}'.format(yrs,misngCnt[yrs]))
                 
             
                                                                               

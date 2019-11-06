@@ -62,15 +62,12 @@ import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as mtick
 
-
 #----------------------------------------------------------------------------------------
 # TO PLOT CLASSIC STYLE (https://matplotlib.org/users/dflt_style_changes.html)
 #----------------------------------------------------------------------------------------
-matplotlib.style.use('classic')  
+#matplotlib.style.use('classic')  
 #----------------------------------------------------------------------------------------
-
-
-
+plt.rcParams.update({'figure.max_open_warning': 0})
                                             #------------------#
                                             # Define functions #
                                             #------------------#
@@ -497,6 +494,7 @@ def readCtlF(ctlF):
     
     ctl = {}
     lines = tryopen(ctlF)
+
     
     if lines:
         gas_flg = True
@@ -553,7 +551,7 @@ def readCtlF(ctlF):
             #----------------------    
             # Primary Retrieval Gas
             #----------------------
-            # Search for primary retrieval gas in gas.column.list or gas.profile.list
+            # Search for primary retrieval gas in gas or gas.profile.list
             # The first gas listed is considered the primary retrieval gas
             if gas_flg:
                 match = re.match(r'\s*gas\.\w+\.list\s*=\s*(\w+)', line)
@@ -774,9 +772,6 @@ def readstatlayer(stfile):
             if len(line) == 0: continue
 
 
-    
-    
-
                                                 #----------------#
                                                 # Define classes #
                                                 #----------------#
@@ -885,8 +880,9 @@ class ReadOutputData(_DateRange):
             # Walk through first level of directories and
             # collect directory names for processing
             #--------------------------------------------
-            for drs in os.walk(dataDir).next()[1]: 
-                
+
+            for drs in next(iter(os.walk(dataDir)))[1]: 
+           
                 #-------------------------------------------
                 # Test directory to make sure it is a number
                 #-------------------------------------------
@@ -917,12 +913,14 @@ class ReadOutputData(_DateRange):
         else: 
             self.dirLst = [dataDir]
             self.dirFlg = False
-            
+
         #-----------------------
         # Read ctl File if given
         #-----------------------
+
         if ctlF: 
-            (self.PrimaryGas,self.ctl) = readCtlF(ctlF)     
+            (self.PrimaryGas,self.ctl) = readCtlF(ctlF)    
+
             #-------------------
             # Construct Gas list
             #-------------------
@@ -932,9 +930,11 @@ class ReadOutputData(_DateRange):
             if not self.gasList: 
                 print ('No gases listed in column or profile list....exiting')
                 sys.exit()
-                
-            self.gasList = filter(None,self.gasList)  # Filter out all empty strings
-            self.ngas    = len(self.gasList)   
+            
+            try: self.gasList = list(filter(None.__ne__, self.gasList) ) # Filter out all empty strings
+            except: self.gasList = filter(None, self.gasList) # Filter out all empty strings
+           
+            self.ngas    = len(self.gasList)
             
             for gas in self.gasList:
                 self.readPrfFlgApr[gas.upper()] = False
@@ -985,7 +985,7 @@ class ReadOutputData(_DateRange):
         #-----------------------------
         if tcFlg:
             if not gasName+'_RetColmn' in self.summary:
-                print 'TotColmn values do not exist...exiting..'
+                print ('TotColmn values do not exist...exiting..')
                 sys.exit()
                 
             indsT =  np.where(np.asarray(self.summary[gasName+'_RetColmn']) <= 0.0)[0]
@@ -997,14 +997,14 @@ class ReadOutputData(_DateRange):
         #---------------------------------------------
         if tcMinMaxFlg:
             if not gasName+'_RetColmn' in self.summary:
-                print 'TotColmn values do not exist...exiting..'
+                print ('TotColmn values do not exist...exiting..')
                 sys.exit()
                 
             indsT1 = np.where(np.asarray(self.summary[gasName+'_RetColmn']) < minTC)[0]
             indsT2 = np.where(np.asarray(self.summary[gasName+'_RetColmn']) > maxTC)[0]
             indsT  = np.union1d(indsT1,indsT2)
-            print "Total number of observations found with total column < minTotalColumn = {}".format(len(indsT1))
-            print "Total number of observations found with total column > maxTotalColumn = {}".format(len(indsT2))
+            print ("Total number of observations found with total column < minTotalColumn = {}".format(len(indsT1)))
+            print ("Total number of observations found with total column > maxTotalColumn = {}".format(len(indsT2)))
             self.inds = np.union1d(indsT, self.inds)        
                 
         #-----------------------------
@@ -1012,7 +1012,7 @@ class ReadOutputData(_DateRange):
         #-----------------------------
         if rmsFlg:
             if not gasName+'_FITRMS' in self.summary:
-                print 'RMS values do not exist...exiting..'
+                print ('RMS values do not exist...exiting..')
                 sys.exit()            
                 
             indsT = np.where(np.asarray(self.summary[gasName+'_FITRMS']) >= mxrms)[0]
@@ -1024,7 +1024,7 @@ class ReadOutputData(_DateRange):
         #------------------------------
         if chiFlg:
             if not gasName+"_CHI_2_Y" in self.summary:
-                print 'CHI_2_Y values do not exist...exiting..'
+                print ('CHI_2_Y values do not exist...exiting..')
                 sys.exit()            
                 
             indsT = np.where(np.asarray(self.summary[gasName+"_CHI_2_Y"]) >= maxCHI)[0]
@@ -1036,7 +1036,7 @@ class ReadOutputData(_DateRange):
         #-----------------------------------
         if pcFlg:
             if not gasName in self.rprfs:
-                print 'Profile values do not exist...exiting..'
+                print ('Profile values do not exist...exiting..')
                 sys.exit()   
                 
             rprf_neg = np.asarray(self.rprfs[gasName]) <= 0
@@ -1049,14 +1049,14 @@ class ReadOutputData(_DateRange):
         #-------------------------------------
         if szaFlg:
             if 'sza' not in self.pbp:
-                print 'SZA not found.....exiting'
+                print ('SZA not found.....exiting')
                 sys.exit()  
             
             sza_inds1 = np.where(self.pbp['sza'] > mxsza)[0]
             sza_inds2 = np.where(self.pbp['sza'] < minsza)[0]
             sza_inds  = np.union1d(sza_inds1, sza_inds2)
-            print 'Total number of observations with SZA greater than {0:} = {1:}'.format(mxsza,len(sza_inds1))
-            print 'Total number of observations with SZA less than    {0:} = {1:}'.format(minsza,len(sza_inds2))
+            print ('Total number of observations with SZA greater than {0:} = {1:}'.format(mxsza,len(sza_inds1)))
+            print ('Total number of observations with SZA less than    {0:} = {1:}'.format(minsza,len(sza_inds2)))
             self.inds = np.union1d(sza_inds,self.inds)
         
         #--------------------------
@@ -1064,7 +1064,7 @@ class ReadOutputData(_DateRange):
         #--------------------------
         if dofFlg:
             if not gasName+'_DOFS_TRG' in self.summary:
-                print 'DOFs values do not exist...exiting..'
+                print ('DOFs values do not exist...exiting..')
                 sys.exit() 
                 
             indsT = np.where(np.asarray(self.summary[gasName+'_DOFS_TRG']) < minDOF)[0]
@@ -1076,7 +1076,7 @@ class ReadOutputData(_DateRange):
         #--------------------------
         if h2oFlg:
             if not 'H2O_tot_col' in self.rprfs:
-                print 'H2O total column do not exist...exiting..'
+                print ('H2O total column do not exist...exiting..')
                 sys.exit()
 
             indsT =  np.where(np.asarray(self.rprfs['H2O_tot_col']) < 0.0)[0]
@@ -1089,7 +1089,7 @@ class ReadOutputData(_DateRange):
         #------------------------------------
         if cnvrgFlg:
             if not gasName+'_CONVERGED' in self.summary:
-                print 'Converged values do not exist...exiting..'
+                print ('Converged values do not exist...exiting..')
                 sys.exit()
                 
             indsT = np.where( np.asarray(self.summary[gasName+'_CONVERGED']) == 'F')[0]
@@ -1097,12 +1097,12 @@ class ReadOutputData(_DateRange):
             self.inds = np.union1d(indsT, self.inds)
     
         self.inds = np.array(self.inds)
-        print 'Total number of observations filtered = {}'.format(len(self.inds))
+        print ('Total number of observations filtered = {}'.format(len(self.inds)))
         
         self.fltrFlg = True
         
         if nobs == len(self.inds):
-            print '!!!! All observations have been filtered....'
+            print ('!!!! All observations have been filtered....')
             self.empty = True
             return False
         else: self.empty = False
@@ -1172,7 +1172,7 @@ class ReadOutputData(_DateRange):
                             self.refPrf.setdefault(val,[]).append([float(x[:-1]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
 
                 except Exception as errmsg:
-                    print errmsg
+                    print (errmsg)
                     continue
     
             self.readRefPrfFlg = True
@@ -1257,7 +1257,7 @@ class ReadOutputData(_DateRange):
                                                                                int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))
 
                 except Exception as errmsg:
-                    print errmsg
+                    print (errmsg)
                     continue
     
             self.readsummaryFlg = True
@@ -1280,10 +1280,6 @@ class ReadOutputData(_DateRange):
                 retapFlg determines whether retrieved profiles (=1) or a priori profiles (=0) are read'''
         self.deflt = {}
 
-        #retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']   # These profiles will always be read
-        #if rtrvGasList[0].upper() == 'H2O': retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be read
-        #else: retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']
-
         if "H2O" in rtrvGasList: retrvdAll = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']
         else: retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']
 
@@ -1296,8 +1292,6 @@ class ReadOutputData(_DateRange):
         # Add user specified retrieved gas list 
         # to standard retrievals
         #--------------------------------------
-        # orginalRtrvGasList = rtrvGasList
-        # rtrvGasList = [g.upper() for g in rtrvGasList if g.upper() != 'H2O']   # Remove water from gas list since this read by default
         
         retrvdAll.extend(rtrvGasList)
 
@@ -1334,14 +1328,14 @@ class ReadOutputData(_DateRange):
                                                                              int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))
 
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue                            
 
         #----------------------------
         # Test if Dictionary is empty
         #----------------------------
         if not self.deflt: 
-            print 'No Profiles exist...exiting'
+            print ('No Profiles exist...exiting')
             self.empty = True
             return  #sys.exit()
         else: self.empty = False
@@ -1441,7 +1435,7 @@ class ReadOutputData(_DateRange):
                     self.statevec.setdefault(key,[]).append(val)
                     
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue            
     
         #------------------------
@@ -1491,7 +1485,7 @@ class ReadOutputData(_DateRange):
                                                                          int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))
 
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue                            
 
             #-------------------------
@@ -1513,7 +1507,7 @@ class ReadOutputData(_DateRange):
                             self.error.setdefault('AVK_vmr',[]).append(totRand)                            
 
                 except Exception as errmsg:
-                    print errmsg
+                    print (errmsg)
                     continue                  
                 
             #------------------
@@ -1579,7 +1573,7 @@ class ReadOutputData(_DateRange):
                             self.error.setdefault('Total_Systematic_Error',[]).append(totSys)                            
 
                 except Exception as errmsg:
-                    print errmsg
+                    print (errmsg)
                     continue                    
 
                 #--------------------------------------------
@@ -1605,7 +1599,7 @@ class ReadOutputData(_DateRange):
                                 self.error.setdefault('Total_Systematic_Error_VMR',[]).append(totSys)                            
 
                     except Exception as errmsg:
-                        print errmsg
+                        print (errmsg)
                         continue                    
 
             # Systematic Error 
@@ -1630,7 +1624,7 @@ class ReadOutputData(_DateRange):
 
 
                 except Exception as errmsg:
-                    print errmsg
+                    print (errmsg)
                     continue                    
 
                 #--------------------------------------------
@@ -1656,7 +1650,7 @@ class ReadOutputData(_DateRange):
                             else: continue                        
 
                     except Exception as errmsg:
-                        print errmsg
+                        print (errmsg)
                         continue                  
 
             # Systematic Error 
@@ -1680,7 +1674,7 @@ class ReadOutputData(_DateRange):
                         else: continue
 
                 except Exception as errmsg:
-                    print errmsg
+                    print (errmsg)
                     continue                    
 
                 #--------------------------------------------
@@ -1706,7 +1700,7 @@ class ReadOutputData(_DateRange):
                             else: continue                        
 
                     except Exception as errmsg:
-                        print errmsg
+                        print (errmsg)
                         continue                 
 
         #----------
@@ -1744,7 +1738,7 @@ class ReadOutputData(_DateRange):
                 with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()   
 
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue       
             
             #--------------------
@@ -1898,6 +1892,9 @@ class ReadOutputData(_DateRange):
                         
                     self.spc.setdefault(gas.upper()+'_'+nsng,[]).append([float(x.strip()) for x in lines[2:] ])
 
+                #print (self.spc)
+                #exit()
+
             #-------------------------------
             # Get date and time of retrieval
             #-------------------------------
@@ -1936,7 +1933,7 @@ class DbInputFile(_DateRange):
             that the delimiter is a single space. csv reader automatically
             reads everything in as a string. Certain values must be converted
             to floats'''
-        with open(self.dbName,'rb') as fname:
+        with open(self.dbName,'r') as fname:
             # Currently only reads white space delimited file. Need to make general****
             reader = csv.DictReader(fname,delimiter=' ',skipinitialspace=True)                   # Read csv file
             for row in reader:
@@ -1946,7 +1943,8 @@ class DbInputFile(_DateRange):
                 #------------------------------------------------------
                 if None in row: del row[None]                    
 
-                for col,val in row.iteritems():
+                #for col,val in row.iteritems():
+                for col,val in row.items():
                     try:
                         val = float(val)                                                         # Convert string to float
                     except ValueError:
@@ -1978,7 +1976,7 @@ class DbInputFile(_DateRange):
         if not fltDict:
             fltDict = self.dbInputs
 
-        for ind,(date,time) in enumerate(itertools.izip(fltDict['Date'],fltDict['Time'])):
+        for ind,(date,time) in enumerate(zip(fltDict['Date'],fltDict['Time'])):
             date = str(int(date))
             HH   = time.strip().split(':')[0]
             MM   = time.strip().split(':')[1]
@@ -1993,7 +1991,7 @@ class DbInputFile(_DateRange):
             DBtime = dt.datetime(int(date[0:4]),int(date[4:6]),int(date[6:]),int(HH),int(MM),int(SS))
 
             if DBtime == singlDate:
-                dbFltInputs = dict((key, val[ind] ) for (key, val) in fltDict.iteritems())
+                dbFltInputs = dict((key, val[ind] ) for (key, val) in fltDict.items())
                 return dbFltInputs
 
         return False
@@ -2008,9 +2006,9 @@ class DbInputFile(_DateRange):
         for ind,(val1,val2) in enumerate(itertools.izip(fltDict['LWN'],fltDict['HWN'])):
             if ( nuLower >= val1 and nuUpper <= val2 ):                                          # Check if wavenumber is within range of ctl files
                 inds.append(ind)
-
-        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
-        #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items())   # Rebuild filtered dictionary. Syntax compatible with python 3
+        #dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
+        ##dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
         return dbFltInputs
 
     def dbFilterFltrID(self,fltrID,fltDict=False):
@@ -2027,7 +2025,8 @@ class DbInputFile(_DateRange):
                 if str(val) == str(fltrID):
                     inds.append(ind)                
 
-        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items())   # Rebuild filtered dictionary. Syntax compatible with python 3
+        #dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
 
         return dbFltInputs
     
@@ -2152,7 +2151,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
 
                 self.HDFlon     = np.array(tempSpecDB['W_Lon'])
 
-                print '\nLongitude [W_Lon] in database: {}'.format(self.HDFlon)
+                print ('\nLongitude [W_Lon] in database: {}'.format(self.HDFlon))
 
                 #-----------------------------
                 # In the Database the Longitude is defined as positive West. 
@@ -2174,7 +2173,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
                     user_input = raw_input('Paused processing....\n Input specific longitude for HDF file: >>> ')
                     self.HDFlon = np.array(user_input)
 
-                print 'Longitude [E_Lon] in HDF file: {}'.format(self.HDFlon)
+                print ('Longitude [E_Lon] in HDF file: {}'.format(self.HDFlon))
 
                 self.HDFinstAlt = np.array(tempSpecDB['Alt'] / 1000.0)
             
@@ -2185,7 +2184,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # In the Database Solar Azimuth is defined as positive South. 
         # Convert to North Solar Azimuth (2016 GEOMS CONVENTION)
         #----------------------------------------------
-        print '\nConverting S-Azimuth to N-Azimuth....\n'
+        print ('\nConverting S-Azimuth to N-Azimuth....\n')
         
         for i, az in enumerate(self.HDFazi):
             if az >= 180.0:
@@ -2200,7 +2199,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         #----------------------------------------------------
         # Print total number of observations before filtering
         #----------------------------------------------------
-        print 'Number of total observations before filtering = {}'.format(len(self.HDFdates))
+        print ('Number of total observations before filtering = {}'.format(len(self.HDFdates)))
         
         #--------------------
         # Call to filter data
@@ -2236,20 +2235,20 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFdatesJD2K   = np.delete(self.HDFdatesJD2K,self.inds)
         self.HDFsza         = np.delete(self.HDFsza,self.inds)
    
-        print 'Number of observations after filtering = {}'.format(len(self.HDFdates))   
+        print ('Number of observations after filtering = {}'.format(len(self.HDFdates)) )
         
         #-------------------------------------------
         # Determine if there are any negative TC H2O
         #-------------------------------------------
         ind = np.where(self.HDFh2oTC < 0.0)[0]
         if len(ind) > 0: 
-            print '\n\n***********************************'
-            print 'Retrievals found with negative H2O total column values!!!'
-            print 'Number of retrievals found = {}'.format(len(ind))
-            print 'Dates: '
+            print ('\n\n***********************************')
+            print ('Retrievals found with negative H2O total column values!!!')
+            print ('Number of retrievals found = {}'.format(len(ind)))
+            print ('Dates: ')
             for i in ind:
-                print self.HDFdates[i]
-            print '***********************************\n\n'
+                print (self.HDFdates[i])
+            print ('***********************************\n\n')
 
         
 #------------------------------------------------------------------------------------------------------------------------------        
@@ -2273,14 +2272,13 @@ class PlotData(ReadOutputData):
                    dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,szaFlg=False,chiFlg=False,cnvrgFlg=True,tcMMflg=False,mnthFltFlg=False):
         ''' Plot spectra and fit and Jacobian matrix '''
     
-        print '\nPlotting Spectral Data...........\n'
+        print ('\nPlotting Spectral Data...........\n')
         
         #------------------------
         # Determine Micro-windows
         #------------------------
         mw    = [str(int(x)) for x in self.ctl['band']]     
         numMW = len(mw)
-
         
         #---------------------------------------
         # Get profile, summary and spectral data
@@ -2362,12 +2360,14 @@ class PlotData(ReadOutputData):
         # Calculate Statistics
         #---------------------
         for x in mw:  # Loop through micro-windows
-
+            
             #-------------------------------------------------------------
             # Calculate the total Observed absorption in micro-window
             # This must be done first because below code modifies dataSpec
             #-------------------------------------------------------------
-            gasAbs["Total_"+x] = simps(1.0 - dataSpec['Obs_'+x],x=dataSpec['WaveN_'+x],axis=1)               
+          
+            #gasAbs["Total_"+x] = simps(1.0 - dataSpec['Obs_'+x],x=dataSpec['WaveN_'+x],axis=1)     
+            gasAbs["Total_"+x] = np.trapz(1.0 - dataSpec['Obs_'+x],x=dataSpec['WaveN_'+x],axis=1)               
                         
             if len(self.dirLst) > 1:
                 dataSpec['Obs_'+x]        = np.mean(dataSpec['Obs_'+x],axis=0)
@@ -2387,10 +2387,12 @@ class PlotData(ReadOutputData):
             if len(self.dirLst) > 1:
 
                 if self.PrimaryGas+"_"+x in gasSpec:  
+                    
                 #---------------------------------------------------
                 # Calculate the integrate absorption for primary gas
                 #---------------------------------------------------               
-                    gasAbs[self.PrimaryGas+"_"+x] = simps(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)       
+                    #gasAbs[self.PrimaryGas+"_"+x] = simps(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)   
+                    gasAbs[self.PrimaryGas+"_"+x] = np.trapz(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)      
                 
                 #-----------------------------------
                 # Calculate the peak absorption of 
@@ -2455,6 +2457,9 @@ class PlotData(ReadOutputData):
                 ax.grid(True)
                 if i == 0: ax.set_ylabel('Altitude [km]')
                 ax.xaxis.set_major_formatter(ScalarFormatter(useOffset=False))
+                
+                if i !=0:  plt.setp(ax.get_yticklabels(),visible=False)
+                
     
             fig1.text(0.5,0.04,'Wavenumber [cm$^{-1}$]',ha='center',va='center')
             fig1.autofmt_xdate()
@@ -2465,7 +2470,6 @@ class PlotData(ReadOutputData):
                 
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)
-
         
         #--------------------------------
         # Plot data for each micro-window
@@ -2501,7 +2505,7 @@ class PlotData(ReadOutputData):
             #ax2.set_ylim(bottom=0.0)
             ax2.set_xlim((np.min(dataSpec['WaveN_'+x]),np.max(dataSpec['WaveN_'+x])))
 
-            ax2.legend(prop={'size':10},loc='upper center', bbox_to_anchor=(0.5, 1.065),
+            ax2.legend(prop={'size':9},loc='upper center', bbox_to_anchor=(0.5, 1.065),
                       fancybox=True, ncol=len(mwList[x])+3)  
             ax1.tick_params(axis='x',which='both',labelsize=12)
             ax1.tick_params(axis='y',which='both',labelsize=12)
@@ -2605,7 +2609,7 @@ class PlotData(ReadOutputData):
         ''' Plot retrieved profiles '''
         
         
-        print '\nPrinting Profile Plots.......\n'
+        print ('\nPrinting Profile Plots.......\n')
         
         aprPrf       = {}
         rPrf         = {}
@@ -3246,15 +3250,18 @@ class PlotData(ReadOutputData):
                     #-------------------------------------------------
                     # Normalize error as fraction of retrieved profile
                     #-------------------------------------------------
-                    errPlt = errPlt / retPrf         
+                    errPlt = errPlt / retPrf    
+
+                    try: lab = k.replace('_Random_Error', '')
+                    except: lab = k
                         
-                    ax1.plot(errPlt,alt,linewidth=0.75, label=k)
+                    ax1.plot(errPlt,alt,linewidth=0.75, label=lab)
                     
                 #------------------------
                 # Plot total random error
                 #------------------------
                 randMean = np.mean(rand_err,axis=0) / retPrf
-                ax1.plot(randMean,alt,linewidth=0.75, label='Total Random Error')                
+                ax1.plot(randMean,alt,linewidth=0.75, label='Total Random')                
 
                 ax1.set_ylabel('Altitude [km]')
                 ax1.set_xlabel('Fraction of Retrieved Profile')             
@@ -3278,15 +3285,18 @@ class PlotData(ReadOutputData):
                     #-------------------------------------------------
                     # Normalize error as fraction of retrieved profile
                     #-------------------------------------------------
-                    errPlt = errPlt / retPrf         
+                    errPlt = errPlt / retPrf      
+
+                    try: lab = k.replace('_Systematic_Error', '')
+                    except: lab = k   
                         
-                    ax2.plot(errPlt,alt,linewidth=0.75, label=k)
+                    ax2.plot(errPlt,alt,linewidth=0.75, label=lab)
     
                 #------------------------
                 # Plot total random error
                 #------------------------
                 sysMean  = np.mean(sys_err,axis=0) / retPrf
-                ax2.plot(sysMean,alt,linewidth=0.75, label='Total Systematic Error')
+                ax2.plot(sysMean,alt,linewidth=0.75, label='Total Systematic')
 
                 ax2.set_xlabel('Fraction of Retrieved Profile')             
                 ax2.grid(True,which='both')
@@ -3388,7 +3398,7 @@ class PlotData(ReadOutputData):
                dofFlg=False,errFlg=False,szaFlg=False,partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,chiFlg=False,tcMMflg=False,mnthFltFlg=False):
         ''' Plot Averaging Kernel. Only for single retrieval '''
         
-        print '\nPlotting Averaging Kernel........\n'
+        print ('\nPlotting Averaging Kernel........\n')
         
         if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
                                dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,mnthFltFlg=mnthFltFlg)
@@ -3405,7 +3415,7 @@ class PlotData(ReadOutputData):
                 self.readError(totFlg=False,sysFlg=False,randFlg=False,vmrFlg=True,avkFlg=True,KbFlg=False)
             
             if not self.error: 
-                print 'No Error output files found for AVK plot...exiting..'
+                print ('No Error output files found for AVK plot...exiting..')
                 sys.exit()   
                 
             #---------------------
@@ -3635,7 +3645,7 @@ class PlotData(ReadOutputData):
                    partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,chiFlg=False,tcMMflg=False,mnthFltFlg=False):
         ''' Plot Time Series of Total Column '''
         
-        print '\nPrinting Total Column Plots.....\n'
+        print ('\nPrinting Total Column Plots.....\n')
         
         #------------------------------------------
         # Get Profile and Summary information. Need
@@ -4077,7 +4087,7 @@ class PlotData(ReadOutputData):
             ax1.set_ylim([np.min(mnthlyVals['mnthlyAvg'])-0.1*np.min(mnthlyVals['mnthlyAvg']), np.max(mnthlyVals['mnthlyAvg'])+0.15*np.max(mnthlyVals['mnthlyAvg'])])
             ax1.set_ylabel('Monthly Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
             ax1.set_xlabel(xlabel)
-            ax1.set_title('Trend Analysis with Boot Strap Resampling\Monthly Averaged Retrievals',multialignment='center')
+            ax1.set_title('Trend Analysis with Boot Strap Resampling\nMonthly Averaged Retrievals',multialignment='center')
             ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)
             ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
             ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)  
@@ -4139,31 +4149,31 @@ class PlotData(ReadOutputData):
         # Plot time series of Monthly Averages
         #-------------------------------------
         try:
-			mnthVals = mnthlyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
-	
-			fig1,ax1 = plt.subplots()
-			ax1.plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'k.',markersize=4)
-			ax1.errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],yerr=mnthVals['std'],fmt='k.',markersize=4,ecolor='grey')
-			ax1.grid(True)
-			ax1.set_ylabel('Monthly Averaged Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-			ax1.set_xlabel(xlabel)
-			ax1.set_title('Monthly Averaged Time Series of Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-		
-			if yrsFlg:
-				#plt.xticks(rotation=45)
-				ax1.xaxis.set_major_locator(majorLc)
-				ax1.xaxis.set_minor_locator(minorLc)
-				ax1.xaxis.set_major_formatter(majorFmt) 
-				ax1.xaxis.set_tick_params(which='major',labelsize=8)
-				ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-			else:
-				ax1.xaxis.set_major_locator(majorLc)
-				ax1.xaxis.set_major_formatter(majorFmt)
-				#ax1.xaxis.set_minor_locator(minorLc)
+            mnthVals = mnthlyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
+    
+            fig1,ax1 = plt.subplots()
+            ax1.plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'k.',markersize=4)
+            ax1.errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],yerr=mnthVals['std'],fmt='k.',markersize=4,ecolor='grey')
+            ax1.grid(True)
+            ax1.set_ylabel('Monthly Averaged Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel(xlabel)
+            ax1.set_title('Monthly Averaged Time Series of Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+        
+            if yrsFlg:
+                #plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                #ax1.xaxis.set_minor_locator(minorLc)
 
-		
-			if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-			else:           plt.show(block=False)
+        
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)
         except: pass        
         
         #----------------------------------

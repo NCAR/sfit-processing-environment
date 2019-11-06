@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 ##! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
@@ -60,15 +60,17 @@ import csv
                                                      
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'There are two options to run NCEPnmcFormat.py:'
-    print '(1) NCEPnmcFormat.py -i <File>. In this case the input file needs to be modified accordingly.'
-    print '(2) NCEPnmcFormat.py -s tab/mlo/fl0 -y 2018'
+    print ('\nThere are two options to run NCEPnmcFormat.py:')
+    print ('(1) NCEPnmcFormat.py -i <File>. In this case the input file needs to be modified accordingly.')
+    print ('(2) NCEPnmcFormat.py -s tab/mlo/fl0 -y 2018')
+    print ('Note: Additional paths are hardcoded in NCEPnmcFormat.py\n')
+
 
         
 def ckDir(dirName):
     '''Check if a directory exists'''
     if not os.path.exists( dirName ):
-        print 'Directory %s does not exist' % (dirName)
+        print ('Directory %s does not exist' % (dirName))
         return False
     else:
         return True
@@ -76,7 +78,7 @@ def ckDir(dirName):
 def ckFile(fName,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exit:
             sys.exit()
         return False
@@ -133,10 +135,10 @@ def main(argv):
                                                 #---------------------------------#
     #------------------------------------------------------------------------------------------------------------#                                             
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:s:y:?:')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:s:y:?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
         
@@ -172,7 +174,7 @@ def main(argv):
         # Unhandled options
         #------------------
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             usage()
             sys.exit()
     #------------------------------------------------------------------------------------------------------------#                       
@@ -184,8 +186,17 @@ def main(argv):
     inputs = {}
 
     if inpFlg:
-        
-        execfile(inputFile, inputs)
+
+        try:
+            execfile(inputFile, inputs)
+
+        except IOError as errmsg:
+            print (errmsg)
+            sys.exit()
+
+        except:
+            exec(compile(open(inputFile, "rb").read(), inputFile, 'exec'), inputs)
+
         if '__builtins__' in inputs:
             del inputs['__builtins__']       
             
@@ -242,7 +253,7 @@ def main(argv):
         nmcHgtFiles = glob( inputs['dataDir'] + 'height' + '/' + str(curYear) + '/ht*.nmc')
         
         if len(nmcHgtFiles) == 0:
-            print 'No .nmc files found in: '+ inputs['dataDir'] + 'height' + '/' + str(curYear)
+            print ('No .nmc files found in: '+ inputs['dataDir'] + 'height' + '/' + str(curYear))
             sys.exit()
             
         nmcHgtData  = {}
@@ -353,7 +364,7 @@ def main(argv):
                 fopen.write('#   Height at 1000mb            m              19        -999         \n')
                 fopen.write('#---------------------------------------------------------------------\n')
     
-                for k,val in iter(sorted(nmcHgtData.iteritems())):
+                for k,val in iter(sorted(nmcHgtData.items())):
                     
                     YYYYMMDD = "{0:02d}".format(k.year)+"{0:02d}".format(k.month)+"{0:02d}".format(k.day) 
                     val.insert(0,YYYYMMDD)
@@ -387,7 +398,7 @@ def main(argv):
                 fopen.write('#   Temperature at 1000mb       C              19        -999         \n')
                 fopen.write('#---------------------------------------------------------------------\n')
     
-                for k,val in iter(sorted(nmcTempData.iteritems())):
+                for k,val in iter(sorted(nmcTempData.items())):
                     
                     YYYYMMDD = "{0:02d}".format(k.year)+"{0:02d}".format(k.month)+"{0:02d}".format(k.day) 
                     #---------------------------------------------------------------------------
