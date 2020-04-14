@@ -71,8 +71,8 @@
 #---------------
 # Import modules
 #---------------
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import getopt
 import dataOutClass as dc
 
@@ -103,6 +103,7 @@ except:
 def usage():
         print ('pltRet.py [-i <str> ] ')
         print ('-i <dir>     Data directory. Optional: default is current working directory')
+        print ('-f <str>     Run optional Flags: p = profiles only, s = fit only (and Jacobian), k = averaging kernel, b = read/plot bnr; Deafuls is plot all except bnr')
         print ('-S           Flag to save results in pltRet.pdf. Optional: default is False')
         sys.exit()
 
@@ -122,12 +123,17 @@ def main(argv):
         # Retrieve command line arguments
         #--------------------------------
         try:
-                opts, args = getopt.getopt(sys.argv[1:], 'i:S?')
+                opts, args = getopt.getopt(sys.argv[1:], 'i:f:S?')
 
         except getopt.GetoptError as err:
                 print (str(err))
                 usage()
                 sys.exit()
+
+        prfFlg  = True
+        spcFlg  = True
+        akFlg   = True
+        bnrFlg  = False
 
         #-----------------------------
         # Parse command line arguments
@@ -140,8 +146,30 @@ def main(argv):
                 elif opt == '-S':
 
                     saveFlg = True
-                    pltFile = 'pltRet.pdf'
 
+                elif opt == '-f':
+                    
+                    flgs = list(arg)
+                    
+                    for f in flgs:
+                        if   f.lower() == 'p': 
+                            prfFlg  = True
+                            spcFlg  = False
+                            akFlg   = False
+                        elif f.lower() == 's': 
+                            prfFlg  = False
+                            spcFlg  = True
+                            akFlg   = False
+
+                        elif f.lower() == 'k': 
+                            prfFlg  = False
+                            spcFlg  = False
+                            akFlg   = True
+
+                        elif f.lower() == 'b': 
+                            bnrFlg   = True
+            
+                        else: print ('{} not an option for -f ... ignored'.format(f))
 
                 elif opt == '-?':
                     usage()
@@ -165,27 +193,41 @@ def main(argv):
         # Initialize Plot Class
         #----------------------
         if saveFlg:
+            pltFile = 'pltRet.pdf'
             gas = dc.PlotData(wrkDir,ctlFile,saveFlg=saveFlg, outFname=wrkDir+pltFile)
         else:       
             gas = dc.PlotData(wrkDir,ctlFile)
-        
-        #--------------------------
-        # Call to plot spectral fit
-        #--------------------------
-        gas.pltSpectra()
+
 
         #----------------------
         # Call to plot profiles
         #----------------------
-        try:
-            gas.pltPrf(allGas=True,errFlg=True)
-        except:
-            gas.pltPrf(allGas=True)
+        if bnrFlg:
+            try:
+                gas.pltbnr()
+            except: print ('\n*************ERROR IN PLOTTING BNR****************\n') 
+
+        #--------------------------
+        # Call to plot spectral fit
+        #--------------------------
+        if spcFlg: gas.pltSpectra()
+
+        #----------------------
+        # Call to plot profiles
+        #----------------------
+        if prfFlg:
+            try:
+                gas.pltPrf(allGas=True,errFlg=True)
+            except:
+                gas.pltPrf(allGas=True)
         
         #-----------------
         # Call to plot AVK
         #-----------------
-        if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  gas.pltAvk()   
+        if akFlg:
+            if ('gas.profile.list' in gas.ctl) and gas.ctl['gas.profile.list']:  
+                try:gas.pltAvk()   
+                except: print ('\n*************ERROR IN AK****************\n')
 
         #-----------------------------
         # Print summary file to screen

@@ -6,10 +6,16 @@
 # Purpose:
 #       plot results from a set of HDF files.
 #       Standars plot include profiles, errors, AKs, and time series
-
+#
+# Notes:
+#        1) Options include:
+#            -i <input>     : input file
+#
+#        2) Tested with python 2.7    
+#        3) to be tested with python 3 
+#
 # Version History:
 #       Created, July, 2018  Ivan Ortega (iortega@ucar.edu)
-#
 #
 #---------------------------------------------------------------------------------------- 
 
@@ -18,6 +24,7 @@
 #---------------
 import sys
 import os
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "HDFread")))
 import getopt
 import HDFClassRead as dc
 import time
@@ -26,7 +33,7 @@ import time
 def usage():
     ''' Prints to screen standard program usage'''
     print ('pltHDF.py -i <inputfile> -?')
-    print ('  -i <file> : Run pltSet.py with specified input file')
+    print ('  -i <file> : Run pltHDF.py with specified input file')
     print ('  -?        : Show all flags')
 
 def ckDir(dirName,logFlg=False,exit=False):
@@ -73,11 +80,14 @@ def main(argv):
 
             ckFile(arg,exit=True)
 
+
             try:
                 execfile(arg, pltInputs)
             except IOError as errmsg:
                 print (errmsg + ' : ' + arg)
                 sys.exit()
+            except:
+                exec(compile(open(arg, "rb").read(), arg, 'exec'), pltInputs)
 
             if '__builtins__' in pltInputs:
                 del pltInputs['__builtins__']               
@@ -97,7 +107,8 @@ def main(argv):
     # Check for the existance of files 
     # directories from input file
     #---------------------------------
-    ckDir(pltInputs['dataDir'], exit=True)
+    #ckDir(pltInputs['dataDir'], exit=True)
+    for d in pltInputs['dataDir']: ckDir(d, exit=True)
    
     if pltInputs['saveFlg']:  ckDir(os.path.dirname(os.path.realpath(pltInputs['pltFile'])),exit=True)
 

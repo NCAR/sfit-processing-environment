@@ -1,0 +1,10 @@
+recursive-exclude *.pyc 
+recursive-exclude Plotting pltHKDynamic.py plthkGUI.py
+recursive-exclude SpectralDatabase delSpcdel.py mvSpecDB.py CoadSpecDBInputFileflt.py mkCoadSpecDBflt.py  dubSpecDB.py mksnglSpecDB.py
+recursive-exclude RefProfiles NCEPtrpHgt.py Diurnal_T_Q.py NCEPthetaPrf.py WACCMprfMean.py WACCMprfMonthlyMean.py WACCMptwMonthly.py *.xlsx
+recursive-exclude ModLib Layer1Mods_B2.py Layer1Mods_old.py sfitClasses_B2.py
+include README.md
+include Layer1/sbDefaults.ctl
+include Layer1/sb.ctl
+include license.txt
+include OT-FTS_Spectral_Processing.pdf

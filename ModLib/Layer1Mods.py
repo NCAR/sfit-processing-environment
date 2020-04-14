@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #----------------------------------------------------------------------------------------
 # Name:
 #        Layer1Mods.py
@@ -12,16 +13,18 @@
 #
 #
 # External Subprocess Calls:
-#   1) Call to sfitClasses to run subProcRun. This handles stdout and stderr of a sub-process call      
+#	1) Call to sfitClasses to run subProcRun. This handles stdout and stderr of a sub-process call		
 #
 #
 # Notes:
 #       1)
-#           
+#			
 #
 #
 # Version History:
 #       Created, June, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
+#       Modified/Edited, 2019  Bavo Langerock (bavo.langerock@aeronomie.be )
+#       Modified/Edited, 2020  Ivan Ortega (iortega@ucar.edu)
 #
 #
 # License:
@@ -57,163 +60,70 @@ import shutil
 import re
 from sfitClasses  import ExitError
 from numpy        import diag, inf
-from numpy        import copy, dot
-from numpy.linalg import norm
+from numpy        import copy, dot, interp
+from numpy.linalg import norm, cholesky
 import sfitClasses       as sc
 import numpy             as np
 import itertools         as it
 import printStatmnts     as ps
 import datetime          as dt
+import h5py
+import fnmatch
 
-from scipy import interpolate
 
-import matplotlib.pyplot as plt
 
+
+class DictWithDefaults(dict):
+  """dict class with modified getitem to match items to a default"""
+  def __init__(self,arg={},defaults={}):
+    self.default=defaults.copy()
+    dict.__init__(self,arg)
+  
+  def __getitem__(self,key):
+    
+    #if dict.has_key(self,key): return dict.__getitem__(self,key)
+    if key in dict(self) : return dict.__getitem__(self, key)
+   
+    else: 
+      matches=sorted([k for k in self.default if fnmatch.fnmatch(key,k)],key=lambda x: x==key)[::-1]
+      if len(matches): 
+        #print ('%s->%s'%(key,matches));
+        return self.default[matches[0]]
+      else: raise KeyError(key)
+
+  def __contains__(self,key):
+    #if dict.has_key(self,key): return dict.__contains__(self,key)
+    if key in dict(self) : return dict.__contains__(self, key)
+   
+    else: 
+      matches=sorted([k for k in self.default if fnmatch.fnmatch(key,k)],key=lambda x: x==key)[::-1]
+      if len(matches): 
+        #print ('%s->%s'%(key,matches));
+        return True
+      else: False
+  
+  
 
                                 #--------------------------#
                                 #                          #
                                 #  -- Helper functions --  #
                                 #                          #
                                 #--------------------------#
-def tryopen(fname,logFile=False):
-    try:
+def tryopen(fname,hdfkey='',logFile=False):
+    """reads data from an ascii file or an hdf5 file (if hdfkey is set)"""
+    if not hdfkey: #ASCII 
+      try:
         with open(fname, 'r' ) as fopen:
             return fopen.readlines()
-    except IOError as errmsg:
-        print (errmsg)
-        if logFile: logFile.error(errmsg)
-        return False
-
-
-class ExceededMaxIterationsError(Exception):
-    def __init__(self, msg, matrix=[], iteration=[], ds=[]):
-        self.msg = msg
-        self.matrix = matrix
-        self.iteration = iteration
-        self.ds = ds
-
-    def __str__(self):
-        return repr(self.msg)
-
-
-def nearcorr(A, tol=[], flag=0, max_iterations=100, n_pos_eig=0,
-             weights=None, verbose=False,
-             except_on_too_many_iterations=True):
-    """
-    X = nearcorr(A, tol=[], flag=0, max_iterations=100, n_pos_eig=0,
-        weights=None, print=0)
-
-    Finds the nearest correlation matrix to the symmetric matrix A.
-
-    ARGUMENTS
-    ~~~~~~~~~
-    A is a symmetric numpy array or a ExceededMaxIterationsError object
-
-    tol is a convergence tolerance, which defaults to 16*EPS.
-    If using flag == 1, tol must be a size 2 tuple, with first component
-    the convergence tolerance and second component a tolerance
-    for defining "sufficiently positive" eigenvalues.
-
-    flag = 0: solve using full eigendecomposition (EIG).
-    flag = 1: treat as "highly non-positive definite A" and solve
-    using partial eigendecomposition (EIGS). CURRENTLY NOT IMPLEMENTED
-
-    max_iterations is the maximum number of iterations (default 100,
-    but may need to be increased).
-
-    n_pos_eig (optional) is the known number of positive eigenvalues
-    of A. CURRENTLY NOT IMPLEMENTED
-
-    weights is an optional vector defining a diagonal weight matrix diag(W).
-
-    verbose = True for display of intermediate output.
-    CURRENTLY NOT IMPLEMENTED
-
-    except_on_too_many_iterations = True to raise an exeption when
-    number of iterations exceeds max_iterations
-    except_on_too_many_iterations = False to silently return the best result
-    found after max_iterations number of iterations
-
-    ABOUT
-    ~~~~~~
-    This is a Python port by Michael Croucher, November 2014
-    Thanks to Vedran Sego for many useful comments and suggestions.
-
-    Original MATLAB code by N. J. Higham, 13/6/01, updated 30/1/13.
-    Reference:  N. J. Higham, Computing the nearest correlation
-    matrix---A problem from finance. IMA J. Numer. Anal.,
-    22(3):329-343, 2002.
-    """
-
-    # If input is an ExceededMaxIterationsError object this
-    # is a restart computation
-    if (isinstance(A, ExceededMaxIterationsError)):
-        ds = copy(A.ds)
-        A = copy(A.matrix)
-    else:
-        ds = np.zeros(np.shape(A))
-
-    eps = np.spacing(1)
-    if not np.all((np.transpose(A) == A)):
-        raise ValueError('Input Matrix is not symmetric')
-    if not tol:
-        tol = eps * np.shape(A)[0] * np.array([1, 1])
-    if weights is None:
-        weights = np.ones(np.shape(A)[0])
-    X = copy(A)
-    Y = copy(A)
-    rel_diffY = inf
-    rel_diffX = inf
-    rel_diffXY = inf
-
-    Whalf = np.sqrt(np.outer(weights, weights))
-
-    iteration = 0
-    while max(rel_diffX, rel_diffY, rel_diffXY) > tol[0]:
-        iteration += 1
-        if iteration > max_iterations:
-            if except_on_too_many_iterations:
-                if max_iterations == 1:
-                    message = "No solution found in "\
-                              + str(max_iterations) + " iteration"
-                else:
-                    message = "No solution found in "\
-                              + str(max_iterations) + " iterations"
-                raise ExceededMaxIterationsError(message, X, iteration, ds)
-            else:
-                # exceptOnTooManyIterations is false so just silently
-                # return the result even though it has not converged
-                return X
-
-        Xold = copy(X)
-        R = X - ds
-        R_wtd = Whalf*R
-        if flag == 0:
-            X = proj_spd(R_wtd)
-        elif flag == 1:
-            raise NotImplementedError("Setting 'flag' to 1 is currently\
-                                 not implemented.")
-        X = X / Whalf
-        ds = X - R
-        Yold = copy(Y)
-        Y = copy(X)
-        np.fill_diagonal(Y, 1)
-        normY = norm(Y, 'fro')
-        rel_diffX = norm(X - Xold, 'fro') / norm(X, 'fro')
-        rel_diffY = norm(Y - Yold, 'fro') / normY
-        rel_diffXY = norm(Y - X, 'fro') / normY
-
-        X = copy(Y)
-
-    return X
-
-
-def proj_spd(A):
-    # NOTE: the input matrix is assumed to be symmetric
-    d, v = np.linalg.eigh(A)
-    A = (v * np.maximum(d, 0)).dot(v.T)
-    A = (A + A.T) / 2
-    return(A)
+      except IOError as errmsg: pass
+    else:          #HDF5
+      try: 
+        with h5py.File(fname,'r') as fopen:
+            return fopen[hdfkey][...].astype(dtype=float)
+      except (IOError,KeyError) as errmsg: pass
+    #if errmsg: print (errmsg)
+    if logFile: logFile.error(errmsg)
+    return False
 
 
 
@@ -224,7 +134,7 @@ def proj_spd(A):
                                 #-------------------------#
 
 
-def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind, logFile=False):
+def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind, logFile=False, isoFlg=False):
     ''' Reference maker for NCAR. Insert your own version here. '''
     #----------------------------------------------
     # refMkrNCAR level options for creating 
@@ -482,157 +392,7 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
     with open( refFile, 'w' ) as fout:
         for line in lines:
             fout.write(line)
-    
-    #-------------------------#
-    #Auto-Update isotope Prf in the isotope.input --> Initially created and tested for HDO at MLO
-    #-------------------------#
-    #isotopePrep(refFile)
-    
-
-    return True
-
-                        #-------------------------#
-                        #                         #
-                        #    -- isotopePrep --     #
-                        #                         #
-                        #-------------------------#    
-
-def isotopePrep(refFile):
-
-    print ('*****************************************************\n'
-                          'Running isotopePrep\n'
-           '*****************************************************')
-
-    parms   = ['ALTITUDE', 'H2O']
-    refPrf  = {}
-
-    with open(refFile,'r') as fopen: lines = fopen.readlines()
-
-    gasDir = refFile.strip().split('/')[4]
-
-
-    #----------------------------------------
-    # Get Altitude, Pressure, and Temperature
-    # from reference.prf file
-    #----------------------------------------
-    nlyrs  = int(lines[0].strip().split()[1])
-    nlines = int(np.ceil(nlyrs/5.0))
         
-    for ind,line in enumerate(lines):
-        if any(p in line.strip().split() for p in parms):
-            val = [x for x in parms if x in line][0]
-            refPrf.setdefault(val,[]).append([float(x[:-1]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
-
-    for p in parms:
-        refPrf[p] = np.asarray(refPrf[p])
-
-    #--------------------------------------
-    # Un-nest numpy arrays in parm dictionary
-    #--------------------------------------
-    for k in parms: refPrf[k] = refPrf[k][0]   
-
-    #--------------
-    # Read dD - Matthias
-    #--------------
-    dDFile='/data1/ebaumer/mlo/hdo/dD_CRprior_ext.txt'
-
-    with open(dDFile, 'r' ) as fopen:
-        lines = fopen.readlines()
-
-    altdD     = np.array([[float(x) for x in row.split()[0:1]] for row in lines[1:]])
-    dDPrf     = np.array([[float(x) for x in row.split()[1:2]] for row in lines[1:]])
-
-    dDPrf = np.flipud(dDPrf.flatten())
-    altdD = np.flipud(altdD.flatten())
-
-    #--------------
-    # Read H2O - Matthias
-    #--------------
-    wpFile='/data1/ebaumer/mlo/hdo/H2O_CRprior_ext.txt'
-
-    with open(wpFile, 'r' ) as fopen:
-        lines = fopen.readlines()
-
-    altwp     = np.array([[float(x) for x in row.split()[0:1]] for row in lines[1:]])
-    wpPrf      = np.array([[float(x) for x in row.split()[1:2]] for row in lines[1:]])
-   
-    wpPrf = np.flipud(wpPrf.flatten())
-    altwp = np.flipud(altwp.flatten())
-
-    #--------------------------------------
-    # Interpolate dDPrf to Ref Prf Altitude
-    #--------------------------------------
-
-    dDPrfInt  = interpolate.interp1d(altdD, dDPrf, bounds_error=False, fill_value=(dDPrf[-1], dDPrf[0]))(refPrf[parms[0]])
-    wpPrfInt  = interpolate.interp1d(altwp, wpPrf, bounds_error=False, fill_value=(dDPrf[-1], dDPrf[0]))(refPrf[parms[0]])*1e-6
-
-    #--------------------------------------
-    # Calculate HDO Prf
-    #--------------------------------------
-    hdoPrf_1 = (3.1152e-4)*(wpPrfInt)*( (dDPrfInt/1000.0) + 1)
-    hdoPrf_1 = hdoPrf_1/3.107e-4
-
-    hdoPrf_2 = (3.1152e-4)*(refPrf[parms[1]])*( (dDPrfInt/1000.0) + 1)
-    hdoPrf_2 = hdoPrf_2/3.107e-4
-
-    
-    isoFile = '/data1/ebaumer/mlo/hdo/x.hdo/isotope.input2'
-
-    with open(isoFile, 'r+' ) as fout:
-        lines    = fout.readlines()
-        
-        nisot    = int(lines[0].split()[0])
-        nlyrs    = int(lines[0].split()[1])
-        nlines   = int(np.ceil(nlyrs/5.0))
-
-        for linenum,line in enumerate(lines):
-            if (linenum >= 6) & (linenum < 6 + nlyrs):
-                nlnum        = linenum + nlyrs
-                #oldPrf       = lines[linenum:nlnum]
-                #oldPrf       = np.asarray(oldPrf, dtype=float)
-
-                lines[linenum] = str('{0:.4e}'.format(hdoPrf_2[linenum - 6]))+'\n'       
-
-
-    with open('/data1/ebaumer/mlo/'+gasDir+'/x.'+gasDir+'/isotope.input3', 'w' ) as fout:
-        for line in lines:
-            fout.write(line)
-
-    #---------------------------------
-    #Error plots of dD - FTIR
-    #---------------------------------
-    # fig, ax1 = plt.subplots(1, 2, figsize=(10,7), sharey=True)
-
-    # ax1[0].plot(refPrf[parms[1]]*1e6, refPrf[parms[0]], linewidth=2.0, color='b', label= 'H20 (ERA-I)')
-    # ax1[0].plot(hdoPrf_2*1e6, refPrf[parms[0]], linewidth=2.0, color='r', label= 'HDO (scaled)')
-
-    # ax1[0].plot(wpPrfInt*1e6, refPrf[parms[0]], linewidth=2.0, linestyle='--' ,color='b', label='H2O (CRprior)')
-    # ax1[0].plot(hdoPrf_1*1e6, refPrf[parms[0]], linewidth=2.0, linestyle='--', color='r', label='HDO (CRprior)')
-    
-    # ax1[1].plot(refPrf[parms[1]]*1e6, refPrf[parms[0]], linewidth=2.0, color='b')
-    # ax1[1].plot(hdoPrf_2*1e6, refPrf[parms[0]], linewidth=2.0, color='r')
-
-    # ax1[1].plot(wpPrfInt*1e6, refPrf[parms[0]], linewidth=2.0, linestyle='--' ,color='b')
-    # ax1[1].plot(hdoPrf_1*1e6, refPrf[parms[0]], linewidth=2.0, linestyle='--', color='r')
-
-    # ax1[0].legend(prop={'size':11}, loc=1)
-
-    # ax1[0].set_ylabel('Altitude [km]', fontsize=14)           
-    # ax1[0].grid(True,which='both')
-    # ax1[0].set_ylim(3, 20)
-    # ax1[0].set_xlim(xmin=0)
-    # ax1[0].tick_params(which='both',labelsize=14)
-    # ax1[0].set_xlabel('VMR [ppm]', fontsize=14)   
-
-    # ax1[1].grid(True,which='both')
-    # ax1[1].tick_params(which='both',labelsize=14)
-    # ax1[1].set_xscale('log')
-    # ax1[1].set_xlabel('VMR [ppm]', fontsize=14)  
-         
-    # plt.show(block=False)
-
-    #user_input = raw_input('Press any key to exit >>> ')
-    #exit()
 
     return True
 
@@ -727,75 +487,132 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
                             #  -- Error Analysis --   #
                             #                         #
                             #-------------------------#    
-def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=False):
+def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=False):
     """
     Calculates systematic and random uncertainty covariance matrix 
     using output from sfit4 and sb values from ctl file
     Return: (val1,val2,val3) where:
          val1 is boolean 
     """
+    def getSFITversion(wrkingDir):
+      """retrieves the version of sfit4 as a 4tuple from the output file"""
+      with open(wrkingDir+'sfit4.dtl','r') as fid: header=fid.readline().strip()
+      # first integer found is SFIT 4: ('SFIT4:V')
+      return tuple(map(int,re.sub('\D','',header)[1:5]))
+    version=getSFITversion(wrkingDir)
+    
+    print ('SFIT4 Version=%s'%(version,))
 
-    def matPosDefTest(mat,findNCMflg=False):
+    #----------------------------------
+    # Sb labels
+    #----------------------------------
+    Kb_labels = {}
+
+    if sbctldefaults:
+
+        try: 
+
+            for i in range(0, len(sbctldefaults.inputs['kb_info']), 4):
+                Kb_labels[sbctldefaults.inputs['kb_info'][i]] = sbctldefaults.inputs['kb_info'][i+1]
+
+        except KeyError as e:
+            print ('KeyError: {} in {}'.format(e, sbctldefaults))
+            exit()
+
+    else:
+
+        try:
+            for i in range(0, len(SbctlFileVars.inputs['kb_info']), 4):
+                Kb_labels[SbctlFileVars.inputs['kb_info'][i]] = SbctlFileVars.inputs['kb_info'][i+1]
+
+        except KeyError as e:
+
+            print ('Warning: KeyError {} is not in sb ctl file.... using defaults.'.format(e))
+            Kb_labels = {'temperature': 'TEMPERAT', 'solshft': 'SolLnShft', 'solstrnth': 'SolLnStrn', 'phase': 'SPhsErr', 'wshift': 'IWNumShft', 
+            'dwshift': 'DWNumShft', 'sza': 'SZA', 'lineInt': 'LineInt', 'lineTAir': 'LineTAir', 'linePAir': 'LinePAir', 'slope': 'BckGrdSlp', 
+            'curvature': 'BckGrdCur', 'apod_fcn': 'EmpApdFcn', 'phase_fcn': 'EmpPhsFnc', 'omega': 'FOV', 'max_opd': 'OPD', 'zshift': 'ZeroLev', 
+            'beamamp': 'PEAK_AMP', 'beamperiod': 'CHAN_SEP', 'beamphase': 'ZERO_PH_REF', 'beamslope': 'DELTA_PEAK_AMP'}
+
+    #----------------------------------
+    # Adapt label definitions according to version
+    #----------------------------------
+    if version>=(0,9,6,2): Kb_labels['phase_fcn']='EmpPhsFcn'
+    if version>(0,9,5,0): 
+      for label in ('dwshift','maxopd'): #only these 2?? TODO
+        if label in Kb_labels: del Kb_labels[label]
+    
+
+    
+     
+    def matPosDefTest(mat):
         ''' Test if matrix is positive definite'''
         
         #----------------------------------
         # First test if matrix is symmetric
         #----------------------------------
-        symRslt = np.allclose(mat.transpose(),mat)
+        symRslt = np.all(mat.T==mat)
 
         #-------------------------------
-        # Then test if eignvales are > 0
+        # Then test if negative eignvalues are close to zero
         #-------------------------------
-        eignRslt = np.all(np.linalg.eigvals(mat) > 0)
+        l=np.linalg.eigvals(mat)
+        #print l[l<0],max(abs(l)),l[l<0]/max(abs(l)),mat.dtype,mat.shape
+        eignRslt = np.allclose(0,l[l<0]/max(abs(l)),atol=1.e-6)#,rtol=1e-5/max(abs(l)))
         
-        #-------------------------------------------------
-        # If matrix is symmetric but not positive definite
-        # we can find the nearest covariance matrix using
-        # the method of (Higham, 2002). Not implenmented yet!!!!!!!!
-        #-------------------------------------------------
-        #if all([symRslt,not eignRslt,findNCMflg]):
-            #try:
-                #rtnMat = nearcorr(mat)
-            #except ExceededMaxIterationsError as e:
-                #rtnMat = (symRslt,eignRslt,False)
-                
-            #return (symRslt,eignRslt,rtnMat)
-        
-        #----------------------------------------------------------
-        # If matrix is symmetric and positive definite, return true
-        #----------------------------------------------------------
-        #elif all([symRslt,eignRslt]): return (True,True,False)
-        
-    
-        #else: return (symRslt,eignRslt,False)
-
         return(symRslt,eignRslt)
         
-
-    def calcCoVar(coVar,A,retPrfVMR,airMass):
-        ''' Calculate covariance matricies in various units'''
-
-        Sm   = np.dot(  np.dot( A, coVar ), A.T )                                # Uncertainty covariance matrix [Fractional]
-        Sm_1 = np.dot(  np.dot( np.diag(retPrfVMR), Sm ), np.diag(retPrfVMR) )   # Uncertainty covariance matrix [(VMR)^2]
-        Sm_2 = np.dot(  np.dot( np.diag(airMass), Sm_1 ), np.diag(airMass)   )   # Uncertainty covariance matrix [(molecules cm^-2)^2]
-        densPrf = retPrfVMR * airMass
-        Sm_3 = np.sqrt( np.dot( np.dot( densPrf, Sm ), densPrf.T )     )         # Whole column uncertainty [molecules cm^-2]
-        ##Sm_3 = np.sqrt( np.sum( np.diagonal( Sm_2 ) ) )                          # Whole column uncertainty [molecules cm^-2]
+    def _diagtransform(d,diagA):
+        """ Small function that transforms a decomposed covariance matrix S=dd^T with a diagonal transformation A=diag(diagA) """
+        sdT=(diagA*(d.T)) #compute (A*d).T using numpy broadcasting 
+        sd=sdT.T          #compute (A*d)
+        return sd.dot(sdT)#return Add^tA^T
         
+    def calcCoVar(coVar,A,retPrfVMR,airMass):
+        ''' Calculate covariance matricies in various units, A transfrom coVar units to sfit relative units
+        
+        covar=covariance matrix to transform
+        A=transformation
+        retPrfVMR=scaling factor to apply on target vectors of A
+        airMass=pc air, to transform between VMR and PC'''
+        #print coVar.shape,
+        if coVar.shape == 1:
+            print ("When does this happen????? shape= %s"%(covar.shape,)) #avoid the dot product in this case... TODO
+            Sm   = np.dot(  np.dot( A, coVar ), A.T )                            # Uncertainty covariance matrix [Fractional]
+        elif len(coVar.shape)==1: #input is the diagonal for a diagonal covar matrix (e.g. noise)
+            #print "diagonal input for calccovar"
+            AD=(np.sqrt(coVar)*A)
+            #Sm=(coVar*A).dot(A.T) #=A.dot(diag(coVar)).dot(A.T)
+        else:
+            l,d=np.linalg.eigh(coVar)
+            sqrtL=np.sqrt(np.ma.masked_array(l,l<0).filled(0))             #correct for negative eigenvalues and take the sqrt
+            D=sqrtL*d                                                      #use numpy broadcasting to calculate d.dot(diag(sqrtL))
+            AD=A.dot(D);ADT=AD.T                            #avoid doing the same computation multiple times
+            #Sm   = AD.dot(ADT)
+        Sm_1 = _diagtransform(AD,retPrfVMR)          #in vmr units
+        Sm_2 = _diagtransform(AD,retPrfVMR*airMass)  #in pc units
+        Sm_3 = np.sqrt(Sm_2.sum())                   #std on tc  
+        #print Sm_3/(retPrfVMR*airMass).sum()*100
+        #Sm_1_old= np.dot(  np.dot( np.diag(retPrfVMR), Sm ), np.diag(retPrfVMR) )   # Uncertainty covariance matrix [(VMR)^2]
+        #Sm_2_old = np.dot(  np.dot( np.diag(airMass), Sm_1 ), np.diag(airMass)   )   # Uncertainty covariance matrix [(molecules cm^-2)^2]
+        #densPrf = retPrfVMR * airMass
+        #Sm_3_old = np.sqrt( np.dot( np.dot( densPrf, Sm ), densPrf.T )     )         # Whole column uncertainty [molecules cm^-2]
+        #print 'check',np.allclose(Sm_1,Sm_1_old),np.allclose(Sm_2,Sm_2_old),np.allclose(Sm_3,Sm_3_old)
+        #Sm_3 = np.sqrt( np.sum( np.diagonal( Sm_2 ) ) )                          # Whole column uncertainty [molecules cm^-2]
+
         return (Sm_1, Sm_2, Sm_3)     # (Variance, Variance, STD)
 
     def writeCoVar(fname,header,var,ind):
         ''' Write covariance matricies to files'''
         with open(fname, 'w') as fout:
             fout.write('# ' + header + '\n'                                       )
-            fout.write('# nmatr  = {}\n'.format(len(var)                         ))
-            fout.write('# nrows  = {}\n'.format(var[list(var.keys())[0]][0].shape[0]   ))
-            fout.write('# ncols  = {}\n\n'.format(var[list(var.keys())[0]][0].shape[1] )) 
+            fout.write('# nmatr  = {0}\n'.format(len(var)                         ))
+            fout.write('# nrows  = {0}\n'.format(var[list(var.keys())[0]][0].shape[0]   ))
+            fout.write('# ncols  = {0}\n\n'.format(var[list(var.keys())[0]][0].shape[1] )) 
             for k in var:
-                fout.write('{}\n'.format(k))
+                fout.write('{0}\n'.format(k))
 
                 for row in var[k][ind]:
-                    strformat = ' '.join('{:>12.4E}' for i in row) + ' \n'
+                    strformat = ' '.join('{%d:>12.4E}'%i for i in range(len(row))) + ' \n'
                     fout.write( strformat.format(*row) )
 
                 fout.write('\n\n')    
@@ -807,35 +624,60 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
            file variable names to what is used in ctl file. Kb_labels are the 
            parameter names as they appear in the ctl file'''
 
+        Kb_rev=dict(map(lambda x: x[::-1],Kb_labels.items()))
         #----------------------------------
         # Split parameter name if necessary
         #----------------------------------
-        if len(paramName.split('_')) == 2: paramName,gas = paramName.split('_')
+        
+        if len(paramName.split('_')) >=2: paramName,gas = paramName.split('_')[:2];#print paramName
 
         #--------------------------------------------------------
         # List of parameters as they appear in the Kb.output file 
         #--------------------------------------------------------
-        Kb_labels_orig = ['TEMPERAT','SolLnShft','SolLnStrn','SPhsErr','IWNumShft','DWNumShft','SZA','LineInt','LineTAir','LinePAir','BckGrdSlp','BckGrdCur','EmpApdFcn','EmpPhsFnc','FOV','OPD','ZeroLev']
+        #Kb_labels_orig = ['TEMPERAT','SolLnShft','SolLnStrn','SPhsErr','IWNumShft','DWNumShft','SZA','LineInt','LineTAir','LinePAir','BckGrdSlp','BckGrdCur','EmpApdFcn','EmpPhsFnc','FOV','OPD','ZeroLev']
 
         #------------------------------------------------------
         # Find index of input paramName. If this is not matched
         # then program returns original paramName. This is for
         # kb.profile.gases
         #------------------------------------------------------
-        try:               ind = Kb_labels_orig.index(paramName)
-        except ValueError: return paramName
+        if paramName not in Kb_rev: return paramName
 
-        if 'gas' in locals(): rtrnVal = Kb_labels[ind] + '_' + gas
-        else:                 rtrnVal = Kb_labels[ind]
-
+        if 'gas' in locals(): rtrnVal = Kb_rev[paramName] + '_' + gas
+        else:                 rtrnVal = Kb_rev[paramName]
         return rtrnVal
 
+    def readCovarFile(params,Errtype):
+        """Reads the matrixes from file objects for the parameters in the params list, which is determined from the e.g. file.in.random key in the ctl file"""
+        sbCovar = {}
+        ## p can be in ['temperature', 'solshft','solstrnth','phase','wshift','dwshift','sza','lineInt','lineTAir','linePAir','slope','curvature','apod_fcn','phase_fcn','omega','max_opd','zshift']
+        for p in params: ## Check
+            #----------------------------------------
+            # Read in Sb matrix for parameter is list
+            #----------------------------------------
+            #print 'loading file.in.'+p+'.'+Errtype
+            lines = tryopen(SbctlFileVars.inputs['file.in.'+p.lower()+'.'+Errtype][0], hdfkey=p.replace('temperature','T')+'/'+Errtype,logFile=logFile)
+            if isinstance(lines,bool):
+                print ('file.in.'+p+'.'+Errtype+' missing for observation, directory: ' + wrkingDir)
+                if logFile: logFile.error('file.in.'+p+'.'+Errtype+' missing for observation, directory: ' + wrkingDir)
+                return False    # Critical file, if missing terminate program
+            sbCovar[p] = np.array( [ [ float(x) for x in row.split()] for row in lines ] ) if isinstance(lines,list) else lines
+            #-----------------------------------------------------
+            # Test if Sb matrix is symmetric and positive definite
+            #-----------------------------------------------------
+            (symRtn,pdRtn) = matPosDefTest(sbCovar[p])
+            if not symRtn: print ("Warning!! The Sb matrix for "+p+" is not symmetric\n\n")
+            if not pdRtn:  print ("Warning!! The Sb matrix for "+p+" is not positive definite\n\n")
+            if not symRtn or not pdRtn: return False
+        return sbCovar
 
+
+    
+ 
     #----------------------------------------------
     # List of parameters as they appear in ctl file 
     #----------------------------------------------   
-    Kb_labels = ['temperature', 'solshft','solstrnth','phase','wshift','dwshift','sza','lineInt','lineTAir','linePAir','slope','curvature','apod_fcn','phase_fcn','omega','max_opd','zshift'] 
-
+    #Kb_labels = ['temperature', 'solshft','solstrnth','phase','wshift','dwshift','sza','lineInt','lineTAir','linePAir','slope','curvature','apod_fcn','phase_fcn','omega','max_opd','zshift'] 
     #------------------------------------------------------
     # Determine number of microwindows and retrieved gasses
     #------------------------------------------------------
@@ -869,7 +711,53 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     sumVars.readPbp(ctlFileVars.inputs['file.out.pbpfile'][0])                                 # Read pbpfile (to get sza)
     sumVars.readPrf(ctlFileVars.inputs['file.out.retprofiles'][0], primgas)                    # Read retreived profile file
     sumVars.readPrf(ctlFileVars.inputs['file.out.aprprofiles'][0], primgas, retapFlg=0)        # Read a priori profile file
-    
+
+
+
+
+    #----------------------------------
+    # Insert retrieval grid in sbctldefaults and substitute default values for SbctlFileVars
+    #----------------------------------
+    z=sumVars.aprfs['Z']
+
+    def _expandgridsinputs(d):
+      """dummy function to replace coarse uncertainty input grid in a dict d to the retrieval grid z"""
+      gridvars=filter(lambda k: fnmatch.fnmatch(k,'sb.*.grid'),d.keys())
+
+
+      for gk in list(gridvars):
+        grid=d[gk]
+        for ErrType in ('random','systematic'):
+          defk=gk.replace('grid',ErrType)
+          d[defk]=interp(z,*zip(*sorted(zip(grid,d[defk]),key=lambda x: x[0])))
+        del d[gk]
+      return
+
+    if sbctldefaults:
+        print ('sb defaults: found!!')
+
+        _expandgridsinputs(sbctldefaults.inputs)
+
+        SbDict  = sbctldefaults.inputs
+
+
+        keys = list(SbctlFileVars.inputs.keys())
+
+        for item in keys: 
+ 
+            SbDict[item] = SbctlFileVars.inputs[item]     
+        
+    else:
+
+        _expandgridsinputs(SbctlFileVars.inputs)
+
+        SbDict  = SbctlFileVars.inputs
+        #SbDict = DictWithDefaults(SbctlFileVars.inputs, defaults=SbctlFileVars.inputs)
+
+    _expandgridsinputs(SbDict) #in the case the user also uses coarse grids...
+
+    SbDict     = dict(SbDict)
+
     #------------------------------------------------------------------------------
     # Read in output files from sfit4 run
     #  -- k.output to calculate averaging kernel
@@ -879,8 +767,28 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     #  -- kb.output for non-retrieved parameter error calculation
     #  -- rprfs.table and aprfs.table for the airmass, apriori and retrieved profiles 
     #------------------------------------------------------------------------------    
+    # Read in K matrix
+    #------------------
+    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.k_matrix'][0], logFile) 
+    if not lines: 
+        print ('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
+        if logFile: logFile.error('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
+        return False # Critical file, if missing terminate program  
+
+    
+   
+    K_param = lines[2].strip().split()
+
+    n_wav   = int( lines[1].strip().split()[0] )
+    x_start = int( lines[1].strip().split()[2] )
+    n_layer = int( lines[1].strip().split()[3] )
+    x_stop  = x_start + n_layer
+    K = np.array([[float(x) for x in row.split()] for row in lines[3:]])
+
+    #------------------   
     # Read in Sa matrix
     #------------------
+    
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.sa_matrix'][0], logFile)
     if not lines: 
         print ('file.out.sa_matrix missing for observation, directory: ' + wrkingDir)
@@ -888,6 +796,44 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
         return False    # Critical file, if missing terminate program    
 
     sa = np.array( [ [ float(x) for x in row.split()] for row in lines[3:] ] )
+
+    sa_syst=np.zeros(sa.shape)   #create an empty analogue of the sa matrix for systematic contributions
+
+
+    for gas in ctlFileVars.inputs['gas.profile.list']:
+
+        sbinputforsa=False
+
+        if ctlFileVars.inputs['gas.profile.%s.correlation'%gas.lower()][0]=='T' and ctlFileVars.inputs['gas.profile.%s.correlation.type'%gas.lower()][0]==5: 
+            sbinputforsa=True
+
+            print ('   detected sainv regularization file input for %s'%gas)
+
+        sbkey ='sb.%s.%s'%('profile.%s'%gas.lower() if gas.lower()!='temperature' else 'temperature','random')
+ 
+        if gas=='TEMPERATURE': print ('WARNING !! Temperature Sb substitution in regul matrix sa is not yet implemented for type 5 sainv input');continue
+ 
+        if sbkey not in SbDict and sbinputforsa: print ('Error !! The sb.ctl file must contain information on random profile uncertainty for %s'%gas);raise ValueError('Missing input in sb.ctl for profile uncertainty for %s'%gas)
+ 
+        if sbkey in SbDict: #prefer the sb information above the sa matrix...
+            #if gas in ('CH4','HDO'): continue #for debugging .... 
+            #else: print gas
+            sa_idx=np.where(np.array(K_param)==gas)[0]
+            #get the Sb for this gas
+            sbcorkey=sbkey.replace('.random','.correlation.width')
+            #only take correlation into account if random and if it is a profile (gas or temperature) in KB!!
+            Sb=createCovar(SbDict[sbkey],**(dict(sbcorkey=sbcorkey,z=z,Sbctldict=SbDict))) #if temperature...need to check rel/abs unit TODO
+            Sb_syst=createCovar(SbDict[sbkey.replace('.random','.systematic')]) #if temperature...need to check rel/abs unit TODO
+            if np.array_equal(Sb,None): print ('Error building covariance matrix for %s'%sbcorkey);raise ValueError('Bad setting for %s'%sbcorkey)
+            if np.array_equal(Sb_syst,None): print ('Error building systematic covariance matrix for %s'%sbcorkey);raise ValueError('Bad setting for %s'%sbcorkey)
+            #fill the sb in the inintial sa
+            sa[np.meshgrid(sa_idx,sa_idx,indexing='ij')]=Sb
+            sa_syst[np.meshgrid(sa_idx,sa_idx,indexing='ij')]=Sb_syst
+
+    #exit()
+
+
+ 
     
     #-----------------------------------------------------
     # Test if Sa matrix is symmetric and positive definite
@@ -895,7 +841,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     (symRtn,pdRtn) = matPosDefTest(sa)
     if not symRtn: print ("Warning!! The Sa matrix is not symmetric\n\n")
     if not pdRtn:  print ("Warning!! The Sa matrix is not positive definite\n\n")
-        
+    # !!!!!!!!!!! Should we retrun False???  is it possible that the sa is not symmetric? If it is possible, we should solve it (by making it symmetric)
+    
     #---------------------------------------------------------------
     # Create Se matrix (Two ways to do this depending on input flg):
     # 1) Read SNR from summary file for each band and each scan.
@@ -907,12 +854,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     #    will be carried through (via seinv.output) to the error
     #    calculations.
     #---------------------------------------------------------------
+    #se  = np.zeros((np.sum(sumVars.summary['nptsb'],dtype=int),np.sum(sumVars.summary['nptsb'],dtype=int)), float)
 
-    se  = np.zeros((int(sum(sumVars.summary['nptsb'])),int(sum(sumVars.summary['nptsb']))), float)
-
-    if SbctlFileVars.inputs['seinputflg'][0].upper() == 'F':
-        #snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(sumVars.summary['SNR'],sumVars.summary['nptsb'])]))
-        snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in zip(sumVars.summary['SNR'],sumVars.summary['nptsb'])]))
+    if SbDict['seinputflg'][0].upper() == 'F':
+        snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(sumVars.summary['SNR'],sumVars.summary['nptsb'])]))
         snrList[:] = [val**-2 for val in snrList]
     else:
         if not sc.ckFile(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], exitFlg=False,quietFlg=False): return False
@@ -920,31 +865,16 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
         snrList    = np.array([float(x) for line in lines[2:] for x in line.strip().split()])
         snrList[:] = 1.0/snrList
 
-    np.fill_diagonal(se,snrList)  
-
+    #np.fill_diagonal(se,snrList)    
+    se=np.array(snrList) #avoid setting up a full 2d matrix for this diagonal matrix...
     #-----------------------------------------------------
     # Test if Se matrix is symmetric and positive definite
     #-----------------------------------------------------
-    (symRtn,pdRtn) = matPosDefTest(se)
-    if not symRtn: print ("Warning!! The Se matrix is not symmetric\n\n")
-    if not pdRtn:  print ("Warning!! The Se matrix is not positive definite\n\n")
+    #(symRtn,pdRtn) = matPosDefTest(se)
+    #if not symRtn: print "Warning!! The Se matrix is not symmetric\n\n"
+    #if not pdRtn:  print "Warning!! The Se matrix is not positive definite\n\n"
+    # !!!!!!!!!! Should we return False? ->is this possible? se is a diagonal matrix, so no check required...
 
-    #-----------------
-    # Read in K matrix
-    #-----------------
-    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.k_matrix'][0], logFile) 
-    if not lines: 
-        print ('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
-        if logFile: logFile.error('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
-        return False    # Critical file, if missing terminate program   
-
-    K_param = lines[2].strip().split()
-
-    n_wav   = int( lines[1].strip().split()[0] )
-    x_start = int( lines[1].strip().split()[2] )
-    n_layer = int( lines[1].strip().split()[3] )
-    x_stop  = x_start + n_layer
-    K       = np.array([[float(x) for x in row.split()] for row in lines[3:]])
 
     #--------------------
     # Read in Gain matrix
@@ -959,27 +889,29 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
 
     #------------------
     # Read in Kb matrix
-    #------------------    
+    #------------------   
+    print ('\nLoading kb matrix',)
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.kb_matrix'][0], logFile)
     if not lines: 
         print ('file.out.kb_matrix missing for observation, directory: ' + wrkingDir)
         if logFile: logFile.error('file.out.kb_matrix missing for observation, directory: ' + wrkingDir)
         return False    # Critical file, if missing terminate program   
+    else: print ('... done')
 
-    Kb_param = lines[2].strip().split()
-
+    Kb_param = list(map(lambda x: x.replace('PROFILE_',''),lines[2].strip().split()))
     #---------------------------------------------------------------
     # Some parameter names in the Kb file are appended by either 
     # micro-window or gas name. If they are appended by micro-window
     # strip this and just keep parameter name so that we may group
-    # the micro-windows under one key
+    # the micro-windows under one key (so no grouping for eg lineint,...)
     #---------------------------------------------------------------
     for ind,val in enumerate(Kb_param):
-        if len(val.split('_')) == 2:
-            pname,appnd = val.split('_')
-            try:               int(appnd); val = pname
+        if len(val.split('_')) >=2:
+            pname,appnd = val.split('_')[:2]
+            try: int(appnd)
             except ValueError: pass
-        Kb_param[ind] = val
+            else: val = pname #remove the mw index from the labels if integer
+        Kb_param[ind] = val 
 
     Kb_unsrt = np.array([[float(x) for x in row.split()] for row in lines[3:]])
 
@@ -988,10 +920,11 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     # A list of numpy arrays is created
     # for repeated keys
     #----------------------------------
-    Kb = {}
+    Kb = {} #keys are the keys used in the ctl file...
     for k in set(Kb_param):
         inds = [i for i, val in enumerate(Kb_param) if val == k]
         Kb.setdefault(paramMap(k,Kb_labels).lower(),[]).append(Kb_unsrt[:,inds])
+    #print Kb_param,map(lambda x: (x[0],x[1][0].shape),Kb.items()),Kb_labels
 
     #--------------------------------------
     # Un-nest numpy arrays in Kb dictionary
@@ -1009,27 +942,28 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     #    AK = D*K
     #-----------------------------------------
     try: AK = np.dot(D,K)
-    except ValueError:
-        print ('Unable to multiple Gain and K matrix ')
+    except ValueError as ve:
+        print ('Unable to multiply Gain and K matrix ')
         print ('Gain matrix shape: %s, K matrix shape: %s' %(str(D.shape),str(K.shape)))
         if logFile: logFile.error('Unable to multiple Gain and K matrix; Gain matrix shape: %s, K matrix shape: %s' %(str(D.shape),str(K.shape)) ) 
+        raise ve
 
     #-------------------------------
     # Calculate AVK in VMR/VMR units
     #-------------------------------
     Kx          = K[:,x_start:x_stop]
-    Iapriori    = np.zeros((n_layer,n_layer))
-    IaprioriInv = np.zeros((n_layer,n_layer))
-    np.fill_diagonal(Iapriori,sumVars.aprfs[primgas.upper()])
-    np.fill_diagonal(IaprioriInv, 1.0 / (sumVars.aprfs[primgas.upper()]))
-    AKxVMR      = np.dot(np.dot(Iapriori,Dx),np.dot(Kx,IaprioriInv))
+    #Iapriori    = np.zeros((n_layer,n_layer))
+    #IaprioriInv = np.zeros((n_layer,n_layer))
+    #np.fill_diagonal(Iapriori,sumVars.aprfs[primgas.upper()])
+    #np.fill_diagonal(IaprioriInv, 1.0 / (sumVars.aprfs[primgas.upper()]))
+    AKxVMR      =  AK[x_start:x_stop,x_start:x_stop]*np.tensordot(sumVars.aprfs[primgas.upper()],sumVars.aprfs[primgas.upper()]**-1,0) #np.dot(np.dot(Iapriori,Dx),np.dot(Kx,IaprioriInv)) #
+    #print np.allclose(AKxVMR,AK[x_start:x_stop,x_start:x_stop]*np.tensordot(sumVars.aprfs[primgas.upper()],sumVars.aprfs[primgas.upper()]**-1,0))
 
     #-----------------------------------------------
     # Get unscaled Averaging Kernel for the 
     # retrieved profile of the gas in questions only
     #-----------------------------------------------
     AKx = AK[x_start:x_stop,x_start:x_stop]
-
     #----------------------------------
     # Calculate retrieved total column:
     # molec/cm**2
@@ -1055,13 +989,15 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     S_sys = {}
 
     #---------------------------------
-    # Calculate Smoothing error
+    # Calculate Smoothing error                
     #                               T
     #      Ss = (A-I) * Sa * (A-I)
     #---------------------------------
     mat1               = sa[x_start:x_stop,x_start:x_stop]
     mat2               = AKx - np.identity( AKx.shape[0] )
-    S_sys['smoothing'] = calcCoVar(mat1,mat2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
+    #print 'systematic smoothing'
+    S_ran['smoothing'] = calcCoVar(mat1,mat2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
+    S_sys['smoothing'] = calcCoVar(sa_syst[x_start:x_stop,x_start:x_stop],mat2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
 
     #----------------------------------
     # Calculate Measurement error using 
@@ -1069,6 +1005,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     #                    T
     #  Sm = Dx * Se * Dx
     #----------------------------------
+    #print 'random noise',
     S_ran['measurement'] = calcCoVar(se,Dx,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
 
     #---------------------
@@ -1079,6 +1016,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     #------------------------
     AK_int1                   = AK[x_start:x_stop,0:x_start]  
     Sa_int1                   = sa[0:x_start,0:x_start]
+    #print 'random retr. params',
     S_ran['retrieval_parameters'] = calcCoVar(Sa_int1,AK_int1,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
 
     #-----------------------
@@ -1088,25 +1026,23 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     n_int2_column              = ( n_profile - 1 ) * n_layer + n_column
     AK_int2                    = AK[x_start:x_stop, x_stop:x_stop + n_int2_column] 
     Sa_int2                    = sa[x_stop:x_stop + n_int2_column, x_stop:x_stop + n_int2_column]
+    #print 'random interfering specs'
     S_ran['interfering_species'] = calcCoVar(Sa_int2,AK_int2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
-
-
+    
     #******************************************************************************************
     #-------------------------------------------
     # This is temprorary: calculate uncertainty
     # associated with variability of water vapor
     # Assume water is retrieved as profile
-    # Note: Used to study the sensitivity of T and Q in the retrieval strategy paper.
     #-------------------------------------------
-    # H2Oind = [ind for ind,val in enumerate(K_param) if val == 'H2O']
-    # AK_H2O = AK[x_start:x_stop,H2Oind]
-    # diagFill = np.array(SbctlFileVars.inputs['sb.h2o.random'])
-    # diagFill = diagFill / sumVars.aprfs['H2O']
-    # Sb       = np.zeros((AK_H2O.shape[1],AK_H2O.shape[1]))
-    # np.fill_diagonal(Sb,diagFill**2)
+    #H2Oind = [ind for ind,val in enumerate(K_param) if val == 'H2O']
+    #AK_H2O = AK[x_start:x_stop,H2Oind]
 
-    # S_ran['H2O'] = calcCoVar(Sb,AK_H2O,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
-
+    #diagFill = np.array(SbctlFileVars.inputs['sb.h2o.random'])
+    #diagFill = diagFill / sumVars.aprfs['H2O']
+    #Sb       = np.zeros((AK_H2O.shape[1],AK_H2O.shape[1]))
+    #np.fill_diagonal(Sb,diagFill**2)
+    #S_ran['H2O'] = calcCoVar(Sb,AK_H2O,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
     #******************************************************************************************
 
     #----------------------------------------------
@@ -1119,12 +1055,12 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     for k in ctlFileVars.inputs['band']:
         test1 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift'][0].upper()
         try:    test2 = ctlFileVars.inputs['band.'+str(int(k))+'.zshift.type'][0]            # This parameter might not exist in the ctl file if zshift = false
-        except: test2 = 1 
-        if (test1 == 'F' or test2 == 1): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
+        except KeyError: test2 = 1 
+        if (test1 == 'F' and True+(test2 == 1)): bands.setdefault('zshift',[]).append(int(k))        # only include bands where zshift is NOT retrieved
 
-    #--------------------------------------------------------------------
-    # Set band ordering for micro-window dependent Sb's other than zshift
-    #--------------------------------------------------------------------
+        #--------------------------------------------------------------------
+        # Set band ordering for micro-window dependent Sb's other than zshift
+        #--------------------------------------------------------------------
         bands.setdefault('other',[]).append(int(k))
 
     #-------------------------------------------------------------------
@@ -1133,6 +1069,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     #-------------------------------------------------------------------
     try:             kb_profile_gas = ctlFileVars.inputs['kb.profile.gas']
     except KeyError: kb_profile_gas = []
+    
+    #print 'Profile uncertainty for %s'%','.join(kb_profile_gas)
 
     #----------------------------------------------------------------
     # If file exists that has full covariances of Sb's read this file
@@ -1140,18 +1078,20 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     sbCovarRand = {}
     sbCovarSys  = {}
     
-    if "sb.file.random" in ctlFileVars.inputs:
-        sbCovarRand = readCovarFile(ctlFileVars.inputs["sb.file.random"])
-        
-    if "sb.file.systematic" in ctlFileVars.inputs:
-        sbCovarSys = readCovarFile(ctlFileVars.inputs["sb.file.systematic"]) 
-
+    if "sb.file.random" in SbctlFileVars.inputs: #the sb.file.random contains a list of parameters for which a file input is provided
+        sbCovarRand = readCovarFile(SbctlFileVars.inputs["sb.file.random"],'random')
+        if not sbCovarRand: return False # Critical file missing terminate program
+    if "sb.file.systematic" in SbctlFileVars.inputs:
+        sbCovarSys = readCovarFile(SbctlFileVars.inputs["sb.file.systematic"],'systematic')        
+        if not sbCovarSys: return False # Critical file missing terminate program
+    if sbCovarSys or sbCovarRand: 'Found covariance matrices for %s (random) and %s (systematic)'%(', '.join(sbCovarRand.keys()),', '.join(sbCovarSys.keys()))
     #--------------------------------
     # Loop through parameter list and
     # determine errors
+    # Kbl is the label used in the ctl file
     #--------------------------------
+    print ('\nCalculating uncertainty contributions for %s'%', '.join(Kb.keys()))
     for Kbl in Kb:
-        
         DK = np.dot(Dx,Kb[Kbl])
         for ErrType in ['random','systematic']:
 
@@ -1160,73 +1100,103 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
             #-------------------------------------------
             Sb    = np.zeros((DK.shape[1],DK.shape[1]))
             sbFlg = False
-
             try:
                 #----------------------------------------------------------------------------------
-                # Get elements for Sb matricies. If a file name is present, the file is read as the 
+                # Get elements for Sb matrices. If a file name is present, the file is read as the 
                 # Sb matrix. Some special cases require seperate handling
                 #----------------------------------------------------------------------------------
-                
                 if ErrType == "random":
-                    if Kbl.lower() in sbCovarRand: 
+                    if Kbl.lower() in sbCovarRand:
                         Sb = sbCovarRand[Kbl.lower()]
                         sbFlg = True
-                        
+                    elif Kbl.upper() in sbCovarRand and Kbl.upper() in [x.upper() for x in kb_profile_gas]: #i do not understand yet when the upper occurs
+                        Sb = sbCovarRand[Kbl.upper()]
+                        sbFlg = True
                 elif ErrType == "systematic":
                     if Kbl.lower() in sbCovarSys: 
                         Sb = sbCovarSys[Kbl.lower()]
-                        sbFlg = True    
-                
+                        sbFlg = True   
+                    elif Kbl.upper() in sbCovarSys and Kbl.upper() in [x.upper() for x in kb_profile_gas]:
+                        Sb = sbCovarSys[Kbl.upper()]
+                        sbFlg = True
+
+                        
                 if not sbFlg:
                     #-------
                     # Zshift
                     #-------
-                    if Kbl.lower() == 'zshift': 
-                        diagFill = np.array( [ SbctlFileVars.inputs['sb.band.'+str(x)+'.zshift.'+ErrType][0]  for x in bands['zshift'] ])
+                    if Kbl.lower() == 'zshift':	
+                        diagFill = np.array( [ SbDict['sb.band.'+str(x)+'.zshift.'+ErrType][0]  for x in bands['zshift'] ])
     
                     #---------------------------------
                     # Temperature (in case of scaling)
                     #---------------------------------
-                    elif (Kbl.lower() == 'temperature') and (SbctlFileVars.inputs['sb.temperature.'+ErrType+'.scaled'][0].upper() == 'F'):
-                        diagFill = np.array(SbctlFileVars.inputs['sb.temperature.'+ErrType])
+                    elif (Kbl.lower() == 'temperature') and (SbDict['sb.temperature.'+ErrType+'.scaled'][0].upper() == 'F'):
+                        diagFill = np.array(SbDict['sb.temperature.'+ErrType])
                         if len(diagFill) != len(sumVars.aprfs['TEMPERATURE']): raise ExitError('Number of Sb for temperature, type:'+ErrType+' does not match atmospheric layers!!')
                         diagFill = diagFill / sumVars.aprfs['TEMPERATURE']
-    
+
+
                     #------------
                     # Profile Gas
                     #------------
                     elif Kbl.upper() in [x.upper() for x in kb_profile_gas]:
-                        diagFill = np.array(SbctlFileVars.inputs['sb.profile.'+Kbl+'.'+ErrType])
+                        diagFill = np.array(SbDict['sb.profile.'+Kbl+'.'+ErrType])
     
                     #-------------------------
                     # SZA (in case of scaling)
                     #-------------------------
-                    elif (Kbl.lower() == 'sza') and (SbctlFileVars.inputs['sb.sza.'+ErrType+'.scaled'][0].upper() == 'F'):
-                        if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for SZA, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
-                        diagFill = np.array(SbctlFileVars.inputs['sb.sza.'+ErrType]) / sumVars.pbp['sza']
+                    elif (Kbl.lower() == 'sza') and (SbDict['sb.sza.'+ErrType+'.scaled'][0].upper() == 'F'):
+                        if len(SbDict['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for SZA, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
+                        diagFill = np.array(SbDict['sb.sza.'+ErrType]) / sumVars.pbp['sza'][:Sb.shape[0]] #the shape of the sza in the summary is mw dependent...
     
                     #---------------------------------
                     # Omega (FOV) (in case of scaling)
                     #---------------------------------
-                    elif (Kbl.lower() == 'omega') and (SbctlFileVars.inputs['sb.omega.'+ErrType+'.scaled'][0].upper() == 'F'):
-                        if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for omega, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
-                        diagFill = np.array(SbctlFileVars.inputs['sb.omega.'+ErrType]) / sumVars.summary['FOVDIA']
+                    elif (Kbl.lower() == 'omega') and (SbDict['sb.omega.'+ErrType+'.scaled'][0].upper() == 'F'):
+                        if len(SbDict['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for omega, type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
+                        diagFill = np.array(SbDict['sb.omega.'+ErrType]) / sumVars.summary['FOVDIA']
     
                     #----------------
                     # All other cases
                     #----------------
                     else: 
                         #--------------------------------------------------------------------
-                        # Catch errors where number of specified Sb does not match Kb columns
+                        # Catch errors where number of specified Sb does not match Kb columns (in a flexible way)
                         #--------------------------------------------------------------------
-                        if len(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) != DK.shape[1]: raise ExitError('Number of specified Sb for '+Kbl+', type:'+ErrType+' does not match number of Kb columns!! Check Sb.ctl file.')
-                        diagFill = np.array(SbctlFileVars.inputs['sb.'+Kbl+'.'+ErrType]) 
+                        #print type(Kbl),Kbl,'onee',type(SbDict['sb.'+Kbl+'.'+ErrType]),DK.shape,'ole'
+                        #print 'aaaa','sb.'+Kbl+'.'+ErrType,'bbb'
+                        sbsize=len(SbDict['sb.'+Kbl+'.'+ErrType])
+                        kbsize=DK.shape[1]
+                        if sbsize != 1 and sbsize<kbsize: raise ExitError('Number of specified Sb for '+Kbl+', type:'+ErrType+'(=%s) does not match number of Kb columns=%s!! Check Sb.ctl file.'%(sbsize,kbsize,))
+                        diagFill = np.array((SbDict['sb.'+Kbl+'.'+ErrType]*(kbsize if sbsize==1 else 1))[:kbsize]) 
+                        
     
                     #--------------------------------------
                     # Fill Sb matrix with diagonal elements
                     #--------------------------------------
-                    np.fill_diagonal(Sb,diagFill**2)
-                
+                    sbcorkey='sb.%s.correlation.width'%Kbl if Kbl.upper() not in map(str.upper,kb_profile_gas) else 'sb.profile.%s.correlation.width'%Kbl
+                    corwidthinv=1./SbDict[sbcorkey][0] if (sbcorkey in SbDict and SbDict[sbcorkey][0]!=0.) else 0.
+                    Sb=np.tensordot(diagFill,diagFill,0)
+
+
+                    if ErrType=='random': 
+                      deltaz=np.tensordot(z,np.ones(z.shape),0)
+                      deltaz=np.exp(-abs(deltaz-deltaz.T)*corwidthinv)
+                      if Sb.shape==deltaz.shape: Sb*=np.ma.array(deltaz,mask=deltaz<.01).filled(0)
+                      #Sb= np.fill_diagonal(Sb,diagFill**2)
+                    
+                #do some post calibration when matrices are read from input files: input files are assumed in SI units (as the data in sumVars.aprfs)... ok?     
+                elif Kbl=='temperature' or (Kbl.upper() in kb_profile_gas): 
+                  # temperature and profile_gas sb should be put in relative units when read from input file
+                  l,d=np.linalg.eigh(Sb)
+                  sqrtL=np.sqrt(np.ma.masked_array(l,l<0).filled(0)) #correct for negative eigenvalues and take the sqrt
+                  D=sqrtL*d #Sb=D.dot(D.T)
+                  DtempT=((sumVars.aprfs[Kbl.upper()]**-1)*(D.T)) # (D.T).dot(diag(temp**-1))
+                  Sb=DtempT.T.dot(DtempT)#diag(temp^-1).dot(Sb).dot(diag(temp^-1))
+
+                             
+                  
                 #-----------------------------------------------------
                 # Test if Sb matrix is symmetric and positive definite
                 #-----------------------------------------------------
@@ -1238,7 +1208,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
             # Catch instances where DK exists for parameter; 
             # however, no Sb is specified
             #-----------------------------------------------
-            except KeyError:
+            except KeyError as kerr:
+                print (repr(kerr))
                 if logFile: logFile.error('Covariance matrix for '+Kbl+': Error type -- ' + ErrType+' not calculated. Sb does not exist\n')
 
             #-----------------------------------
@@ -1253,9 +1224,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
             #--------------------------------------
             except: 
                 errmsg = sys.exc_info()[1]
-                print ('Error calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType) 
+                print ('Error calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType)
                 print (errmsg)
-                if logFile: logFile.error('Error calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType+'\n')   
+                if logFile: logFile.error('Error calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType+'\n')
 
             #----------------------------------------------------------------------
             # Check if Error covariance matrix has not been filled from sb.ctl file
@@ -1264,7 +1235,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
                 if (Kbl.lower() == 'zshift') and logFile: 
                     logFile.info('sb.band.x.zshift.'+ErrType+' for all bands where zshift is not retrieved is 0 or not specifed => error covariance matrix not calculated')
                 elif (Kbl.upper() in [x.upper() for x in kb_profile_gas]) and logFile:
-                    logFile.info('sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')          
+                    logFile.info('sb.profile.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')		    
                 elif logFile:               
                     logFile.info('sb.'+Kbl+'.'+ErrType+' is 0 or not specified => error covariance matrix not calculated')
 
@@ -1274,6 +1245,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
             else:
                 if ErrType == 'random': S_ran[Kbl] = calcCoVar(Sb,DK,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
                 else:                   S_sys[Kbl] = calcCoVar(Sb,DK,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
+                if Kbl.lower() in ('temperature','h2o'): 
+                    appc=sumVars.aprfs[primgas.upper()]*sumVars.aprfs['AIRMASS']
+                    rtpc=sumVars.rprfs[primgas.upper()]*sumVars.aprfs['AIRMASS']
+                    tce=np.sqrt(appc.dot(DK.dot(Sb).dot(DK.T)).dot(appc))
+                    #print ('TC error for %-22s: %4.3e[molec/cm^2]\t%4.2f%%'%('%s.%s'%(Kbl,ErrType),tce,tce/rtpc.sum()*100))
+                    
+                 
 
     #---------------------------------------------
     # Calculate total systematic and random errors
@@ -1283,147 +1261,119 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults,  wrkingDir, logFile=F
     S_tot_rndm_err       = 0
     S_tot_systematic_err = 0
 
-    if  SbctlFileVars.inputs['vmroutflg'][0].upper() == 'T': 
+    if  SbDict['vmroutflg'][0].upper() == 'T': 
         S_tot_ran_vmr   = np.zeros((n_layer,n_layer))
         S_tot_sys_vmr   = np.zeros((n_layer,n_layer))
 
-    if  SbctlFileVars.inputs['molsoutflg'][0].upper() =='T': 
+    if  SbDict['molsoutflg'][0].upper() =='T': 
         S_tot_ran_molcs = np.zeros((n_layer,n_layer))
         S_tot_sys_molcs = np.zeros((n_layer,n_layer))
 
     # Get a list of parameters to include in total error from sb.ctl file
-    sbTotParms      = [val.strip().split('.')[-1] for val in SbctlFileVars.inputs.keys() if 'sb.total.' in val.lower()]
-    
     # Random
     for k in S_ran:
-        if (k in sbTotParms) and SbctlFileVars.inputs['sb.total.'+k][0].upper() == 'T' :
-            S_tot_rndm_err  += S_ran[k][2]**2
-            if  SbctlFileVars.inputs['vmroutflg'][0].upper()  =='T': S_tot_ran_vmr   += S_ran[k][0]
-            else:                            S_tot_ran_vmr    = 0
-            if  SbctlFileVars.inputs['molsoutflg'][0].upper() =='T': S_tot_ran_molcs += S_ran[k][1]
+        totkey='sb.total.'+k
+        if (totkey in SbDict) and SbDict[totkey][0].upper() == 'T':
+            S_tot_rndm_err  += S_ran[k][2]**2 #this is the uncertainty on the total column
+            if  SbDict['vmroutflg'][0].upper()  =='T': S_tot_ran_vmr   += S_ran[k][0]
+            else:						     S_tot_ran_vmr    = 0
+            if  SbDict['molsoutflg'][0].upper() =='T': S_tot_ran_molcs += S_ran[k][1]
             else:                                                    S_tot_ran_molcs  = 0
 
     S_tot_rndm_err  = np.sqrt(S_tot_rndm_err)
 
     # Systematic
     for k in S_sys:
-        if (k in sbTotParms) and SbctlFileVars.inputs['sb.total.'+k][0].upper() == 'T' :
+        totkey='sb.total.'+k
+        if (totkey in SbDict) and SbDict[totkey][0].upper() == 'T' :
             S_tot_systematic_err += S_sys[k][2]**2
-            if  SbctlFileVars.inputs['vmroutflg'][0].upper()  =='T': S_tot_sys_vmr   += S_sys[k][0]
-            else:                            S_tot_sys_vmr    = 0
-            if  SbctlFileVars.inputs['molsoutflg'][0].upper() =='T': S_tot_sys_molcs += S_sys[k][1]
-            else:                            S_tot_sys_molcs  = 0 
+            if  SbDict['vmroutflg'][0].upper()  =='T': S_tot_sys_vmr   += S_sys[k][0]
+            else:						     S_tot_sys_vmr    = 0
+            if  SbDict['molsoutflg'][0].upper() =='T': S_tot_sys_molcs += S_sys[k][1]
+            else:						     S_tot_sys_molcs  = 0 
 
     S_tot_systematic_err = np.sqrt(S_tot_systematic_err)
     S_tot['Random']      = (S_tot_ran_vmr,S_tot_ran_molcs,S_tot_rndm_err)
     S_tot['Systematic']  = (S_tot_sys_vmr,S_tot_sys_molcs,S_tot_systematic_err)
 
-
-
                                         #---------------#
                                         # Write outputs #
                                         #---------------#
 
-    # --------------------------
-#     Error summary information
-#     --------------------------      
-    with open(wrkingDir+SbctlFileVars.inputs['file.out.error.summary'][0], 'w') as fout:
+    #--------------------------
+    # Error summary information
+    #--------------------------      
+    with open(wrkingDir+SbDict['file.out.error.summary'][0], 'w') as fout:
         fout.write('sfit4 ERROR SUMMARY\n\n')
-        fout.write('Primary gas                                   = {:>15s}\n'.format(primgas.upper())                                  )
-        fout.write('Total column amount                           = {:15.5E} [molecules cm^-2]\n'.format(retdenscol)                    )
-        fout.write('DOFs (total column)                           = {:15.3f}\n'.format(col_dofs)                                        )
-        fout.write('Smoothing error (Ss)                          = {:15.3f} [%]\n'.format(S_sys['smoothing'][2]        /retdenscol*100))
-        fout.write('Measurement error (Sm)                        = {:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
-        fout.write('Interference error (retrieved params)         = {:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
-        fout.write('Interference error (interfering spcs)         = {:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
+        fout.write('Primary gas                                   = {0:>15s}\n'.format(primgas.upper())                                  )
+        fout.write('Total column amount                           = {0:15.5E} [molecules cm^-2]\n'.format(retdenscol)                    )
+        fout.write('DOFs (total column)                           = {0:15.3f}\n'.format(col_dofs)                                        )
+        fout.write('Smoothing error (Ss, using sa)                = {0:15.3f} [%]\n'.format(S_ran['smoothing'][2]        /retdenscol*100))
+        fout.write('Measurement error (Sm)                        = {0:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
+        fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
+        fout.write('Interference error (interfering spcs)         = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
         
-        #fout.write('Temperature (Random)                          = {:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
-        #fout.write('Water Vapor                                   = {:15.3f} [%]\n'.format(S_ran['H2O'][2]/retdenscol*100)              )
+        fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
+        fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
+        if 'h2o' in S_ran: fout.write('Water Vapor (Random)                          = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
+        if 'h2o' in S_sys: fout.write('Water Vapor (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['h2o'][2]/retdenscol*100)              )
         
-        fout.write('Total random error                            = {:15.3f} [%]\n'.format(S_tot['Random'][2]           /retdenscol*100))
-        fout.write('Total systematic error                        = {:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
-        fout.write('Total random uncertainty                      = {:15.3E} [molecules cm^-2]\n'.format(S_tot['Random'][2])            )
-        fout.write('Total systematic uncertainty                  = {:15.3E} [molecules cm^-2]\n'.format(S_tot['Systematic'][2])        )
+        fout.write('Total random error                            = {0:15.3f} [%]\n'.format(S_tot['Random'][2]           /retdenscol*100))
+        fout.write('Total systematic error                        = {0:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
+        fout.write('Total random uncertainty                      = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Random'][2])            )
+        fout.write('Total systematic uncertainty                  = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Systematic'][2])        )
         for k in S_ran:
-            fout.write('Total random uncertainty {:<20s} = {:15.3E} [molecules cm^-2]\n'.format(k,S_ran[k][2]))
+            fout.write('Total random uncertainty {0:<20s} = {1:15.3E} [molecules cm^-2]\n'.format(k,S_ran[k][2]))
         for k in S_sys:
-            fout.write('Total systematic uncertainty {:<16s} = {:15.3E} [molecules cm^-2]\n'.format(k,S_sys[k][2])) 
-    
-#     --------------------------
-#     Error summary information
-#     --------------------------      
-#     with open(wrkingDir+SbctlFileVars.inputs['file.out.error.summary'][0], 'w') as fout:
-#         fout.write('sfit4 ERROR SUMMARY\n\n')
-#         fout.write('Primary gas                                   = {0:>15s}\n'.format(primgas.upper())                                  )
-#         fout.write('Total column amount                           = {0:15.5E} [molecules cm^-2]\n'.format(retdenscol)                    )
-#         fout.write('DOFs (total column)                           = {0:15.3f}\n'.format(col_dofs)                                        )
-#         fout.write('Smoothing error (Ss, using sa+sb.ctl)         = {0:15.3f} [%]\n'.format(S_sys['smoothing'][2]        /retdenscol*100))
-#         fout.write('Measurement error (Sm)                        = {0:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
-#         fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
-#         fout.write('Interference error (interfering spcs)         = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
-#         
-#         fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
-#         fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
-#         if 'h2o' in S_ran: fout.write('Water Vapor (Random)                          = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
-#         if 'h2o' in S_sys: fout.write('Water Vapor (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['h2o'][2]/retdenscol*100)              )
-#         
-#         fout.write('Total random error                            = {0:15.3f} [%]\n'.format(S_tot['Random'][2]           /retdenscol*100))
-#         fout.write('Total systematic error                        = {0:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
-#         fout.write('Total random uncertainty                      = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Random'][2])            )
-#         fout.write('Total systematic uncertainty                  = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Systematic'][2])        )
-#         for k in S_ran: 
-#             fout.write('Total random uncertainty {0:<20s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_ran[k][2],S_ran[k][2]/retdenscol*100))
-#         for k in S_sys:
-#             fout.write('Total systematic uncertainty {0:<16s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_sys[k][2],S_sys[k][2]/retdenscol*100)) 
-
+            fout.write('Total systematic uncertainty {0:<16s} = {1:15.3E} [molecules cm^-2]\n'.format(k,S_sys[k][2])) 
 
     #-----------------------------------
     # Write to file covariance matricies
     #-----------------------------------
-    if SbctlFileVars.inputs['out.total'][0].upper() == 'T':
-        if SbctlFileVars.inputs['molsoutflg'][0].upper() == 'T':
+    if SbDict['out.total'][0].upper() == 'T':
+        if SbDict['molsoutflg'][0].upper() == 'T':
             # molecules cm^-2
-            fname  = wrkingDir+SbctlFileVars.inputs['file.out.total'][0]
+            fname  = wrkingDir+SbDict['file.out.total'][0]
             header = 'TOTAL RANDOM ERROR COVARIANCE MATRIX IN (MOL CM^-2)^2'
             writeCoVar(fname,header,S_tot,1) 
 
-        if SbctlFileVars.inputs['vmroutflg'][0].upper() == 'T':
+        if SbDict['vmroutflg'][0].upper() == 'T':
             # vmr
-            fname  = wrkingDir+SbctlFileVars.inputs['file.out.total.vmr'][0]
+            fname  = wrkingDir+SbDict['file.out.total.vmr'][0]
             header = 'TOTAL RANDOM ERROR COVARIANCE MATRICES IN (VMR)^2 UNITS'
-            writeCoVar(fname,header,S_tot,0)    
+            writeCoVar(fname,header,S_tot,0) 	
 
-    if SbctlFileVars.inputs['out.srandom'][0].upper() == 'T':
-        if SbctlFileVars.inputs['molsoutflg'][0].upper() == 'T':
+    if SbDict['out.srandom'][0].upper() == 'T':
+        if SbDict['molsoutflg'][0].upper() == 'T':
             # molecules cm^-2
-            fname  = wrkingDir+SbctlFileVars.inputs['file.out.srandom'][0]
+            fname  = wrkingDir+SbDict['file.out.srandom'][0]
             header = 'RANDOM ERROR COVARIANCE MATRIX IN (MOL CM^-2)^2'
             writeCoVar(fname,header,S_ran,1)
 
-        if SbctlFileVars.inputs['vmroutflg'][0].upper() == 'T':
+        if SbDict['vmroutflg'][0].upper() == 'T':
             # vmr
-            fname  = wrkingDir+SbctlFileVars.inputs['file.out.srandom.vmr'][0]
+            fname  = wrkingDir+SbDict['file.out.srandom.vmr'][0]
             header = 'RANDOM ERROR COVARIANCE MATRICES IN (VMR)^2 UNITS'
-            writeCoVar(fname,header,S_ran,0)    
+            writeCoVar(fname,header,S_ran,0)	
 
-    if SbctlFileVars.inputs['out.ssystematic'][0].upper() == 'T':
+    if SbDict['out.ssystematic'][0].upper() == 'T':
 
-        if SbctlFileVars.inputs['molsoutflg'][0].upper() == 'T':
+        if SbDict['molsoutflg'][0].upper() == 'T':
             # molecules cm^-2
-            fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic'][0]
+            fname  = wrkingDir+SbDict['file.out.ssystematic'][0]
             header = 'SYSTEMATIC ERROR COVARIANCE MATRIX IN (MOL CM^-2)^2'
             writeCoVar(fname,header,S_sys,1)
 
-        if SbctlFileVars.inputs['vmroutflg'][0].upper() == 'T':
+        if SbDict['vmroutflg'][0].upper() == 'T':
             # vmr
-            fname  = wrkingDir+SbctlFileVars.inputs['file.out.ssystematic.vmr'][0]
+            fname  = wrkingDir+SbDict['file.out.ssystematic.vmr'][0]
             header = 'SYSTEMATIC ERROR COVARIANCE MATRICES IN (VMR)^2 UNITS'
-            writeCoVar(fname,header,S_sys,0)    
+            writeCoVar(fname,header,S_sys,0)	
 
     #-----------------------
     # Write Averaging Kernel
     #-----------------------
-    fname      = wrkingDir+SbctlFileVars.inputs['file.out.avk'][0]    
+    fname      = wrkingDir+SbDict['file.out.avk'][0]    
     header     = 'Averaging Kernel for '+ primgas.upper()
     AVK        = {}
     AVK['AVK_scale_factor'] = (AKx,[],[])

@@ -36,8 +36,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import shutil
 import subprocess
 import logging
@@ -61,7 +61,7 @@ def subProcRun( fnameIn, outDir, logFlg=False ):
     rtn = subprocess.Popen( 'ncl_convert2nc ' + fnameIn + ' -o ' + outDir, shell=True, stderr=subprocess.PIPE )
     outstr = ''
     for line in iter(rtn.stderr.readline, b''):
-        print 'STDERR from {}: '.format(fnameIn) + line.rstrip()
+        print ('STDERR from {}: '.format(fnameIn) + line.rstrip())
         if logFlg: outstr += line
 
     if logFlg: logFlg.info(outstr)
@@ -71,7 +71,7 @@ def subProcRun( fnameIn, outDir, logFlg=False ):
 def ckDir(dirName,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -80,7 +80,7 @@ def ckDir(dirName,exitFlg=False):
 def ckFile(fName,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -107,10 +107,10 @@ def main():
     #-----------------------
     # Date Range of interest
     #-----------------------
-    iyear          = 2018
+    iyear          = 2019
     imnth          = 1
     iday           = 1
-    fyear          = 2018
+    fyear          = 2019
     fmnth          = 12
     fday           = 31
     
@@ -201,8 +201,7 @@ def main():
         os.remove(fName3+'.grb')
         os.remove(fName4+'.grb')
     
-        
-        print 'Finished processing day: {}'.format(sngDay)
+        print ('Finished processing day: {}'.format(sngDay))
                                                                                     
 if __name__ == "__main__":
     main()

@@ -29,14 +29,19 @@
                                     #-------------------------#
                                     # Import Standard modules #
                                     #-------------------------#
-import os
+
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ExternalData")))
+
 import datetime as dt
-import sys
 import glob
 import DateRange as dr
 import HouseReaderC as hr
 import csv
 import getopt
+
+
                                     #-------------------------#
                                     # Define helper functions #
                                     #-------------------------#
@@ -62,6 +67,7 @@ def usage():
     print ('  -d <20180515> or <20180515_20180530>  : Flag to specify date(s)')
     print ('  -?                                    : Show all flags')
     print ('Note: Additional paths are hardcoded in station_house_reader.py\n')
+
 
 
          
@@ -179,6 +185,7 @@ def main(argv):
             houseData = hr.MLOread()
         elif (statstr.lower() == 'tab'):
             houseData = hr.TABread()
+        else: print('site is not specified in station_house_reader'); exit()
             
         #--------------------------------------
         # Loop through days/folders within year

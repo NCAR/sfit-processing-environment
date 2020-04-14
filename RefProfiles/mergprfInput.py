@@ -25,7 +25,7 @@
 # Three letter station
 # location
 #---------------------
-loc = 'fl0'                                    # Three letter station identifier
+loc = 'mlo'                                    # Three letter station identifier
 
 #----------------------------------
 # Date Range of data to process
@@ -33,19 +33,19 @@ loc = 'fl0'                                    # Three letter station identifier
 # and ending dates!!
 #----------------------------------
 # Starting
-iyear = 2018               # Year
+iyear = 2019               # Year
 imnth = 1                 # Month
 iday  = 1                  # Day
 
 # Ending
-fyear = 2018               # Year
+fyear = 2019               # Year
 fmnth = 12                 # Month
 fday  = 31                # Day
 
 #------
 # Flags
 #------
-npntSkip = 1
+npntSkip = 1	
 Pintrp   = 3
 Tintrp   = 2
 mvOld    = False           # Flag to rename previous water profile files. (Files appened with .WACCM5)

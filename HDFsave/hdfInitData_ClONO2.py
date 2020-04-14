@@ -34,7 +34,9 @@
 #    You should have received a copy of the GNU General Public License
 #    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #
-#----------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------\
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import datetime as dt
 import numpy as np
 import scipy.io as si

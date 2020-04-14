@@ -75,19 +75,18 @@
                         # Import Standard modules #
                         #-------------------------#
 
+
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import logging
-import sys
-import os
 import getopt
 import datetime as dt
 import glob
 import re
 import sfitClasses as sc  
-####import sfitClasses_B2 as sc
 import dataOutClass as dc
 import shutil
 from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis  
-#from Layer1Mods_v2 import refMkrNCAR, t15ascPrep, errAnalysis  
 import matplotlib.pyplot as plt
 
 
@@ -162,6 +161,7 @@ def main(argv):
     lstFlg   = False
     pauseFlg = False
     overDFlg = False
+    mainInF  = False
 
     #--------------------------------
     # Retrieve command line arguments
@@ -253,6 +253,11 @@ def main(argv):
         else:
             print ('Unhandled option: ' + opt)
             sys.exit()
+
+    if not mainInF:
+        print('Error! usage:') 
+        usage()
+        exit()
 
     #----------------------------------------------
     # Initialize main input variables as dicitonary
@@ -744,7 +749,8 @@ def main(argv):
 
                         print ('*****************************************************')
                         print ('Running REFMKRNCAR for ctl file: %s' % msgstr1)
-                        if mainInF.inputs['waccmFlg']: print ('Using ' + waccmFile + ' WACCM Monthly Profile')
+                        if 'waccmFlg' in mainInF.inputs: 
+                            if mainInF.inputs['waccmFlg']: print ('Using ' + waccmFile + ' WACCM Monthly Profile')
                         print ('Processing spectral observation date: %s' % msgstr2)
                         print ('*****************************************************')
 
@@ -830,13 +836,19 @@ def main(argv):
                         #                            #
                         #----------------------------#
                         if mainInF.inputs['errFlg']:
+                            
+                            print ('\n**********************')
+                            print ('Running error analysis')
+                            print ('**********************')
+                            
                             if logFile: 
                                 logFile.info('Ran SFIT4 for ctl file: %s' % msgstr1)                            
 
                             #-----------------------------------
                             # Enter into Error Analysis function
                             #-----------------------------------
-                            rtn = errAnalysis( ctlFileGlb, SbctlFileVars, sbctldefaults, wrkOutputDir3, logFile )  
+                            rtn = errAnalysis( ctlFileGlb, SbctlFileVars, sbctldefaults, wrkOutputDir3, logFile )
+                            #rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, logFile )  
 
                         #---------------------------
                         # Continuation for Pause flg
@@ -844,8 +856,8 @@ def main(argv):
                         if pauseFlg:
                             while True:
 
-                                try: user_input = input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 show plot retrieval results, 4 save plot retrievals in pdf\n >>> ')
-                                except: user_input = raw_input('Paused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 show plot retrieval results, 4 save plot retrievals in pdf\n >>> ')
+                                try: user_input = input('\nPaused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 show plot retrieval results, 4 save plot retrievals in pdf\n >>> ')
+                                except: user_input = raw_input('\nPaused processing....\n Enter: 0 to exit, -1 to repeat, 1 to continue to next, 2 to continue all, 3 show plot retrieval results, 4 save plot retrievals in pdf\n >>> ')
 
                                 plt.close('all')
                                 try:

@@ -100,26 +100,26 @@ Kb_info=\
                 beamphase               ZERO_PH_REF                         ?                      True
                 beamslope            DELTA_PEAK_AMP                         ?                      True"""
 sbctldefaults=\
-"""VMRoutFlg                  = T              
-MolsoutFlg                 = T              
-out.total                  = T              
-out.srandom                = T              
-out.ssystematic            = T              
-SeInputFlg = T                             
-sb.sza.random.scaled                        = T
-sb.sza.systematic.scaled                    = T
-sb.omega.random.scaled                      = T
-sb.omega.systematic.scaled                  = T
-file.out.total                        = Stotal.output
-file.out.total.vmr                    = Stotal.vmr.output
-file.out.srandom                      = Srandom.output   
-file.out.srandom.vmr                  = Srandom.vmr.output
-file.out.ssystematic                  = Ssystematic.output
-file.out.ssystematic.vmr              = Ssystematic.vmr.output
-file.out.error.summary                = Errorsummary.output   
-file.out.avk                          = avk.output  
-sb.temperature.random.scaled                = F #in Kelvin
-sb.temperature.systematic.scaled            = F #in Kelvin
+"""VMRoutFlg                     = T              
+MolsoutFlg                       = T              
+out.total                        = T              
+out.srandom                      = T              
+out.ssystematic                  = T              
+SeInputFlg                       = T                             
+sb.sza.random.scaled             = T
+sb.sza.systematic.scaled         = T
+sb.omega.random.scaled           = T
+sb.omega.systematic.scaled       = T
+file.out.total                   = Stotal.output
+file.out.total.vmr               = Stotal.vmr.output
+file.out.srandom                 = Srandom.output   
+file.out.srandom.vmr             = Srandom.vmr.output
+file.out.ssystematic             = Ssystematic.output
+file.out.ssystematic.vmr         = Ssystematic.vmr.output
+file.out.error.summary           = Errorsummary.output   
+file.out.avk                     = avk.output  
+sb.temperature.random.scaled     = F #in Kelvin
+sb.temperature.systematic.scaled = F #in Kelvin
 sb.temperature.grid               =-0.020    4     6    10   13     25     40    120
 sb.temperature.correlation.width  =2
 sb.temperature.random             =  2       2     4     4    2      3      6      1      #Real =    #2       1     0.7     0.2    0.5      0.2      0.5      1
@@ -182,23 +182,28 @@ class DictWithDefaults(dict):
     dict.__init__(self,arg)
   
   def __getitem__(self,key):
-    #print self.default.keys()
-    if dict.has_key(self,key): return dict.__getitem__(self,key)
+    
+    #if dict.has_key(self,key): return dict.__getitem__(self,key)
+    if key in dict(self) : return dict.__getitem__(self, key)
+   
     else: 
       matches=sorted([k for k in self.default if fnmatch.fnmatch(key,k)],key=lambda x: x==key)[::-1]
       if len(matches): 
-        #print '%s->%s'%(key,matches);
+        #print ('%s->%s'%(key,matches));
         return self.default[matches[0]]
       else: raise KeyError(key)
 
   def __contains__(self,key):
-    if dict.has_key(self,key): return dict.__contains__(self,key)
+    #if dict.has_key(self,key): return dict.__contains__(self,key)
+    if key in dict(self) : return dict.__contains__(self, key)
+   
     else: 
       matches=sorted([k for k in self.default if fnmatch.fnmatch(key,k)],key=lambda x: x==key)[::-1]
       if len(matches): 
-        #print '%s->%s'%(key,matches);
+        #print ('%s->%s'%(key,matches));
         return True
       else: False
+  
   
 
                                 #--------------------------#
@@ -218,7 +223,7 @@ def tryopen(fname,hdfkey='',logFile=False):
         with h5py.File(fname,'r') as fopen:
             return fopen[hdfkey][...].astype(dtype=float)
       except (IOError,KeyError) as errmsg: pass
-    if errmsg: print errmsg
+    if errmsg: print (errmsg)
     if logFile: logFile.error(errmsg)
     return False
 
@@ -231,7 +236,7 @@ def tryopen(fname,hdfkey='',logFile=False):
                                 #-------------------------#
 
 
-def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind, logFile=False):
+def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind, logFile=False, isoFlg=False):
     ''' Reference maker for NCAR. Insert your own version here. '''
     #----------------------------------------------
     # refMkrNCAR level options for creating 
@@ -256,7 +261,7 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
         os.path.isfile(WACCMfile)    # Path for WACCM profile
         os.path.isdir(outPath)      # Outpath for reference.prf
     except OSError as errmsg:
-        print errmsg
+        print (errmsg)
         if logFile: logFile.error(errmsg)
         return False
 
@@ -268,13 +273,13 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
 
     # If more than one zpt file found trigger warning and use first one 
     if len(zptFiles) > 1:                 
-        print 'Found more than one ZPT file. Using file: ' + zptFiles[0]
+        print ('Found more than one ZPT file. Using file: ' + zptFiles[0])
         if logFile: logFile.info('Using ZPTW file: ' + zptFiles[0])
         zptFile = zptFiles[0]
 
     # If no zpt files found trigger error    
     elif len(zptFiles) == 0:              
-        print 'No zpt files found in: ' + zptwPath
+        print ('No zpt files found in: ' + zptwPath)
         if logFile: logFile.error('No zpt files found in: ' + zptwPath)
         return False
 
@@ -288,7 +293,7 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
 
     # If no water files found trigger error
     if len(waterFiles) == 0:
-        print 'No water files found in: ' + zptwPath
+        print ('No water files found in: ' + zptwPath)
         if logFile: logFile.error('No water files found in: ' + zptwPath)
         return False            
 
@@ -298,7 +303,9 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
     #---------------------------
     # Create a list of version number for water files
     r = re.compile(r"([0-9]+)")
+
     waterVer = [int(r.search(os.path.splitext(wfile)[1]).group(1)) for wfile in waterFiles]
+
 
     #-------------------------------------------
     # For wVer < 0 get latest water version file
@@ -315,10 +322,13 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
         #waterInd = waterVer.index(wVer)
         
         #------------------------------------------------
-        # If water version == 99 find the closest water
-        # to retrieval
+        # If water version == 99 find the closest water  to retrieval
+        # If water version == 66 (ERA - 6h) find the closest in time to retrieval
+        # If water version == 77 find the closest water  to retrieval - Log retrieval
         #------------------------------------------------
-        if waterInd and wVer == 99:
+        #if waterInd:
+        if (len(waterInd) > 0) and (wVer > 6):  #(wVer == 99) or (wVer == 66) or (wVer == 77):
+
             waterNames = [os.path.basename(waterFiles[i]) for i in waterInd]
             waterDates = [dt.datetime(int(x.strip().split('.')[1][0:4]),int(x.strip().split('.')[1][4:6]),int(x.strip().split('.')[1][6:]),
                                       int(x.strip().split('.')[2][0:2]),int(x.strip().split('.')[2][2:4]),int(x.strip().split('.')[2][4:])) for x in waterNames]
@@ -330,18 +340,21 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
             indTemp  = waterDates.index(nearstD) 
             waterInd = waterFiles.index(zptwPath+waterNames[indTemp]) 
 
-        elif not waterInd:
-            print 'Water version {0:d} not found, using latest version: {1:d} '.format(wVer,max(waterVer))
+        #------------------------------------------------
+
+        elif len(waterInd) == 0:
+            print ('Water version {0:d} not found, using latest version: {1:d} '.format(wVer,max(waterVer)))
             if logFile: logFile.error('Water version %d not found, using latest version'% wVer)
             waterInd = waterVer.index(max(waterVer))
-            
+    
         else: waterInd = waterInd[0]
               
-    waterFile = waterFiles[waterInd] 
+    waterFile = waterFiles[waterInd]
     
-    print '\n'
-    print 'Using water file: {}'.format(waterFile)
-    print '\n'
+    print ('\n')
+    print ('Using water file: {}'.format(waterFile))
+    print ('\n')
+
 
     #----------------------------------
     # Concate ZPT, water, and WACCM  
@@ -438,14 +451,14 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
                             if logFile:
                                 logFile.error('Surface pressure error for reference profile: ' + refFile)
                                 logFile.error('External surface pressure < NCEP pressure one level above surface => Non-hydrostatic equilibrium!!')
-                            print 'Surface pressure error for reference profile: ' + refFile
-                            print 'External surface pressure < NCEP pressure one level above surface => Non-hydrostatic equilibrium!!'
+                            print ('Surface pressure error for reference profile: ' + refFile)
+                            print ('External surface pressure < NCEP pressure one level above surface => Non-hydrostatic equilibrium!!')
                         elif ( abs(float(oldPres) - float(newPres)) > 15):
                             if logFile:
                                 logFile.warning('Surface pressure warning for reference profile: ' + refFile)
                                 logFile.warning('Difference between NCEP and external station surface pressure > 15 hPa')
-                            print 'Surface pressure warning for reference profile: ' + refFile
-                            print 'Difference between NCEP and external station surface pressure > 15 hPa'
+                            print ('Surface pressure warning for reference profile: ' + refFile)
+                            print ('Difference between NCEP and external station surface pressure > 15 hPa')
 
                         lines[nlnum] = lines[nlnum].replace(oldPres,newPres)
 
@@ -466,14 +479,14 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
                             if logFile:
                                 logFile.error('Surface Temperature error for reference profile: ' + refFile)
                                 logFile.error('External surface Temperature < NCEP Temperature one level above surface => Non-hydrostatic equilibrium!!')
-                            print 'Surface Temperature error for reference profile: ' + refFile
-                            print 'External surface temperature < NCEP temperature one level above surface => Non-hydrostatic equilibrium!!'
+                            print ('Surface Temperature error for reference profile: ' + refFile)
+                            print ('External surface temperature < NCEP temperature one level above surface => Non-hydrostatic equilibrium!!')
                         elif ( abs(float(oldTemp) - float(newTemp)) > 10):
                             if logFile:
                                 logFile.warning('Surface temperature warning for reference profile: ' + refFile)
                                 logFile.warning('Difference between NCEP and external station surface temperature > 10 DegC')
-                            print 'Surface temperature warning for reference profile: ' + refFile
-                            print 'Difference between NCEP and external station surface temperature > 10 DegC'                        
+                            print ('Surface temperature warning for reference profile: ' + refFile)
+                            print ('Difference between NCEP and external station surface temperature > 10 DegC')                        
 
                         lines[nlnum] = lines[nlnum].replace(oldTemp,newTemp)                    
 
@@ -481,8 +494,159 @@ def refMkrNCAR(zptwPath, WACCMfile, outPath, lvl, wVer, zptFlg, specDB, spcDBind
     with open( refFile, 'w' ) as fout:
         for line in lines:
             fout.write(line)
+    
+    #-------------------------#
+    #Auto-Update isotope Prf in the isotope.input --> Initially created and tested for HDO at MLO
+    #-------------------------#
+    if isoFlg: isotopePrep(refFile)
+    
 
-    return True    
+    return True
+
+                        #-------------------------#
+                        #                         #
+                        #    -- isotopePrep --     #
+                        #                         #
+                        #-------------------------#    
+
+def isotopePrep(refFile):
+
+    print ('*****************************************************\n'
+                          'Running isotopePrep\n'
+           '*****************************************************')
+
+    parms   = ['ALTITUDE', 'H2O']
+    refPrf  = {}
+
+    with open(refFile,'r') as fopen: lines = fopen.readlines()
+
+    gasDir = refFile.strip().split('/')[4]
+
+
+    #----------------------------------------
+    # Get Altitude, Pressure, and Temperature
+    # from reference.prf file
+    #----------------------------------------
+    nlyrs  = int(lines[0].strip().split()[1])
+    nlines = int(np.ceil(nlyrs/5.0))
+        
+    for ind,line in enumerate(lines):
+        if any(p in line.strip().split() for p in parms):
+            val = [x for x in parms if x in line][0]
+            refPrf.setdefault(val,[]).append([float(x[:-1]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
+
+    for p in parms:
+        refPrf[p] = np.asarray(refPrf[p])
+
+    #--------------------------------------
+    # Un-nest numpy arrays in parm dictionary
+    #--------------------------------------
+    for k in parms: refPrf[k] = refPrf[k][0]   
+
+    #--------------
+    # Read dD - Matthias
+    #--------------
+    dDFile='/data1/ebaumer/mlo/hdo/dD_CRprior_ext.txt'
+
+    with open(dDFile, 'r' ) as fopen:
+        lines = fopen.readlines()
+
+    altdD     = np.array([[float(x) for x in row.split()[0:1]] for row in lines[1:]])
+    dDPrf     = np.array([[float(x) for x in row.split()[1:2]] for row in lines[1:]])
+
+    dDPrf = np.flipud(dDPrf.flatten())
+    altdD = np.flipud(altdD.flatten())
+
+    #--------------
+    # Read H2O - Matthias
+    #--------------
+    wpFile='/data1/ebaumer/mlo/hdo/H2O_CRprior_ext.txt'
+
+    with open(wpFile, 'r' ) as fopen:
+        lines = fopen.readlines()
+
+    altwp     = np.array([[float(x) for x in row.split()[0:1]] for row in lines[1:]])
+    wpPrf      = np.array([[float(x) for x in row.split()[1:2]] for row in lines[1:]])
+   
+    wpPrf = np.flipud(wpPrf.flatten())
+    altwp = np.flipud(altwp.flatten())
+
+    #--------------------------------------
+    # Interpolate dDPrf to Ref Prf Altitude
+    #--------------------------------------
+
+    dDPrfInt  = interpolate.interp1d(altdD, dDPrf, bounds_error=False, fill_value=(dDPrf[-1], dDPrf[0]))(refPrf[parms[0]])
+    wpPrfInt  = interpolate.interp1d(altwp, wpPrf, bounds_error=False, fill_value=(dDPrf[-1], dDPrf[0]))(refPrf[parms[0]])*1e-6
+
+    #--------------------------------------
+    # Calculate HDO Prf
+    #--------------------------------------
+    hdoPrf_1 = (3.1152e-4)*(wpPrfInt)*( (dDPrfInt/1000.0) + 1)
+    hdoPrf_1 = hdoPrf_1/3.107e-4
+
+    hdoPrf_2 = (3.1152e-4)*(refPrf[parms[1]])*( (dDPrfInt/1000.0) + 1)
+    hdoPrf_2 = hdoPrf_2/3.107e-4
+
+    
+    isoFile = '/data1/ebaumer/mlo/hdo/x.hdo/isotope.input2'
+
+    with open(isoFile, 'r+' ) as fout:
+        lines    = fout.readlines()
+        
+        nisot    = int(lines[0].split()[0])
+        nlyrs    = int(lines[0].split()[1])
+        nlines   = int(np.ceil(nlyrs/5.0))
+
+        for linenum,line in enumerate(lines):
+            if (linenum >= 6) & (linenum < 6 + nlyrs):
+                nlnum        = linenum + nlyrs
+                #oldPrf       = lines[linenum:nlnum]
+                #oldPrf       = np.asarray(oldPrf, dtype=float)
+
+                lines[linenum] = str('{0:.4e}'.format(hdoPrf_2[linenum - 6]))+'\n'       
+
+
+    with open('/data1/ebaumer/mlo/'+gasDir+'/x.'+gasDir+'/isotope.input3', 'w' ) as fout:
+        for line in lines:
+            fout.write(line)
+
+    #---------------------------------
+    #Error plots of dD - FTIR
+    #---------------------------------
+    # fig, ax1 = plt.subplots(1, 2, figsize=(10,7), sharey=True)
+
+    # ax1[0].plot(refPrf[parms[1]]*1e6, refPrf[parms[0]], linewidth=2.0, color='b', label= 'H20 (ERA-I)')
+    # ax1[0].plot(hdoPrf_2*1e6, refPrf[parms[0]], linewidth=2.0, color='r', label= 'HDO (scaled)')
+
+    # ax1[0].plot(wpPrfInt*1e6, refPrf[parms[0]], linewidth=2.0, linestyle='--' ,color='b', label='H2O (CRprior)')
+    # ax1[0].plot(hdoPrf_1*1e6, refPrf[parms[0]], linewidth=2.0, linestyle='--', color='r', label='HDO (CRprior)')
+    
+    # ax1[1].plot(refPrf[parms[1]]*1e6, refPrf[parms[0]], linewidth=2.0, color='b')
+    # ax1[1].plot(hdoPrf_2*1e6, refPrf[parms[0]], linewidth=2.0, color='r')
+
+    # ax1[1].plot(wpPrfInt*1e6, refPrf[parms[0]], linewidth=2.0, linestyle='--' ,color='b')
+    # ax1[1].plot(hdoPrf_1*1e6, refPrf[parms[0]], linewidth=2.0, linestyle='--', color='r')
+
+    # ax1[0].legend(prop={'size':11}, loc=1)
+
+    # ax1[0].set_ylabel('Altitude [km]', fontsize=14)           
+    # ax1[0].grid(True,which='both')
+    # ax1[0].set_ylim(3, 20)
+    # ax1[0].set_xlim(xmin=0)
+    # ax1[0].tick_params(which='both',labelsize=14)
+    # ax1[0].set_xlabel('VMR [ppm]', fontsize=14)   
+
+    # ax1[1].grid(True,which='both')
+    # ax1[1].tick_params(which='both',labelsize=14)
+    # ax1[1].set_xscale('log')
+    # ax1[1].set_xlabel('VMR [ppm]', fontsize=14)  
+         
+    # plt.show(block=False)
+
+    #user_input = raw_input('Press any key to exit >>> ')
+    #exit()
+
+    return True
 
 
                         #-------------------------#
@@ -500,7 +664,7 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
     bnrFname = "{0:06}".format(int(dbFltData_2['TStamp'][spcDBind])) + bnrExt
 
     if not os.path.isfile(wrkInputDir2 + bnrFname):
-        print 'Unable to find bnr file: {}'.format(wrkInputDir2 + bnrFname)
+        print ('Unable to find bnr file: {}'.format(wrkInputDir2 + bnrFname))
         return False
 
     #if not os.path.isfile(wrkOutputDir5+bnrFname):
@@ -553,7 +717,7 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
     #--------------
     # Call to pspec
     #--------------
-    print 'Running pspec for ctl file: ' + mainInF.inputs['ctlList'][ctl_ind][0] 
+    print ('Running pspec for ctl file: ' + mainInF.inputs['ctlList'][ctl_ind][0] )
     sc.subProcRun( [mainInF.inputs['binDir'] + 'pspec'] )           # Subprocess call to run pspec
 
     #if ( stderr is None or not stderr ):
@@ -588,15 +752,14 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
       # first integer found is SFIT 4: ('SFIT4:V')
       return tuple(map(int,re.sub('\D','',header)[1:5]))
     version=getSFITversion(wrkingDir)
-    print 'SFIT4 Version=%s'%(version,)
+    print ('SFIT4 Version=%s'%(version,))
     
     
     Kb_labels=dict(map(lambda x: x.split()[:2],Kb_info.split('\n')))
 
-    for k in Kb_labels.keys():
-        print k
-
-    exit()
+    #for k in Kb_labels.keys():
+    #    print k
+    #exit()
     #----------------------------------
     # Adapt label definitions according to version
     #----------------------------------
@@ -640,7 +803,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         airMass=pc air, to transform between VMR and PC'''
         #print coVar.shape,
         if coVar.shape == 1:
-            print "When does this happen????? shape= %s"%(covar.shape,) #avoid the dot product in this case... TODO
+            print ("When does this happen????? shape= %s"%(covar.shape,)) #avoid the dot product in this case... TODO
             Sm   = np.dot(  np.dot( A, coVar ), A.T )                            # Uncertainty covariance matrix [Fractional]
         elif len(coVar.shape)==1: #input is the diagonal for a diagonal covar matrix (e.g. noise)
             #print "diagonal input for calccovar"
@@ -670,8 +833,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         with open(fname, 'w') as fout:
             fout.write('# ' + header + '\n'                                       )
             fout.write('# nmatr  = {0}\n'.format(len(var)                         ))
-            fout.write('# nrows  = {0}\n'.format(var[var.keys()[0]][0].shape[0]   ))
-            fout.write('# ncols  = {0}\n\n'.format(var[var.keys()[0]][0].shape[1] )) 
+            fout.write('# nrows  = {0}\n'.format(var[list(var.keys())[0]][0].shape[0]   ))
+            fout.write('# ncols  = {0}\n\n'.format(var[list(var.keys())[0]][0].shape[1] )) 
             for k in var:
                 fout.write('{0}\n'.format(k))
 
@@ -722,7 +885,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             #print 'loading file.in.'+p+'.'+Errtype
             lines = tryopen(SbctlFileVars.inputs['file.in.'+p.lower()+'.'+Errtype][0], hdfkey=p.replace('temperature','T')+'/'+Errtype,logFile=logFile)
             if isinstance(lines,bool):
-                print 'file.in.'+p+'.'+Errtype+' missing for observation, directory: ' + wrkingDir
+                print ('file.in.'+p+'.'+Errtype+' missing for observation, directory: ' + wrkingDir)
                 if logFile: logFile.error('file.in.'+p+'.'+Errtype+' missing for observation, directory: ' + wrkingDir)
                 return False    # Critical file, if missing terminate program
             sbCovar[p] = np.array( [ [ float(x) for x in row.split()] for row in lines ] ) if isinstance(lines,list) else lines
@@ -730,8 +893,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             # Test if Sb matrix is symmetric and positive definite
             #-----------------------------------------------------
             (symRtn,pdRtn) = matPosDefTest(sbCovar[p])
-            if not symRtn: print "Warning!! The Sb matrix for "+p+" is not symmetric\n\n"
-            if not pdRtn:  print "Warning!! The Sb matrix for "+p+" is not positive definite\n\n"
+            if not symRtn: print ("Warning!! The Sb matrix for "+p+" is not symmetric\n\n")
+            if not pdRtn:  print ("Warning!! The Sb matrix for "+p+" is not positive definite\n\n")
             if not symRtn or not pdRtn: return False
         return sbCovar
 
@@ -784,14 +947,19 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #----------------------------------
     z=sumVars.aprfs['Z']
     gridvars=filter(lambda k: fnmatch.fnmatch(k,'sb.*.grid'),sbctldefaults.inputs.keys())
-    for gk in gridvars:
-      grid=sbctldefaults.inputs[gk]
-      for ErrType in ('random','systematic'):
-        defk=gk.replace('grid',ErrType)
-        sbctldefaults.inputs[defk]=interp(z,*zip(*sorted(zip(grid,sbctldefaults.inputs[defk]),key=lambda x: x[0])))
-      del sbctldefaults.inputs[gk]
+  
+    for gk in list(gridvars):
+        grid=sbctldefaults.inputs[gk]
+        for ErrType in ('random','systematic'):
+            defk=gk.replace('grid',ErrType)
+            sbctldefaults.inputs[defk]=interp(z,*zip(*sorted(zip(grid,sbctldefaults.inputs[defk]),key=lambda x: x[0])))
+        del sbctldefaults.inputs[gk]
     SbDict=DictWithDefaults(SbctlFileVars.inputs,defaults=sbctldefaults.inputs)
 
+    #print(SbDict)
+
+    #exit()
+    
 
     #------------------------------------------------------------------------------
     # Read in output files from sfit4 run
@@ -807,7 +975,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #TODO what if tikhonov? -> the output in sa_matrix does not reflect the correct matrix, it is better to read sainv and try to do the inverse of fit
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.sa_matrix'][0], logFile)
     if not lines: 
-        print 'file.out.sa_matrix missing for observation, directory: ' + wrkingDir
+        print ('file.out.sa_matrix missing for observation, directory: ' + wrkingDir)
         if logFile: logFile.error('file.out.sa_matrix missing for observation, directory: ' + wrkingDir)
         return False    # Critical file, if missing terminate program    
 
@@ -817,8 +985,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Test if Sa matrix is symmetric and positive definite
     #-----------------------------------------------------
     (symRtn,pdRtn) = matPosDefTest(sa)
-    if not symRtn: print "Warning!! The Sa matrix is not symmetric\n\n"
-    if not pdRtn:  print "Warning!! The Sa matrix is not positive definite\n\n"
+    if not symRtn: print ("Warning!! The Sa matrix is not symmetric\n\n")
+    if not pdRtn:  print ("Warning!! The Sa matrix is not positive definite\n\n")
     # !!!!!!!!!!! Should we retrun False???  is it possible that the sa is not symmetric? If it is possible, we should solve it (by making it symmetric)
     
     #---------------------------------------------------------------
@@ -858,7 +1026,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #-----------------
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.k_matrix'][0], logFile) 
     if not lines: 
-        print 'file.out.k_matrix missing for observation, directory: ' + wrkingDir
+        print ('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
         if logFile: logFile.error('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
         return False    # Critical file, if missing terminate program   
 
@@ -875,7 +1043,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #--------------------
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.g_matrix'][0], logFile)
     if not lines: 
-        print 'file.out.g_matrix missing for observation, directory: ' + wrkingDir
+        print ('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
         if logFile: logFile.error('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
         return False    # Critical file, if missing terminate program   
 
@@ -884,13 +1052,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #------------------
     # Read in Kb matrix
     #------------------   
-    print 'Loading kb matrix',
+    print ('Loading kb matrix',)
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.kb_matrix'][0], logFile)
     if not lines: 
-        print 'file.out.kb_matrix missing for observation, directory: ' + wrkingDir
+        print ('file.out.kb_matrix missing for observation, directory: ' + wrkingDir)
         if logFile: logFile.error('file.out.kb_matrix missing for observation, directory: ' + wrkingDir)
         return False    # Critical file, if missing terminate program   
-    else: print '... done'
+    else: print ('... done')
 
     Kb_param = list(map(lambda x: x.replace('PROFILE_',''),lines[2].strip().split()))
     #---------------------------------------------------------------
@@ -937,8 +1105,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #-----------------------------------------
     try: AK = np.dot(D,K)
     except ValueError as ve:
-        print 'Unable to multiply Gain and K matrix '
-        print 'Gain matrix shape: %s, K matrix shape: %s' %(str(D.shape),str(K.shape))
+        print ('Unable to multiply Gain and K matrix ')
+        print ('Gain matrix shape: %s, K matrix shape: %s' %(str(D.shape),str(K.shape)))
         if logFile: logFile.error('Unable to multiple Gain and K matrix; Gain matrix shape: %s, K matrix shape: %s' %(str(D.shape),str(K.shape)) ) 
         raise ve
 
@@ -1084,7 +1252,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # determine errors
     # Kbl is the label used in the ctl file
     #--------------------------------
-    print 'Calculating uncertainty contributions for %s'%', '.join(Kb.keys())
+    print ('Calculating uncertainty contributions for %s'%', '.join(Kb.keys()))
     for Kbl in Kb:
         DK = np.dot(Dx,Kb[Kbl])
         for ErrType in ['random','systematic']:
@@ -1197,22 +1365,22 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                 # Test if Sb matrix is symmetric and positive definite
                 #-----------------------------------------------------
                 (symRtn,pdRtn) = matPosDefTest(Sb)
-                if not symRtn: print "Warning!! The Sb matrix is not symmetric\n\n"
-                if not pdRtn:  print "Warning!! The Sb matrix is not positive definite\n\n"
+                if not symRtn: print ("Warning!! The Sb matrix is not symmetric\n\n")
+                if not pdRtn:  print ("Warning!! The Sb matrix is not positive definite\n\n")
 
             #-----------------------------------------------
             # Catch instances where DK exists for parameter; 
             # however, no Sb is specified
             #-----------------------------------------------
             except KeyError as kerr:
-                print repr(kerr)
+                print (repr(kerr))
                 if logFile: logFile.error('Covariance matrix for '+Kbl+': Error type -- ' + ErrType+' not calculated. Sb does not exist\n')
 
             #-----------------------------------
             # Exceptions for terminating program
             #-----------------------------------
             except ExitError as err:
-                print err.msg
+                print (err.msg)
                 err.terminate()
 
             #--------------------------------------
@@ -1220,8 +1388,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             #--------------------------------------
             except: 
                 errmsg = sys.exc_info()[1]
-                print 'Error calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType 
-                print errmsg
+                print ('Error calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType)
+                print (errmsg)
                 if logFile: logFile.error('Error calculating error covariance matrix for '+Kbl+': Error type -- ' + ErrType+'\n')
 
             #----------------------------------------------------------------------
@@ -1245,7 +1413,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                     appc=sumVars.aprfs[primgas.upper()]*sumVars.aprfs['AIRMASS']
                     rtpc=sumVars.rprfs[primgas.upper()]*sumVars.aprfs['AIRMASS']
                     tce=np.sqrt(appc.dot(DK.dot(Sb).dot(DK.T)).dot(appc))
-                    print 'TC error for %-22s: %4.3e[molec/cm^2]\t%4.2f%%'%('%s.%s'%(Kbl,ErrType),tce,tce/rtpc.sum()*100)
+                    print ('TC error for %-22s: %4.3e[molec/cm^2]\t%4.2f%%'%('%s.%s'%(Kbl,ErrType),tce,tce/rtpc.sum()*100))
                     
                  
 

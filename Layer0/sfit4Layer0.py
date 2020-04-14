@@ -1,5 +1,4 @@
 #! /usr/bin/python3
-##! /usr/local/python-2.7/bin/python
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
 # Name:
@@ -70,11 +69,12 @@
 #---------------
 # Import modules
 #---------------
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
+import glob
 import getopt
 import sfitClasses as sc
-from Layer1Mods_v2 import errAnalysis
+from Layer1Mods import errAnalysis
 
 #---------------
 # python 3 or 2.7
@@ -86,8 +86,6 @@ try:
 except ImportError:
     from Tkinter import Tk
     import Tkinter, Tkconstants, tkFileDialog
-
-##sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)),'ModLib'))
 
 #------------------------
 # Define helper functions
@@ -119,7 +117,7 @@ def main(argv):
         'v3':   '/Users/jamesw/FDP/sfit/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
         'v4':   '/home/ebaumer/Code/sfit4/src/',
         'v5':   '/Users/jamesw/FDP/sfit/400/src/src-irwg14-mp',
-        'v6':   '/data/ebaumer/Code/sfit-core-code_Pre-release-0.9.6/src/'}
+        'v6':   '/data/ebaumer/Code/sfit4/sfit-core-code/src/'}
 
         #----------
         # Run flags
@@ -168,7 +166,7 @@ def main(argv):
                     elif f.lower() == 'p': pspecFlg = True
                     elif f.lower() == 's': sfitFlg  = True
                     elif f.lower() == 'e': errFlg   = True
-                    elif f.lower() == 'c': clnFile  = True
+                    elif f.lower() == 'c': clnFlg   = True
                     else: print ('{} not an option for -f ... ignored'.format(f))
             elif opt == '-?':
                 usage(binDirVer)
@@ -223,7 +221,8 @@ def main(argv):
 
                 if sbCtlFile.inputs['sbdefflg'][0] == 'T':
 
-                    if sc.ckFile(sbCtlFile.inputs['sbdefaults'][0]): 
+                    if sc.ckFile(sbCtlFile.inputs['sbdefaults'][0], exitFlg=True):
+
                         sbDefCtlFileName = sbCtlFile.inputs['sbdefaults'][0]
                         sbctldefaults = sc.CtlInputFile(sbDefCtlFileName)
                         sbctldefaults.getInputs()
@@ -236,11 +235,17 @@ def main(argv):
         #---------------------------
         # Clean up output from sfit4
         #---------------------------
+    
         if clnFlg:
-            for k in ctlFile.inputs['file.out']:
+            for k in ctlFile.inputs:
                 if 'file.out' in k:
-                    try:            os.remove(wrkDir + ctlFile.inputs[k])
+                    try:            os.remove(wrkDir + ctlFile.inputs[k][0])
                     except OSError: pass
+
+                for f in glob.glob(wrkDir + 'spc.*'): os.remove(f)
+                for f in glob.glob(wrkDir + 'raytrace.*'): os.remove(f)
+                for f in glob.glob(wrkDir + '*Error.*'): os.remove(f)
+                for f in glob.glob(wrkDir + '*.output'): os.remove(f)
 
         #----------
         # Run pspec
@@ -277,6 +282,7 @@ def main(argv):
             print ('Running error analysis')
             print ('**********************')
             rtn = errAnalysis(ctlFile,sbCtlFile,sbctldefaults,wrkDir)
+            #rtn = errAnalysis(ctlFile,sbCtlFile,wrkDir)
 
 
 

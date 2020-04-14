@@ -38,8 +38,9 @@
     #-------------------------#
     # Import Standard modules #
     #-------------------------#
-import sys
-import os
+
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import numpy    as np
 import datetime as dt
 import matplotlib.dates as md
@@ -55,10 +56,10 @@ from scipy import interpolate
 import getopt
 import matplotlib
 from dateutil import tz
-#import matplotlib.backends.backend_tkagg as tkagg
-#matplotlib.get_backend()
+import matplotlib.backends.backend_tkagg as tkagg
+matplotlib.get_backend()
 #'TkAgg'
-matplotlib.use("TkAgg")
+#matplotlib.use("TkAgg")
     
 def usage():
     ''' Prints to screen standard program usage'''
@@ -260,73 +261,77 @@ class RemoteHK():
         except Exception as errmsg:
             print('Error reading house.log: ', errmsg)
 
+        #----------------------
+        # UTC to Local Time
+        #----------------------
+        from_zone = tz.gettz('UTC')
+        to_zone   = tz.gettz('Pacific/Honolulu')
+        # America/Thule   Greenland 
+
+        self.obsTimelt = [ i.replace(tzinfo=from_zone).astimezone(to_zone) for i in self.obsTime]
+
 
         if dt.date(int(self.iyear), int(self.imnth), int(self.iday) ) >= dt.date(2019,5,5):
 
-            #try:
-            self.fname2 = self.dir + self.date + '/houseMet.log'
+            try:
+                self.fname2 = self.dir + self.date + '/houseMet.log'
 
-            with open(self.fname2,"r") as fopen: lines = fopen.readlines()
-            
-            #---------------
-            # Read in Header
-            #---------------
-            #for line in lines:
-                #if line.strip().startswith("#$"):
-                #   hdrs = [ val for val in line.strip().split()[3:]]
-            
-            hdrs = [ val for val in lines[0].strip().split()[2:]]
-            
-            #-------------------------
-            # Choose variables to plot
-            #-------------------------
-            ii    = []
-            idValMet = []
-            for i,v in enumerate(hdrs):
-                ii.append(ii)
-                idValMet.append(v)
-                print("{0:4}= {1:}".format(i,v))
+                with open(self.fname2,"r") as fopen: lines = fopen.readlines()
+                
+                #---------------
+                # Read in Header
+                #---------------
+                #for line in lines:
+                    #if line.strip().startswith("#$"):
+                    #   hdrs = [ val for val in line.strip().split()[3:]]
+                
+                hdrs = [ val for val in lines[0].strip().split()[2:]]
+                
+                #-------------------------
+                # Choose variables to plot
+                #-------------------------
+                ii    = []
+                idValMet = []
+                for i,v in enumerate(hdrs):
+                    ii.append(ii)
+                    idValMet.append(v)
+                    print("{0:4}= {1:}".format(i,v))
 
-            #----------------------
-            # Read in date and time
-            #----------------------
-            #self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
-            #                            int(line[17:19]),int(line[20:22]),int(line[23:25])) for line in lines[1:-2] if (not line.startswith("#"))])
-            
-            self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
-                                int(line[13:15]),int(line[16:18]),int(line[19:21])) for line in lines[1:-2] if (not line.startswith("#"))])
+                #----------------------
+                # Read in date and time
+                #----------------------
+                #self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
+                #                            int(line[17:19]),int(line[20:22]),int(line[23:25])) for line in lines[1:-2] if (not line.startswith("#"))])
+                
+                self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
+                                    int(line[13:15]),int(line[16:18]),int(line[19:21])) for line in lines[1:-2] if (not line.startswith("#"))])
 
-            for i, v in enumerate(idValMet):
-                try:
-                    self.vars.setdefault(v,[]).append(np.array([float(line.strip().split()[i+2]) for line in lines[1:-2] if not line.startswith("#")]))
-                    #self.vars[v] = np.interp(self.obsTime, self.obsTime2, np.asarray(self.vars[v]) )
-                except ValueError:
-                    #print v
-                    self.vars.setdefault(v,[]).append(np.array([line.strip().split()[i+2] for line in lines[1:-2] if not line.startswith("#")]))
+                for i, v in enumerate(idValMet):
+                    try:
+                        self.vars.setdefault(v,[]).append(np.array([float(line.strip().split()[i+2]) for line in lines[1:-2] if not line.startswith("#")]))
+                        #self.vars[v] = np.interp(self.obsTime, self.obsTime2, np.asarray(self.vars[v]) )
+                    except ValueError:
+                        #print v
+                        self.vars.setdefault(v,[]).append(np.array([line.strip().split()[i+2] for line in lines[1:-2] if not line.startswith("#")]))
 
-            doyhouse = toYearFraction(self.obsTime)
-            doyMet   = toYearFraction(self.obsTime2)  
+                doyhouse = toYearFraction(self.obsTime)
+                doyMet   = toYearFraction(self.obsTime2)  
 
-            #----------------------
-            # UTC to Local Time
-            #----------------------
-            from_zone = tz.gettz('UTC')
-            to_zone   = tz.gettz('Pacific/Honolulu')
-            # America/Thule   Greenland 
+                
+                #----------------------
 
-            self.obsTimelt = [ i.replace(tzinfo=from_zone).astimezone(to_zone) for i in self.obsTime]
+                for i, v in enumerate(idValMet):
 
-            #----------------------
-
-            for i, v in enumerate(idValMet):
-
-                self.vars[v]  = interpolate.interp1d(doyMet, self.vars[v][0], axis=0, fill_value=(self.vars[v][0][0], self.vars[v][0][-1]), bounds_error=False, kind='nearest')(doyhouse )
+                    self.vars[v]  = interpolate.interp1d(doyMet, self.vars[v][0], axis=0, fill_value=(self.vars[v][0][0], self.vars[v][0][-1]), bounds_error=False, kind='nearest')(doyhouse )
 
 
-            self.flgMet = True
+                self.flgMet = True
 
-            #except Exception as errmsg:
-            #    print('Error reading houseMet.log: ', errmsg)
+            except Exception as errmsg:
+                print('Error reading houseMet.log: ', errmsg)
+
+        
+
 
     #----------------------------
     # PLOT HK DEF - 24h
@@ -428,12 +433,12 @@ class RemoteHK():
                     #----------
                     ax1[vi].set_ylabel(Groups_Lab[vi][0])
                     ax1[vi].grid(True)
-                    #ax1[-1].set_xlabel("UT [Hours]")
+                    ##ax1[-1].set_xlabel("UT [Hours]")
                     ax1[vi].xaxis.set_major_locator(HourLocator(interval = 3))
-                    #ax1[vi].xaxis.set_major_formatter(DateFormatter("%m/%d %H"))
-                    #ax1[vi].xaxis.set_minor_locator(AutoMinorLocator())
-                    #ax1[vi].set_title("Date = {:%Y-%B-%d}".format(self.obsTime[2]))
-                    #ax1[vi].legend(prop={'size':9}, loc=3)
+                    ##ax1[vi].xaxis.set_major_formatter(DateFormatter("%m/%d %H"))
+                    ##ax1[vi].xaxis.set_minor_locator(AutoMinorLocator())
+                    ##ax1[vi].set_title("Date = {:%Y-%B-%d}".format(self.obsTime[2]))
+                    ##ax1[vi].legend(prop={'size':9}, loc=3)
                     ax1[vi].legend(prop={'size':8}, loc='upper left', bbox_to_anchor=(-0.05, 1.2), shadow=False, ncol=len(v), handletextpad=0.1)
                     #ax1[vi].set_xlim(xmin=self.obsTimelt[0]+dt.timedelta(hours=5), xmax=self.obsTimelt[-1]-dt.timedelta(hours=5))
 
@@ -463,7 +468,7 @@ class RemoteHK():
 
                     
 
-                    #ax2.set_xlim(xmin=dt.datetime(self.obsTimelt[-1].year, self.obsTime[-1].month,self.obsTime[-1].day, 5, 0, 0), xmax=dt.datetime(self.obsTime[-1].year, self.obsTime[-1].month, self.obsTime[-1].day, 13, 59, 0))
+                    ##ax2.set_xlim(xmin=dt.datetime(self.obsTimelt[-1].year, self.obsTime[-1].month,self.obsTime[-1].day, 5, 0, 0), xmax=dt.datetime(self.obsTime[-1].year, self.obsTime[-1].month, self.obsTime[-1].day, 13, 59, 0))
                     ax2.set_xlim(self.obsTimelt[0], self.obsTimelt[-1])
            
                     if len(varsGroup) == 2: 
@@ -482,6 +487,10 @@ class RemoteHK():
                 else:
                     plt.show(block=False)
 
+
+        #user_input = input('Here - Press any key to exit >>> ')
+        #exit() 
+
             
     #----------------------------
     # PLOT HK DEF - Observing time
@@ -491,6 +500,8 @@ class RemoteHK():
         self.readHK( showID=showID)
 
         if self.hkFlg:
+
+            print('plotting HK.....')
         
             #--------------------
             # Option to save file
@@ -529,7 +540,6 @@ class RemoteHK():
                                 else:
                                     pltVal2 = []
                                     for vs in pltVal:
-                                        
                                         try:
                                             if vs.lower() == 'open':
                                                 pltVal2.append(1)
@@ -562,7 +572,7 @@ class RemoteHK():
 
                             if i == 0:
                                 for j, k in enumerate(v):
-                                    #print k
+                                  
                                     pltVal  = np.asarray(self.vars[k])
 
                                     if k == 'szenith':
@@ -578,6 +588,7 @@ class RemoteHK():
                                     pltVal  = np.asarray(self.vars[k])
                                     axr.plot(self.obsTime,pltVal,"." ,markersize=4, label = k, color=clr2[j])
 
+                    print('here-1')
                     #----------
                     ax1[vi].set_ylabel(Groups_Lab[vi][0])
                     ax1[vi].grid(True)
@@ -622,16 +633,20 @@ class RemoteHK():
                         #axr.legend(prop={'size':9}, loc=4)
                         axr.legend(prop={'size':8}, loc='upper right', bbox_to_anchor=(1.05, 1.2), shadow=False, ncol=len(v), handletextpad=0.1)
 
+                
                 plt.suptitle("Date = {:%Y-%B-%d}".format(self.obsTime[2]), fontsize=16)
 
                 #fig1.autofmt_xdate()
                 fig1.subplots_adjust(left=0.1, bottom=0.085, right=0.9, top=0.95)
 
+                print('here-2')
+
                     
-                if self.pdfFlg: 
-                    self.pdfSave.savefig(fig1,dpi=600, bbox_inches='tight')
-                else:
-                    plt.show(block=False)
+                #if self.pdfFlg: 
+                    #self.pdfSave.savefig(fig1,dpi=600, bbox_inches='tight')
+                #else:
+                plt.show(block=False)
+            print('here-3')
 
             #if self.pdfFlg: 
             #    pdfSave.close()
@@ -1120,9 +1135,9 @@ def main(argv):
         if pdfFlg: d.openFig()
         
         
-        #d.plt_HK(Groups=Groups , Groups_Lab=Groups_Lab )
-        d.plt_HK_Day(Groups=Groups , Groups_Lab=Groups_Lab )
-        d.plt_HK_Day2(Groups=Groups , Groups_Lab=Groups_Lab )
+        d.plt_HK(Groups=Groups , Groups_Lab=Groups_Lab )
+        #d.plt_HK_Day(Groups=Groups , Groups_Lab=Groups_Lab )
+        #d.plt_HK_Day2(Groups=Groups , Groups_Lab=Groups_Lab )
 
         #d.plt_Meas(fltid=fltid)
         
@@ -1131,7 +1146,7 @@ def main(argv):
             d.closeFig()
         else:
             user_input = input('Press any key to exit >>> ')
-            sys.exit() 
+            exit() 
         
 
 

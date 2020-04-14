@@ -26,6 +26,8 @@
 #import hdfsaveTAB as hdfsave
 #import hdfsaveMLO as hdfsave
 #import hdfsaveFL0 as hdfsave
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "HDFsave")))
 import numpy as np
 import getopt
 import os
@@ -279,19 +281,12 @@ def main(argv):
 
                 print("Creating HDF file for year: " + str(year) + '\n')
 
-                #try:
+
                 myhdf.initPy(Inputs['dataDir'],Inputs['ctlFile'],Inputs['spcDBFile'],Inputs['statLyrFile'],iyear,imonth,iday,fyear,fmonth,fday,
-                    mxRMS=Inputs['maxRMS'], minDOF=Inputs['minDOF'],minSZA=Inputs['minSZA'],mxSZA=Inputs['maxSZA'],maxCHI=Inputs['maxCHI'],minTC=Inputs['minTC'],
+                    mxRMS=Inputs['maxRMS'], minDOF=Inputs['minDOF'],maxDOF=Inputs['maxDOF'],minSZA=Inputs['minSZA'],mxSZA=Inputs['maxSZA'],maxCHI=Inputs['maxCHI'],minTC=Inputs['minTC'],
                     maxTC=Inputs['maxTC'], dofFlg=Inputs['dofFlg'],rmsFlg=Inputs['rmsFlg'],tcFlg=Inputs['tcNegFlg'],pcFlg=Inputs['pcNegFlg'],cnvFlg=Inputs['cnvrgFlg'],
                     szaFlg=Inputs['szaFlg'], chiFlg=Inputs['chiFlg'],errFlg=Inputs['errFlg'],tcMMflg=Inputs['tcMMFlg'], h2oFlg=Inputs['h2oFlg'])
-                
-                # except Exception as errmsg:
-                #     print ('!!! Seomething went wrong with year: {} !!!'.format(iyear))
-                #     print ('Error: {}'.format(errmsg))
-                #     ErrYearFlg = True
-                #     ErrYear.append(iyear)
-
-                #     continue
+         
 
             #--------------------------------------------
             # Here we are actually creating the HDF file.
@@ -306,7 +301,7 @@ def main(argv):
             for y in ErrYear:
                 print ('\nError detected in year: {}'.format(y))
         else:
-            print ('\nHDF file(s) successfully created')
+            print ('\nHDF file(s) successfully created\n')
 
     else:
 
@@ -315,23 +310,19 @@ def main(argv):
 
         try:
             myhdf.initPy(Inputs['dataDir'],Inputs['ctlFile'],Inputs['spcDBFile'],Inputs['statLyrFile'],Inputs['iyear'],Inputs['imnth'],Inputs['iday'],Inputs['fyear'],Inputs['fmnth'],Inputs['fday'],
-                mxRMS=Inputs['maxRMS'], minDOF=Inputs['minDOF'],minSZA=Inputs['minSZA'],mxSZA=Inputs['maxSZA'],maxCHI=Inputs['maxCHI'],minTC=Inputs['minTC'],
+                mxRMS=Inputs['maxRMS'], minDOF=Inputs['minDOF'],maxDOF=Inputs['maxDOF'],minSZA=Inputs['minSZA'],mxSZA=Inputs['maxSZA'],maxCHI=Inputs['maxCHI'],minTC=Inputs['minTC'],
                 maxTC=Inputs['maxTC'], dofFlg=Inputs['dofFlg'],rmsFlg=Inputs['rmsFlg'],tcFlg=Inputs['tcNegFlg'],pcFlg=Inputs['pcNegFlg'],cnvFlg=Inputs['cnvrgFlg'],
                 szaFlg=Inputs['szaFlg'], chiFlg=Inputs['chiFlg'],errFlg=Inputs['errFlg'],tcMMflg=Inputs['tcMMFlg'], h2oFlg=Inputs['h2oFlg'])
 
             myhdf.createHDF4()
+            #myhdf.createHDF5()
 
-            print ('\nHDF file(s) successfully created')
+            print ('\nHDF file(s) successfully created\n')
         
         except Exception as errmsg:
             print ('!!! Seomething went wrong with date range: {} !!!'.format(idateStr+'_'+fdateStr))
             print ('Error: {}'.format(errmsg))
             exit()
-
-        
-
-        
-            
 
 
 if __name__ == "__main__":

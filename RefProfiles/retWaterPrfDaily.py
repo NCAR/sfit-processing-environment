@@ -1,9 +1,9 @@
-#!/usr/bin/python
+#! /usr/bin/python3
 ##! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
 # Name:
-#      NCEPwaterPrf.py
+#      retWaterPrfDaily.py
 #
 # Purpose:
 #      This program creates water VMR from NCEP daily water data and writes an output file
@@ -36,8 +36,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import glob
 import datetime          as dt
 import sfitClasses       as sc
@@ -46,16 +46,25 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import getopt
 
+plt.rcParams.update({'figure.max_open_warning': 0})
 
 
                         #-------------------------------------#
                         # Define helper functions and classes #
                         #-------------------------------------#
 
+def usage():
+    print('retWaterPrfDaily.py -s <loc>  -d <20190101_20191231> -?] \n\n'
+         '-s <loc>                               : Location (three letter id, eg., fl0, mlo)\n'
+         '-d <20190101> or <20190101_20191231>   : Date or Date range\n'
+         'Note: hardcoded inputs are included\n')
+
+    sys.exit()
+
 def ckDir(dirName,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -64,7 +73,7 @@ def ckDir(dirName,exitFlg=False):
 def ckFile(fName,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -99,7 +108,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 's:d:?:')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
 
@@ -141,7 +150,7 @@ def main(argv):
 
 
             else:
-                print 'Error in input date'
+                print ('Error in input date')
                 usage()
                 sys.exit()
 
@@ -150,7 +159,7 @@ def main(argv):
             sys.exit()
 
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             sys.exit()
 
     #---------
@@ -238,7 +247,8 @@ def main(argv):
     # data directory and collect directory names
     #--------------------------------------------
     dirLst = []
-    for drs in os.walk(dataDir).next()[1]:
+
+    for drs in next(iter(os.walk(dataDir)))[1]: 
 
         #-------------------------------------------
         # Test directory to make sure it is a number
@@ -311,10 +321,9 @@ def main(argv):
 
             pdfsav.savefig(fig1,dpi=250)
 
-
             pdfsav.close()
 
-        print 'Finished processing folder: {}'.format(sngDir)
+        print ('Finished processing folder: {}'.format(sngDir))
 
 if __name__ == "__main__":
     main(sys.argv[1:])

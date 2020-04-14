@@ -60,8 +60,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import getopt
 import datetime as dt
 import DateRange as dr
@@ -198,7 +198,17 @@ def main(argv):
     DBinputs = {}
 
     if inpFlg:
-        execfile(inputFile, DBinputs)
+        
+        try:
+            execfile(inputFile, DBinputs)
+
+        except IOError as errmsg:
+            print (errmsg)
+            sys.exit()
+
+        except:
+            exec(compile(open(inputFile, "rb").read(), inputFile, 'exec'), DBinputs)
+
         if '__builtins__' in DBinputs:
             del DBinputs['__builtins__']
 
@@ -243,7 +253,8 @@ def main(argv):
         # Number of minutes to
         # include for averaging
         #----------------------
-        DBinputs['nminsStation'] = 10       # Number of minutes for averaging Temperature, Pressure, and RH from external station data (MLO)
+        if loc.lower() == 'fl0': DBinputs['nminsStation'] = 30       # Number of minutes for averaging Temperature, Pressure, and RH from external station data (MLO)
+        else: DBinputs['nminsStation'] = 10
         #nminsStation = 90        # Number of minutes for averaging Temperature, Pressure, and RH from external station data (TAB)
         DBinputs['nminsHouse']   = 10        # Number of minutes for averaging Temperature, Pressure, and RH from House log data
     

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#! /usr/bin/python3
 ##! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
@@ -28,8 +28,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import datetime                                            as dt
 import dataOutClass                                        as dc
 import numpy                                               as np
@@ -38,6 +38,20 @@ import matplotlib.pyplot                                   as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import getopt
 
+plt.rcParams.update({'figure.max_open_warning': 0})
+
+
+#------------------------
+# Define helper functions
+#------------------------
+def usage():
+    print('retWaterPrf.py -s <loc>  -v <version> -d <20190101_20191231> -?] \n\n'
+         '-s <loc>                               : Location (three letter id, eg., fl0, mlo)\n'
+         '-v <version>                           : Version of water vapor\n'
+         '-d <20190101> or <20190101_20191231>   : Date or Date range\n'
+         'Note: hardcoded inputs are included')
+
+    sys.exit()
 
                         #-------------------------------------#
                         # Define helper functions and classes #
@@ -46,7 +60,7 @@ import getopt
 def ckDir(dirName,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -55,7 +69,7 @@ def ckDir(dirName,exitFlg=False):
 def ckFile(fName,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -87,10 +101,10 @@ def main(argv):
     # Retrieve command line arguments
     #--------------------------------
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 's:d:v:?:')
+        opts, args = getopt.getopt(sys.argv[1:], 's:d:v:?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
 
@@ -136,7 +150,7 @@ def main(argv):
 
 
             else:
-                print 'Error in input date'
+                print ('Error in input date')
                 usage()
                 sys.exit()
 
@@ -145,7 +159,7 @@ def main(argv):
             sys.exit()
 
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             sys.exit()
 
 

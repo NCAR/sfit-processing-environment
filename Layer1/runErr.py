@@ -1,4 +1,4 @@
-#! /usr/bin/python2.7
+#! /usr/bin/python3
 #----------------------------------------------------------------------------------------
 # Name:
 #        runErr.py
@@ -40,8 +40,8 @@
                                 # Import Standard modules #
                                 #-------------------------#
 
-import os                                
-import sys
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import sfitClasses as sc
 from Layer1Mods import errAnalysis
 from dataOutClass import _DateRange as dRange
@@ -54,7 +54,7 @@ from dataOutClass import _DateRange as dRange
 def ckFile(fName,logFlg=False,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if logFlg: logFlg.error('Unable to find file: %s' % fName)
         if exit: sys.exit()
         return False
@@ -73,7 +73,7 @@ def ckDirMk(dirName,logFlg=False):
 def ckDir(dirName,logFlg=False,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if logFlg: logFlg.error('Directory %s does not exist' % dirName)
         if exit: sys.exit()
         return False
@@ -127,14 +127,19 @@ def main():
     sbCtlFile = sc.CtlInputFile(sbFileName)
     sbCtlFile.getInputs()    
 
-    if 'sbdefaults' in sbCtlFile.inputs:
+    if 'sbdefflg' in sbCtlFile.inputs:
 
-        ckFile(sbCtlFile.inputs['sbdefaults'][0],logFlg=logFile,exit=True)
-        sbctldefaults = sc.CtlInputFile(sbCtlFile.inputs['sbdefaults'][0])
-        sbctldefaults.getInputs()
+        if sbCtlFile.inputs['sbdefflg'][0] == 'T':
 
-    else:
-        sbctldefaults = False 
+            if ckFile(sbCtlFile.inputs['sbdefaults'][0], exit=True):
+
+                sbDefCtlFileName = sbCtlFile.inputs['sbdefaults'][0]
+                sbctldefaults = sc.CtlInputFile(sbDefCtlFileName)
+                sbctldefaults.getInputs()
+        
+        else: sbctldefaults = False
+
+    else: sbctldefaults = False
 
     
     #--------------------------------------------
@@ -174,9 +179,9 @@ def main():
             #-------------------
             # Run error analysis
             #-------------------
-            print curDir
+            print (curDir)
             rtn = errAnalysis(ctlFile,sbCtlFile,sbctldefaults,curDir)
-            if not rtn: print 'Unable to run error analysis in directory = {}'.format(curDir)
+            if not rtn: print ('Unable to run error analysis in directory = {}'.format(curDir))
 
             
         

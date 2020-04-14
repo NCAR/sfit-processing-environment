@@ -35,6 +35,8 @@
 #    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #
 #----------------------------------------------------------------------------------------
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import datetime as dt
 import numpy as np
 import scipy.io as si
@@ -162,8 +164,9 @@ class HDFinitData(object):
         
 
     def initPy(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,
-               mxRMS=1.0,minSZA=0.0,mxSZA=80.0,minDOF=2.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,dofFlg=False,rmsFlg=True,
-               tcFlg=True,pcFlg=True,cnvFlg=True,szaFlg=False,errFlg=True,chiFlg=False,tcMMflg=False, h2oFlg=False):
+               mxRMS=1.0,minSZA=0.0,mxSZA=80.0,minDOF=0.0, maxDOF=10.0, maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,dofFlg=False,rmsFlg=True,
+               tcFlg=True,pcFlg=True,cnvFlg=True,szaFlg=False,errFlg=True,chiFlg=False,tcMMflg=False, h2oFlg=False,
+               bckgFlg=False, minSlope=0.0, maxSlope=1e10, minCurv=0.0, maxCurv=1e10):
         ''' Interface for initializing data with python set of routines'''
         
         #---------------------------------------
@@ -175,8 +178,9 @@ class HDFinitData(object):
         # Filter data
         #------------
         
-        pyData.fltrHDFdata(maxRMS=mxRMS,minSZA=minSZA,maxSZA=mxSZA,minDOF=minDOF,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,dofF=dofFlg,
-                           rmsF=rmsFlg, tcF=tcFlg, pcF=pcFlg, cnvF=cnvFlg, szaF=szaFlg,chiFlg=chiFlg,tcMMflg=tcMMflg, h2oFlg=h2oFlg)
+        pyData.fltrHDFdata(maxRMS=mxRMS,minSZA=minSZA,maxSZA=mxSZA,minDOF=minDOF, maxDOF=maxDOF, maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,dofF=dofFlg,
+                           rmsF=rmsFlg, tcF=tcFlg, pcF=pcFlg, cnvF=cnvFlg, szaF=szaFlg,chiFlg=chiFlg,tcMMflg=tcMMflg, h2oFlg=h2oFlg,
+                           bckgFlg=bckgFlg, minSlope=minSlope, maxSlope=maxSlope, minCurv=minCurv, maxCurv=maxCurv)
         
         #------------
         # Assign data

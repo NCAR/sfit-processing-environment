@@ -36,8 +36,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import datetime as dt
 import sfitClasses as sc
 import numpy as np
@@ -462,7 +462,6 @@ def main(argv):
 
             #--------------------
             # Create plots to pdf
-            #COMMENTED BELOW BY IVAN: CHECK MATPLOT PLT ERROR
             #--------------------
             pdfsav = PdfPages(sngDir+'WaterProfile.pdf')
 
@@ -480,6 +479,7 @@ def main(argv):
             ax1.set_title(oneDay)
 
             pdfsav.savefig(fig1,dpi=250)
+            plt.close(fig1)
 
             fig2,ax2 = plt.subplots()
             ax2.plot(SHout,Z,'rx-', label='Interpolated SH')
@@ -492,12 +492,16 @@ def main(argv):
             ax2.tick_params(axis='x',which='both',labelsize=8)
             ax2.set_xscale('log')
             ax2.set_ylim((Z[-1],60))
-            ax2.set_xlim((0,np.max((waccmW[-1,mnthInd],dayShum[-1]))))
+            ax2.set_xlim((1e-10,np.max((waccmW[-1,mnthInd],dayShum[-1]))))
             ax2.set_title(oneDay)
 
             pdfsav.savefig(fig2,dpi=250)
 
             pdfsav.close()
+
+            plt.clf()
+            plt.close(fig2)
+
 
             print ('Finished processing folder: {}'.format(sngDir))
 

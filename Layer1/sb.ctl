@@ -3,6 +3,7 @@
 #      sb.ctl
 #
 # Purpose:
+#      sb.ctl created as example for the python package distribution
 #      This is the ctl file for the error analysis module located 
 #      in Layer1Mods.py
 #
@@ -23,7 +24,7 @@
 #     solstrnth               Solar line strength                   Fractional       
 #     phase                   Phase                                 Native [Radians]
 #     wshift                  Wavelength shift                      Fractional 
-#     dwshift                 Differential Wavelength shift         ******Currently NOT implemented***** 
+#     dwshift                 Differential Wavelength shift         ******Not Recommended for Use***** 
 #     sza                     Solar zenith angle                    Native [degrees] or fractional ??
 #     lineInt                 Line intensity                        Fractional
 #     lineTAir                Line temperature broadening           Fractional
@@ -40,9 +41,18 @@
 # Notes:
 #  1) phase and phase_fcn are different ways to describe the same parameter. 
 #     It is not recommended to calculate an error on both simultaneously. 
-#  2) dwshift is currently not functional. Do NOT use.
 #     
 #-----------------------------------------------------------------
+
+#-------------
+# Default flag (T = true; F = False)
+#-------------
+sbDefFlg                                = T
+
+#-------------
+# Location of default Sb
+#-------------
+sbDefaults                              = /data/pbin/Dev_Ivan/Layer1/sbDefaults.ctl
 
                         #-------#
                         # Flags #
@@ -59,7 +69,7 @@ out.ssystematic            = T      # T = write out systematic error covariance 
 #------------
 # Input Flags
 #------------
-SeInputFlg = F                # This flag determines where the Se matrix is read in.
+SeInputFlg = T                # This flag determines where the Se matrix is read in.
                               # If = T, the Se matrix is read in from sfit output file: file.out.seinv_vector
                               # This method takes into account de-weighting of the SNR set in the sfit4.ctl file
                               # If = F, the Se is taken from the summary file. These are the actual SNR values
@@ -70,12 +80,12 @@ SeInputFlg = F                # This flag determines where the Se matrix is read
 # native units or scaled
 #     F = Native Units, T = Fractional
 #-----------------------------------------------
-sb.temperature.random.scaled                = F         # If = T (fractional) --> scaled by a priori
-sb.temperature.systematic.scaled            = T         # If = T (fractional) --> scaled by a priori
-sb.sza.random.scaled                        = T
-sb.sza.systematic.scaled                    = T
-sb.omega.random.scaled                      = T
-sb.omega.systematic.scaled                  = T     # FOV Change!!
+sb.temperature.random.scaled                = F         # If = T (fractional) -- scaled by a priori
+sb.temperature.systematic.scaled            = F         # If = T (fractional) -- scaled by a priori
+sb.sza.random.scaled                        = F
+sb.sza.systematic.scaled                    = F
+sb.omega.random.scaled                      = F
+sb.omega.systematic.scaled                  = F     # FOV Change!!
 
 
                     #-------------------#
@@ -90,7 +100,6 @@ file.out.ssystematic.vmr              = Ssystematic.vmr.output
 file.out.error.summary                = Errorsummary.output
 file.out.avk                          = avk.output
 
-
                     #-------------------#
                     #     Sb values     #
                     #-------------------#
@@ -101,75 +110,49 @@ file.out.avk                          = avk.output
 #    value is top layer)  
 #------------------------------------------------
 sb.temperature.random       =   
-9  9  9  9  9  9  9  7  7  7  7  6  6  5  5  2  2  2  2  2  2  2  2  2
-2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 1.0 .7 .7 .7 .7 .7 .7 .7 .32 0.665 0.907 0.572
+0.181 0.168 0.176 0.232 0.277 0.407 0.523 0.368 0.234 0.045 0.571 0.612 0.981 0.143
+0.177 0.486 0.127 0.271 0.171 0.7   0.928 0.736 0.728 1.273 1.723 2.201 2.446
 
 sb.temperature.systematic   =
-9  9  9  9  9  9  9  7  7  7  7  6  6  5  5  2  2  2  2  2  2  2  2  2
-2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
+10.0 9.0 8.0 7.0 6.0 5.0 4.0 3.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 2.0 1.769 1.387 1.639 1.539
+1.408 1.374 1.187 1.171 1.065 1.123 1.039 1.148 1.214 1.427 1.544 2.05 2.774 2.967 2.228
+1.955 2.171 2.166 2.144 2.218 2.228 2.159 2.423 2.479 2.475 2.306 2.26 
 
-sb.profile.H2O.random       = 
-9  9  9  9  9  9  9  7  7  7  7  6  6  5  5  2  2  2  2  2  2  2  2  2
-2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
-
-sb.profile.H2O.systematic   = 
-9  9  9  9  9  9  9  7  7  7  7  6  6  5  5  2  2  2  2  2  2  2  2  2
-2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2  2
 
 #----------------------------------------------------------------------------
 # Micro-window dependent Sb:
 # -- Number of entries corresponds to the number of bands
-#    *** The order of the entries for sb must correspond to the order of
+#    *** The order of the entries in sb.sza must correspond to the order of
 #        bands specified in "band = " in the sfit4.ctl file ***
 #----------------------------------------------------------------------------
-sb.omega.random         = 0.001 0.001 0.001 0.001 0.001
-sb.omega.systematic     = 0.001 0.001 0.001 0.001 0.001
+#sb.omega.random         = 0.001 0.001 0.001
+#sb.omega.systematic     = 0.001 0.001 0.001
 
-sb.sza.random           = 0.05  0.05  0.05  0.05  0.05
-sb.sza.systematic       = 0.01  0.01  0.01  0.01  0.01
+#sb.phase.random         = 0.001 0.001 0.001
+#sb.phase.systematic     = 0.001 0.001 0.001
 
-sb.phase.random         = 0.001 0.001 0.001 0.001 0.001
-sb.phase.systematic     = 0.001 0.001 0.001 0.001 0.001
+#sb.wshift.random        = 0.001 0.001 0.001
+#sb.wshift.systematic    = 0.001 0.001 0.001
 
-sb.wshift.random        = 0.001 0.001 0.001 0.001 0.001
-sb.wshift.systematic    = 0.001 0.001 0.001 0.001 0.001
+#sb.slope.random         = 0.001 0.001 0.001
+#sb.slope.systematic     = 0.001 0.001 0.001
 
-sb.slope.random         = 0.001 0.001 0.001 0.001 0.001
-sb.slope.systematic     = 0.001 0.001 0.001 0.001 0.001
+#sb.curvature.random     = 0.001 0.001 0.001
+#sb.curvature.systematic = 0.001 0.001 0.001
 
-sb.curvature.random     = 0.001 0.001 0.001 0.001 0.001
-sb.curvature.systematic = 0.001 0.001 0.001 0.001 0.001
-
-sb.max_opd.random       = 0.00001 0.00001 0.00001 0.00001 0.00001
-sb.max_opd.systematic   = 0.00001 0.00001 0.00001 0.00001 0.00001
-
-#-----------------------------------------------------------
-# Sb for zshift is micro window dependent. However, Sb's are 
-# only to be specified in microwindows where zshift is not
-# retrieved. For example, if you have two microwindows and 
-# you retrieve the first (1), then you would specify:
-#  sb.band.2.zshift.random and sb.band.2.zshift.systematic
-# The number corresponds to the band number in the sfit4.ctl
-# file.
-#-----------------------------------------------------------
-sb.band.1.zshift.random      = 0.01
-sb.band.2.zshift.random      = 0.01
-sb.band.3.zshift.random      = 0.01
-sb.band.4.zshift.random      = 0.01
-sb.band.5.zshift.random      = 0.01
-sb.band.1.zshift.systematic  = 0.01
-sb.band.2.zshift.systematic  = 0.01
-sb.band.3.zshift.systematic  = 0.01
-sb.band.4.zshift.systematic  = 0.01
-sb.band.5.zshift.systematic  = 0.01
+#sb.max_opd.random       = 0.00001 0.00001 0.00001
+#sb.max_opd.systematic   = 0.00001 0.00001 0.00001
 
 #----------------
 # Single value Sb
 #----------------
-sb.solshft.random       = 0.005
-sb.solshft.systematic   = 0.005
-sb.solstrnth.random     = 0.001
-sb.solstrnth.systematic = 0.001
+sb.sza.random           = 0.15    # Half Angular diameter of sun 
+#sb.sza.systematic       = 0.000 
+#sb.solshft.random       = 0.005
+#sb.solshft.systematic   = 0.005
+#sb.solstrnth.random     = 0.001
+#sb.solstrnth.systematic = 0.001
 
 #------------------------------------------------------------
 # If the apodization and phase function are used in the forward model,
@@ -180,10 +163,26 @@ sb.solstrnth.systematic = 0.001
 # model then the default value for calculating Kb is a 3rd order
 # polynomial. Therefore 3 values of Sb must be given. 
 #------------------------------------------------------------
-sb.apod_fcn.random      = 0.05 0.05 0.05 0.05
-sb.apod_fcn.systematic  = 0.05 0.05 0.05 0.05
-sb.phase_fcn.random     = 0.05 0.05 0.05 0.05  
-sb.phase_fcn.systematic = 0.05 0.05 0.05 0.05
+#sb.apod_fcn.random      = 0.05 0.05 0.05 0.05 0.05
+#sb.apod_fcn.systematic  = 0.05 0.05 0.05 0.05 0.05
+#sb.phase_fcn.random     = 0.05 0.05 0.05 0.05 0.05
+#sb.phase_fcn.systematic = 0.05 0.05 0.05 0.05 0.05
+
+#-----------------------------------------------------------
+# Sb for zshift is micro window dependent. However, Sb's are 
+# only to be specified in microwindows where zshift is not
+# retrieved. For example, if you have two microwindows and 
+# you retrieve the first (1), then you would specify:
+#  sb.band.2.zshift.random and sb.band.2.zshift.systematic
+# The number corresponds to the band number in the sfit4.ctl
+# file.
+#-----------------------------------------------------------
+#sb.band.1.zshift.random      = 0.01
+#sb.band.2.zshift.random      = 0.01
+#sb.band.3.zshift.random      = 0.01
+#sb.band.1.zshift.systematic  = 0.01
+#sb.band.2.zshift.systematic  = 0.01
+#sb.band.3.zshift.systematic  = 0.01
 
 #----------------------------------------------------------
 # Sb's for lineInt, lineTair, and linePair are specific to
@@ -195,43 +194,25 @@ sb.phase_fcn.systematic = 0.05 0.05 0.05 0.05
 # Sb's (lineInt, linePAir, lineTAir) should be specified 
 # for gases given in kb.line.gas
 #----------------------------------------------------------
-sb.lineInt_CH4.random                   = 0.1
-sb.lineTAir_CH4.random                  = 0.1
-sb.linePAir_CH4.random                  = 0.1
-sb.lineInt_CH4.systematic               = 0.1     
-sb.lineTAir_CH4.systematic              = 0.1 
-sb.linePAir_CH4.systematic              = 0.1 
+sb.lineInt_CH4.systematic               = 0.05     
+sb.lineTAir_CH4.systematic              = 0.10 
+sb.linePAir_CH4.systematic              = 0.05
 
-#--------------------------------------------------------------
-# DO NOT USE!!!!!
-# Kbs are calculated for dwshift for all interfering species.
-# (i.e. all gases, except the first gas listed (the primary gas)
-#  They should be specified as:
-#      dwshift_<GAS>    example: dwshift_H2O
-#-------------------------------------------------------------- 
-#sb.dwshift_H2O.random               = 0.1 
-#sb.dwshift_H2O.systematic           = 0.1
-
-
-<<<<<<< HEAD
 #---------------------------------------------------------
 # These flags indicate which errors are included in the 
 # total random and systematic error budget. If the flag is
 # set as F or if it is missing than it is NOT included in
 # total error
 #---------------------------------------------------------
-sb.total.lineInt_CH4                 = T
-sb.total.lineTAir_CH4                = T
-sb.total.linePAir_CH4                = T
-sb.total.temperature                 = T
-sb.total.sza                         = T
-sb.total.measurement                 = T
-sb.total.smoothing                   = T
-sb.total.interfering_species         = T
-sb.total.retrieval_parameters        = T
-=======
+sb.total.lineInt_CH4                = T
+sb.total.lineTAir_CH4               = T
+sb.total.linePAir_CH4               = T
+sb.total.temperature                = T
+sb.total.sza                        = T
+sb.total.measurement                = T
 
->>>>>>> e19d222675ae6951b17a095558e88d38877eb091
+
+
 
 
 

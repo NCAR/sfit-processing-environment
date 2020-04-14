@@ -24,7 +24,6 @@ import datetime as dt
 import numpy as np
 import sys
 import os
-import myfunctions as mf
 
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -50,7 +49,42 @@ def segmnt(seq,n):
         xrange = range
         
     for i in xrange(0,len(seq),n):
-        yield seq[i:i+n]  
+        yield seq[i:i+n] 
+
+def readRefPrf(fname='', parms=''):
+
+        ''' Reads in reference profile, an input file for sfit4 (raytrace) '''
+        refPrf = {}
+
+        
+        try:
+            with open(fname,'r') as fopen: lines = fopen.readlines()
+                            
+            #----------------------------------------
+            # Get Altitude, Pressure, and Temperature
+            # from reference.prf file
+            #----------------------------------------
+            nlyrs  = int(lines[0].strip().split()[1])
+            nlines = int(np.ceil(nlyrs/5.0))
+            
+            for ind,line in enumerate(lines):
+                if any(p in line for p in parms):
+
+                    val = [x for x in parms if x in line][0]
+                   
+                    refPrf.setdefault(val,[]).append([float(x[:-1]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
+
+        except Exception as errmsg:
+            print (errmsg)
+        
+        #------------------------
+        # Convert to numpy arrays
+        # and sort based on date
+        #------------------------
+        for k in refPrf:
+            refPrf[k] = np.asarray(refPrf[k])
+
+        return refPrf 
 
 
 def main():
@@ -189,7 +223,7 @@ def main():
                         fout.write(line1)
                     
                         ckFile(reffile,exit=True)
-                        refprf = mf.readRefPrf(fname=reffile, parms = [gas.upper()])
+                        refprf = readRefPrf(fname=reffile, parms = [gas.upper()])
                         refprf =  np.asarray(refprf[gas.upper()][0]) 
 
                         for row in segmnt(refprf, 5):

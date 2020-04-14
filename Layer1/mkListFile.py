@@ -51,9 +51,9 @@
                                 #-------------------------#
                                 # Import Standard modules #
                                 #-------------------------#
-import sys
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import logging
-import os
 import getopt
 import glob
 import shutil
@@ -64,16 +64,16 @@ import datetime as dt
                                 #-------------------------#
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'mkListFile.py -i <file> -N <file> -d <dir> -?'
-    print '  -i <file> : Path and file name of Layer1 input file'
-    print '  -N <file> : Path and file name for output list file'
-    print '  -d <dir>  : Base directory of data (absolute path)'
-    print '  -?        : Show all flags'
+    print ('mkListFile.py -i <file> -N <file> -d <dir> -?')
+    print ('  -i <file> : Path and file name of Layer1 input file')
+    print ('  -N <file> : Path and file name for output list file')
+    print ('  -d <dir>  : Base directory of data (absolute path)')
+    print ('  -?        : Show all flags')
 
 def ckDir(dirName,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if exit: sys.exit()
         return False
     else:
@@ -82,7 +82,7 @@ def ckDir(dirName,exit=False):
 def ckFile(fName,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exit: sys.exit()
         return False
     else:
@@ -110,7 +110,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 'i:N:d:?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
 
@@ -137,7 +137,7 @@ def main(argv):
             sys.exit()
 
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             sys.exit()
 
     
@@ -236,7 +236,7 @@ def main(argv):
     sdate = str(inVars.inputs['iyear']) + str(inVars.inputs['imnth']).zfill(2)   + str(inVars.inputs['iday']).zfill(2)
     fdate = str(inVars.inputs['fyear']) + str(inVars.inputs['fmnth']).zfill(2)   + str(inVars.inputs['fday']).zfill(2)
 
-    print 'list created from '+sdate +'to '+ fdate
+    print ('list created from '+sdate +'to '+ fdate)
     #-----------------------------------------------------
     # Loop through directory to find all valid retreivals.
     # Retrieval is valid when summary file exists.

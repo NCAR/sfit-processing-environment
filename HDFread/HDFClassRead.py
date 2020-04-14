@@ -1,4 +1,3 @@
-
 #----------------------------------------------------------------------------------------
 # Name:
 #        dataHDFClass.py
@@ -33,29 +32,28 @@
 #
 #----------------------------------------------------------------------------------------
 
+import sys
+import os
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "HDFsave")))
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ExternalData")))
+
 import datetime as dt
 import time
 import math
-import sys
 import numpy as np
-import os
 import csv
 import itertools
 from collections import OrderedDict
-import os
 from os import listdir
 from os.path import isfile, join
 import re
-#import statsmodels.api as sm
+import hdfBaseRetDat
+
 from scipy.integrate import simps
 import matplotlib.animation as animation
 import matplotlib
-# Force matplotlib to not use any Xwindows backend.
-#matplotlib.use('Agg')
-import hdfBaseRetDat
 import matplotlib.dates as md
 from matplotlib.dates import DateFormatter, MonthLocator, YearLocator
-
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import FormatStrFormatter, MultipleLocator,AutoMinorLocator,ScalarFormatter
@@ -71,7 +69,7 @@ from pyhdf.SD import SD, SDC
 from pyhdf.SD import *
 #import coda
 from cycler import cycler
-
+np.warnings.filterwarnings('ignore')
 import h5py
 
 
@@ -775,6 +773,169 @@ def readstatlayer(stfile):
             #-------------------
             if len(line) == 0: continue
 
+def jd_to_date(jd):
+    """
+    Convert Julian Day to date.
+    
+    Algorithm from 'Practical Astronomy with your Calculator or Spreadsheet', 
+        4th ed., Duffet-Smith and Zwart, 2011.
+    
+    Parameters
+    ----------
+    jd : float
+        Julian Day
+        
+    Returns
+    -------
+    year : int
+        Year as integer. Years preceding 1 A.D. should be 0 or negative.
+        The year before 1 A.D. is 0, 10 B.C. is year -9.
+        
+    month : int
+        Month as integer, Jan = 1, Feb. = 2, etc.
+    
+    day : float
+        Day, may contain fractional part.
+        
+    Examples
+    --------
+    Convert Julian Day 2446113.75 to year, month, and day.
+    
+    >>> jd_to_date(2446113.75)
+    (1985, 2, 17.25)
+    
+    """
+    jd = jd + 0.5
+    
+    F, I = math.modf(jd)
+    I = int(I)
+    
+    A = math.trunc((I - 1867216.25)/36524.25)
+    
+    if I > 2299160:
+        B = I + 1 + A - math.trunc(A / 4.)
+    else:
+        B = I
+        
+    C = B + 1524
+    
+    D = math.trunc((C - 122.1) / 365.25)
+    
+    E = math.trunc(365.25 * D)
+    
+    G = math.trunc((C - E) / 30.6001)
+    
+    day = C - E + F - math.trunc(30.6001 * G)
+    
+    if G < 13.5:
+        month = G - 1
+    else:
+        month = G - 13
+        
+    if month > 2.5:
+        year = D - 4716
+    else:
+        year = D - 4715
+        
+    return year, month, day
+
+def days_to_hmsm(days):
+    """
+    Convert fractional days to hours, minutes, seconds, and microseconds.
+    Precision beyond microseconds is rounded to the nearest microsecond.
+    
+    Parameters
+    ----------
+    days : float
+        A fractional number of days. Must be less than 1.
+        
+    Returns
+    -------
+    hour : int
+        Hour number.
+    
+    min : int
+        Minute number.
+    
+    sec : int
+        Second number.
+    
+    micro : int
+        Microsecond number.
+        
+    Raises
+    ------
+    ValueError
+        If `days` is >= 1.
+        
+    Examples
+    --------
+    >>> days_to_hmsm(0.1)
+    (2, 24, 0, 0)
+    
+    """
+    hours = days * 24.
+    hours, hour = math.modf(hours)
+    
+    mins = hours * 60.
+    mins, min = math.modf(mins)
+    
+    secs = mins * 60.
+    secs, sec = math.modf(secs)
+    
+    micro = round(secs * 1.e6)
+    
+    return int(hour), int(min), int(sec), int(micro)
+
+def jd_to_datetime(jd, MJD2000=True):
+    """
+    Convert a Julian Day to an `jdutil.datetime` object.
+
+    if MJD2000=True Computes the UT date/time from JDF/MJD2000
+    
+    Parameters
+    ----------
+    jd : float
+        Julian day.
+        
+    Returns
+    -------
+    dt : `jdutil.datetime` object
+        `jdutil.datetime` equivalent of Julian day.
+    
+    Examples
+    --------
+    >>> jd_to_datetime(2446113.75)
+    datetime(1985, 2, 17, 6, 0)
+    
+    """
+    #1999, 10, 11, 14, 20, 41
+    j0        = 2451544.5
+    jd        = np.asarray(jd)
+
+    if MJD2000: jd    = jd + j0
+    else:       jd    = jd
+    
+    da    = [jd_to_date(d) for d in jd]
+    da    = np.asarray(da)
+    
+    year  = da[:, 0]
+    month = da[:, 1]
+    day   = da[:, 2]
+   
+    frac_days,day = np.modf(day)
+    day       = np.asarray(day, dtype=int)
+
+    ti    = [days_to_hmsm(fd) for fd in frac_days]
+    ti    = np.asarray(ti)
+
+    hour  = ti[:, 0]
+    min   = ti[:, 1]
+    sec   = ti[:, 2]
+
+    datestimes = [dt.datetime(int(y), int(month[i]), int(day[i]), int(hour[i]), int(min[i]), int(sec[i])) for i, y in enumerate(year)]
+    
+    return datestimes
 
 def jdf_2_datetime(jdf, MJD2000=True):
     #----------------------------------------
@@ -805,18 +966,21 @@ def jdf_2_datetime(jdf, MJD2000=True):
     ss  = t3
 
     #Determine YYYY, MM, DD
-    t1=jdi+int(68569)
-    t2=(int(4)*t1)/int(146097)
-    t1=t1-(int(146097)*t2+int(3))/int(4)
-    t3=(int(4000)*(t1+int(1)))/int(1461001)
-    t1=t1-(int(1461)*t3)/int(4) + int(31)
-    t4=(int(80)*t1)/int(2447)
+    t1=jdi+np.int(68569)
+    t2=(np.int(4)*t1)/np.int(146097)
+    t1=t1-(np.int(146097)*t2+np.int(3))/np.int(4)
+    t3=(np.int(4000)*(t1+np.int(1)))/np.int(1461001)
+    t1=t1-(np.int(1461)*t3)/np.int(4) + np.int(31)
+    t4=(np.int(80)*t1)/np.int(2447)
 
-    dd=t1-(int(2447)*t4)/int(80)
-    t1=t4/int(11)
-    mm=t4+int(2)-int(12)*t1
-    yyyy=int(100)*(t2-int(49))+t3+t1
+    dd=t1-(np.int(2447)*t4)/np.int(80)
+    t1=t4/np.int(11)
+    mm=t4+np.int(2)-np.int(12)*t1
+    yyyy=np.int(100)*(t2-np.int(49))+t3+t1
 
+    mm   =  np.asarray(mm, dtype=int)
+    dd   =  np.asarray(dd, dtype=int)
+    yyyy =  np.asarray(yyyy, dtype=int)
 
     datestimes = [dt.datetime(int(y), int(mm[i]), int(dd[i]), int(hh[i]), int(mn[i]), int(ss[i])) for i, y in enumerate(yyyy)]
 
@@ -887,12 +1051,7 @@ class ReadHDFData():
         self.dataDir    = dataDir
         self.locID      = locID
        
-        #---------------------------------
-        #
-        #---------------------------------
-        if not( dataDir.endswith('/') ):
-                dataDir = dataDir + '/'
-
+    
         self.HDF     = {}
 
         #-------------------------
@@ -925,9 +1084,21 @@ class ReadHDFData():
         Vars.setdefault(primGas.upper()+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName(),[])
         Vars.setdefault(primGas.upper()+'.'+self.getColumnAbsorptionSolarUncertaintySystematicName(),[])
 
-        #--------------------------
-        DirFiles = glob.glob(dataDir + '*'+primGas.lower()+ '*'+locID+'*.hdf')
-        #DirFiles = glob.glob(dataDir + '*'+locID+'*.hdf')
+
+        #---------------------------------
+        #
+        #---------------------------------
+        DirFiles = []
+
+        for d in dataDir:
+            if not( d.endswith('/') ):
+                d = d + '/'
+
+            DirFiles.append(glob.glob(d + '*'+primGas.lower()+ '*'+locID+'*.hdf'))
+            #DirFiles = glob.glob(dataDir + '*'+locID+'*.hdf')
+        
+        DirFiles = [item for DirFiles in DirFiles for item in DirFiles]
+
         DirFiles.sort()
   
         for drs in DirFiles:
@@ -952,18 +1123,18 @@ class ReadHDFData():
             
             for var in Vars.keys():
 
-                try:
-                    data  = hdfid.select(var)
-                    #units       = data.units
-                    units       = data.VAR_UNITS
-                    conv        = data.VAR_SI_CONVERSION.strip().split(';')
+                #try:
+                data  = hdfid.select(var)
+                #units       = data.units
+                units       = data.VAR_UNITS
+                conv        = data.VAR_SI_CONVERSION.strip().split(';')
 
-                    self.HDF.setdefault(var,[]).append(data)
-                    self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
-                    self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
+                self.HDF.setdefault(var,[]).append(data)
+                self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
+                self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
             
-                except Exception as errmsg:
-                    print (errmsg, ' : ', var)
+                #except Exception as errmsg:
+                    #print (errmsg, ' : ', var)
                     #exit()
         #---------------------------------
         #FLATTENED THE ARRAYS
@@ -1079,7 +1250,8 @@ class ReadHDFData():
 
             idate     = dt.date(iyear, imonth, iday)
             fdate     = dt.date(fyear, fmonth, fday)
-            dates     = jdf_2_datetime(self.HDF[self.getDatetimeName()])
+            #dates     = jdf_2_datetime(self.HDF[self.getDatetimeName()])
+            dates     = jd_to_datetime(self.HDF[self.getDatetimeName()])
             dates2     = [dt.date(d.year, d.month, d.day) for d in dates]
 
             indsT1 =  np.where(np.asarray(dates2) < idate)[0]
@@ -1183,7 +1355,8 @@ class PlotHDF(ReadHDFData):
         #----------------------------------------
         #try:
         datesJD2K    = self.HDF[self.getDatetimeName()]
-        dates        = jdf_2_datetime(datesJD2K)
+        ##dates        = jdf_2_datetime(datesJD2K)  # python 2.7 only
+        dates        = jd_to_datetime(datesJD2K)    # python 2.7 and 3
         alt          = self.HDF[self.getAltitudeName()]
         sza          = self.HDF[self.getAngleSolarZenithAstronomicalName()]
         conv         = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName()+'VAR_SI_CONVERSION']            
@@ -1214,25 +1387,9 @@ class PlotHDF(ReadHDFData):
             alt          = alt[0:n_layer]
 
         #----------------------------------------
-        print ('Latitude          = {}'.format(lat[0]))
-        print ('Longitude         = {}'.format(lon[0]))
-        print ('Altitude of Instr = {}'.format(altinstr[0]))
-
-        #----------------------------------------
-        #CREATE A FILE WITH DATE AND TIME (TO SEND AND GET BACK THE TROPOPAUSE HEIGHT)
-        #----------------------------------------
-        # Fileout  = self.dataDir + 'Dates_'+self.locID+'.ascii'
-        # with open(Fileout, 'wb') as fopen:
-        #     fopen.write('#Location:   {0:15}\n'.format(self.locID))
-        #     fopen.write('#Latitude:   {0:8.4f} [deg, positive North]\n'.format(float(lat[0])))
-        #     fopen.write('#Longitude:  {0:8.4f} [deg, positive East]\n'.format(float(lon[0])))
-        #     fopen.write('#Altitude:   {0:6.4f} [km]\n'.format(float(altinstr[0])))
-        #     fopen.write('YYYYMMDD     hhmmss [UT]\n')
-        #     for dd in dates:
-        #         YYYYMMDD = '{0:4d}{1:02d}{2:02d}'.format(dd.year, dd.month, dd.day)
-        #         hhmmss   = '{0:02d}:{1:02d}:{2:02d}'.format(dd.hour, dd.minute, dd.second)
-        #         fopen.write('{0:13}{1:13}\n'.format(YYYYMMDD, hhmmss))
-        
+        # print ('\nLatitude        = {}'.format(lat[0]))
+        # print ('Longitude         = {}'.format(lon[0]))
+        # print ('Altitude of Instr = {}'.format(altinstr[0]))        
         #----------------------------------------
 
         #----------------------------------------
@@ -1329,10 +1486,10 @@ class PlotHDF(ReadHDFData):
                 Mean_rnd    = np.nanmean(tot_rnd,axis=0)
                 Mean_sys    = np.nanmean(tot_sys,axis=0)
 
-                print ('\nMean Rnd Total Column Error: {0:.3e} [molec/cm2]'.format(Mean_rnd))
-                print ('Mean Sys Total Column Error: {0:.3e} [molec/cm2]'.format(Mean_sys))
-                print ('Mean Total Column Error:     {0:.3e} [molec/cm2]'.format(Mean_Err))
-                print ('Fraction of total error:     {0:.3e}'.format(Mean_Err/MeanTotCol))
+                # print ('\nMean Rnd Total Column Error: {0:.3e} [molec/cm2]'.format(Mean_rnd))
+                # print ('Mean Sys Total Column Error: {0:.3e} [molec/cm2]'.format(Mean_sys))
+                # print ('Mean Total Column Error:     {0:.3e} [molec/cm2]'.format(Mean_Err))
+                # print ('Fraction of total error:     {0:.3e}'.format(Mean_Err/MeanTotCol))
 
                 #print 'Mean Rnd Total Column Error: {0:} [{1:4s}]'.format(prfMean_Err*sclfct, sclname)
             except Exception as errmsg:
@@ -1389,9 +1546,7 @@ class PlotHDF(ReadHDFData):
 
         except Exception:
             print ('Error in PrfMean plot: PrfMean Not found')
-
-        #user_input = raw_input('Press any key to exit >>> ')
-        #sys.exit()           # Exit program                
+              
         #------------------
         # Multiple Profiles
         #------------------
@@ -1559,48 +1714,46 @@ class PlotHDF(ReadHDFData):
             print ('Error in Profiles plot')
 
         if errFlg:
-            #try:
+            try:
                 #----------------------------------
                 # Find mean and max error components
                 #----------------------------------
-            rand_max = np.max(vmr_rnd_err,axis=0)
-            rand_std = np.std(vmr_rnd_err,axis=0)
-            
-            sys_max  = np.max(vmr_sys_err,axis=0)
-            sys_std  = np.std(vmr_sys_err,axis=0)
-            
-            tot_max  = np.max(vmr_tot_err,axis=0)
-
-            #-------------------------------------------------------
-            # Plot mean systematic and random errors on mean profile
-            #-------------------------------------------------------
-            fig,(ax1,ax2)  = plt.subplots(1,2, sharey=True)
-           
-            #ax1.plot(prfMean,alt,color='k',label=self.PrimaryGas.upper()+' Retrieved Monthly Mean')
-            ax1.errorbar(prfMean,alt,xerr=prfMean_rnd,ecolor='r',label='Total Random Error')
-            ax1.fill_betweenx(alt,prfMean-rand_std,prfMean+rand_std,alpha=0.5,color='0.75')  
-            ax1.set_title('Random Error')
+                rand_max = np.max(vmr_rnd_err,axis=0)
+                rand_std = np.std(vmr_rnd_err,axis=0)
                 
-            ax1.set_ylabel('Altitude [km]')
-            ax1.set_xlabel('VMR')      
-            ax1.grid(True,which='both')                
-            
-            #ax2.plot(prfMean,alt,color='k',label=self.PrimaryGas.upper()+' Retrieved Monthly Mean')
-            ax2.errorbar(prfMean,alt,xerr=prfMean_sys,ecolor='r',label='Total Systematic Error')
-            ax2.fill_betweenx(alt,prfMean-sys_std,prfMean+sys_std,alpha=0.5,color='0.75')      
-            ax2.set_title('Systematic Error')
+                sys_max  = np.max(vmr_sys_err,axis=0)
+                sys_std  = np.std(vmr_sys_err,axis=0)
+                
+                tot_max  = np.max(vmr_tot_err,axis=0)
 
-            ax2.set_xlabel('VMR')                                         
-            ax2.grid(True,which='both')
-            
-            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-            else:           plt.show(block=False) 
+                #-------------------------------------------------------
+                # Plot mean systematic and random errors on mean profile
+                #-------------------------------------------------------
+                fig,(ax1,ax2)  = plt.subplots(1,2, sharey=True)
+               
+                #ax1.plot(prfMean,alt,color='k',label=self.PrimaryGas.upper()+' Retrieved Monthly Mean')
+                ax1.errorbar(prfMean,alt,xerr=prfMean_rnd,ecolor='r',label='Total Random Error')
+                ax1.fill_betweenx(alt,prfMean-rand_std,prfMean+rand_std,alpha=0.5,color='0.75')  
+                ax1.set_title('Random Error')
+                    
+                ax1.set_ylabel('Altitude [km]')
+                ax1.set_xlabel('VMR')      
+                ax1.grid(True,which='both')                
+                
+                #ax2.plot(prfMean,alt,color='k',label=self.PrimaryGas.upper()+' Retrieved Monthly Mean')
+                ax2.errorbar(prfMean,alt,xerr=prfMean_sys,ecolor='r',label='Total Systematic Error')
+                ax2.fill_betweenx(alt,prfMean-sys_std,prfMean+sys_std,alpha=0.5,color='0.75')      
+                ax2.set_title('Systematic Error')
 
-            #user_input = raw_input('Press any key to exit >>> ')
-            #sys.exit()           # Exit program        
+                ax2.set_xlabel('VMR')                                         
+                ax2.grid(True,which='both')
+                
+                if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                else:           plt.show(block=False) 
 
-            #except Exception:
-            #    print 'Error in Uncertainty Profiles plot'
+        
+            except Exception:
+                print ('Error in Uncertainty Profiles plot')
 
         #-----------
         # AVK Matrix

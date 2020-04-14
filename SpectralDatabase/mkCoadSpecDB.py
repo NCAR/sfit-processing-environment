@@ -47,8 +47,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import itertools
 import getopt
 import subprocess as sp
@@ -65,13 +65,13 @@ import numpy as np
                                                      
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'mkSpecDB.py -i <File>'
+    print ('mkSpecDB.py -i <File>')
 
         
 def ckDir(dirName,logFlg=False,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if logFlg: logFlg.error('Directory %s does not exist' % dirName)
         if exit: sys.exit()
         return False
@@ -81,7 +81,7 @@ def ckDir(dirName,logFlg=False,exit=False):
 def ckFile(fName,logFlg=False,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if logFlg: logFlg.error('Unable to find file: %s' % fName)
         if exit: sys.exit()
         return False
@@ -135,7 +135,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 'i:D:')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
         
@@ -154,7 +154,7 @@ def main(argv):
         # Unhandled options
         #------------------
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             usage()
             sys.exit()
     #------------------------------------------------------------------------------------------------------------#                       
@@ -290,7 +290,7 @@ def main(argv):
             indFind  = [i for i,dum in enumerate(flt1_OrgSpecDB['Filename']) if dum.endswith(newFname) ]
             if not indFind: continue
             if len(indFind) > 1: 
-                print 'More than one match found for: ' + newFname + ' Date: ' + yearstr + monthstr + daystr + ' ERROR!!'
+                print ('More than one match found for: ' + newFname + ' Date: ' + yearstr + monthstr + daystr + ' ERROR!!')
                 sys.exit()
             indFind = indFind[0]
 
@@ -351,8 +351,8 @@ def main(argv):
             #--------------------------------------
             with open(dayDir + 'coad.err', 'r') as fopenCerr: coadErr = fopenCerr.readlines()
             if (not coadErr) or (not 'Closed bnr file: temp.bnr' in coadErr[-1]):
-                print 'Error processing coad files for {}'.format(dayDir)
-                print coadErr
+                print ('Error processing coad files for {}'.format(dayDir))
+                print (coadErr)
                 continue
             
             szaOut    = coadOut[0].strip()
@@ -385,7 +385,7 @@ def main(argv):
             if os.path.isfile(dayDir + 'temp.bnr'):
                 shutil.move(dayDir + 'temp.bnr', dayDir + TstampNew + '.bnrc')
             else:
-                print 'Unable to move file: %s to %s' %(dayDir + TstampNew + '.bnrc')            
+                print ('Unable to move file: %s to %s' %(dayDir + TstampNew + '.bnrc') )           
                 
             #------------------------------------------------------------------------
             # Find the averages for surface temperature, pressure and RH measurements

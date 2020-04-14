@@ -71,8 +71,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 from os import walk
 import getopt
 import subprocess as sp
@@ -349,9 +349,8 @@ def main(argv):
         # to UTC time. Prior to that clock was on
         # MLO time.
         #------------------------------------------
-        #ckopusFlgs = ['-b2']                # For MLO 2009 - August 2011
-        #ckopusFlgs = ['-b6','-U','-pPHAS'] # For MLO 1995 - 2008
-        DBinputs['ckopusFlgs'] = ['-b5']               # For MLO after August 2011      
+       
+        DBinputs['ckopusFlgs'] = ['-b5']                 
         
     #-----------------------------------
     # Check the existance of directories

@@ -36,8 +36,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import datetime as dt
 import sfitClasses as sc
 import numpy as np
@@ -47,7 +47,6 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import scipy as sp
 from scipy.io import netcdf
-import myfunctions as mf
 import glob
 
                         #-------------------------------------#
@@ -57,7 +56,7 @@ import glob
 def ckDir(dirName,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -66,7 +65,7 @@ def ckDir(dirName,exitFlg=False):
 def ckFile(fName,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -116,11 +115,11 @@ def main():
     #-----------------------
     # Date Range of interest
     #-----------------------
-    iyear          = 2018
+    iyear          = 2019
     imnth          = 1
     iday           = 1
-    fyear          = 2018
-    fmnth          = 12
+    fyear          = 2019
+    fmnth          = 8
     fday           = 31
     
     #------------------------------
@@ -590,7 +589,7 @@ def main():
                 
         pdfsav.close()
         
-        print 'Finished processing folder: {}'.format(sngDir)
+        print ('Finished processing folder: {}'.format(sngDir))
         #user_input = raw_input('Press any key to exit >>> ')
                                                                                     
 if __name__ == "__main__":
