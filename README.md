@@ -5,7 +5,7 @@ Python package used for pre and post-processing of sfit4 (sfit-processing-enviro
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine.
-The step-by-step procedures and computing tools are described in OT-FTS_Spectral_Processing.pdf 
+The step-by-step procedures and computing tools are described in more detailed in the **OT-FTS_Spectral_Processing.pdf**
 
 ### Prerequisites
 
@@ -54,18 +54,17 @@ and will be installed, for example,
 
 * [2) github](https://github.com/NCAR/sfit-processing-environment.git) - The NCAR github sfit - sfit-processing-environment.
 
-This is the repository with several contributors. The branch with the relese version is release_v1.0.
-To install release_v1.0 locally in the current working directory:
+This is the repository with several contributors. The branch with the relese version is **Official_Release_v3.0**.
+To install Official_Release_v3.0 locally in the current working directory:
 
 ```
-git clone -b release_v1.0 https://github.com/NCAR/sfit-processing-environment.git
+git clone -b Official_Release_v3.0 https://github.com/NCAR/sfit-processing-environment.git
 ```
 
 ### Deployment 
 
 In theory, when using python3 setup.py install --user python automatically searches this directory for modules, so prepending this path to the PYTHONPATH environmental variable is not necessary. 
-However, it is still recommended to add this directory to your PYTHONPATH and PATH environment variables. For example, add the following path to you
-.bashrc (or .bash_profile), e.g., open your .bash_profile
+However, it is still recommended to add this directory to your PYTHONPATH and PATH environment variables. For example, add the following path to your shell, i.e., a program designed to start other programs (.bashrc, .bash_profile, .profile) e.g., open your .bash_profile
 
 ```
 $ vi ~/.bash_profile
@@ -79,13 +78,13 @@ export PYTHONPATH=$PYTHONPATH:/usr/local/lib/pythonX.Y/site-packages/Layer1
 
 use the above for all folders.
 
-Additionally, the main python scripts on each folder use the shebang:
+Additionally, the main python scripts on each folder use the shebang (top line in any script for standalone executable without typing python):
 
 ```
 #!/usr/bin/python3
 ```
 
-you can either modify thie line with you prefered python version or over run by using, for example,
+you can either modify thie line with you prefered python version or typy your python version in the command line, for example,
 
 ```
 $ /usr/bin/python2.7 sfit4Layer1.py -?
@@ -107,7 +106,7 @@ $ python3 sfit4Layer1.py -?
 
 ## Versioning
 
-**Version 1.0dev**. release version 1.0 (development)
+**Version 3.0dev**. release version 3.0 (development)
 
 ## Authors
 

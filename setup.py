@@ -9,7 +9,7 @@ install_requires = ['os', 'sys', 'numpy', 'matplotlib', 'Tkinter', 'datetime', '
 
 setup(
     name='sfit4-ProcessingEnvironment',
-    version='1.0dev',
+    version='3.0dev',
     packages=['HDFread', 'HDFsave', 'Layer0', 'Layer1', 'ModLib', 'Plotting', 'RefProfiles', 'SpectralDatabase'],
     license='NCAR, Boulder CO, USA; See license.txt',
     long_description=open('README.md').read(),
