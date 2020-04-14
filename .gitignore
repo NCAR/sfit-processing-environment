@@ -7,6 +7,6 @@
 # Compiled source #
 ###################
 *.pyc
-
+pltHKDynamic.py
 # Packages #
 ############
