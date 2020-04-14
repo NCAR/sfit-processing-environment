@@ -112,22 +112,20 @@ $ python3 sfit4Layer1.py -?
 ## Authors
 
 * **Eric Nusbaumer** - *Initial work* - 
-* **Bavo** - *Current work* - [iortega](https://github.com/iortegam)
-* **Mathias Palm** - *Current work* - [iortega](https://github.com/iortegam)
-* **James Hannigan** - *Current work* - [iortega](https://github.com/iortegam)
-* **Ivan Ortega** - *Current work* - [iortega](https://github.com/iortegam)
+* **Bavo Langerock** - *Current work* - 
+* **Mathias Palm** - *Current work* - 
+* **James Hannigan** - *Current work* - 
+* **Ivan Ortega** - *Current work* - [iortegaM](https://github.com/iortegam)
 
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
 
 ## License
 
-This project is licensed under the MIT License - see the [license.txt](license.txt) file for details
+See the [license.txt](license.txt) file for details
 
 ## Acknowledgments
 
-* Garth
+* Garth DAttilo (NCAR, Boulder CO, 80301)
 
