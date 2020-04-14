@@ -3,9 +3,11 @@ README.md
 license.txt
 setup.py
 HDFread/HDFClassRead.py
+HDFread/__init__.py
 HDFread/input_HDFRead.py
 HDFread/pltHDF.py
 HDFsave/HDFCreate.py
+HDFsave/__init__.py
 HDFsave/hdfBaseRetDat.py
 HDFsave/hdfCrtFile.py
 HDFsave/hdfInitData.py
@@ -15,6 +17,7 @@ HDFsave/hdfsaveHRT.py
 HDFsave/hdfsaveMLO.py
 HDFsave/hdfsaveTAB.py
 HDFsave/input_HDFCreate.py
+Layer0/__init__.py
 Layer0/sfit4Layer0.py
 Layer1/__init__.py
 Layer1/mkListFile.py
@@ -25,6 +28,7 @@ Layer1/sfit4Layer1.py
 Layer1/stat_input.py
 ModLib/DateRange.py
 ModLib/Layer1Mods.py
+ModLib/__init__.py
 ModLib/dataOutClass.py
 ModLib/printStatmnts.py
 ModLib/sfitClasses.py
