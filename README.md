@@ -115,7 +115,7 @@ $ python3 sfit4Layer1.py -?
 * **Bavo Langerock** - *Current work* - 
 * **Mathias Palm** - *Current work* - 
 * **James Hannigan** - *Current work* - 
-* **Ivan Ortega** - *Current work* - [iortegaM](https://github.com/iortegam)
+* **Ivan Ortega** - *Current work* - [iortegam](https://github.com/iortegam)
 
 
 ## Contributing
