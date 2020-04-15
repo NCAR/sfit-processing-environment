@@ -120,6 +120,19 @@ otherwise go to, e.g., the Layer1 folder and type
 $ python3 sfit4Layer1.py -?
 ```
 
+if succefully, the output might look like this
+
+```
+  -i <file>                              : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file
+  -l                                     : Flag to create log files of processing. Path to write log files is specified in input file
+  -L <0/1>                               : Flag to create output list file. Path to write list files is specified in input file
+  -P <int>                               : Pause run starting at run number <int>. <int> is an integer to start processing at
+  -d <20190101> or <20190101_20191231>   : Date or Date range
+                                         -d is optional and if used these dates will overwrite dates in input file for Layer 1 processing
+  -?                                     : Show all flags
+```
+
+
 ## Versioning
 
 **Version 3.0dev**. release version 3.0 (development)
