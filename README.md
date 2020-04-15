@@ -79,10 +79,9 @@ export PATH=$PATH:/usr/local/lib/pythonX.Y/site-packages/Layer1
 export PYTHONPATH=$PYTHONPATH:/usr/local/lib/pythonX.Y/site-packages/Layer1
 ```
 
-
-# V3.0 test
-#SPE=/myhomedir/V3.0/lib/python
-#export PYTHONPATH=$SPE/HDFread:$SPE/HDFsave:$SPE/Layer0:$SPE/Layer1:$SPE/ModLib:$SPE/Plotting:$SPE/RefProfiles:$SPE/SpectralDatabase:$PYTHONPATH
+<!-- V3.0 test -->
+<!--SPE=/myhomedir/V3.0/lib/python -->
+<!--export PYTHONPATH=$SPE/HDFread:$SPE/HDFsave:$SPE/Layer0:$SPE/Layer1:$SPE/ModLib:$SPE/Plotting:$SPE/RefProfiles:$SPE/SpectralDatabase:$PYTHONPATH -->
 
 
 use the above for all folders.
