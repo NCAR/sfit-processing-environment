@@ -16,6 +16,8 @@ setup(
     install_requires=install_requires,
     author='Eric Nussbaumer, James Hannigan, Ivan Ortega',
     author_email='iortge@ucar.edu',
+    maintainer= 'Ivan Ortega',
+    maintainer_email = 'iortge@ucar.edu',
     url='https://wiki.ucar.edu/display/sfit4/Infrared+Working+Group+Retrieval+Code%2C+SFIT',
     python_requires='>=2.7',
 )

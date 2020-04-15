@@ -10,12 +10,12 @@ The step-by-step procedures and computing tools are described in more detailed i
 ### Prerequisites
 
 Below are the standard python libraries needed in order to run sfit-processing-environment.
-The package has been tested with python >=2.7 
-Note: The installation of these libraries are not covered here.  
+The package has been tested with python >=2.7
+Note: The installation of these libraries are not covered here.
 
 ```
-os, sys, numpy, matplotlib, Tkinter, datetime, time, math, csv, itertools, collections, re, 
-scipy, pyhdf, cycler, h5py, abc, getopt, glob, logging, shutil, fileinput, subprocess, netCDF4 
+os, sys, numpy, matplotlib, Tkinter, datetime, time, math, csv, itertools, collections, re,
+scipy, pyhdf, cycler, h5py, abc, getopt, glob, logging, shutil, fileinput, subprocess, netCDF4
 ```
 
 ### Installing sfit-processing-environment
@@ -26,7 +26,7 @@ The sfit-processing-environment can be found here:
 
 Installation via its setup.py script
 
-Use tar to unpack the archive, for example: 
+Use tar to unpack the archive, for example:
 
 ```
 $ tar -xzf sfit4-ProcessingEnvironment-1.0dev.tar.gz
@@ -44,7 +44,7 @@ More information on [Installing Python Modules](https://docs.python.org/3.3/inst
 Alternatively, you can use --user option directs setup.py to install the package in the user site-packages directory for the running Python; for example:
 
 ```
-python3 setup.py install --user
+python setup.py install --user
 ```
 and will be installed, for example,
 
@@ -52,18 +52,21 @@ and will be installed, for example,
 ~//usr/local/lib/pythonX.Y/site-packages/
 ```
 
+where X.Y stands for the version of Python, for example 2.7
+
+
 * [2) github](https://github.com/NCAR/sfit-processing-environment.git) - The NCAR github sfit - sfit-processing-environment.
 
-This is the repository with several contributors. The branch with the relese version is **Official_Release_v3.0**.
+This is the repository with several contributors/branches. The branch with the relese version is **Official_Release_v3.0**.
 To install Official_Release_v3.0 locally in the current working directory:
 
 ```
 git clone -b Official_Release_v3.0 https://github.com/NCAR/sfit-processing-environment.git
 ```
 
-### Deployment 
+### Deployment
 
-In theory, when using python3 setup.py install --user python automatically searches this directory for modules, so prepending this path to the PYTHONPATH environmental variable is not necessary. 
+In theory, when using python setup.py install --user python automatically searches this directory for modules, so prepending this path to the PYTHONPATH environmental variable is not necessary.
 However, it is still recommended to add this directory to your PYTHONPATH and PATH environment variables. For example, add the following path to your shell, i.e., a program designed to start other programs (.bashrc, .bash_profile, .profile) e.g., open your .bash_profile
 
 ```
@@ -76,6 +79,12 @@ export PATH=$PATH:/usr/local/lib/pythonX.Y/site-packages/Layer1
 export PYTHONPATH=$PYTHONPATH:/usr/local/lib/pythonX.Y/site-packages/Layer1
 ```
 
+
+# V3.0 test
+#SPE=/myhomedir/V3.0/lib/python
+#export PYTHONPATH=$SPE/HDFread:$SPE/HDFsave:$SPE/Layer0:$SPE/Layer1:$SPE/ModLib:$SPE/Plotting:$SPE/RefProfiles:$SPE/SpectralDatabase:$PYTHONPATH
+
+
 use the above for all folders.
 
 Additionally, the main python scripts on each folder use the shebang (top line in any script for standalone executable without typing python):
@@ -84,7 +93,7 @@ Additionally, the main python scripts on each folder use the shebang (top line i
 #!/usr/bin/python3
 ```
 
-you can either modify thie line with you prefered python version or typy your python version in the command line, for example,
+you can either modify the line with your prefered python version or type your python version in the command line, for example,
 
 ```
 $ /usr/bin/python2.7 sfit4Layer1.py -?
@@ -110,10 +119,10 @@ $ python3 sfit4Layer1.py -?
 
 ## Authors
 
-* **Eric Nusbaumer** - *Initial work* - 
-* **Bavo Langerock** - *Current work* - 
-* **Mathias Palm** - *Current work* - 
-* **James Hannigan** - *Current work* - 
+* **Eric Nusbaumer** - *Initial work* -
+* **Bavo Langerock** - *Current work* -
+* **Mathias Palm** - *Current work* -
+* **James Hannigan** - *Current work* -
 * **Ivan Ortega** - *Current work* - [iortegam](https://github.com/iortegam)
 
 
