@@ -10,8 +10,9 @@ The step-by-step procedures and computing tools are described in more detailed i
 ### Prerequisites
 
 Below are the standard python libraries needed in order to run sfit-processing-environment.
-The package has been tested with python >=2.7
-Note: The installation of these libraries are not covered here.
+The package has been tested with python >=2.7. However, Python 2.7 reached the end of its life on January 1st, 2020 and it is not maintaned.
+Python3 is prefered.
+Note: The installation of python3 and these libraries are not covered here.
 
 ```
 os, sys, numpy, matplotlib, Tkinter, datetime, time, math, csv, itertools, collections, re,
@@ -39,12 +40,12 @@ $ python3 setup.py install --home=<dir>
 ```
 
 The --home option defines the installation base directory. Files are installed to the following directories under the installation base as follows: /dir/lib/python.
-More information on [Installing Python Modules](https://docs.python.org/3.3/install/index.html/)
+More information on [Installing Python Modules](https://docs.python.org/3.3/install/index.html)
 
 Alternatively, you can use --user option directs setup.py to install the package in the user site-packages directory for the running Python; for example:
 
 ```
-python setup.py install --user
+python3 setup.py install --user
 ```
 and will be installed, for example,
 
@@ -52,7 +53,7 @@ and will be installed, for example,
 ~//usr/local/lib/pythonX.Y/site-packages/
 ```
 
-where X.Y stands for the version of Python, for example 2.7
+where X.Y stands for the version of Python, for example 3.8
 
 
 * [2) github](https://github.com/NCAR/sfit-processing-environment.git) - The NCAR github sfit - sfit-processing-environment.
@@ -66,7 +67,7 @@ git clone -b Official_Release_v3.0 https://github.com/NCAR/sfit-processing-envir
 
 ### Deployment
 
-In theory, when using python setup.py install --user python automatically searches this directory for modules, so prepending this path to the PYTHONPATH environmental variable is not necessary.
+In theory, when using python3 setup.py install --user python automatically searches this directory for modules, so prepending this path to the PYTHONPATH environmental variable is not necessary.
 However, it is still recommended to add this directory to your PYTHONPATH and PATH environment variables. For example, add the following path to your shell, i.e., a program designed to start other programs (.bashrc, .bash_profile, .profile) e.g., open your .bash_profile
 
 ```
@@ -98,9 +99,16 @@ you can either modify the line with your prefered python version or type your py
 $ /usr/bin/python2.7 sfit4Layer1.py -?
 ```
 
+Depending on the installation, often, especially when using the --home option it is necessary to change permissions to the directory. In this case, you might use the command below under the directory, e.g., under /dir/lib/python
+
+```
+$ sudo chmod -R 755 *
+```
+
+
 ## Running the tests
 
-If the above packages have been added to the PATH & PYTHONPATH you can test
+If the above packages have been added to the PATH & PYTHONPATH and the shebang has been modified to your python version you can test
 
 ```
 $ sfit4Layer1.py -?
