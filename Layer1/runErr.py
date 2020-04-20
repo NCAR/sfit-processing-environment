@@ -99,7 +99,7 @@ def main():
     dataDir    = '/data1/ebaumer/'+loc.lower()+'/'+gas.lower()+'/'+ver+'/'
     
     #sbFileName = '/Volumes/data/ebaumer/Err/sb_tab.ctl'
-    iyear      = 2017
+    iyear      = 2018
     imnth      = 1
     iday       = 1
     fyear      = 2018
@@ -146,7 +146,8 @@ def main():
     # Walk through first level of directories and
     # collect directory names for processing
     #--------------------------------------------
-    for drs in os.walk(dataDir).next()[1]: 
+    #for drs in os.walk(dataDir).next()[1]: 
+    for drs in next(iter(os.walk(dataDir)))[1]:  
 
         #-------------------------------------------
         # Test directory to make sure it is a number

@@ -7,4 +7,4 @@ include README.md
 include Layer1/sbDefaults.ctl
 include Layer1/sb.ctl
 include license.txt
-include OT-FTS_Spectral_Processing.pdf
+include OT_FTS_Spectral_Processing.pdf

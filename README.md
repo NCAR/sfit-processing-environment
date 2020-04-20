@@ -5,7 +5,7 @@ Python package used for pre and post-processing of sfit4 (sfit-processing-enviro
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine.
-The step-by-step procedures and computing tools are described in more detailed in the **OT-FTS_Spectral_Processing.pdf**
+The step-by-step procedures and computing tools are described in more detailed in the **OT_FTS_Spectral_Processing.pdf**
 
 ### Prerequisites
 

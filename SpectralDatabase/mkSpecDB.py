@@ -254,7 +254,8 @@ def main(argv):
         fname  = datapath + 'Fldrs_with_OPUS_' + dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.list'
         
         with open(fname,'w') as fopen:
-            for dirs in os.walk(datapath).next()[1]:
+            #for dirs in os.walk(datapath).next()[1]:
+            for dirs in next(iter(os.walk(datapath)))[1]: 
                                         
                 #--------------------------------------------------------
                 # Test if file is opus type. If the file in not opus type

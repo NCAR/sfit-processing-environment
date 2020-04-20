@@ -805,7 +805,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
         sbinputforsa=False
 
         if ctlFileVars.inputs['gas.profile.%s.correlation'%gas.lower()][0]=='T' and ctlFileVars.inputs['gas.profile.%s.correlation.type'%gas.lower()][0]==5: 
-            sbinputforsa=True
+            sbinputforsa=False # ORIGINALLY TRUE
 
             print ('   detected sainv regularization file input for %s'%gas)
 
@@ -830,10 +830,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
             sa[np.meshgrid(sa_idx,sa_idx,indexing='ij')]=Sb
             sa_syst[np.meshgrid(sa_idx,sa_idx,indexing='ij')]=Sb_syst
 
-    #exit()
-
-
- 
     
     #-----------------------------------------------------
     # Test if Sa matrix is symmetric and positive definite
@@ -857,7 +853,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
     #se  = np.zeros((np.sum(sumVars.summary['nptsb'],dtype=int),np.sum(sumVars.summary['nptsb'],dtype=int)), float)
 
     if SbDict['seinputflg'][0].upper() == 'F':
-        snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(sumVars.summary['SNR'],sumVars.summary['nptsb'])]))
+        snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in zip(sumVars.summary['SNR'],sumVars.summary['nptsb'])]))
         snrList[:] = [val**-2 for val in snrList]
     else:
         if not sc.ckFile(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], exitFlg=False,quietFlg=False): return False
