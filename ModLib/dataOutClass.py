@@ -1488,7 +1488,8 @@ class ReadOutputData(_DateRange):
         #-----------------------------------
         # Loop through collected directories
         #-----------------------------------
-        for sngDir in self.dirLst:       
+
+        for sngDir in self.dirLst: 
             
             try:
                 with open(sngDir + fname,'r') as fopen:
@@ -2360,7 +2361,14 @@ class GatherHDF(ReadOutputData,DbInputFile):
                 #-----------------------------
                 # Latitude - North
                 #-----------------------------
-                self.HDFlat     = np.array(tempSpecDB['N_Lat'])
+                try:
+                    self.HDFlat     = np.array(tempSpecDB['N_Lat'])
+                    print ('\nLatitude [N_Lat] in database: {}'.format(self.HDFlat))
+
+                except:
+                    self.HDFlat     = np.array(tempSpecDB['S_Lat'])
+                    print ('\nLatitude [S_Lat] in database: {}'.format(self.HDFlat))
+                    self.HDFlat     = self.HDFlat*(-1.)
 
                 try: 
                     #-----------------------------
