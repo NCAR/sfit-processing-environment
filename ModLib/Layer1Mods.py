@@ -510,6 +510,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
 
     if sbctldefaults:
 
+        #----------------------------------
+        # Kb_info an SFIT4 related part of the code: it contains information on how sfit4 labels things.
+        # They are defined, preferably, in the sbctldefaults
+        #----------------------------------
         try: 
 
             for i in range(0, len(sbctldefaults.inputs['kb_info']), 4):
@@ -520,13 +524,18 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
             exit()
 
     else:
-
+        #----------------------------------
+        # If defaults are not used, kb_info can be deined in the sb.ctl.
+        #----------------------------------
         try:
             for i in range(0, len(SbctlFileVars.inputs['kb_info']), 4):
                 Kb_labels[SbctlFileVars.inputs['kb_info'][i]] = SbctlFileVars.inputs['kb_info'][i+1]
 
         except KeyError as e:
 
+            #----------------------------------
+            # As a last resource, use the hardcoded values below.
+            #----------------------------------
             print ('Warning: KeyError {} is not in sb ctl file.... using defaults.'.format(e))
             Kb_labels = {'temperature': 'TEMPERAT', 'solshft': 'SolLnShft', 'solstrnth': 'SolLnStrn', 'phase': 'SPhsErr', 'wshift': 'IWNumShft', 
             'dwshift': 'DWNumShft', 'sza': 'SZA', 'lineInt': 'LineInt', 'lineTAir': 'LineTAir', 'linePAir': 'LinePAir', 'slope': 'BckGrdSlp', 
@@ -615,7 +624,20 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
                     strformat = ' '.join('{%d:>12.4E}'%i for i in range(len(row))) + ' \n'
                     fout.write( strformat.format(*row) )
 
-                fout.write('\n\n')    
+                fout.write('\n\n')
+
+
+    def createCovar(std,sbcorkey=None,z=None,Sbctldict={}):
+        '''Creates a full covariance matrix out of diagonal and correlation settings from sb.ctl'''
+        Sb=np.tensordot(std,std,0) #this is the fully correlated matrix, unchanged for systematic, should be changed for random
+        test=map(bool,[sbcorkey,not np.array_equal(z,None),len(Sbctldict)])
+        if all(test): 
+          corwidthinv=1./Sbctldict[sbcorkey][0] if (sbcorkey in Sbctldict and Sbctldict[sbcorkey][0]!=0.) else 0.
+          deltaz=np.tensordot(z,np.ones(z.shape),0)
+          deltaz=np.exp(-abs(deltaz-deltaz.T)*corwidthinv)
+          if Sb.shape==deltaz.shape: Sb*=np.ma.array(deltaz,mask=deltaz<.01).filled(0)
+        elif sum(test): return None
+        return Sb
 
 
     def paramMap(paramName,Kb_labels):
@@ -752,11 +774,12 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
         _expandgridsinputs(SbctlFileVars.inputs)
 
         SbDict  = SbctlFileVars.inputs
-        #SbDict = DictWithDefaults(SbctlFileVars.inputs, defaults=SbctlFileVars.inputs)
+        SbDict = DictWithDefaults(SbctlFileVars.inputs, defaults=SbctlFileVars.inputs)
 
     _expandgridsinputs(SbDict) #in the case the user also uses coarse grids...
 
     SbDict     = dict(SbDict)
+
 
     #------------------------------------------------------------------------------
     # Read in output files from sfit4 run
@@ -804,8 +827,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
 
         sbinputforsa=False
 
+        #------------------
+        # Check if Tikhonov is applied. The sa values in the sfit4.ctl file should be equal to 1 otherwise one distorts the tikhonov matrix.  
+        # This means that the sa values from the sfit4.ctl cannot be used as std’s for the uncertainty computation.
+        # The std’s for this particular gas must be defined in the sb.ctl file
+        #------------------
         if ctlFileVars.inputs['gas.profile.%s.correlation'%gas.lower()][0]=='T' and ctlFileVars.inputs['gas.profile.%s.correlation.type'%gas.lower()][0]==5: 
-            sbinputforsa=False # ORIGINALLY TRUE
+            sbinputforsa=True 
 
             print ('   detected sainv regularization file input for %s'%gas)
 
