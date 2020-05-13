@@ -158,7 +158,7 @@ if succefully, the output might look like this
 
 
 ## Contributing
-
+If you have a bug or issue to report or a question ask the development team: sfit4-dev<at>googlegroups<dot>com
 
 ## License
 
