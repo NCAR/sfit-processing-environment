@@ -1,11 +1,21 @@
 # sfit4 - pre/post processing python package distribution
 
-Python package used for pre and post-processing of sfit4 (sfit-processing-environment)
+Python package used for pre and post-processing of sfit4. This package is recommended for the pending release of [SFIT4 v1](https://github.com/NCAR/sfit-core-code/releases/tag/V1.0.5)
+
+Python package used for:
+
+* **Preprocessing of spectra: building a spectral database, acquiring auxiliary data e.g. NCEP z-p-t profiles, and water vapor profiles**
+* **Batch running of SFIT4 on large sets of spectra**
+* **Running the error analysis codes post retrieval**
+* **Plotting standard outputs**
+* **Using the database and retrievals to build GEOM compliant HDF files**
 
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine.
-The step-by-step procedures and computing tools are described in more detailed in the **OT_FTS_Spectral_Processing.pdf**
+The step-by-step procedures and computing tools are described in more detailed in the **OT_FTS_Spectral_Processing.pdf**.
+Additional resources can be found in the [sfit4wiki](https://wiki.ucar.edu/display/sfit4/) - The NCAR sfit wiki webpage.
+
 
 ### Prerequisites
 
@@ -23,14 +33,23 @@ scipy, pyhdf, cycler, h5py, abc, getopt, glob, logging, shutil, fileinput, subpr
 
 The sfit-processing-environment can be found here:
 
-* [1) sfit4wiki](https://wiki.ucar.edu/display/sfit4/) - The NCAR sfit wiki webpage. Here you can download a tar file.
+* [1) github](https://github.com/NCAR/sfit-processing-environment.git) - The NCAR github sfit - sfit-processing-environment.
+
+This is the repository with several contributors/branches. The branch with the relese version is **Official_Release_v3.0**.
+To install Official_Release_v3.0 locally in the current working directory:
+
+```
+git clone -b Official_Release_v3.0 https://github.com/NCAR/sfit-processing-environment.git
+```
+
+* [2) github - zip](https://github.com/NCAR/sfit-processing-environment/releases) - Here you can download a tar/zip file.
 
 Installation via its setup.py script
 
 Use tar to unpack the archive, for example:
 
 ```
-$ tar -xzf sfit4-ProcessingEnvironment-1.0dev.tar.gz
+$ tar -xzf sfit-processing-environment-3.0.tar.gz
 ```
 
 Change to the new directory (cd), and then, to install it in a prefered directory, for example, using python 3 enter
@@ -56,14 +75,6 @@ and will be installed, for example,
 where X.Y stands for the version of Python, for example 3.8
 
 
-* [2) github](https://github.com/NCAR/sfit-processing-environment.git) - The NCAR github sfit - sfit-processing-environment.
-
-This is the repository with several contributors/branches. The branch with the relese version is **Official_Release_v3.0**.
-To install Official_Release_v3.0 locally in the current working directory:
-
-```
-git clone -b Official_Release_v3.0 https://github.com/NCAR/sfit-processing-environment.git
-```
 
 ### Deployment
 
@@ -147,7 +158,7 @@ if succefully, the output might look like this
 
 
 ## Contributing
-
+If you have a bug or issue to report please see our Bug/Issue Reports in the [sfit4wiki](https://wiki.ucar.edu/display/sfit4/)  
 
 ## License
 
