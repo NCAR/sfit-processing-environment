@@ -158,7 +158,7 @@ if succefully, the output might look like this
 
 
 ## Contributing
-If you have a bug or issue to report or a question ask the development team: [sfit4 Dev Team](sfit4-dev@googlegroups.com)
+If you have a bug or issue to report please see our Bug/Issue Reports in the [sfit4wiki](https://wiki.ucar.edu/display/sfit4/)  
 
 ## License
 
