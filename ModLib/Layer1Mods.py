@@ -85,6 +85,7 @@ class DictWithDefaults(dict):
     if key in dict(self) : return dict.__getitem__(self, key)
    
     else: 
+      #wildcards only work for the default dict, priority is given to exact match
       matches=sorted([k for k in self.default if fnmatch.fnmatch(key,k)],key=lambda x: x==key)[::-1]
       if len(matches): 
         #print ('%s->%s'%(key,matches));
@@ -96,6 +97,7 @@ class DictWithDefaults(dict):
     if key in dict(self) : return dict.__contains__(self, key)
    
     else: 
+      #wildcards only work for the default dict
       matches=sorted([k for k in self.default if fnmatch.fnmatch(key,k)],key=lambda x: x==key)[::-1]
       if len(matches): 
         #print ('%s->%s'%(key,matches));
@@ -487,7 +489,7 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
                             #  -- Error Analysis --   #
                             #                         #
                             #-------------------------#    
-def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=False):
+def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     """
     Calculates systematic and random uncertainty covariance matrix 
     using output from sfit4 and sb values from ctl file
@@ -498,52 +500,20 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
       """retrieves the version of sfit4 as a 4tuple from the output file"""
       with open(wrkingDir+'sfit4.dtl','r') as fid: header=fid.readline().strip()
       # first integer found is SFIT 4: ('SFIT4:V')
-      return tuple(map(int,re.sub('\D','',header)[1:5]))
+      return tuple(map(int,re.sub('[^0-9.]','',header.strip().split(':')[1]).split('.')))
     version=getSFITversion(wrkingDir)
     
-    print ('SFIT4 Version=%s'%(version,))
+    print ('Detected SFIT4 Version=%s'%(version,))
 
     #----------------------------------
-    # Sb labels
+    # Sb labels: are taken from sbctldefaults which contains either the labels set by the user in his defaults file, or the labels from the Layer1/sbDefaults.ctl file
     #----------------------------------
     Kb_labels = {}
-
-    if sbctldefaults:
-
-        #----------------------------------
-        # Kb_info an SFIT4 related part of the code: it contains information on how sfit4 labels things.
-        # They are defined, preferably, in the sbctldefaults
-        #----------------------------------
-        try: 
-
-            for i in range(0, len(sbctldefaults.inputs['kb_info']), 4):
-                Kb_labels[sbctldefaults.inputs['kb_info'][i]] = sbctldefaults.inputs['kb_info'][i+1]
-
-        except KeyError as e:
-            print ('KeyError: {} in {}'.format(e, sbctldefaults))
-            exit()
-
-    else:
-        #----------------------------------
-        # If defaults are not used, kb_info can be deined in the sb.ctl.
-        #----------------------------------
-        try:
-            for i in range(0, len(SbctlFileVars.inputs['kb_info']), 4):
-                Kb_labels[SbctlFileVars.inputs['kb_info'][i]] = SbctlFileVars.inputs['kb_info'][i+1]
-
-        except KeyError as e:
-
-            #----------------------------------
-            # As a last resource, use the hardcoded values below.
-            #----------------------------------
-            print ('Warning: KeyError {} is not in sb ctl file.... using defaults.'.format(e))
-            Kb_labels = {'temperature': 'TEMPERAT', 'solshft': 'SolLnShft', 'solstrnth': 'SolLnStrn', 'phase': 'SPhsErr', 'wshift': 'IWNumShft', 
-            'dwshift': 'DWNumShft', 'sza': 'SZA', 'lineInt': 'LineInt', 'lineTAir': 'LineTAir', 'linePAir': 'LinePAir', 'slope': 'BckGrdSlp', 
-            'curvature': 'BckGrdCur', 'apod_fcn': 'EmpApdFcn', 'phase_fcn': 'EmpPhsFnc', 'omega': 'FOV', 'max_opd': 'OPD', 'zshift': 'ZeroLev', 
-            'beamamp': 'PEAK_AMP', 'beamperiod': 'CHAN_SEP', 'beamphase': 'ZERO_PH_REF', 'beamslope': 'DELTA_PEAK_AMP'}
+    for i in range(0, len(SbctlFileVars.inputs['kb_info']), 4):
+      Kb_labels[SbctlFileVars.inputs['kb_info'][i]] = SbctlFileVars.inputs['kb_info'][i+1]
 
     #----------------------------------
-    # Adapt label definitions according to version
+    # Adapt label definitions according to sfit version
     #----------------------------------
     if version>=(0,9,6,2): Kb_labels['phase_fcn']='EmpPhsFcn'
     if version>(0,9,5,0): 
@@ -624,13 +594,12 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
                     strformat = ' '.join('{%d:>12.4E}'%i for i in range(len(row))) + ' \n'
                     fout.write( strformat.format(*row) )
 
-                fout.write('\n\n')
-
+                fout.write('\n\n')    
 
     def createCovar(std,sbcorkey=None,z=None,Sbctldict={}):
         '''Creates a full covariance matrix out of diagonal and correlation settings from sb.ctl'''
         Sb=np.tensordot(std,std,0) #this is the fully correlated matrix, unchanged for systematic, should be changed for random
-        test=map(bool,[sbcorkey,not np.array_equal(z,None),len(Sbctldict)])
+        test=list(map(bool,[sbcorkey,not np.array_equal(z,None),len(Sbctldict)]))
         if all(test): 
           corwidthinv=1./Sbctldict[sbcorkey][0] if (sbcorkey in Sbctldict and Sbctldict[sbcorkey][0]!=0.) else 0.
           deltaz=np.tensordot(z,np.ones(z.shape),0)
@@ -751,35 +720,25 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
         grid=d[gk]
         for ErrType in ('random','systematic'):
           defk=gk.replace('grid',ErrType)
+          
           d[defk]=interp(z,*zip(*sorted(zip(grid,d[defk]),key=lambda x: x[0])))
         del d[gk]
       return
 
-    if sbctldefaults:
-        print ('sb defaults: found!!')
+    #----------------------------------
+    # Setup the Sb dictionary as a pair of dictionaries: 
+    #   one dict represents the sb.ctl contents, 
+    #   the second is the default values dict (which may be empty if eg sbdefflg=F
+    # Any exact match with a key in the first (sb.ctl) has priority above any match with a key in the second 
+    # default dict. Only the second default dict allows wildcards (microwindows,gases,...).
+    # For the second/default dict an exact match will have priority above wildcard matches.
+    # Both dicts allow std profile definitions on coarse grids.
+    # These are interpolated to the retrieval grid using _expandgridsinputs
+    #----------------------------------
 
-        _expandgridsinputs(sbctldefaults.inputs)
-
-        SbDict  = sbctldefaults.inputs
-
-
-        keys = list(SbctlFileVars.inputs.keys())
-
-        for item in keys: 
- 
-            SbDict[item] = SbctlFileVars.inputs[item]     
-        
-    else:
-
-        _expandgridsinputs(SbctlFileVars.inputs)
-
-        SbDict  = SbctlFileVars.inputs
-        SbDict = DictWithDefaults(SbctlFileVars.inputs, defaults=SbctlFileVars.inputs)
-
-    _expandgridsinputs(SbDict) #in the case the user also uses coarse grids...
-
-    SbDict     = dict(SbDict)
-
+    _expandgridsinputs(SbctlFileVars.inputs)
+    SbDict = DictWithDefaults(SbctlFileVars.inputs, defaults=SbctlFileVars.inputs)
+    #_expandgridsinputs(SbDict) #in the case the user also uses coarse grids...
 
     #------------------------------------------------------------------------------
     # Read in output files from sfit4 run
@@ -826,37 +785,34 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
     for gas in ctlFileVars.inputs['gas.profile.list']:
 
         sbinputforsa=False
-
-        #------------------
-        # Check if Tikhonov is applied. The sa values in the sfit4.ctl file should be equal to 1 otherwise one distorts the tikhonov matrix.  
-        # This means that the sa values from the sfit4.ctl cannot be used as std’s for the uncertainty computation.
-        # The std’s for this particular gas must be defined in the sb.ctl file
-        #------------------
+        
+        sbkey_rand ='sb.%s.%s'%('profile.%s'%gas.lower() if gas.lower()!='temperature' else 'temperature','random')
+        sbkey_syst=sbkey_rand.replace('.random','.systematic')
+ 
         if ctlFileVars.inputs['gas.profile.%s.correlation'%gas.lower()][0]=='T' and ctlFileVars.inputs['gas.profile.%s.correlation.type'%gas.lower()][0]==5: 
-            sbinputforsa=True 
-
+            sbinputforsa=True #require input for Sb
             print ('   detected sainv regularization file input for %s'%gas)
+            if sbkey_syst in SbDict and (np.diff(SbDict[sbkey_syst])==0).all(): print('   detected constant std profile for %s: might generate a zero uncertainty in case of Tikhonov'%sbkey_syst)
 
-        sbkey ='sb.%s.%s'%('profile.%s'%gas.lower() if gas.lower()!='temperature' else 'temperature','random')
+        if gas=='TEMPERATURE': print ('WARNING !! Temperature Sb substitution in regul matrix sa is not yet implemented for type 5 sainv input');continue #not sure when this happens TODO
  
-        if gas=='TEMPERATURE': print ('WARNING !! Temperature Sb substitution in regul matrix sa is not yet implemented for type 5 sainv input');continue
+        if (sbkey_rand not in SbctlFileVars.inputs or sbkey_syst not in SbctlFileVars.inputs) and sbinputforsa: print ('Error !! The sb.ctl file must contain information on random & systematic profile uncertainty for %s'%gas);raise ValueError('Missing input in sb.ctl for profile uncertainty for %s because of Tikhonov type retrieval'%gas)
  
-        if sbkey not in SbDict and sbinputforsa: print ('Error !! The sb.ctl file must contain information on random profile uncertainty for %s'%gas);raise ValueError('Missing input in sb.ctl for profile uncertainty for %s'%gas)
- 
-        if sbkey in SbDict: #prefer the sb information above the sa matrix...
+        if sbkey_rand in SbDict: #prefer the sb information above the sa matrix...
             #if gas in ('CH4','HDO'): continue #for debugging .... 
             #else: print gas
             sa_idx=np.where(np.array(K_param)==gas)[0]
             #get the Sb for this gas
-            sbcorkey=sbkey.replace('.random','.correlation.width')
+            sbcorkey=sbkey_rand.replace('.random','.correlation.width')
             #only take correlation into account if random and if it is a profile (gas or temperature) in KB!!
-            Sb=createCovar(SbDict[sbkey],**(dict(sbcorkey=sbcorkey,z=z,Sbctldict=SbDict))) #if temperature...need to check rel/abs unit TODO
-            Sb_syst=createCovar(SbDict[sbkey.replace('.random','.systematic')]) #if temperature...need to check rel/abs unit TODO
+            Sb=createCovar(SbDict[sbkey_rand],**(dict(sbcorkey=sbcorkey,z=z,Sbctldict=SbDict))) #if temperature...need to check rel/abs unit TODO
             if np.array_equal(Sb,None): print ('Error building covariance matrix for %s'%sbcorkey);raise ValueError('Bad setting for %s'%sbcorkey)
+            sa[tuple(np.meshgrid(sa_idx,sa_idx,indexing='ij'))]=Sb
+        if sbkey_syst in SbDict:
+            Sb_syst=createCovar(SbDict[sbkey_syst]) #if temperature...need to check rel/abs unit TODO
             if np.array_equal(Sb_syst,None): print ('Error building systematic covariance matrix for %s'%sbcorkey);raise ValueError('Bad setting for %s'%sbcorkey)
             #fill the sb in the inintial sa
-            sa[np.meshgrid(sa_idx,sa_idx,indexing='ij')]=Sb
-            sa_syst[np.meshgrid(sa_idx,sa_idx,indexing='ij')]=Sb_syst
+            sa_syst[tuple(np.meshgrid(sa_idx,sa_idx,indexing='ij'))]=Sb_syst
 
     
     #-----------------------------------------------------
@@ -866,6 +822,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
     if not symRtn: print ("Warning!! The Sa matrix is not symmetric\n\n")
     if not pdRtn:  print ("Warning!! The Sa matrix is not positive definite\n\n")
     # !!!!!!!!!!! Should we retrun False???  is it possible that the sa is not symmetric? If it is possible, we should solve it (by making it symmetric)
+
+
     
     #---------------------------------------------------------------
     # Create Se matrix (Two ways to do this depending on input flg):
@@ -880,6 +838,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
     #---------------------------------------------------------------
     #se  = np.zeros((np.sum(sumVars.summary['nptsb'],dtype=int),np.sum(sumVars.summary['nptsb'],dtype=int)), float)
 
+
+
     if SbDict['seinputflg'][0].upper() == 'F':
         snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in zip(sumVars.summary['SNR'],sumVars.summary['nptsb'])]))
         snrList[:] = [val**-2 for val in snrList]
@@ -888,9 +848,23 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
         lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
         snrList    = np.array([float(x) for line in lines[2:] for x in line.strip().split()])
         snrList[:] = 1.0/snrList
-
     #np.fill_diagonal(se,snrList)    
     se=np.array(snrList) #avoid setting up a full 2d matrix for this diagonal matrix...
+
+    #-----------------------------------------------------
+    # Test if user want to change the Se array
+    #-----------------------------------------------------
+    user_snr_settings=sorted([int(k.rsplit('.',1)[-1]) for k in SbDict if fnmatch.fnmatch(k,'sb.snr.[0-9]')])
+    se_chuncks=sumVars.summary['nptsb']
+    c=0
+    for i,se_chunck in enumerate(se_chuncks):
+      if i+1 in user_snr_settings: 
+        se[np.arange(c,c+se_chunck,dtype=int)]=float(SbDict['sb.snr.%d'%(i+1)][0])**-2
+        print('Changed SNR for band %s to %s'%(i+1,SbDict['sb.snr.%d'%(i+1)][0]))
+      c+=se_chunck    
+      
+   
+
     #-----------------------------------------------------
     # Test if Se matrix is symmetric and positive definite
     #-----------------------------------------------------
@@ -1200,15 +1174,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
                     # Fill Sb matrix with diagonal elements
                     #--------------------------------------
                     sbcorkey='sb.%s.correlation.width'%Kbl if Kbl.upper() not in map(str.upper,kb_profile_gas) else 'sb.profile.%s.correlation.width'%Kbl
-                    corwidthinv=1./SbDict[sbcorkey][0] if (sbcorkey in SbDict and SbDict[sbcorkey][0]!=0.) else 0.
-                    Sb=np.tensordot(diagFill,diagFill,0)
-
-
-                    if ErrType=='random': 
-                      deltaz=np.tensordot(z,np.ones(z.shape),0)
-                      deltaz=np.exp(-abs(deltaz-deltaz.T)*corwidthinv)
-                      if Sb.shape==deltaz.shape: Sb*=np.ma.array(deltaz,mask=deltaz<.01).filled(0)
-                      #Sb= np.fill_diagonal(Sb,diagFill**2)
+                    Sb=createCovar(diagFill,**(dict(sbcorkey=sbcorkey,z=z,Sbctldict=SbDict) if (ErrType=='random' and (Kbl.upper() in map(str.upper,kb_profile_gas+['TEMPERATURE']))) else {}))
+                    if np.array_equal(Sb,None): print('Error building covariance matrix for %s'%sbcorkey);raise ValueError('Bad setting for %s'%sbcorkey)
                     
                 #do some post calibration when matrices are read from input files: input files are assumed in SI units (as the data in sumVars.aprfs)... ok?     
                 elif Kbl=='temperature' or (Kbl.upper() in kb_profile_gas): 
@@ -1233,7 +1200,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
             # however, no Sb is specified
             #-----------------------------------------------
             except KeyError as kerr:
-                print (repr(kerr))
+                print ('Missing Sb for ',repr(kerr))
                 if logFile: logFile.error('Covariance matrix for '+Kbl+': Error type -- ' + ErrType+' not calculated. Sb does not exist\n')
 
             #-----------------------------------
@@ -1346,10 +1313,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
         fout.write('Total systematic error                        = {0:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
         fout.write('Total random uncertainty                      = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Random'][2])            )
         fout.write('Total systematic uncertainty                  = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Systematic'][2])        )
-        for k in S_ran:
-            fout.write('Total random uncertainty {0:<20s} = {1:15.3E} [molecules cm^-2]\n'.format(k,S_ran[k][2]))
+        for k in S_ran: 
+            fout.write('Total random uncertainty {0:<20s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_ran[k][2],S_ran[k][2]/retdenscol*100))
         for k in S_sys:
-            fout.write('Total systematic uncertainty {0:<16s} = {1:15.3E} [molecules cm^-2]\n'.format(k,S_sys[k][2])) 
+            fout.write('Total systematic uncertainty {0:<16s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_sys[k][2],S_sys[k][2]/retdenscol*100)) 
 
     #-----------------------------------
     # Write to file covariance matricies
@@ -1404,5 +1371,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
     AVK['AVK_VMR']          = (AKxVMR,[],[])
     writeCoVar(fname,header,AVK,0)
 
-
+    try: 
+      raytrace_header,line_of_sight=sumVars.readRaytrace(wrkingDir + 'raytrace.out',longitude=20.,azimuth=20.,target_grid=sumVars.aprfs['Z']*1e3) #raytrace.out is the default...better to take file.out.raytrace? 
+    #print(raytrace_header,line_of_sight)
+    except: pass
     return True

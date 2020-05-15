@@ -695,3 +695,93 @@ class RetOutput():
         # Convert sza list to numpy arrays
         #---------------------------------
         self.pbp['sza'] = np.asarray(self.pbp['sza'])        
+
+
+    def readRaytrace(self, fName,longitude=None,azimuth=None,target_grid=None):
+          #def read_raytrace(rayf,logger=rootlogger,longitude=None,azimuth=None,target_grid=None):
+      """Reads the detailed output of the Raytrace module
+      
+      lon in degrees (lon positive to east)
+      azimuth in degrees (0 is N, clockwise)
+      target_grid: provide grid towards LOS will be interpolated (use retrieval grid to get output ready for GEOMS), use True to interpolate to grid found in raytrace out
+      
+      Output is (attribute, np.array)
+      """
+      from scipy.interpolate import interp1d
+      import pyproj
+      from shapely.geometry import LineString,Point, mapping
+      from shapely.affinity import rotate #shapely.affinity.rotate(geom, angle, origin='center', use_radians=False)
+      from functools import partial
+      from shapely.ops import transform 
+      from collections import OrderedDict
+      import logging
+      logging.basicConfig(level=logging.ERROR) #replace ERROR by DEBUG for more information
+      logger=logging.getLogger('raytrace')
+      header=OrderedDict()
+      gridboundaries=[]
+      with open(fName) as fid: 
+        #header info
+        sfithead=fid.readline().strip()
+        for i in range(6): l=fid.readline()
+        while ('USER DEFINED BOUNDARIES' not in l):
+          if '=' in l: 
+            k,v=l.strip().rsplit('=',1)
+            header[k.split(',')[-1].strip()]=v.strip()
+          l=fid.readline()
+        logger.debug('Found raytrace output with header \n\t%s'%'\n\t'.join(['%s=%s'%(k,v) for k,v in header.items()]))
+        for i in range(2): fid.readline()
+        for i in range(int(header['IBMAX'])):
+          gridboundaries.append(float(fid.readline().strip().split()[-1]))
+        gridboundaries=np.array(gridboundaries,dtype=np.float); #grid,gridboundaries not used right now... maybe a standard value for target_grid???
+        grid=gridboundaries[:-1]+np.diff(gridboundaries)/2
+        logger.debug('Found raytrace grid boundaries %s'%gridboundaries)
+        logger.debug('Found raytrace grid midpoints %s'%grid)
+        while (' APPARENT ZENITH ANGLE CALCULATIONS FINISHED.' not in l): l=fid.readline()
+        while ('CALCULATION OF THE REFRACTED PATH THROUGH THE ATMOSPHERE' not in l): 
+          if '=' in l:
+            k,v=l.strip().rsplit('=',1)
+            header[k.split(',')[-1].strip()]=v.strip()
+          l=fid.readline()
+        header['COLUMN_DESCRIPTION']=list(map(str.strip,fid.readline().split()))
+        header['COLUMN_DESCRIPTION'].insert(1,'ALTITUDE')
+        logger.debug('Updated raytrace output header \n\t%s'%'\n\t'.join(['%s=%s'%(k,v) for k,v in header.items()]))
+        for i in range(6): l=fid.readline()
+        out=[]
+        while l.strip():
+          out.append(list(map(np.float,l.split())))
+          l=fid.readline()
+        out=np.array(out,dtype=np.float)
+        logger.debug('Loaded data matrix with shape %s'%(out.shape,))
+        if out.shape[-1]!=len(header['COLUMN_DESCRIPTION']): raise ValueError('Unexpected matrix shape')
+        
+      #### Calculate lat/lon coordinates from azimuthal equidistant projection  
+      if longitude!=None and azimuth!=None:
+        latitude=np.float(header['REF_LAT'].split()[0])
+        re=np.float(header['RE'].split()[0])*1e3 #radius earth used in raytrace, reuse it in aeqd projetion
+        local_azimuthal_projection = "+proj=aeqd +R=%s +units=m +lat_0=%5.2f +lon_0=%5.2f"%(re,latitude,longitude)
+        aeqd_to_wgs84 = partial(
+            pyproj.transform,
+            pyproj.Proj(local_azimuthal_projection),
+            pyproj.Proj('+proj=longlat +datum=WGS84 +no_defs'),
+        )
+        y=np.deg2rad(np.concatenate([[0.],out[:,header['COLUMN_DESCRIPTION'].index('BETA')]]))*re
+        if np.array_equal(target_grid,None): #give detailed output
+          x=np.zeros(y.shape)
+          LOS=rotate(LineString(zip(x,y)),angle=-azimuth,origin=(0,0)) #LOS = line along great circle (transversal intersection of sphere), defined to North, then rotated to azimuth in aeqd projection
+          LOS_transformed = transform(aeqd_to_wgs84,LOS)
+          #return LOS_transformed
+          header['COLUMN_DESCRIPTION'].extend(['LOS_LONGITUDE','LOS_LATITUDE']);out=np.concatenate([out,np.array(LOS_transformed.xy).T[1:,:]],axis=1)
+
+        else: #gives interpolated lat,lon on line of sight on target grid... 
+          if np.array_equal(target_grid,True): target_grid=grid*1e3 #use grid from raytrace out file
+          i=header['COLUMN_DESCRIPTION'].index('ALTITUDE')
+          source_grid=np.concatenate([[out[0,i]],out[:,i+1]])*1e3
+          #logger.debug('Source grid =%s'%source_grid)
+          y=interp1d(source_grid,y,fill_value=np.nan,assume_sorted=True)(target_grid) #in m
+          x=np.zeros(y.shape)
+          LOS=rotate(LineString(zip(x,y)),angle=-azimuth,origin=(0,0))
+          LOS_transformed = transform(aeqd_to_wgs84,LOS)
+          out=np.concatenate([target_grid.reshape(target_grid.shape+(1,)),np.array(LOS_transformed.xy).T],axis=1)
+          header={'COLUMN_DESCRIPTION':['GRID','LONGITUDE','LATITUDE']}
+      return header,out
+   

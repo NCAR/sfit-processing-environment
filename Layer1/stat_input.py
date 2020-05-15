@@ -75,8 +75,6 @@ spcdbFile = '/data/Campaign/TAB/Spectral_DB/HRspDB_tab_2019.dat'     # Spectral 
 WACCMfile   = '/data/Campaign/TAB/waccm/WACCMref_V6.TAB'                        # WACCM profile to use
 WACCMfolder = '/data/Campaign/TAB/waccm/co/'                                    # WACCM folder with monthly profiles
 
-sbCtlFile = '/data1/ebaumer/tab/co/x.co/sb_b3.ctl'                              # Control file for error analysis
-
 #--------------------
 # Flags and Constants
 #--------------------

@@ -204,32 +204,18 @@ def main(argv):
         #------------------------
         if errFlg:
 
-            if sc.ckFile(wrkDir+'sb.ctl'): sbCtlFileName = wrkDir + 'sb.ctl'
-            else: 
-
+            if sc.ckFile(ctlFile.inputs['file.in.sbdflt'][0]): sbCtlFileName = ctlFile.inputs['file.in.sbdflt'][0]
+                
+            else:
                 try:
                     Tk().withdraw()
                     sbCtlFileName = tkFileDialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
                 except:
                     sbCtlFileName =  filedialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
-                
+            
+            
             sbCtlFile = sc.CtlInputFile(sbCtlFileName)
             sbCtlFile.getInputs()
-
-
-            if 'sbdefflg' in sbCtlFile.inputs:
-
-                if sbCtlFile.inputs['sbdefflg'][0] == 'T':
-
-                    if sc.ckFile(sbCtlFile.inputs['sbdefaults'][0], exitFlg=True):
-
-                        sbDefCtlFileName = sbCtlFile.inputs['sbdefaults'][0]
-                        sbctldefaults = sc.CtlInputFile(sbDefCtlFileName)
-                        sbctldefaults.getInputs()
-                
-                else: sbctldefaults = False
-
-            else: sbctldefaults = False
 
 
         #---------------------------
@@ -281,8 +267,7 @@ def main(argv):
             print ('**********************')
             print ('Running error analysis')
             print ('**********************')
-            rtn = errAnalysis(ctlFile,sbCtlFile,sbctldefaults,wrkDir)
-            #rtn = errAnalysis(ctlFile,sbCtlFile,wrkDir)
+            rtn = errAnalysis(ctlFile,sbCtlFile,wrkDir)
 
 
 

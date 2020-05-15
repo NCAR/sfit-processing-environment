@@ -114,10 +114,15 @@ sb.profile.HDO.correlation.width      = 4
 sb.profile.HDO.random                 = 0.10 0.30  0.60  0.50  0.30  0.10  0.10   0.10  #relative units
 sb.profile.HDO.systematic             = 0.10  0.4  0.20  0.20  0.20  0.20  0.20   0.20 
 
+sb.profile.H2CO.grid                  = -0.02 0.1 10 16 40 120
+sb.profile.H2CO.correlation.width     = 4
+sb.profile.H2CO.random                = .30 0.5 0.5 0.5 .20 .20 #relative units
+sb.profile.H2CO.systematic            = .30 0.5 0.5 0.5 .20 .20
+
 sb.profile.*.grid                     = -0.02 120
 sb.profile.*.correlation.width        = 4
 sb.profile.*.random                   = .10 .10 #relative units
-sb.profile.*.systematic               = .10 .10 #relative units
+sb.profile.*.systematic               = .10 .10 #relative units, profile shape is not changed! Will vanish for Tikhonov retrievals
 
 sb.omega.*                            = 0.001
 sb.sza.random                         = 0.005
@@ -127,10 +132,10 @@ sb.wshift.*                           = 0.001
 sb.slope.*                            = 0.001
 sb.curvature.*                        = 0.001
 sb.max_opd.*                          = 0.0
-sb.band.*.zshift.*                    = 0.01                                   
+sb.band.*.zshift.*                    = 0.001                                   
 sb.solshft.*                          = 0.005                                       
 sb.solstrnth.*                        = 0.01                                       
-sb.apod_fcn.*                        = 0.05
+sb.apod_fcn.*                         = 0.05
 sb.phase_fcn.*                        = 0.05
 
 #-------------------------
@@ -141,7 +146,7 @@ sb.lineInt_CH4.systematic             = 0.03
 sb.lineInt_CO.systematic              = 0.02
 sb.lineInt_NO2.systematic             = 0.10     
 sb.lineInt_HNO3.systematic            = 0.1     
-sb.lineInt_O3.systematic              = 0.05 
+sb.lineInt_O3.systematic              = 0.03 
 sb.lineInt_N2O.systematic             = 0.02     
 sb.lineInt_HCl.systematic             = 0.05
 sb.lineInt_O3.systematic              = 0.05     
@@ -153,12 +158,17 @@ sb.lineInt_HCN.systematic             = 0.1
 sb.lineInt_ClONO2.systematic          = 0.1     
 sb.lineInt_H2O.systematic             = 0.15
 sb.lineInt_HDO.systematic             = 0.15
+sb.lineInt_H2CO.systematic            = 0.10
+ 
 
 #-------------------------
 # Line Temp Uncertainty
 #-------------------------
 sb.lineTAir_*.systematic              = 0.05 
 sb.lineTAir_CH4.systematic            = 0.10 
+
+sb.lineTAir_H2CO.systematic           = 0.10 
+sb.linePAir_H2CO.systematic           = 0.10 
 
 #-------------------------
 # Line Pressure Uncertainty

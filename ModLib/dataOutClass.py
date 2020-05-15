@@ -1464,14 +1464,7 @@ class ReadOutputData(_DateRange):
             self.t15asc[k] = np.asarray(self.t15asc[k])
             print(k, self.t15asc[k])
 
-        self.readt15Flg = True
-
-        #if 'ZERO' in self.t15asc:
-        #    if len(self.t15asc['ZERO']) >= 1: self.readt15Flg = True
-
-
-
-    
+        self.readt15Flg = True 
             
             
     def readprfs(self,rtrvGasList,fname='',retapFlg=1):
