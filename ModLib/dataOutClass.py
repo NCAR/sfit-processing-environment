@@ -1418,49 +1418,59 @@ class ReadOutputData(_DateRange):
 
 
     def readt15(self,fname=''):
-            ''' Reads in t15asc data from retrieval directory '''
-            self.t15asc = {}
-                
-            if not fname: fname = 't15asc.4'
+        ''' Reads in t15asc data from retrieval directory '''
+        self.t15asc = {}
             
-            #-----------------------------------
-            # Loop through collected directories
-            #-----------------------------------
-            for sngDir in self.dirLst:
-
-                if ckFile(sngDir + 'summary'):
-    
-                    try:
-                        with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
+        if not fname: fname = 't15asc.4'
         
-                        #--------------------------------
-                        # Get retrieved column amount for 
-                        # each gas retrieved
-                        #--------------------------------
-                        line1       = lines[0].strip().split()
-                        if len(line1) == 6:
+        #-----------------------------------
+        # Loop through collected directories
+        #-----------------------------------
+        for sngDir in self.dirLst:
 
-                            self.t15asc.setdefault('ZERO'  ,[]).append( float( line1[-1] ))
+            if ckFile(sngDir + fname):
 
-                        line3       = lines[3].strip().split()
-
-                        self.t15asc.setdefault('WNi'  ,[]).append( float( line3[0] ))
-                        self.t15asc.setdefault('WNf'  ,[]).append( float( line3[1] ))
-                        
-
-                    except Exception as errmsg:
-                        print (errmsg)
-                        continue
+                try:
+                    with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
     
-            #------------------------
-            # Convert to numpy arrays
-            # and sort based on date
-            #------------------------
-            for k in self.t15asc:
-                self.t15asc[k] = np.asarray(self.t15asc[k])
+                    #--------------------------------
+                    # Get retrieved column amount for 
+                    # each gas retrieved
+                    #--------------------------------
+                    line1       = lines[0].strip().split()
+                    self.t15asc.setdefault('sza'  ,[]).append( float( line1[0] ))
+                    self.t15asc.setdefault('lat'  ,[]).append( float( line1[2] ))
+                    self.t15asc.setdefault('lon'  ,[]).append( float( line1[3] ))
 
-            if 'ZERO' in self.t15asc:
-                if len(self.t15asc['ZERO']) >= 1: self.readt15Flg = True
+                    if len(line1) == 6:
+
+                        self.t15asc.setdefault('ZERO'  ,[]).append( float( line1[-1] ))
+
+                    line3       = lines[3].strip().split()
+
+                    self.t15asc.setdefault('WNi'  ,[]).append( float( line3[0] ))
+                    self.t15asc.setdefault('WNf'  ,[]).append( float( line3[1] ))
+                    
+
+                except Exception as errmsg:
+                    print (errmsg)
+                    continue
+
+        #------------------------
+        # Convert to numpy arrays
+        # and sort based on date
+        #------------------------
+        for k in self.t15asc:
+            self.t15asc[k] = np.asarray(self.t15asc[k])
+            print(k, self.t15asc[k])
+
+        self.readt15Flg = True
+
+        #if 'ZERO' in self.t15asc:
+        #    if len(self.t15asc['ZERO']) >= 1: self.readt15Flg = True
+
+
+
     
             
             
@@ -2605,7 +2615,6 @@ class PlotData(ReadOutputData):
         if not self.readPbpFlg:      self.readPbp()                                          # observed, fitted, and difference spectra
         if not self.readSpectraFlg:  self.readSpectra(self.gasList)                          # Spectra for each gas
         if not self.readStateVecFlg: self.readStateVec()
-        
 
         Z = np.asarray(self.rprfs['Z'][0,:])          # get altitude
         
@@ -4001,6 +4010,8 @@ class PlotData(ReadOutputData):
 
         sza     = self.pbp['sza']
         saa     = self.pbp['saa']
+
+
         
         
         if errFlg:
