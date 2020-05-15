@@ -6,30 +6,30 @@
 #
 # Purpose:
 #       This file is the zeroth order running of sfit4. It accomplishes the following:
-#			1) Calls pspec to convert binary spectra file (bnr) to ascii (t15asc)
-#			2) Calls hbin to gather line parameters from hitran
-#			3) Calls sfit4
-#			4) Calls error analysis from Layer1mods.py
-#			5) Clean outputs from sfit4 call
+#           1) Calls pspec to convert binary spectra file (bnr) to ascii (t15asc)
+#           2) Calls hbin to gather line parameters from hitran
+#           3) Calls sfit4
+#           4) Calls error analysis from Layer1mods.py
+#           5) Clean outputs from sfit4 call
 #
 #
 # External Subprocess Calls:
-#			1) pspec executable file from pspec.f90
-#			2) hbin  executable file from hbin.f90
-#			3) sfit4 executable file from sfit4.f90
+#           1) pspec executable file from pspec.f90
+#           2) hbin  executable file from hbin.f90
+#           3) sfit4 executable file from sfit4.f90
 #           4) errAnalysis from Layer1mods.py
 #
 #
 #
 # Notes:
-#	1) Options include:
-#			 -i	<dir>	  : Optional. Data directory. Default is current working directory
-#			 -b     <dir/str> : Optional. Binary directory. Default is hard-code.
-#			 -f	<str>	  : Run flags, h = hbin, p = pspec, s = sfit4, e = error analysis, c = clean
+#   1) Options include:
+#            -i <dir>     : Optional. Data directory. Default is current working directory
+#            -b     <dir/str> : Optional. Binary directory. Default is hard-code.
+#            -f <str>     : Run flags, h = hbin, p = pspec, s = sfit4, e = error analysis, c = clean
 #
 #
 # Usage:
-# 		./sfit4Layer0.py [options]
+#       ./sfit4Layer0.py [options]
 #
 #
 # Examples:
@@ -204,18 +204,32 @@ def main(argv):
         #------------------------
         if errFlg:
 
-            if sc.ckFile(ctlFile.inputs['file.in.sbdflt'][0]): sbCtlFileName = ctlFile.inputs['file.in.sbdflt'][0]
-                
-            else:
+            if sc.ckFile(wrkDir+'sb.ctl'): sbCtlFileName = wrkDir + 'sb.ctl'
+            else: 
+
                 try:
                     Tk().withdraw()
                     sbCtlFileName = tkFileDialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
                 except:
                     sbCtlFileName =  filedialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
-            
-            
+                
             sbCtlFile = sc.CtlInputFile(sbCtlFileName)
             sbCtlFile.getInputs()
+
+
+            if 'sbdefflg' in sbCtlFile.inputs:
+
+                if sbCtlFile.inputs['sbdefflg'][0] == 'T':
+
+                    if sc.ckFile(sbCtlFile.inputs['sbdefaults'][0], exitFlg=True):
+
+                        sbDefCtlFileName = sbCtlFile.inputs['sbdefaults'][0]
+                        sbctldefaults = sc.CtlInputFile(sbDefCtlFileName)
+                        sbctldefaults.getInputs()
+                
+                else: sbctldefaults = False
+
+            else: sbctldefaults = False
 
 
         #---------------------------
@@ -267,9 +281,10 @@ def main(argv):
             print ('**********************')
             print ('Running error analysis')
             print ('**********************')
-            rtn = errAnalysis(ctlFile,sbCtlFile,wrkDir)
+            rtn = errAnalysis(ctlFile,sbCtlFile,sbctldefaults,wrkDir)
+            #rtn = errAnalysis(ctlFile,sbCtlFile,wrkDir)
 
 
 
 if __name__ == "__main__":
-        main(sys.argv[1:])
+    main(sys.argv[1:])

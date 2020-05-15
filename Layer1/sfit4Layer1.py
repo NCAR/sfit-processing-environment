@@ -391,24 +391,24 @@ def main(argv):
         # Initialize error control file
         # instance and get inputs (sb.ctl)
         #---------------------------------
-        if mainInF.inputs['errFlg']:
+        # if mainInF.inputs['errFlg']:
 
-            ckFile(mainInF.inputs['sbCtlFile'],logFlg=logFile,exit=True)
-            SbctlFileVars = sc.CtlInputFile(mainInF.inputs['sbCtlFile'])
-            SbctlFileVars.getInputs()    
+        #     ckFile(mainInF.inputs['sbCtlFile'],logFlg=logFile,exit=True)
+        #     SbctlFileVars = sc.CtlInputFile(mainInF.inputs['sbCtlFile'])
+        #     SbctlFileVars.getInputs()    
 
-            #---------------------------------
-            # Check if there are defaults
-            # instance and get inputs (sbctldefaults.ctl)
-            #---------------------------------        
-            if 'sbdefaults' in SbctlFileVars.inputs:
+        #     #---------------------------------
+        #     # Check if there are defaults
+        #     # instance and get inputs (sbctldefaults.ctl)
+        #     #---------------------------------        
+        #     if 'sbdefaults' in SbctlFileVars.inputs:
 
-                ckFile(SbctlFileVars.inputs['sbdefaults'][0],logFlg=logFile,exit=True)
-                sbctldefaults = sc.CtlInputFile(SbctlFileVars.inputs['sbdefaults'][0])
-                sbctldefaults.getInputs()
+        #         ckFile(SbctlFileVars.inputs['sbdefaults'][0],logFlg=logFile,exit=True)
+        #         sbctldefaults = sc.CtlInputFile(SbctlFileVars.inputs['sbdefaults'][0])
+        #         sbctldefaults.getInputs()
 
-            else:
-                sbctldefaults = False
+        #     else:
+        #         sbctldefaults = False
 
         #--------------------------------------
         # Level 2 -- Loop through control files
@@ -422,6 +422,21 @@ def main(argv):
             ctlFile   = ctlFileList[0]
             ctlFileGlb = sc.CtlInputFile(ctlFile,logFile)
             ctlFileGlb.getInputs() 
+
+            if mainInF.inputs['errFlg']:
+                if 'file.in.sbdflt' in ctlFileGlb.inputs:
+                    if ckFile(ctlFileGlb.inputs['file.in.sbdflt'][0], exit=True): 
+                        sbCtlFileName = ctlFileGlb.inputs['file.in.sbdflt'][0]
+                        SbctlFileVars = sc.CtlInputFile(sbCtlFileName)
+                        SbctlFileVars.getInputs()
+
+                else:
+                    print('Error: file.in.sbdflt is missing in {}'.format(ctlFile))
+     
+
+
+
+
 
             #-----------------------------
             # Write Meta-data to list file
@@ -609,13 +624,13 @@ def main(argv):
                     # Copy sb.ctl file to output directory
                     # if error analysis is chosen
                     #-------------------------------------
-                    if mainInF.inputs['errFlg']:
-                        try:
-                            shutil.copyfile(mainInF.inputs['sbCtlFile'], wrkOutputDir3 + 'sb.ctl')
-                        except IOError:
-                            print ('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
-                            if logFile: logFile.critical('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
-                            sys.exit()                    
+                    # if mainInF.inputs['errFlg']:
+                    #     try:
+                    #         shutil.copyfile(mainInF.inputs['sbCtlFile'], wrkOutputDir3 + 'sb.ctl')
+                    #     except IOError:
+                    #         print ('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
+                    #         if logFile: logFile.critical('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
+                    #         sys.exit()                    
 
                     #----------------------------------
                     # Copy hbin details to output folder
@@ -847,8 +862,8 @@ def main(argv):
                             #-----------------------------------
                             # Enter into Error Analysis function
                             #-----------------------------------
-                            rtn = errAnalysis( ctlFileGlb, SbctlFileVars, sbctldefaults, wrkOutputDir3, logFile )
-                            #rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, logFile )  
+                            #rtn = errAnalysis( ctlFileGlb, SbctlFileVars, sbctldefaults, wrkOutputDir3, logFile )
+                            rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, logFile )  
 
                         #---------------------------
                         # Continuation for Pause flg

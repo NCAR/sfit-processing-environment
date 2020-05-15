@@ -95,7 +95,7 @@ def main():
     loc        = 'mlo'
     gas        = 'ch4'
     ver        = 'Current_WP'
-    sbFileName = '/data1/ebaumer/'+loc.lower()+'/'+gas.lower()+'/x.'+gas.lower()+'/sb.ctl'
+    #sbFileName = '/data/pbin/Dev_Ivan/Layer1/sbDefaults.ctl'
     dataDir    = '/data1/ebaumer/'+loc.lower()+'/'+gas.lower()+'/'+ver+'/'
     
     #sbFileName = '/Volumes/data/ebaumer/Err/sb_tab.ctl'
@@ -124,22 +124,22 @@ def main():
     #----------------------------------------------------
     # Initialize Sb ctl file. Assuming in single location
     #----------------------------------------------------
-    sbCtlFile = sc.CtlInputFile(sbFileName)
-    sbCtlFile.getInputs()    
+    # sbCtlFile = sc.CtlInputFile(sbFileName)
+    # sbCtlFile.getInputs()    
 
-    if 'sbdefflg' in sbCtlFile.inputs:
+    # if 'sbdefflg' in sbCtlFile.inputs:
 
-        if sbCtlFile.inputs['sbdefflg'][0] == 'T':
+    #     if sbCtlFile.inputs['sbdefflg'][0] == 'T':
 
-            if ckFile(sbCtlFile.inputs['sbdefaults'][0], exit=True):
+    #         if ckFile(sbCtlFile.inputs['sbdefaults'][0], exit=True):
 
-                sbDefCtlFileName = sbCtlFile.inputs['sbdefaults'][0]
-                sbctldefaults = sc.CtlInputFile(sbDefCtlFileName)
-                sbctldefaults.getInputs()
+    #             sbDefCtlFileName = sbCtlFile.inputs['sbdefaults'][0]
+    #             sbctldefaults = sc.CtlInputFile(sbDefCtlFileName)
+    #             sbctldefaults.getInputs()
         
-        else: sbctldefaults = False
+    #     else: sbctldefaults = False
 
-    else: sbctldefaults = False
+    # else: sbctldefaults = False
 
     
     #--------------------------------------------
@@ -176,12 +176,22 @@ def main():
             #-----------------------------------
             ctlFile = sc.CtlInputFile(ctlFileName)
             ctlFile.getInputs()
+
+            if 'file.in.sbdflt' in ctlFile.inputs:
+                if ckFile(ctlFile.inputs['file.in.sbdflt'][0], exit=True): 
+                    sbCtlFileName = ctlFile.inputs['file.in.sbdflt'][0]
+                    sbCtlFile = sc.CtlInputFile(sbCtlFileName)
+                    sbCtlFile.getInputs()
+
+            else:
+                print('Error: file.in.sbdflt is missing in {}'.format(ctlFile))
+                exit()
             
             #-------------------
             # Run error analysis
             #-------------------
             print (curDir)
-            rtn = errAnalysis(ctlFile,sbCtlFile,sbctldefaults,curDir)
+            rtn = errAnalysis(ctlFile,sbCtlFile,curDir)
             if not rtn: print ('Unable to run error analysis in directory = {}'.format(curDir))
 
             
