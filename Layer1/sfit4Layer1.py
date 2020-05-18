@@ -419,8 +419,8 @@ def main(argv):
             # Initialize ctl file instance
             # and get inputs
             #-----------------------------  
-            ctlFile   = ctlFileList[0]
-            ctlFileGlb = sc.CtlInputFile(ctlFile,logFile)
+            ctlFile      = ctlFileList[0]
+            ctlFileGlb   = sc.CtlInputFile(ctlFile,logFile)
             ctlFileGlb.getInputs() 
 
             if mainInF.inputs['errFlg']:
@@ -433,10 +433,6 @@ def main(argv):
                 else:
                     print('Error: file.in.sbdflt is missing in {}'.format(ctlFile))
      
-
-
-
-
 
             #-----------------------------
             # Write Meta-data to list file

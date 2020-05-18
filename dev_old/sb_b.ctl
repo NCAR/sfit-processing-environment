@@ -1,9 +1,0 @@
-sb.lineInt_H2CO.systematic            = 0.10
-sb.lineTAir_H2CO.systematic           = 0.10 
-sb.linePAir_H2CO.systematic           = 0.10 
-sb.profile.H2CO.grid= -0.02 0.1 10 16 40 120
-sb.profile.H2CO.correlation.width=4
-sb.profile.H2CO.random =.30 0.5 0.5 0.5 .20 .20 #relative units
-sb.profile.H2CO.systematic =.30 0.5 0.5 0.5 .20 .20
-sb.snr.1=100
-sb.snr.4=1
