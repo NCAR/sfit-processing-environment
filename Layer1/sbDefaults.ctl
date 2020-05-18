@@ -83,8 +83,9 @@ out.ssystematic                       = T
 
 SeinputFlg                            = T                             
 
-sb.sza.random.scaled                  = T
-sb.sza.systematic.scaled              = T
+sb.sza.random.scaled                  = F
+sb.sza.systematic.scaled              = F
+
 sb.omega.random.scaled                = T
 sb.omega.systematic.scaled            = T
 
@@ -125,8 +126,13 @@ sb.profile.*.random                   = .10 .10 #relative units
 sb.profile.*.systematic               = .10 .10 #relative units, profile shape is not changed! Will vanish for Tikhonov retrievals
 
 sb.omega.*                            = 0.001
-sb.sza.random                         = 0.005
-sb.sza.systematic                     = 0.001
+#sb.sza.random                         = 0.005
+#sb.sza.systematic                     = 0.001
+
+sb.sza.random                         = 0.15
+sb.sza.systematic                     = 0.11
+
+
 sb.phase.*                            = 0.001
 sb.wshift.*                           = 0.001
 sb.slope.*                            = 0.001

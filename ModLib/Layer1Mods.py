@@ -520,9 +520,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
       for label in ('dwshift','maxopd'): #only these 2?? TODO
         if label in Kb_labels: del Kb_labels[label]
     
-
-    
-     
+  
     def matPosDefTest(mat):
         ''' Test if matrix is positive definite'''
         
@@ -663,8 +661,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         return sbCovar
 
 
-    
- 
     #----------------------------------------------
     # List of parameters as they appear in ctl file 
     #----------------------------------------------   
@@ -1088,7 +1084,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # determine errors
     # Kbl is the label used in the ctl file
     #--------------------------------
-    print ('\nCalculating uncertainty contributions for %s'%', '.join(Kb.keys()))
+
+    print ('\nCalculating uncertainty contributions for %s\n'%', '.join(Kb.keys()))
+
     for Kbl in Kb:
         DK = np.dot(Dx,Kb[Kbl])
         for ErrType in ['random','systematic']:
@@ -1242,7 +1240,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                     tce=np.sqrt(appc.dot(DK.dot(Sb).dot(DK.T)).dot(appc))
                     #print ('TC error for %-22s: %4.3e[molec/cm^2]\t%4.2f%%'%('%s.%s'%(Kbl,ErrType),tce,tce/rtpc.sum()*100))
                     
-                 
 
     #---------------------------------------------
     # Calculate total systematic and random errors
@@ -1371,8 +1368,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     AVK['AVK_VMR']          = (AKxVMR,[],[])
     writeCoVar(fname,header,AVK,0)
 
-    try: 
-      raytrace_header,line_of_sight=sumVars.readRaytrace(wrkingDir + 'raytrace.out',longitude=20.,azimuth=20.,target_grid=sumVars.aprfs['Z']*1e3) #raytrace.out is the default...better to take file.out.raytrace? 
-    #print(raytrace_header,line_of_sight)
-    except: pass
+    #try: 
+    #   raytrace_header,line_of_sight=sumVars.readRaytrace(wrkingDir + 'raytrace.out',longitude=20.,azimuth=20.,target_grid=sumVars.aprfs['Z']*1e3) #raytrace.out is the default...better to take file.out.raytrace? 
+    #   print(raytrace_header,line_of_sight)
+    #except: pass
+    
     return True
