@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#! /bira-iasb/softs/19g/py37/bin/python
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
 # Name:
@@ -203,15 +203,15 @@ def main(argv):
         # Initialize sb ctl class
         #------------------------
         if errFlg:
-
-            if sc.ckFile(ctlFile.inputs['file.in.sbdflt'][0]): sbCtlFileName = ctlFile.inputs['file.in.sbdflt'][0]
-                
+            if sc.ckFile(ctlFile.inputs.get('file.in.sbdflt',[''])[0]): sbCtlFileName = ctlFile.inputs['file.in.sbdflt'][0]
+                 
             else:
-                try:
-                    Tk().withdraw()
-                    sbCtlFileName = tkFileDialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
-                except:
-                    sbCtlFileName =  filedialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
+                sbCtlFileName=os.path.join(os.path.dirname(__file__),'..','Layer1','sbDefaults.ctl')
+                #try:
+                    #Tk().withdraw()
+                    #sbCtlFileName = tkFileDialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
+                #except:
+                    #sbCtlFileName =  filedialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
             
             
             sbCtlFile = sc.CtlInputFile(sbCtlFileName)
