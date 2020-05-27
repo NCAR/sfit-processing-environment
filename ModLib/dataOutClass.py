@@ -61,6 +61,7 @@ import matplotlib.cm as mplcm
 import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as mtick
+from mpl_toolkits.mplot3d import Axes3D  
 
 #----------------------------------------------------------------------------------------
 #### matplotlib.style.use('classic')   #classic style (https://matplotlib.org/users/dflt_style_changes.html)
@@ -904,10 +905,9 @@ def readRaytrace(fname,longitude=None,azimuth=None,target_grid=None):
 
   ckFile(fname, exitFlg=True)
 
-
   lines = tryopen(fname)
   if len(lines) <10:
-    print("File size might be low: {}".format(fname))
+    print("File size not correct: {}".format(fname))
     return False
 
    
@@ -2039,8 +2039,9 @@ class ReadOutputData(_DateRange):
             if k =='date': self.error[k] = np.asarray(self.error[k])        
     
 
-    def readPbp(self,fname=''):
-        ''' Reads data from the pbp file'''
+    def readPbp(self,fname='', cnvrAzFlg=True):
+        ''' Reads data from the pbp file
+            cnvrAzFlg == True converts saa defined as South 0 to North 0'''
         self.pbp = {}
 
         if not fname: fname = 'pbpfile'
@@ -2118,13 +2119,14 @@ class ReadOutputData(_DateRange):
        #--------------------------
        # For NCAR sites - Convert SAA to 0.0- North
        #--------------------------
-        try:
-            for i, az in enumerate(self.pbp['saa']):
-                if az >= 180.0:
-                    self.pbp['saa'][i] = np.abs(360. - az  - 180.)
-                elif az < 180.0:
-                    self.pbp['saa'][i] = 180.0 + az
-        except: pass
+        if cnvrAzFlg:
+            try:
+                for i, az in enumerate(self.pbp['saa']):
+                    if az >= 180.0:
+                        self.pbp['saa'][i] = np.abs(360. - az  - 180.)
+                    elif az < 180.0:
+                        self.pbp['saa'][i] = 180.0 + az
+            except: pass
 
 
         
@@ -2733,18 +2735,19 @@ class PlotData(ReadOutputData):
             #------------------------------------------
             # Developing - Raytrace
             #------------------------------------------
-            # saa   = self.pbp['saa'][0]
+            saa   = self.pbp['saa'][0]
             
-            # if not self.readt15Flg: self.readt15()
-            # lon  = 360. - self.t15asc['lon'][0]
-            # print(lon, saa)
+            if not self.readt15Flg: self.readt15()
+     
+            lon  = 360. - self.t15asc['lon'][0]
 
-            # if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0) 
 
-            # try:
-            #     raytrace_header,line_of_sight=readRaytrace(self.dirLst[0] + 'raytrace.out',longitude=lon,azimuth=saa,target_grid=self.aprfs['Z'][0]*1e3) #raytrace.out is the default...better to take file.out.raytrace? 
-            #     print(raytrace_header, line_of_sight)
-            # except: pass
+            if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0) 
+            rayFlg = False
+            try:
+                raytrace_header,line_of_sight=readRaytrace(self.dirLst[0] + 'raytrace.out',longitude=lon,azimuth=saa,target_grid=self.aprfs['Z'][0]*1e3) #raytrace.out is the default...better to take file.out.raytrace? 
+                rayFlg = True
+            except: pass
 
         
         #--------------------
@@ -2762,7 +2765,7 @@ class PlotData(ReadOutputData):
         #---------------------
         try: sza = np.delete(self.pbp["sza"],self.inds)
         except: pass
-        
+
         #------------
         # Get spectra
         #------------
@@ -2887,8 +2890,28 @@ class PlotData(ReadOutputData):
         monthsAll    = MonthLocator()
         #months       = MonthLocator(bymonth=1,bymonthday=1)
         months       = MonthLocator()
-        DateFmt      = DateFormatter('%m\n%Y')      
+        DateFmt      = DateFormatter('%m\n%Y') 
+
+
+        if rayFlg:     
+
+            fig, ax  = plt.subplots()
+            ax = plt.axes(projection='3d')                   
+            ax.plot(line_of_sight[:,1], line_of_sight[:,2], line_of_sight[:,0]/1000., linewidth=2)
             
+            ax.tick_params(which='both',labelsize=8)
+            ax.set_xlabel('Longitude')
+            ax.set_ylabel('Latitude')
+            ax.set_zlabel('Altitude [km]')
+
+            ax.set_title('Line of sight')
+
+            ax.view_init(30, 50)
+            
+            
+            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False)
+
  
         #----------------------------------------
         # Plot Jacobian only if there are
