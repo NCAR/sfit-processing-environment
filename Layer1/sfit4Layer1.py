@@ -86,7 +86,7 @@ import re
 import sfitClasses as sc  
 import dataOutClass as dc
 import shutil
-from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis  
+#from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis  
 import matplotlib.pyplot as plt
 
 
@@ -162,12 +162,13 @@ def main(argv):
     pauseFlg = False
     overDFlg = False
     mainInF  = False
+    pyv2Flg  = False
 
     #--------------------------------
     # Retrieve command line arguments
     #--------------------------------
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:P:L:d:l?')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:P:L:d:lo?')
 
     except getopt.GetoptError as err:
         print (str(err))
@@ -205,6 +206,10 @@ def main(argv):
         # Option for Log File
         elif opt == '-l':
             logFile = True
+
+        # Option to import error analysis v2 - temporary
+        elif opt == '-o':
+            pyv2Flg = True
 
          # Option for Log File
         elif opt == '-d':
@@ -258,6 +263,9 @@ def main(argv):
         print('Error! usage:') 
         usage()
         exit()
+
+    if pyv2Flg: from Layer1Mods_v2 import refMkrNCAR, t15ascPrep, errAnalysis
+    else: from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis
 
     #----------------------------------------------
     # Initialize main input variables as dicitonary
@@ -391,24 +399,26 @@ def main(argv):
         # Initialize error control file
         # instance and get inputs (sb.ctl)
         #---------------------------------
-        # if mainInF.inputs['errFlg']:
+        if mainInF.inputs['errFlg']:
 
-        #     ckFile(mainInF.inputs['sbCtlFile'],logFlg=logFile,exit=True)
-        #     SbctlFileVars = sc.CtlInputFile(mainInF.inputs['sbCtlFile'])
-        #     SbctlFileVars.getInputs()    
+            if pyv2Flg:
 
-        #     #---------------------------------
-        #     # Check if there are defaults
-        #     # instance and get inputs (sbctldefaults.ctl)
-        #     #---------------------------------        
-        #     if 'sbdefaults' in SbctlFileVars.inputs:
+                ckFile(mainInF.inputs['sbCtlFile'],logFlg=logFile,exit=True)
+                SbctlFileVars = sc.CtlInputFile(mainInF.inputs['sbCtlFile'])
+                SbctlFileVars.getInputs()    
 
-        #         ckFile(SbctlFileVars.inputs['sbdefaults'][0],logFlg=logFile,exit=True)
-        #         sbctldefaults = sc.CtlInputFile(SbctlFileVars.inputs['sbdefaults'][0])
-        #         sbctldefaults.getInputs()
+                #---------------------------------
+                # Check if there are defaults
+                # instance and get inputs (sbctldefaults.ctl)
+                #---------------------------------        
+                if 'sbdefaults' in SbctlFileVars.inputs:
 
-        #     else:
-        #         sbctldefaults = False
+                    ckFile(SbctlFileVars.inputs['sbdefaults'][0],logFlg=logFile,exit=True)
+                    sbctldefaults = sc.CtlInputFile(SbctlFileVars.inputs['sbdefaults'][0])
+                    sbctldefaults.getInputs()
+
+                else:
+                    sbctldefaults = False
 
         #--------------------------------------
         # Level 2 -- Loop through control files
@@ -424,14 +434,15 @@ def main(argv):
             ctlFileGlb.getInputs() 
 
             if mainInF.inputs['errFlg']:
-                if 'file.in.sbdflt' in ctlFileGlb.inputs:
-                    if ckFile(ctlFileGlb.inputs['file.in.sbdflt'][0], exit=True): 
-                        sbCtlFileName = ctlFileGlb.inputs['file.in.sbdflt'][0]
-                        SbctlFileVars = sc.CtlInputFile(sbCtlFileName)
-                        SbctlFileVars.getInputs()
+                if not pyv2Flg:
+                    if 'file.in.sbdflt' in ctlFileGlb.inputs:
+                        if ckFile(ctlFileGlb.inputs['file.in.sbdflt'][0], exit=True): 
+                            sbCtlFileName = ctlFileGlb.inputs['file.in.sbdflt'][0]
+                            SbctlFileVars = sc.CtlInputFile(sbCtlFileName)
+                            SbctlFileVars.getInputs()
 
-                else:
-                    print('Error: file.in.sbdflt is missing in {}'.format(ctlFile))
+                    else:
+                        print('Error: file.in.sbdflt is missing in {}'.format(ctlFile))
      
 
             #-----------------------------
@@ -620,13 +631,14 @@ def main(argv):
                     # Copy sb.ctl file to output directory
                     # if error analysis is chosen
                     #-------------------------------------
-                    # if mainInF.inputs['errFlg']:
-                    #     try:
-                    #         shutil.copyfile(mainInF.inputs['sbCtlFile'], wrkOutputDir3 + 'sb.ctl')
-                    #     except IOError:
-                    #         print ('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
-                    #         if logFile: logFile.critical('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
-                    #         sys.exit()                    
+                    if mainInF.inputs['errFlg']:
+                        if pyv2Flg:
+                            try:
+                                shutil.copyfile(mainInF.inputs['sbCtlFile'], wrkOutputDir3 + 'sb.ctl')
+                            except IOError:
+                                print ('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
+                                if logFile: logFile.critical('Unable to copy template sb.ctl file to working directory: %s' % wrkOutputDir3)
+                                sys.exit()                    
 
                     #----------------------------------
                     # Copy hbin details to output folder
@@ -858,8 +870,8 @@ def main(argv):
                             #-----------------------------------
                             # Enter into Error Analysis function
                             #-----------------------------------
-                            #rtn = errAnalysis( ctlFileGlb, SbctlFileVars, sbctldefaults, wrkOutputDir3, logFile )
-                            rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, logFile )  
+                            if pyv2Flg: rtn = errAnalysis( ctlFileGlb, SbctlFileVars, sbctldefaults, wrkOutputDir3, logFile )
+                            else: rtn = errAnalysis( ctlFileGlb, SbctlFileVars, wrkOutputDir3, logFile )  
 
                         #---------------------------
                         # Continuation for Pause flg
