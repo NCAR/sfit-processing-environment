@@ -51,7 +51,7 @@ class sfit4_ctl:
     def get_value(self, tag):
 
         tag = tag.strip()
-        if self.value.has_key(tag):
+        if tag in self.value:
             return self.value[tag].strip()
         else:
             print ('key ' + tag.strip() + ' not found')
@@ -169,7 +169,7 @@ class read_table:
     
         ll = linecache.getline(filename, 2).strip().split()
         self.retgas = ll[3:]
-        self.nr_retgas = string.atoi(ll[2])
+        self.nr_retgas = int(ll[2])
         
     def get_gas_vmr(self, gasname=None):
         if gasname == None:

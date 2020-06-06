@@ -77,7 +77,7 @@ class read_from_file:
                 if len(self.file.read(1)) == 0:
                     self.flag = -1
                     break
-                self.file.seek(-1,1)
+                self.file.seek(self.file.tell()-1,0)
                 
     def skipline(self, nr=1):
         for n in range(0,nr):
