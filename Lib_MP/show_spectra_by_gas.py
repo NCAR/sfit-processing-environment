@@ -1,19 +1,16 @@
 import sys
-sys.path.append('/data/sfit-processing-environment/Lib_MP/')
+#sys.path.append('/data/sfit-processing-environment/Lib_MP/')
 import read_gas_files as rspec
 import numpy as np
-reload (rspec) # because dreload does not work with numpy
+import matplotlib.pyplot as plt
+import matplotlib.ticker  as tkr
+import read_detfile as df
+import read_gas_files as rspec
+import read_result_sfit4 as sfit4
+import glob, pdb
+import argparse
 
-def spectra_by_gas(direc,ax,nr_iter = 'final', nr_band=1,gases='All'):
-
-
-    import matplotlib.pyplot as plt
-    import matplotlib.ticker  as tkr
-    import read_detfile as df
-    import read_gas_files as rspec
-    import read_result_sfit4 as sfit4
-    import glob, pdb
-
+def spectra_by_gas(direc,ax=-1,nr_iter = -1, nr_band=1,gases='All'):
 
     files = glob.glob(direc + '/spc*')
     sp = sfit4.pbp(direc+'/pbpfile')
@@ -39,12 +36,13 @@ def spectra_by_gas(direc,ax,nr_iter = 'final', nr_band=1,gases='All'):
         fig.clf()
         ax = fig.gca()
 
-    ax1 = fig.add_subplot(111)
+    ax1 = ax #fig.add_subplot(111)
     gas_sum = [];
     for s in spec:
         max_s = np.max(s['clc'])
         max_s = 1.0
         if gases == 'All':
+            print (s['gas'],s['iteration'],s['band'])
             if int(s['iteration']) == nr_iter and int(s['band']) == nr_band:
                 if not s['gas'] == 'ALL':
                     ax1.plot(s['nu'], s['clc'],label=s['gas'])
@@ -56,6 +54,7 @@ def spectra_by_gas(direc,ax,nr_iter = 'final', nr_band=1,gases='All'):
 #                    gas_sum = np.exp(-gas_sum)
 #                    ax1.plot(nu, gas_sum,label='SUM')
                 else:
+                    print (s['gas'])
                     gas_all = s['clc']
                     nu_all = s['nu']
                     
@@ -107,3 +106,20 @@ def spectra_by_gas(direc,ax,nr_iter = 'final', nr_band=1,gases='All'):
 ##            pdb.set_trace()
 ##            ax2.set_xlabel(r'Frequency [cm$^{-1}$]')
 #            self.winmw.show()
+
+
+if __name__== '__main__':
+
+    import os,sys
+    sys.path.append(os.path.join(os.path.dirname(sys.argv[0])))
+    
+    direc = '.'
+    gas = 'All'
+    for arg in sys.argv[1:]:
+        key,val = arg.split('=')
+        if key=='--dir':
+            direc = val
+        if key=='--gas':
+            dir = val
+    spectra_by_gas(direc,gases=gas)
+    input()
