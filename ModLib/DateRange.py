@@ -87,5 +87,5 @@ class DateRange:
             newyears = [inYear for inYear in self.dateList if inYear.year == year]
             return newyears
         else:
-            print 'Error!! Year must be type int for daysInYear'
+            print ('Error!! Year must be type int for daysInYear')
             return False

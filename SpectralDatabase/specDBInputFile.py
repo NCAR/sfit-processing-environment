@@ -25,11 +25,7 @@
 # Three letter station
 # location
 #---------------------
-loc = 'bre'
-lat = 53
-lon = -8
-alt = 27
-utc = 1
+loc = 'mlo'                                                                      
 
 #----------------------------------
 # Date Range of data to process
@@ -37,26 +33,27 @@ utc = 1
 # and ending dates!!
 #----------------------------------
 # Starting 
-iyear = 2014               # Year
-imnth = 8                  # Month
-iday  = 6
+iyear = 1995               # Year
+imnth = 1                  # Month
+iday  = 1                  # Day
+
 # Ending
-fyear = 2014               # Year
-fmnth = 8                 # Month
-fday  = 6                 # Day
+fyear = 1995               # Year
+fmnth = 12                 # Month
+fday  = 31                 # Day
 
 
 #------------
 # directories
 #------------
-dataBaseDir   = '/data/sfit-processing-test/bre'                            # Base directory for OPUS data
-DaysProcDir   = '/data/sfit-processing-test/'   # Path to write file that contains list of all folders processed
+dataBaseDir   = '/Volumes/data1/mlo/'                            # Base directory for OPUS data
+DaysProcDir   = '/Volumes/data/Campaign/MLO/Spectral_DB/Test/'   # Path to write file that contains list of all folders processed
 
 #------
 # Files
 #------
-outputDBfile  = '/data/sfit-processing-test/spDB_'+loc+'_'+str(iyear)+'.dat'  # Path and filename of spectral database file
-Fckopus       = '/home/mathias/chkopus/ckopus/ckopus'                                       # ckopus executable file
+outputDBfile  = '/Volumes/data/Campaign/MLO/Spectral_DB/Test/spDB_'+loc+'_'+str(iyear)+'.dat'  # Path and filename of spectral database file
+Fckopus       = '/Users/ebaumer/Code/sfit-ckopus/ckopus'                                       # ckopus executable file
 
 #----------------------
 # General Logical Flags
@@ -68,13 +65,12 @@ bnrWriteFlg = True              # This flag controls whether ckopus is called to
 # ckopus Flags
 #-------------
 bnrType    = 'F'                # bnr type ckopus writes (F => Fortran, R => C)                 
-SBlockType = 'SNGC'             # Spectral block type [TRAN | SGN2 | IFG2 | EMIS | IFGM | PHAS | SNGC]
+SBlockType = 'NONE'             # Spectral block type [TRAN | SGN2 | IFG2 | EMIS | IFGM | PHAS | SNGC]
                                 # If this value is None or an empty string, the program will take the 
                                 # default spectral block type given by ckopus
-
-ckopusFlgs = ['']                                
+     
 #ckopusFlgs = ['-b3']                           
-#ckopusFlgs = ['-U','-t-150']    # Additional ckopus flags. Must include '-'. Each flag should be seperated by a comma
+ckopusFlgs = ['-U','-t-150']    # Additional ckopus flags. Must include '-'. Each flag should be seperated by a comma
                                 # and contained within the brackets
 
 

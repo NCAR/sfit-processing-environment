@@ -1,4 +1,4 @@
-#! /usr/local/python-2.7/bin/python
+#! /usr/bin/python3
 ###! /usr/bin/python2.7
 
 #----------------------------------------------------------------------------------------
@@ -56,6 +56,7 @@ import datetime as dt
 import numpy as np
 import sys
 import glob
+import getopt
                                     #-------------------------#
                                     # Define helper functions #
                                     #-------------------------#
@@ -63,14 +64,21 @@ import glob
 def ckDir(dirName):
     '''Check if a directory exists'''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         sys.exit()
 
 def ckFile(fName):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         sys.exit()
+
+def usage():
+    ''' Prints to screen standard program usage'''
+    print ('read_FL0_EOL_data.py [-y 2018 -?]')
+    print ('  -?             : Show all flags')
+    print ('Note: Additional paths are hardcoded in read_FL0_EOL_data.py')
+
 
 
                                     #----------------------------#
@@ -79,18 +87,51 @@ def ckFile(fName):
                                     #                            #
                                     #----------------------------#
 
-def main():
+def main(argv):
+
+    #------------------------------------------------------------------------------------------------------------#
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 'y:?')
+
+    except getopt.GetoptError as err:
+        print (str(err))
+        usage()
+        sys.exit()
+
+
+    #-----------------------------
+    # Parse command line arguments
+    #-----------------------------
+    for opt, arg in opts:
+        # Check input file flag and path
+
+        if opt == '-y':
+
+            yearstr   = str(arg)
+            
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
+
+        else:
+            print ('Unhandled option: ' + opt)
+            sys.exit()
+
+    if not 'yearstr' in locals():
+        print ('Error in input year')
+        usage()
+        sys.exit()
+
 
     #----------------
     # Initializations
     #----------------
-    dataDir     = '/Volumes/data1/ancillary_data/fl0/eol/'
     dataDir     = '/data1/ancillary_data/fl0/eol/'
     dataFileTag = 'flab'
     fileExtTag  = 'cdf'
-    outDataDir  = '/Volumes/data1/ancillary_data/fl0/eol/'
     outDataDir  = '/data1/ancillary_data/fl0/eol/'
-    yearstr     = '2015'
+    yearstr     = yearstr
 
     #--------------------------
     # Initialize variable lists
@@ -100,6 +141,10 @@ def main():
     rhList     = []
     pressList  = []
     tempDPList = []
+    wdirList   = []
+    wspdList   = []
+    wmaxList   = []
+    wsdevList  = []
     rmind      = []
 
     #--------------------
@@ -108,10 +153,10 @@ def main():
     #--------------------
     files = glob.glob(dataDir + 'flab.' + yearstr + '*.' + fileExtTag)
     if not files:
-        print 'No files found for year: %s' % yearstr
+        print ('No files found for year: %s' % yearstr)
         sys.exit()
     else:
-        print ' %d files found for year: %s' % (len(files),yearstr)
+        print (' %d files found for year: %s' % (len(files),yearstr))
 
     #-------------------------
     # Loop through found files
@@ -126,6 +171,10 @@ def main():
         rh          = cdfname.variables['rh']
         press       = cdfname.variables['pres']
         tempDP      = cdfname.variables['dp']
+        wdir      = cdfname.variables['wdir']
+        wspd      = cdfname.variables['wspd']
+        wmax      = cdfname.variables['wmax']
+        wsdev      = cdfname.variables['wsdev']
         cdfname.close()
 
         #----------------------------------
@@ -157,6 +206,10 @@ def main():
         rh.data       = np.delete(rh.data,rmind)                                           # Numpy array
         press.data    = np.delete(press.data,rmind)                                        # Numpy array
         tempDP.data   = np.delete(tempDP.data,rmind)                                       # Numpy array
+        wdir.data     = np.delete(wdir.data,rmind)
+        wspd.data     = np.delete(wspd.data,rmind)
+        wmax.data     = np.delete(wmax.data,rmind)
+        wsdev.data     = np.delete(wsdev.data,rmind)                                       # Numpy array
 
         #---------------------
         # Append to main lists
@@ -166,12 +219,17 @@ def main():
         rhList.extend(rh.data)
         pressList.extend(press.data)
         tempDPList.extend(tempDP.data)
+        wdirList.extend(wdir.data)
+        wspdList.extend(wspd.data)
+        wmaxList.extend(wmax.data)
+        wsdevList.extend(wsdev.data)
+        
 
     #------------------------
     # Sort list based on time
     # This returns a tuple
     #------------------------
-    timeList, tempList, rhList, pressList, tempDPList = zip(*sorted(zip(timeList, tempList, rhList, pressList, tempDPList)))
+    timeList, tempList, rhList, pressList, tempDPList, wdirList, wspdList, wmaxList, wsdevList = zip(*sorted(zip(timeList, tempList, rhList, pressList, tempDPList, wdirList, wspdList, wmaxList, wsdevList)))
 
     #-----------------------------------
     # Construct a vector of string years
@@ -186,11 +244,11 @@ def main():
     #--------------------------
     # Write data to output file
     #--------------------------
-    with open(outDataDir+'fl0_met_data_'+years[0]+'.txt', 'w') as fopen:
-        fopen.write('Year Month Day Hour Minute Temperature[C] RelativeHumidity[%] Pressure[mbars] DewPointTemperature[C]\n')
-        for line in zip(years,months,days,hours,minutes,tempList,rhList,pressList,tempDPList):
-            fopen.write('%-4s %-5s %-3s %-4s %-6s %-14.1f %-19.1f %-15.1f %-22.6f\n' % line)
+    with open(outDataDir+'fl0_met_data_'+years[0]+'_v2.txt', 'w') as fopen:
+        fopen.write('Year Month Day Hour Minute Temperature[C] RelativeHumidity[%] Pressure[mbars] DewPointTemperature[C] WinDir[rN] WinSpeed[m/s] WindSpeedMax[m/s]\n')
+        for line in zip(years,months,days,hours,minutes,tempList,rhList,pressList,tempDPList,wdirList,wspdList,wmaxList):
+            fopen.write('%-4s %-5s %-3s %-4s %-6s %-14.1f %-19.1f %-15.1f %-22.6f %-15.4f %-15.4f %-15.4f\n' % line)
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

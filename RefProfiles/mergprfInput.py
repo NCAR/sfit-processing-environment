@@ -25,7 +25,7 @@
 # Three letter station
 # location
 #---------------------
-loc = 'fl0'                                    # Three letter station identifier
+loc = 'mlo'                                    # Three letter station identifier
 
 #----------------------------------
 # Date Range of data to process
@@ -33,19 +33,19 @@ loc = 'fl0'                                    # Three letter station identifier
 # and ending dates!!
 #----------------------------------
 # Starting
-iyear = 2015               # Year
-imnth = 1                  # Month
+iyear = 2019               # Year
+imnth = 1                 # Month
 iday  = 1                  # Day
 
 # Ending
-fyear = 2015               # Year
+fyear = 2019               # Year
 fmnth = 12                 # Month
-fday  = 31                 # Day
+fday  = 31                # Day
 
 #------
 # Flags
 #------
-npntSkip = 1
+npntSkip = 1	
 Pintrp   = 3
 Tintrp   = 2
 mvOld    = False           # Flag to rename previous water profile files. (Files appened with .WACCM5)
@@ -56,13 +56,16 @@ mvOld    = False           # Flag to rename previous water profile files. (Files
 #NCEPDir     = '/Users/ebaumer/Data/TestBed2/'
 #outBaseDir  = '/Users/ebaumer/Data/TestBed2/'
 NCEPDir    = '/data/Campaign/' + loc.upper() + '/NCEP_nmc/'                                # Directory of NCEP nmc data
-outBaseDir = '/data1/' + loc.lower() + '/'                                                 # Base directory for output
+outBaseDir = '/data1/' + loc.lower() + '/'
+#outBaseDir = '/data1/iortega/WYO/'                                                 # Base directory for output
+
 
 #------
 # Files
 #------
 #WACCMfile = '/Users/ebaumer/Data/TestBed2/WACCM_pTW-meanV5.MLO'
 WACCMfile = '/data/Campaign/' + loc.upper() + '/waccm/WACCM_pTW-meanV6.' + loc.upper()     # WACCM monthly mean file
+#WACCMfile = '/data/Campaign/FL0/waccm/WACCM_pTW-meanV6.FL0'
 
 
 

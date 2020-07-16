@@ -1,5 +1,5 @@
-#! /usr/local/python-2.7/bin/python
-
+#!/usr/bin/python3
+##! /usr/local/python-2.7/bin/python
 #----------------------------------------------------------------------------------------
 # Name:
 #      MergPrf.py
@@ -21,6 +21,7 @@
 #
 # Notes:
 #       1) The altitude grid is taken from WACCM monthly mean file.
+#       2) compatible with python 2.7 or later
 #
 #
 # Usage:
@@ -42,8 +43,9 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+                        
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import getopt
 import glob as gb
 import datetime as dt
@@ -60,15 +62,25 @@ from matplotlib.ticker import MultipleLocator
                         #-------------------------------------#
             
                                                      
+
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'MergPrf.py -i <File>'
+    print ('\nMergPrf.py [-i <File> -s tab/mlo/fl0 -d 20180515 -l -?')
+    print ('There are two options to run MergPrf.py:')
+    print ('(1) MergPrf.py -i <File>. In this case the input file needs to be modified accordingly.')
+    print ('(2) MergPrf.py -s tab/mlo/fl0 -d 20180515')
+    print ('  -i             : input File')
+    print ('  -s             : Flag Must include location: e.g., mlo/tab/fl0')
+    print ('  -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.')
+    print ('  -l             : Log File')
+    print ('  -?             : Show all flags')
+    print ('Note: if input file is not provided the location, dates, are taken from -s -d, and additional hardcoded inputs are in MergPrf.py\n')
 
         
 def ckDir(dirName):
     '''Check if a directory exists'''
     if not os.path.exists( dirName ):
-        print 'Directory %s does not exist' % (dirName)
+        print ('Directory %s does not exist' % (dirName))
         return False
     else:
         return True
@@ -76,7 +88,7 @@ def ckDir(dirName):
 def ckFile(fName,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exit:
             sys.exit()
         return False
@@ -85,6 +97,11 @@ def ckFile(fName,exit=False):
                 
 def segmnt(seq,n):
     '''Yeilds successive n-sized segments from seq'''
+    try:
+        xrange
+    except NameError:
+        xrange = range
+
     for i in xrange(0,len(seq),n):
         yield seq[i:i+n]
 
@@ -100,16 +117,17 @@ def main(argv):
     # Set default flags
     #------------------
     logFile  = False    
+    inpFlg   = False
     
     #---------------------------------
     # Retrieve command line arguments 
     #---------------------------------
     #------------------------------------------------------------------------------------------------------------#                                             
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:l:')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:l:s:d:?:')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
         
@@ -126,18 +144,55 @@ def main(argv):
             
             # Check if file exists
             ckFile(inputFile,True)
+
+            inpFlg  = True
             
         # Option for Log File
         elif opt == '-l':
             if arg: logDir = arg
             else:   logDir = os.getcwd() +'/'
             logFile = True        
-            
+        
+        elif opt == '-s':  
+
+            loc = arg.lower()
+
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
+
         #------------------
         # Unhandled options
         #------------------
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             usage()
             sys.exit()
     #------------------------------------------------------------------------------------------------------------#                                
@@ -151,9 +206,49 @@ def main(argv):
     # Read input file
     #----------------
     inputs = {}
-    execfile(inputFile, inputs)
-    if '__builtins__' in inputs:
-        del inputs['__builtins__']       
+
+    if inpFlg:
+
+        try:
+            execfile(inputFile, inputs)
+
+        except IOError as errmsg:
+            print (errmsg)
+            sys.exit()
+
+        except:
+            exec(compile(open(inputFile, "rb").read(), inputFile, 'exec'), inputs)
+
+        if '__builtins__' in inputs:
+            del inputs['__builtins__']  
+
+    else:
+
+        inputs['loc']          = loc
+
+        inputs['iyear']        = iyear
+        inputs['imnth']        = imnth
+        inputs['iday']         = iday
+        
+        inputs['fyear']        = fyear
+        inputs['fmnth']        = fmnth
+        inputs['fday']         = fday
+        
+        #------------
+        # Directories
+        #------------
+        inputs['NCEPDir']      = '/data/Campaign/' + loc.upper() + '/NCEP_nmc/'
+        inputs['outBaseDir']   = '/data1/' + loc.lower() + '/'
+        inputs['WACCMfile']    = '/data/Campaign/' + loc.upper() + '/waccm/WACCM_pTW-meanV6.' + loc.upper()
+
+        #------
+        # Flags
+        #------
+        inputs['npntSkip']     = 1
+        inputs['Pintrp']       = 3
+        inputs['Tintrp']       = 2
+        inputs['mvOld']        = False           # Flag to rename previous water profile files. (Files appened with .WACCM5)
+
         
     #-----------------------------------
     # Check the existance of directories
@@ -161,7 +256,7 @@ def main(argv):
     #-----------------------------------
     # Check directory of NCEP nmc data                         
     if not ckDir(inputs['NCEPDir']):
-        print 'NCEP nmc directory does not exist: ' + inputs['NCEPDir']
+        print ('NCEP nmc directory does not exist: ' + inputs['NCEPDir'])
         sys.exit()
         
     # check if '/' is included at end of path
@@ -170,7 +265,7 @@ def main(argv):
         
     # Check directory for output                         
     if not ckDir(inputs['outBaseDir']):
-        print 'Output base directory does not exist: ' + inputs['outBaseDir']
+        print ('Output base directory does not exist: ' + inputs['outBaseDir'])
         sys.exit()
         
     # check if '/' is included at end of path
@@ -180,7 +275,7 @@ def main(argv):
     if logFile:
         # Check directory for log file                         
         if not ckDir(logDir):
-            print 'Log File directory does not exist: ' + logDir
+            print ('Log File directory does not exist: ' + logDir)
             sys.exit()
             
         # check if '/' is included at end of path
@@ -235,6 +330,7 @@ def main(argv):
     waccmP = np.flipud( np.array( [ [float(x) for x in line.strip().split()[1:]] for line in lines[s_ind:nlyrs+s_ind] ] ) )
     s_ind  = 3 + nlyrs + 2 + nlyrs + 2
     waccmW = np.flipud( np.array( [ [float(x) for x in line.strip().split()[1:]] for line in lines[s_ind:nlyrs+s_ind] ] ) )
+
     
     #----------------------
     # Loop through day list
@@ -254,7 +350,7 @@ def main(argv):
         # If input directory is missing
         # skip to next day
         #------------------------------
-        if not ckDir(outDir): continue
+        if not ckDir(outDir): continue    
         
         #------------------------------------
         # Open and read yearly NCEP nmc files
@@ -302,6 +398,7 @@ def main(argv):
         #--------------------------------
         dateInd = np.where(nmcDate == snglDay)[0]
         mnthInd = (snglDay.month - 1)   # -1 because January is in 0th column
+
         
         #-------------------------------------
         # If date is entirely missing from nmc
@@ -342,13 +439,13 @@ def main(argv):
                 PressOut = waccmP[:,mnthInd]
                 TempOut  = waccmT[:,mnthInd]
                 waccmFlg = True
-            
+               
             #-----------------------------------------------------------
             # If only two or none values missing, remove and interpolate
             #-----------------------------------------------------------
             else:
                 tmpNMCPres[:]   = np.delete(tmpNMCPres,  misAll)
-                heightNMCprf[:] = np.delete(heightNMCprf,misAll)       
+                heightNMCprf[:] = np.delete(heightNMCprf,misAll)                  
                      
                 #----------------------------------------------------
                 # Construct Height/Pressure profile for interpolation
@@ -359,17 +456,23 @@ def main(argv):
                 # Where top of NMC fits in WACCM grid
                 topInd = np.argmin( abs( Z - heightNMCprf[0] ) )
     
-                # Take two points above top and concatonate 
-                heightIn = np.concatenate( (Z[0:(topInd-inputs['npntSkip'])]             ,heightNMCprf), axis=1 )
-                pressIn  = np.concatenate( (waccmP[0:(topInd-inputs['npntSkip']),mnthInd],nmcPress)    , axis=1 )
-                tempIn   = np.concatenate( (waccmT[0:(topInd-inputs['npntSkip']),mnthInd],tempNMCprf)  , axis=1 )
+                #Take two points above top and concatonate
+                #heightIn = np.concatenate( (Z[0:(topInd-inputs['npntSkip'])]             ,heightNMCprf), axis=1 )
+                #pressIn  = np.concatenate( (waccmP[0:(topInd-inputs['npntSkip']),mnthInd],nmcPress)   , axis=1 )
+                #tempIn   = np.concatenate( (waccmT[0:(topInd-inputs['npntSkip']),mnthInd],tempNMCprf) , axis=1 )
+                
+                #An error arise with the axis=1, so it was removed
+                heightIn = np.concatenate( (Z[0:(topInd-inputs['npntSkip'])]             ,heightNMCprf))
+                pressIn  = np.concatenate( (waccmP[0:(topInd-inputs['npntSkip']),mnthInd],nmcPress) )
+                tempIn   = np.concatenate( (waccmT[0:(topInd-inputs['npntSkip']),mnthInd],tempNMCprf)  )
+
                 
                 #------------------------------------------------------------------
                 # Interpolate to grid. X data must be increasing => flip dimensions
                 # and then flip back
                 #------------------------------------------------------------------
-                PressOut = np.flipud( intrpUniSpl( np.flipud(heightIn), np.flipud(pressIn), k=inputs['Pintrp'] )( np.flipud(Z) ) )
-                TempOut  = np.flipud( intrpUniSpl( np.flipud(heightIn), np.flipud(tempIn),  k=inputs['Tintrp'] )( np.flipud(Z) ) )
+                PressOut = np.flipud( intrpUniSpl( np.flipud(heightIn), np.flipud(pressIn), k=inputs['Pintrp'])( np.flipud(Z) ) )
+                TempOut  = np.flipud( intrpUniSpl( np.flipud(heightIn), np.flipud(tempIn),  k=inputs['Tintrp'])( np.flipud(Z) ) )
 
         #--------------------------------------
         # Write to log if NCEP data is not used
@@ -424,15 +527,15 @@ def main(argv):
         # Create plots to pdf
         #--------------------
         if not waccmFlg:
-            # Pressure
-            plt.plot(PressOut,Z,'rx-', label='Interpolated Pressure')
+           # Pressure
+            plt.plot(PressOut,Z,'rx-',label='Interpolated Pressure')
             plt.plot(waccmP[:,mnthInd],Z,'bx-',label='WACCM V5 Pressure')
             plt.plot(tmpNMCPres,heightNMCprf,'kx-',label='NCEP nmc Pressure')
             plt.legend()
             plt.xlabel('Pressure [mbar]')
             plt.ylabel('log(Height) [km]')
             plt.xscale('log')
-            #plt.yscale('log')
+            plt.yscale('log')
             plt.ylim( Z[-1], Z[0] )
             ax = plt.gca()
             ax.set_title('Pressure vs Height for Date:{}, K = {:2.0f}, nskips = {:2.0f}'.format(str(snglDay),inputs['Pintrp'],inputs['npntSkip']))
@@ -441,18 +544,18 @@ def main(argv):
             plt.savefig(outDir+'PressureFigure.pdf',bbox_inches='tight')
             plt.close()
             
-            # Temperature
+           ## Temperature
             plt.plot(TempOut,Z,'rx-', label='Interpolated Temperature')
             plt.plot(waccmT[:,mnthInd],Z,'bx-',label='WACCM V5 Temperature')
             plt.plot(tempNMCprf,heightNMCprf,'kx-',label='NCEP nmc Temperature')
             plt.legend()
             plt.xlabel('Temperature [C]')
             plt.ylabel('Height [km]')
-            #plt.yscale('log')
+            ##plt.yscale('log')
             plt.ylim( Z[-1], Z[0] )
             ax = plt.gca()
-            ax.xaxis.set_major_locator(MultipleLocator(25))
-            ax.xaxis.set_minor_locator(MultipleLocator(5))    
+            #ax.xaxis.set_major_locator(MultipleLocator(25))
+            #ax.xaxis.set_minor_locator(MultipleLocator(5))    
             ax.set_title('Temperature vs Height for Date:{}, K = {:2.0f}, nskips = {:2.0f}'.format(str(snglDay),inputs['Tintrp'],inputs['npntSkip']))
             plt.savefig(outDir+'TemperatureFigure.pdf',bbox_inches='tight')
             plt.close()
@@ -462,8 +565,8 @@ def main(argv):
     # nmc data is incomplete => WACCM used
     #-------------------------------------
     if logFile:
-            for yrs in misngCnt:
-                logFile.info('Missing days for year ({:4}) = {:4}'.format(yrs,misngCnt[yrs]))
+        for yrs in misngCnt:
+            logFile.info('Missing days for year ({:4}) = {:4}'.format(yrs,misngCnt[yrs]))
                 
             
                                                                               

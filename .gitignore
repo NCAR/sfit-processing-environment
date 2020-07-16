@@ -1,0 +1,12 @@
+
+#Remove .pyc files using git rm *.pyc. If this not work use git rm -f *.pyc
+#Commit git commit -a -m 'all pyc files removed'
+#Push git push
+#In future commits you can ignore .pyc files by creating a .gitignore file
+
+# Compiled source #
+###################
+*.pyc
+.*.py
+# Packages #
+############

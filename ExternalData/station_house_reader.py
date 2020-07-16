@@ -1,15 +1,19 @@
-#! /usr/bin/python2.7
-
+#! /usr/bin/python3
 #----------------------------------------------------------------------------------------
 # Name:
 #        station_house_reader.py
 #
 # Purpose:
-#        The purpose of this program is to daily house.log data from mlo and convert to
+#        The purpose of this program is to read daily house.log data from and convert to
 #        a yearly ascii table. 
 #
 # Notes:
-#
+#       1) Output file name is, e.g.:  'MLO_HouseData_2018.dat'
+#       2) Command line arguments
+#            -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.
+#            -s             : Flag Must include location: mlo/tab/fl0 (only for otserver)
+#            -?             : Show all flags'
+#       3)  Compatible with python 2.7 or later
 #
 #
 # Version History:
@@ -25,13 +29,19 @@
                                     #-------------------------#
                                     # Import Standard modules #
                                     #-------------------------#
-import os
+
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ExternalData")))
+
 import datetime as dt
-import sys
 import glob
 import DateRange as dr
 import HouseReaderC as hr
 import csv
+import getopt
+
+
                                     #-------------------------#
                                     # Define helper functions #
                                     #-------------------------#
@@ -39,16 +49,26 @@ import csv
 def ckDir(dirName):
     '''Check if a directory exists'''
     if not os.path.exists( dirName ):
-        print 'Directory %s does not exist' % (dirName)
+        print ('Directory %s does not exist' % (dirName))
         return False
     else:
         return True
         
 def ckFile(fName):
     '''Check if a file exists'''
-    if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+    if not os.path.isfile(fName)    :
+        print ('File %s does not exist' % (fName))
         sys.exit()
+
+def usage():
+    ''' Prints to screen standard program usage'''
+    print ('\nstation_house_reader.py [-s tab/mlo/fl0 -d 20180515_20180530 -?]')
+    print ('  -s <site>                             : Flag to specify location --> tab/mlo/fl0')
+    print ('  -d <20180515> or <20180515_20180530>  : Flag to specify date(s)')
+    print ('  -?                                    : Show all flags')
+    print ('Note: Additional paths are hardcoded in station_house_reader.py\n')
+
+
 
          
                                     #----------------------------#
@@ -57,32 +77,84 @@ def ckFile(fName):
                                     #                            #
                                     #----------------------------#
 
-def main():
+def main(argv):
+
+    #--------------------------------
+    # Retrieve command line arguments
+    #--------------------------------
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 's:d:?')
+
+    except getopt.GetoptError as err:
+        print (str(err))
+        usage()
+        sys.exit()
+
+    #-----------------------------
+    # Parse command line arguments
+    #-----------------------------
+    for opt, arg in opts:
+        # Check input file flag and path
+        if opt == '-s':
+
+            loc = arg
+
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+
+            else:
+                print ('Error in input date')
+                usage()
+                sys.exit()
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
+
+        else:
+            print ('Unhandled option: ' + opt)
+            sys.exit()
                                     
     #----------------
     # Initializations
     #----------------
-    statstr     = 'tab'
-    dataDir     = '/Volumes/data1/'+statstr.lower()+'/'
-    outDataDir  = '/Volumes/data/Campaign/'+statstr.upper()+'/House_Log_Files/'
+    statstr     = loc
+    dataDir     = '/data1/'+statstr.lower()+'/'
+    #dataDir     = '/ya4/id/'+statstr.lower()+'/'
+    outDataDir  = '/data/Campaign/'+statstr.upper()+'/House_Log_Files/'
     
-    #------------------------------
-    # Date Range of data to process
-    #------------------------------
-    # Starting 
-    iyear = 2015               # Year
-    imnth = 1                  # Month
-    iday  = 1                  # Day
-    
-    # Ending
-    fyear = 2015               # Yea#r
-    fmnth = 12                 # Month
-    fday  = 31                 # Day
     
     #-------------------
     # Call to date class
     #-------------------
     DOI = dr.DateRange(iyear,imnth,iday,fyear,fmnth,fday)
+
+    
         
     #----------------------------
     # Create list of unique years
@@ -102,9 +174,9 @@ def main():
         # Determine if yearly house data file already exists
         #---------------------------------------------------
         if os.path.isfile(houseFileNew):
-            wmode = 'ab'
+            wmode = 'a'
         else:
-            wmode = 'wb'        
+            wmode = 'w'        
     
         #--------------------------------------
         # Create house data dictionary instance
@@ -113,11 +185,13 @@ def main():
             houseData = hr.MLOread()
         elif (statstr.lower() == 'tab'):
             houseData = hr.TABread()
+        else: print('site is not specified in station_house_reader'); exit()
             
         #--------------------------------------
         # Loop through days/folders within year
         #--------------------------------------
         daysYear = DOI.daysInYear(indvYear)        # Create a list of days within one year
+
         
         for indvDay in daysYear:
             
@@ -135,10 +209,18 @@ def main():
             # Log files changed name after Jan 21st, 2009
             #--------------------------------------------
             if (statstr.lower() == 'mlo'):
+                
                 if indvDay < dt.date(2009,1,21):
                     srchstr = yrstr + mnthstr + daystr + '.wth'
+                
+                elif indvDay >= dt.date(2019,5,3):
+                    
+                    srchstr  = 'house.log'
+                    srchstr2 = 'houseMet.log'
+
                 else:
                     srchstr = 'house.log'
+
             elif (statstr.lower() == 'tab'):
                 srchstr = 'house.log'
                 
@@ -168,18 +250,36 @@ def main():
                 # Format C for 20090320 <= date < 20110802
                 elif dt.date(2009,3,20) <= indvDay < dt.date(2011,8,2):
                     houseData.formatC(houseFile,indvDay.year,indvDay.month,indvDay.day)
-                    
-                # Format D for date >= 20110802
-                elif indvDay >= dt.date(2011,8,2):
+
+                # Format D for 20110802 <= date < 20171210
+                elif dt.date(2011,8,2) <= indvDay < dt.date(2017,12,10):
                     houseData.formatD(houseFile,indvDay.year,indvDay.month,indvDay.day)
-                    
+
+                elif dt.date(2011,8,2) <= indvDay < dt.date(2019,5,2):
+                    houseData.formatD(houseFile,indvDay.year,indvDay.month,indvDay.day)
+
+                elif indvDay >= dt.date(2019,5,3):
+                    houseFileMet = glob.glob( dayDir + srchstr2 )[0]
+
+                    houseData.formatF(houseFile,houseFileMet, indvDay.year,indvDay.month,indvDay.day)
+
+                # Format D for date >= 20171210
+                #elif indvDay >= dt.date(2017,12,10):
+                #    houseData.formatD(houseFile,indvDay.year,indvDay.month,indvDay.day)
+
+          
             elif (statstr.lower() == 'tab'):
-                houseData.formatA(houseFile,indvDay.year,indvDay.month,indvDay.day)
-                    
+                if indvDay < dt.date(2015,1,1):
+                # Format A for (TAB) date < 20150101
+                    houseData.formatA(houseFile,indvDay.year,indvDay.month,indvDay.day)
+               # Format A for (TAB) date >= 20150101
+                elif indvDay >= dt.date(2015,1,1):
+                    houseData.formatB(houseFile,indvDay.year,indvDay.month,indvDay.day)    
              
         #------------------------
         # Sort data based on date
         #------------------------
+
         houseData.sortData()
         
         #-----------------------------------------
@@ -188,7 +288,7 @@ def main():
         with open(houseFileNew, wmode) as fopen:
             writer = csv.writer(fopen, delimiter='\t',lineterminator='\n')
             
-            if (wmode == 'wb') and (statstr.lower() == 'mlo'):
+            if (wmode == 'w') and (statstr.lower() == 'mlo'):
                 
                 #-------------
                 # Print header
@@ -222,13 +322,14 @@ def main():
                 fopen.write('#   28V_Solar_Seeker_Pwr        bit            25         9           \n')
                 fopen.write('#   Hatch_Position_bit          bit            26         9           \n')
                 fopen.write('#   Hatch_Position_volt         volt           27        -9999        \n')
-                fopen.write('#   UTC_offset                  HH             28        -99          \n')
+                fopen.write('#   UTC_offset                  HH             28        -9999        \n')
                 fopen.write('#   DOY                         DDD            29        -999         \n')                
                 fopen.write('#   E_Radiance                  volts          30        -9999        \n')
                 fopen.write('#   W_Radiance                  volts          31        -9999        \n')
+                fopen.write('#   Atm_Press                   mbar           32        -9999        \n')
                 fopen.write('#---------------------------------------------------------------------\n')
  
-            elif (wmode == 'wb') and (statstr.lower() == 'tab'):
+            elif (wmode == 'w') and (statstr.lower() == 'tab'):
                 #-------------
                 # Print header
                 #-------------
@@ -262,6 +363,10 @@ def main():
                 fopen.write('#   Clin_Pitch                  volts          26        -9999        \n')
                 fopen.write('#   Ext_Solar_Sens              volts          27        -9999        \n')
                 fopen.write('#   Quad_Sens                   volts          28        -9999        \n')
+                fopen.write('#   Temp_El_Motor               C              29        -9999        \n')
+                fopen.write('#   Temp_Upper_Seal             C              30        -9999        \n')
+                fopen.write('#   Temp_Lower_Seal             C              31        -9999        \n')
+                fopen.write('#   Temp_Lin_Actuator           C              32        -9999        \n')
                 fopen.write('#---------------------------------------------------------------------\n')          
                    
  
@@ -284,7 +389,7 @@ def main():
                          'WindDir_E_of_N':16,'Mid_IR_Cooler':17,'LN2_Fill':18,'Hatch_Relay':19,\
                          'Solar_Seeker_ON_Relay':20,'Solar_Seeker_OFF_Relay':21,'Dyn_Mirror_Pwr':22,\
                          'DEC_A_Plug_Strip':23,'28V_Solar_Seeker_Pwr':24,'Hatch_Position_bit':25,\
-                         'Hatch_Position_volt':26,'UTC_offset':27,'DOY':28,'E_Radiance':29,'W_Radiance':30}
+                         'Hatch_Position_volt':26,'UTC_offset':27,'DOY':28,'E_Radiance':29,'W_Radiance':30, 'Atm_Press':31}
             elif (statstr.lower() == 'tab'):
                 order = {'Date':0,'Time':1,'Opt_Bnch_Src_T':2,'Beamsplitter_T':3,\
                          'Det_Dewar_T':4,'Opt_Bnch_Det_T':5,'Dolores_Int_HD_T':6,'Dolores_Trans_T':7,\
@@ -293,7 +398,7 @@ def main():
                          'Bruker_Optical_RH':16,'LN2_Dewar_P':17,'LasA_Rect':18,'LasB_Rect':19,\
                          'Det_Intern_T_Swtch':20,'Det_InSb_DC_Level':21,'Elev_angle':22,\
                          'Azimuth':23,'Clin_Roll':24,'Clin_Pitch':25,\
-                         'Ext_Solar_Sens':26,'Quad_Sens':27}            
+                         'Ext_Solar_Sens':26,'Quad_Sens':27, 'Temp_El_Motor':28, 'Temp_Upper_Seal':29,'Temp_Lower_Seal':30, 'Temp_Lin_Actuator':31}            
             
             #-----------------------------
             # Write dictionary out to file
@@ -302,4 +407,4 @@ def main():
         
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
