@@ -109,6 +109,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['DATA_STOP_DATE']          = fdateStr
       dataStr['DATA_FILE_VERSION']       = self.fver
       dataStr['DATA_MODIFICATIONS']      = 'None'
+      #dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-003'  
       dataStr['DATA_TEMPLATE']           = 'GEOMS-TE-FTIR-002'
       
       if self.quality: dataStr['DATA_QUALITY'] = self.quality+';HBR cell measurements analysed with Linefit v11. for available time periods. Reference paper: Hannigan, J.W., Coffey, M.T., Goldman, A.: Semiautonomous FTS Observation System for Remote Sensing of Stratospheric and Tropospheric Gases. J. Atmos. Oceanic Technol., 26, 1814-1828, 2009'
@@ -124,6 +125,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['FILE_ACCESS']             = 'NDACC'
       dataStr['FILE_PROJECT_ID']         = self.projectID
       dataStr['FILE_ASSOCIATION']        = 'NDACC'
+      #dataStr['FILE_META_VERSION']       = '04R050;CUSTOM'   #04R050 ; 04R010
       dataStr['FILE_META_VERSION']       = '04R010;CUSTOM'
       
       return dataStr
@@ -223,13 +225,20 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_SIZE']             = str(nsize)
       dataStr['VAR_DEPEND']           = 'CONSTANT'
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
-      dataStr['VAR_UNITS']            = 'km'
+      #dataStr['VAR_UNITS']            = 'm'  #km'
+      dataStr['VAR_UNITS']            = 'km'  #km'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.0E3;m'
+      #dataStr['VAR_SI_CONVERSION']    = '0.0;1.0;m'
+      #dataStr['VAR_VALID_MIN']        = -50.0  #-0.05
+      #dataStr['VAR_VALID_MAX']        =  10000.0 #10.0
       dataStr['VAR_VALID_MIN']        = -0.05
       dataStr['VAR_VALID_MAX']        =  10.0
+
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
       dataStr['VALID_RANGE']          = (-0.05,10.0)
-      dataStr['units']                = 'km'    
+      #dataStr['VALID_RANGE']          = (-50.0,10000.0)
+      #dataStr['units']                = 'm' #km'   
+      dataStr['units']                = 'km' #km'    
       dataStr['_FillValue']           = self.getFillValue()
       
       return dataStr
@@ -311,7 +320,9 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DESCRIPTION']      = '2D matrix providing the layer boundaries used for vertical profile retrieval'
       dataStr['VAR_NOTES']            = 'The retrieved partial columns are given between the boundaries provided in this vector. The lowermost boundary is equal to ALTITUDE.INSTRUMENT'
       dataStr['VAR_SIZE']             = str(2)+';'+str(nlyrs)
+      #dataStr['VAR_SIZE']             = str(nlyrs)+';'+str(2)
       dataStr['VAR_DEPEND']           = 'INDEPENDENT;'+self.getAltitudeName()
+      #dataStr['VAR_DEPEND']           = self.getAltitudeName()+';'+'INDEPENDENT'
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = 'km'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.0E3;m'

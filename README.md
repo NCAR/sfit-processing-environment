@@ -1,6 +1,6 @@
 # sfit4 - pre/post processing python package distribution
 
-Python package used for pre and post-processing of sfit4. This package is recommended for the pending release of [SFIT4 v1](https://github.com/NCAR/sfit-core-code/releases/tag/V1.0.5)
+Python package used for pre and post-processing of sfit4. This package is recommended for the release of [SFIT4 v1.0](https://github.com/NCAR/sfit-core-code/tree/Official_Release_1.0)
 
 Python package used for:
 
@@ -13,7 +13,7 @@ Python package used for:
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine.
-The step-by-step procedures and computing tools are described in more detailed in the **OT_FTS_Spectral_Processing.pdf**.
+The step-by-step procedures and computing tools are described in more detailed in the [OT_FTS_Spectral_Processing.pdf](https://github.com/NCAR/sfit-processing-environment/blob/Official_Release_v3.0/OT_FTS_Spectral_Processing.pdf).
 Additional resources can be found in the [sfit4wiki](https://wiki.ucar.edu/display/sfit4/) - The NCAR sfit wiki webpage.
 
 
