@@ -192,15 +192,15 @@ def main(argv):
     #------------------
     # Plot Spectral fit
     #------------------
-    try:
-      gas.pltSpectra(fltr=pltInputs['fltrFlg'],minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],minTC=pltInputs['minTC'],maxTC=pltInputs['maxTC'],
+    #try:
+    gas.pltSpectra(fltr=pltInputs['fltrFlg'],minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],minTC=pltInputs['minTC'],maxTC=pltInputs['maxTC'],
                      maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'], maxDOF=pltInputs['maxDOF'],maxCHI=pltInputs['maxCHI'],dofFlg=pltInputs['dofFlg'],
                      rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],mnthFltr=pltInputs["mnths"],mnthFltFlg=pltInputs["mnthFlg"],
                      szaFlg=pltInputs['szaFlg'],chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'],tcMMflg=pltInputs['tcMMFlg'],
                      bckgFlg=pltInputs['bckgFlg'], minSlope=pltInputs['minSlope'], maxSlope=pltInputs['maxSlope'], minCurv=pltInputs['minCurv'], maxCurv=pltInputs['maxCurv'])
 
-    except:
-        print ("Unable to plot spc!!")
+    #except:
+    #    print ("Unable to plot spc!!")
 
     #--------------------
     # Create yearly plots

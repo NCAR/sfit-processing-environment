@@ -357,6 +357,10 @@ class HDFbaseRetDat(object):
         #----------------------------------------------
         # Create Altitude Boundaries dataset (variable)
         #----------------------------------------------
+        #hdfFile.createDataSet(self.getAltitudeBoundariesName(), \
+        #                        (self.altitudeBoundaries.shape[0],self.altitudeBoundaries.shape[1]),self.altitudeBoundaries, \
+        #                        self.AltBndsAttrbs(self.altitudeBoundaries.shape[0]))
+
         hdfFile.createDataSet(self.getAltitudeBoundariesName(), \
                                 (self.altitudeBoundaries.shape[0],self.altitudeBoundaries.shape[1]),self.altitudeBoundaries, \
                                 self.AltBndsAttrbs(self.altitudeBoundaries.shape[1]))

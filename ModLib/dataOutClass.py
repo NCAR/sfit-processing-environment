@@ -1072,6 +1072,8 @@ class ReadOutputData(_DateRange):
         self.readPrfFlgApr            = {}
         self.readPrfFlgRet            = {}
 
+        self.rayFlg                   = False
+
 
         #---------------------------------
         # Test if date range given. If so 
@@ -1146,6 +1148,8 @@ class ReadOutputData(_DateRange):
             if not self.gasList: 
                 print ('No gases listed in column or profile list....exiting')
                 sys.exit()
+
+            if 'file.in.spectrum' in self.ctl: self.spectrum = self.ctl['file.in.spectrum'] 
             
             try: self.gasList = list(filter(None.__ne__, self.gasList) ) # Filter out all empty strings
             except: self.gasList = filter(None, self.gasList) # Filter out all empty strings
@@ -1531,7 +1535,9 @@ class ReadOutputData(_DateRange):
         ''' Reads in t15asc data from retrieval directory '''
         self.t15asc = {}
             
-        if not fname: fname = 't15asc.4'
+        if not fname: 
+            try: fname = self.spectrum[0]
+            except: fname = 't15asc.4'
         
         #-----------------------------------
         # Loop through collected directories
@@ -2412,7 +2418,10 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFsurfP      = np.squeeze(self.refPrf['PRESSURE'][:,-1])                                  # Surface Pressure from Pressure profile
         self.HDFsurfT      = np.squeeze(self.refPrf['TEMPERATURE'][:,-1])                               # Surface Temperature from temperature profile
         self.HDFh2oVMR     = np.asarray(self.rprfs['H2O'])                                              # Retrieved H2O profile [VMR]
-        self.HDFaltBnds    = np.vstack((self.alt[:-1],self.alt[1:]))        
+        #self.HDFaltBnds    = np.asarray((self.alt[:-1],self.alt[1:]))  
+        self.HDFaltBnds    = np.vstack((self.alt[:-1],self.alt[1:]))         
+        #self.HDFaltBnds    = self.HDFaltBnds.transpose()
+       
 
         # Error 
         if errFlg:
@@ -2524,7 +2533,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
 
                 print ('Longitude [E_Lon] in HDF file: {}'.format(self.HDFlon))
 
-                self.HDFinstAlt = np.array(tempSpecDB['Alt'] / 1000.0)
+                self.HDFinstAlt = np.array(tempSpecDB['Alt'] / 1000.0)  # in km
+                #self.HDFinstAlt = np.array(tempSpecDB['Alt'])  # in m
             
             self.HDFintT[i] = tempSpecDB['Dur']
 
@@ -2708,7 +2718,7 @@ class PlotData(ReadOutputData):
         #------------------------
         mw    = [str(int(x)) for x in self.ctl['band']]     
         numMW = len(mw)
-        
+
         #---------------------------------------
         # Get profile, summary and spectral data
         #---------------------------------------
@@ -2725,6 +2735,7 @@ class PlotData(ReadOutputData):
         #------------------------------------------
         # Read Jacobian Matrix for single retrieval
         #------------------------------------------
+        
         if len(self.dirLst) == 1:
             lines   = tryopen(self.dirLst[0]+self.ctl['file.out.k_matrix'][0])
             
@@ -2743,10 +2754,11 @@ class PlotData(ReadOutputData):
 
 
             if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0) 
-            rayFlg = False
+
+            
             try:
                 raytrace_header,line_of_sight=readRaytrace(self.dirLst[0] + 'raytrace.out',longitude=lon,azimuth=saa,target_grid=self.aprfs['Z'][0]*1e3) #raytrace.out is the default...better to take file.out.raytrace? 
-                rayFlg = True
+                self.rayFlg = True
             except: pass
 
         
@@ -2893,7 +2905,7 @@ class PlotData(ReadOutputData):
         DateFmt      = DateFormatter('%m\n%Y') 
 
 
-        if rayFlg:     
+        if self.rayFlg:     
 
             fig, ax  = plt.subplots()
             ax = plt.axes(projection='3d')                   
@@ -2906,7 +2918,7 @@ class PlotData(ReadOutputData):
 
             ax.set_title('Line of sight')
 
-            ax.view_init(30, 50)
+            #ax.view_init(30, 50)
             
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
@@ -4257,7 +4269,8 @@ class PlotData(ReadOutputData):
             tot_rnd    = np.delete(tot_rnd,self.inds)
             for k in randErrs:
                 randErrs[k] = np.delete(randErrs[k],self.inds)
-                randErrs[k] = np.divide(randErrs[k], totClmn) * 100.00  # Convert total random error components to 
+                try: randErrs[k] = np.divide(randErrs[k], totClmn) * 100.00  # Convert total random error components to 
+                except: pass
         
         #--------------------
         # Retr parameters
@@ -5362,12 +5375,15 @@ class PlotData(ReadOutputData):
             for k in randErrs:
                 errLabel = k.strip().split()[-1]
                 fig,ax1  = plt.subplots()
-                if yrsFlg:
-                    tcks = range(np.min(years),np.max(years)+2)
-                    norm = colors.BoundaryNorm(tcks,cm.N)                        
-                    sc1  = ax1.scatter(sza,randErrs[k],c=years,cmap=cm,norm=norm)
-                else:                             
-                    sc1 = ax1.scatter(sza,randErrs[k],c=doy,cmap=cm)   
+                try:
+                    if yrsFlg:
+                        tcks = range(np.min(years),np.max(years)+2)
+                        norm = colors.BoundaryNorm(tcks,cm.N)                        
+                        sc1  = ax1.scatter(sza,randErrs[k],c=years,cmap=cm,norm=norm)
+                    else:                             
+                        sc1 = ax1.scatter(sza,randErrs[k],c=doy,cmap=cm)  
+
+                except: pass 
                     
                 ax1.grid(True,which='both')
                 ax1.set_ylabel('Error of Total Column [%]',fontsize=9)
