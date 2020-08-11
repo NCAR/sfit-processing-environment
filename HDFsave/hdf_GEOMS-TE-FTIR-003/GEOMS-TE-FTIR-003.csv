@@ -1,0 +1,44 @@
+2,DATETIME,DATETIME,MJD2K,DOUBLE,Mean of the zero path difference times of the individual scans that were averaged to produce the fitted spectrum,x
+2,INTEGRATION.TIME,DATETIME,s,REAL,Duration of the measurement corresponding to the retrieved datapoint,x
+2,LATITUDE.INSTRUMENT,CONSTANT,deg,REAL,Inst. geolocation (+ for north; - for south),x
+2,LONGITUDE.INSTRUMENT,CONSTANT,deg,REAL,Inst. geolocation (+ for east; - for west) ,x
+2,ALTITUDE.INSTRUMENT,CONSTANT,m,REAL,Inst. geolocation,x
+2,SURFACE.PRESSURE_INDEPENDENT,DATETIME,hPa,REAL,Surface/ground pressure,x
+2,SURFACE.PRESSURE_INDEPENDENT_SOURCE,[CONSTANT|DATETIME],[empty],STRING,Surface/ground pressure profile source (e.g.  Mercury barometer etc.),x
+2,SURFACE.TEMPERATURE_INDEPENDENT,DATETIME,K,REAL,Surface/ground temperature,x
+2,SURFACE.TEMPERATURE_INDEPENDENT_SOURCE,[CONSTANT|DATETIME],[empty],STRING,Surface temperature profile source (e.g.  Meteorological thermometer etc.),x
+2,HUMIDITY.RELATIVE.SURFACE_INDEPENDENT,DATETIME,%,REAL,Relative humidity at the station,x
+2,HUMIDITY.RELATIVE.SURFACE_INDEPENDENT_SOURCE,[CONSTANT|DATETIME],[empty],STRING,Relative humidity source (e.g. Anemometer; ECMWF etc.),x
+2,WIND.DIRECTION.SURFACE_INDEPENDENT,DATETIME,deg,REAL,Wind direction at the station using WMO definition (wind from the north is 360; from the east is 90 and so on. No wind (calm) is 0),x
+2,WIND.DIRECTION.SURFACE_INDEPENDENT_SOURCE,[CONSTANT|DATETIME],[empty],STRING,Wind direction source (e.g. Anemometer; ECMWF etc.),x
+2,WIND.SPEED.SURFACE_INDEPENDENT,DATETIME,m s-1,REAL,Wind speed at the station,x
+2,WIND.SPEED.SURFACE_INDEPENDENT_SOURCE,[CONSTANT|DATETIME],[empty],STRING,Wind speed source (e.g. Anemometer; ECMWF etc.),x
+2,ALTITUDE,[ALTITUDE|DATETIME;ALTITUDE],km,REAL,Retrieval effective altitude vector (if DATETIME independent) or matrix (if DATETIME dependent). Values are monotonically increasing,x
+2,ALTITUDE.BOUNDARIES,[ALTITUDE;INDEPENDENT|DATETIME;ALTITUDE;INDEPENDENT],km,REAL,2D (if DATETIME independent) or 3D (if DATETIME dependent) matrix with on each row the lower and upper boundaries of the layers for which the partial columns are reported. In layer-based retrieval these are equal to the lower and upper boundaries of the respective retrieval layers,x
+2,PRESSURE_INDEPENDENT,DATETIME;ALTITUDE,hPa,REAL,Effective air pressure at each altitude,x
+2,PRESSURE_INDEPENDENT_SOURCE,[CONSTANT|DATETIME|DATETIME;ALTITUDE],[empty],STRING,Pressure profile source (e.g. Lidar; NCEP; Sonde; ECMWF etc.),x
+2,TEMPERATURE_INDEPENDENT,DATETIME;ALTITUDE,K,REAL,Effective air temperature at each altitude,x
+2,TEMPERATURE_INDEPENDENT_SOURCE,[CONSTANT|DATETIME|DATETIME;ALTITUDE],[empty],STRING,Temperature profile source (e.g. Lidar; NCEP; Sonde; ECMWF etc.),x
+2,DRY.AIR.COLUMN.PARTIAL_INDEPENDENT,DATETIME;ALTITUDE,Zmolec cm-2,REAL,Vertical profile of partial columns of air number densities (for conversion between VMR and partial column profile),x
+2,DRY.AIR.COLUMN.PARTIAL_INDEPENDENT_SOURCE,[CONSTANT|DATETIME|DATETIME;ALTITUDE],[empty],STRING,Partial columns of air source (e.g. NCEP; Sonde; ECMWF etc.),x
+2,[GAS].MIXING.RATIO.VOLUME.DRY_ABSORPTION.[SOLAR|LUNAR],DATETIME;ALTITUDE,[ppmv|ppbv|pptv],REAL,Retrieved target vertical  profile in VMR units (with respect to dry air),o
+2,[GAS].MIXING.RATIO.VOLUME.DRY_APRIORI,DATETIME;ALTITUDE,[ppmv|ppbv|pptv],REAL,A-priori  target vertical  profile in VMR units (with respect to dry air),x
+2,[GAS].MIXING.RATIO.VOLUME.DRY_APRIORI.SOURCE,[CONSTANT|DATETIME|DATETIME;ALTITUDE],[empty],STRING,Source of the vertical profile of a-priori per layer,x
+2,[GAS].MIXING.RATIO.VOLUME.DRY_ABSORPTION.[SOLAR|LUNAR]_AVK,DATETIME;ALTITUDE;ALTITUDE,1,REAL,A or Averaging kernel matrix for retrieved target profile (expressed in VMR/VMR units; the second ALTITUDE dimension (the fastest running) is the kernel dimension or the column dimension of the AVK matrix),x if [GAS].MIXING.RATIO.VOLUME.DRY_ABSORPTION.[SOLAR|LUNAR] is provided
+2,[GAS].MIXING.RATIO.VOLUME.DRY_ABSORPTION.[SOLAR|LUNAR]_UNCERTAINTY.RANDOM.COVARIANCE,DATETIME;ALTITUDE;ALTITUDE,[ppmv2|ppbv2|pptv2],REAL,Total random error covariance matrix associated with the retrieved vertical profile (expressed in same units as the profile) (without smoothing error!),x if [GAS].MIXING.RATIO.VOLUME.DRY_ABSORPTION.[SOLAR|LUNAR] is provided
+2,[GAS].MIXING.RATIO.VOLUME.DRY_ABSORPTION.[SOLAR|LUNAR]_UNCERTAINTY.SYSTEMATIC.COVARIANCE,DATETIME;ALTITUDE;ALTITUDE,[ppmv2|ppbv2|pptv2],REAL,Total systematic error covariance matrix associated with the retrieved vertical profile (expressed in same units as the profile),x if [GAS].MIXING.RATIO.VOLUME.DRY_ABSORPTION.[SOLAR|LUNAR] is provided
+2,[GAS].COLUMN.PARTIAL_ABSORPTION.[SOLAR|LUNAR],DATETIME;ALTITUDE,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,Vertical profile of partial columns per layer,x if [GAS].MIXING.RATIO.VOLUME.DRY_ABSORPTION.[SOLAR|LUNAR] is provided
+2,[GAS].COLUMN.PARTIAL_APRIORI,DATETIME;ALTITUDE,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,Vertical profile of a-priori partial columns per layer,x
+2,[GAS].COLUMN_ABSORPTION.[SOLAR|LUNAR],DATETIME,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,Total vertical column of target gas,x
+2,[GAS].COLUMN_APRIORI,DATETIME,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,A-priori total vertical column of target gas,x
+2,[GAS].COLUMN_ABSORPTION.[SOLAR|LUNAR]_AVK,DATETIME;ALTITUDE,1,REAL,Averaging kernel matrix associated with the total vertical column of the target gas (in molec cm-2/molec cm-2 units),x
+2,[GAS].COLUMN_ABSORPTION.[SOLAR|LUNAR]_UNCERTAINTY.RANDOM.STANDARD,DATETIME,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,Total random uncertainty on the retrieved total column (expressed in same units as the column) (without smoothing error),x
+2,[GAS].COLUMN_ABSORPTION.[SOLAR|LUNAR]_UNCERTAINTY.SYSTEMATIC.STANDARD,DATETIME,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,Total systematic uncertainty on the retrieved partial columns (expressed in same units as the column),x
+2,ANGLE.[SOLAR|LUNAR]_ZENITH.ASTRONOMICAL,DATETIME,deg,REAL,The solar (or lunar) astronomical zenith angle at which the measurement was taken,x
+2,ANGLE.[SOLAR|LUNAR]_AZIMUTH,DATETIME,deg,REAL,The azimuth viewing direction of the instrument using north as the reference plane and increasing clockwise (0 for north; 90 for east and so on),x
+2,LATITUDE_LOS,[DATETIME|DATETIME;ALTITUDE],deg,REAL,Meas. Geolocation; latitude  (decimal degrees) along the line of sight of the measurement (+ for north; - for south),x
+2,LONGITUDE_LOS,[DATETIME|DATETIME;ALTITUDE],deg,REAL,Meas. Geolocation; longitude (decimal degrees) along the line of sight of the measurement (+ for east; - for west),x
+2,H2O.MIXING.RATIO.VOLUME.DRY_APRIORI,DATETIME;ALTITUDE,[ppmv|ppbv|pptv],REAL,Vertical profile of H2O adopted in the target gas retrieval in VMR units,x
+2,H2O.MIXING.RATIO.VOLUME.DRY_APRIORI.SOURCE,[CONSTANT|DATETIME|DATETIME;ALTITUDE],[empty],STRING,Source of vertical profile of H2O adopted in the target gas (e.g. MERRA2; ECMWF; NCEP; or retrieved separately from dedicated microwindow ),x
+2,H2O.COLUMN_APRIORI,DATETIME,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,Total vertical column of H2O adopted in the target gas retrieval,x
+2,SOURCE.PRODUCT,INDEPENDENT,[empty],STRING,Information relevant to the source history of the Metadata and Data,o

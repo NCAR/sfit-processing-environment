@@ -45,25 +45,34 @@ class HDF5File(object):
       #-------------------------------------------      
       self.fopen=h5py.File(filename,'w')
       
-      for k,val in attrDict.iteritems():
+      #for k,val in attrDict.iteritems():
+      for k,val in attrDict.items():
          self.fopen.attrs[k] = val
 
    def createDataSet(self,dataSetName, dimSpec, data, attrDict, typeOvrd=''):
       ''' create dataset in hdf file and set its attributes'''
       
       tmpType = self.dType
-      if typeOvrd: tmpType = typeOvrd      
+      if typeOvrd: tmpType = typeOvrd  
+
+
+      #---------------------------------------
+      # Create HDF4 file. Write data as single
+      # or double precision
+      #---------------------------------------        
+      if tmpType.lower() == 'string': 
+         tmpType = h5py.string_dtype(encoding='ascii')
       
       #-------------------------------
       # create data set and store data
-      # as 32 or 64 precision
       #-------------------------------
       dtSet = self.fopen.create_dataset(dataSetName,data=data,dtype=tmpType)
 
       #-----------------
       # store attributes
       #-----------------
-      for k,val in attrDict.iteritems():
+      #for k,val in attrDict.iteritems():
+      for k,val in attrDict.items():
          dtSet.attrs[k] = val
 
    def closeFile(self):
@@ -118,6 +127,9 @@ class HDF4File(object):
          
       elif tmpType.lower() == 'float64': 
          dtSet = self.fopen.create(dataSetName,SDC.FLOAT64,dimSpec)
+
+      elif tmpType.lower() == 'string': 
+         dtSet = self.fopen.create(dataSetName,SDC.CHAR8, dimSpec)
 
       #-------------------
       # Store data in file
