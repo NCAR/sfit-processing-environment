@@ -47,7 +47,7 @@ from collections import OrderedDict
 from os import listdir
 from os.path import isfile, join
 import re
-import hdfBaseRetDat
+#import hdfBaseRetDat
 
 from scipy.integrate import simps
 import matplotlib.animation as animation
@@ -1123,18 +1123,19 @@ class ReadHDFData():
             
             for var in Vars.keys():
 
-                #try:
-                data  = hdfid.select(var)
-                #units       = data.units
-                units       = data.VAR_UNITS
-                conv        = data.VAR_SI_CONVERSION.strip().split(';')
+                try:
+                    #print(var)
+                    data  = hdfid.select(var)
+                    #units       = data.units
+                    units       = data.VAR_UNITS
+                    conv        = data.VAR_SI_CONVERSION.strip().split(';')
 
-                self.HDF.setdefault(var,[]).append(data)
-                self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
-                self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
+                    self.HDF.setdefault(var,[]).append(data)
+                    self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
+                    self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
             
-                #except Exception as errmsg:
-                    #print (errmsg, ' : ', var)
+                except Exception as errmsg:
+                    print (errmsg, ' : ', var)
                     #exit()
         #---------------------------------
         #FLATTENED THE ARRAYS
