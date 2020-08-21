@@ -57,6 +57,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       self.locID               = 'NCAR002'
       self.geoms_tmpl          = geoms_tmpl
       self.geoms_meta          = geoms_meta
+      self.h5Flg               = h5Flg
 
       if quality: self.quality = quality
       else: self.quality = False

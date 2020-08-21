@@ -1255,13 +1255,15 @@ class ReadHDFData():
             dates     = jd_to_datetime(self.HDF[self.getDatetimeName()])
             dates2     = [dt.date(d.year, d.month, d.day) for d in dates]
 
+            dates2  = np.asarray(dates2)
+
             indsT1 =  np.where(np.asarray(dates2) < idate)[0]
             indsT2 =  np.where(np.asarray(dates2) > fdate)[0]
             indsT  = np.union1d(indsT1,indsT2)
             
             print ('Total number observations below date range = {}'.format(len(indsT1)))
             print ('Total number observations above date range = {}'.format(len(indsT2)))
-            self.inds = np.union1d(indsT, self.inds)                
+            self.inds = np.union1d(indsT, self.inds)  
         
         #-----------------------------
         # Find total column amount < 0

@@ -828,13 +828,11 @@ def readbnr(bnrFile):
 def readbnrZeroed(directory):
     ''' Read the zeroed bnr'''
 
-    ckDir(directory,exitFlg=True)
+    ckDir(directory,exitFlg=False)
 
     bnrFile = directory + 'zeroed.bnr'
-    ckFile(bnrFile,exitFlg=True)
+    ckFile(bnrFile,exitFlg=False)
 
-
-    nbytes = getsize(bnrFile)
 
     print('\n*******************************')
     print('             Zeroed bnr file          ')
@@ -844,6 +842,8 @@ def readbnrZeroed(directory):
 
 
     try:
+
+        nbytes = getsize(bnrFile)
     
         with open(bnrFile, 'rb') as file:
             # read size of record
@@ -1546,7 +1546,7 @@ class ReadOutputData(_DateRange):
 
                 try:
                     with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
-    
+
                     #--------------------------------
                     # Get retrieved column amount for 
                     # each gas retrieved
@@ -1564,7 +1564,7 @@ class ReadOutputData(_DateRange):
 
                     self.t15asc.setdefault('WNi'  ,[]).append( float( line3[0] ))
                     self.t15asc.setdefault('WNf'  ,[]).append( float( line3[1] ))
-                    
+
 
                 except Exception as errmsg:
                     print (errmsg)
@@ -1578,8 +1578,8 @@ class ReadOutputData(_DateRange):
             self.t15asc[k] = np.asarray(self.t15asc[k])
             #print(k, self.t15asc[k])
 
-        self.readt15Flg = True 
-            
+        #self.readt15Flg = True             
+
             
     def readprfs(self,rtrvGasList,fname='',retapFlg=1):
         ''' Reads in retrieved profile data from SFIT output. Profiles are given as columns. Each row corresponds to
@@ -1660,6 +1660,7 @@ class ReadOutputData(_DateRange):
         #--------------------------------------------------------
         # If retrieved profiles is a gas, get total column amount
         #--------------------------------------------------------
+
         for i, gas in enumerate(rtrvGasList):
 
             self.deflt[gas+'_tot_col'] = np.sum(self.deflt[gas] * self.deflt['AIRMASS'], axis=1)
@@ -2841,6 +2842,7 @@ class PlotData(ReadOutputData):
             pspecInput = readPspec(self.dirLst[0])
             bnrFile    = pspecInput[-2]
 
+
             #--------------------------------
             # Read bnr
             #--------------------------------
@@ -2852,9 +2854,9 @@ class PlotData(ReadOutputData):
             bnrZData   = readbnrZeroed(self.dirLst[0])
 
             self.readt15()
-            print(self.t15asc['WNi'], self.t15asc['WNf'])
+            #print(self.t15asc['WNi'], self.t15asc['WNf'])
 
-            zeroValue       =  self.t15asc['ZERO'][0]
+            if 'ZERO' in  self.t15asc: zeroValue       =  self.t15asc['ZERO'][0]
 
             #--------------------------------
             # plot bnr
@@ -2935,6 +2937,7 @@ class PlotData(ReadOutputData):
             saa   = self.pbp['saa'][0]
             
             if not self.readt15Flg: self.readt15()
+
      
             lon  = 360. - self.t15asc['lon'][0]
 
@@ -3331,6 +3334,7 @@ class PlotData(ReadOutputData):
         aprPrf       = {}
         rPrf         = {}
         localGasList = [self.PrimaryGas]
+
         
         #-------------------------------------------------------
         # Get profile, summary for Primary gas.... for filtering
@@ -5016,11 +5020,17 @@ class PlotData(ReadOutputData):
         #------------------------------------
         if partialCols:
             for pcol in partialCols:
-                ind1 = nearestind(pcol[0], alt)
-                ind2 = nearestind(pcol[1], alt)               
-                vmrP = np.average(rPrf[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
-                vmrPDry = np.average(rPrfDry[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
-                sumP = np.sum(rPrfMol[:,ind2:ind1],axis=1)
+                # ind1 = nearestind(pcol[0], alt)
+                # ind2 = nearestind(pcol[1], alt)               
+                # vmrP = np.average(rPrf[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
+                # vmrPDry = np.average(rPrfDry[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
+                # sumP = np.sum(rPrfMol[:,ind2:ind1],axis=1)
+
+                inds = np.where( (alt >= pcol[0]) & (alt <= pcol[1])  )[0]
+                vmrP = np.average(rPrf[:,inds],axis=1,weights=Airmass[:,inds]) 
+                vmrPDry = np.average(rPrfDry[:,inds],axis=1,weights=Airmass[:,inds]) 
+                sumP = np.sum(rPrfMol[:,inds],axis=1)
+
                 fig,(ax1,ax2)  = plt.subplots(2,1,sharex=True)
                 ax1.plot(dates,vmrPDry,'k.',markersize=4)
                 ax2.plot(dates,sumP,'k.',markersize=4)
@@ -5028,7 +5038,7 @@ class PlotData(ReadOutputData):
                 ax2.grid(True)
                 ax1.set_ylabel('VMR ['+sclname+'] Dry Air')
                 ax2.set_ylabel('Retrieved Partial Column\n[molecules cm$^{-2}$]',multialignment='center')
-                ax1.set_title('Partial Column Weighted VMR and molecules cm$^{-2}$\nAltitude Layer '+str(alt[ind1])+'[km] - '+str(alt[ind2])+'[km]',
+                ax1.set_title('Partial Column Weighted VMR and molecules cm$^{-2}$\nAltitude Layer '+str(alt[inds[-1]])+'[km] - '+str(alt[inds[0]])+'[km]',
                               multialignment='center',fontsize=12)
                 ax2.set_xlabel(xlabel)
                 
