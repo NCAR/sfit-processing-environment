@@ -293,6 +293,7 @@ class avk:
 #        ipdb.set_trace()
         ap = read_table(self.prfsfile)
         prf,z = ap.get_gas_vmr(ap.get_retrieval_gasnames()[0])
+        print(prf.size)
         self.AK_vmr = np.dot(np.dot(np.diag(prf),self.AK_frac),np.diag(1/prf))
         prf,z = ap.get_gas_col(ap.get_retrieval_gasnames()[0])
         self.AK_col = np.dot(np.dot(np.diag(prf),self.AK_frac),np.diag(1/prf))

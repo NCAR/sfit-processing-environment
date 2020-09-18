@@ -59,7 +59,7 @@ class spectrum:
             self.nu_stop.append(tmp[1])
             self.nu_res.append(tmp[2])
             self.nr_nu.append(tmp[3])
-            print tmp
+            print (tmp)
             nu = []
             spectrum = []
             for n in range(0,self.nr_nu[-1]):
@@ -110,7 +110,7 @@ class spectrum:
 
             res = np.abs(self.nu[nr][0] - self.nu[nr][-1])/(self.nu[nr].size-1)
             nr_sp = self.nu[nr].size
-            print self.nu[nr][0], self.nu[nr][-1], res, nr_sp
+            print (self.nu[nr][0], self.nu[nr][-1], res, nr_sp)
             fid.write('%.10f %.10f %.20f %d \n'% 
                       (self.nu[nr][0], self.nu[nr][-1], res, nr_sp))
 
@@ -120,7 +120,8 @@ class spectrum:
         fid.close()
 
     def plot_spectrum(self):
-        f = plt.figure()
+        f = plt.figure('Spectrum')
+        f.clf()
         plt.plot(self.nu[0], self.spectrum[0])
         f.show()
 

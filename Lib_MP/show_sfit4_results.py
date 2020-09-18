@@ -1,7 +1,7 @@
 import sys
 sys.path.append('/home/mathias/sfit-processing-environment/Lib_MP/')
 import read_result_sfit4 as sfit4
-from Tkinter import *
+from tkinter import *
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import matplotlib.gridspec as gridspec
@@ -228,7 +228,7 @@ class show_results:
                     self.epcol1[nr].set('%g'%np.sqrt(np.dot(np.dot(ap.T,col_ran),ap)))
 #                self.epcol1[nr].set('%g'%np.sqrt(np.sum(col_ran)))
             except:
-                print 'fail'
+                print ('fail')
                 pass
             
         default = [[0.0, 10.0],
@@ -321,14 +321,14 @@ class show_results:
         ctl = sfit4.sfit4_ctl() 
         ctl.read(ctlfile)
         ak_m = ctl.get_value('file.out.ak_matrix')
+        print(ctl.get_value('gas.profile.list'))
         tgas = ctl.get_value('gas.profile.list').split()[0]
-        print tgas
         logretrieval = ctl.get_value('gas.profile.%s.logstate'%tgas)
         if logretrieval == 'T':
             norm_prof = os.path.join(direc,'rprfs.table')
         else:
             norm_prof = os.path.join(direc,'aprfs.table')
-        print norm_prof
+        print (norm_prof)
         if ak_m == -1:
             ak_m = 'ak.out' # Default name of ak_matrix
         self.retprf = sfit4.read_table(direc+'/rprfs.table')
@@ -586,7 +586,7 @@ class show_results:
 
 if __name__ == '__main__':
     import sys
-    print len(sys.argv)
+    print (len(sys.argv))
     if len(sys.argv) == 2:
         show_results(sb_ctl=sys.argv[1])
     else:
