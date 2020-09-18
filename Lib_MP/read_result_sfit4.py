@@ -5,7 +5,7 @@ import pdb
 import fnmatch
 
 
-reload(rn) # because problem with dreload
+#reload(rn) # because problem with dreload
 
 # class read_stationlayer():
 #     def __init__(self,filename):
@@ -51,10 +51,10 @@ class sfit4_ctl:
     def get_value(self, tag):
 
         tag = tag.strip()
-        if self.value.has_key(tag):
+        if tag in self.value:
             return self.value[tag].strip()
         else:
-            print 'key ' + tag.strip() + ' not found'
+            print ('key ' + tag.strip() + ' not found')
             return(-1)
 
     def get_keys(self, level=''):
@@ -83,7 +83,7 @@ class sfit4_ctl:
         if self.value.has_key(tag):
             self.value[tag] = value.strip()
         else:
-            print 'key ' + tag.strip() + ' appended'
+            print ('key ' + tag.strip() + ' appended')
             
 
             
@@ -169,7 +169,7 @@ class read_table:
     
         ll = linecache.getline(filename, 2).strip().split()
         self.retgas = ll[3:]
-        self.nr_retgas = string.atoi(ll[2])
+        self.nr_retgas = int(ll[2])
         
     def get_gas_vmr(self, gasname=None):
         if gasname == None:
@@ -241,7 +241,7 @@ class calc_diagnostics(sfit4_ctl):
             self.AK_frac = np.dot(np.linalg.inv(self.sainv + KSK), KSK)
 
         else:
-            print 'read K, SA and SE matrix first'
+            print ('read K, SA and SE matrix first')
             
                     
 class Kout:

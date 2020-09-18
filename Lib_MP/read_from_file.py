@@ -54,12 +54,12 @@ class read_from_file:
     def get_line(self):
         if self.count < 1:
             self.nextline()
-        line = string.join(self.line, ' ')
+        line = ' '.join(self.line)
         while len(line.strip()) == 0:
             self.nextline()
             if self.stat:
                 return()
-            line = string.join(self.line, ' ')
+            line = ' '.join(self.line)
         self.nextline()
         return(line)
 
@@ -69,7 +69,7 @@ class read_from_file:
 
             sep = re.compile('[ ,]')
             self.line = sep.split(self.file.readline().strip())
-            self.line = filter(bool,self.line)
+            self.line = list(filter(bool,self.line))
             self.count = len(self.line)
             if self.count < 1:
                 # Check for EOF if empty line. May be more elegantly solved using read_lines(), 
@@ -77,7 +77,7 @@ class read_from_file:
                 if len(self.file.read(1)) == 0:
                     self.flag = -1
                     break
-                self.file.seek(-1,1)
+                self.file.seek(self.file.tell()-1,0)
                 
     def skipline(self, nr=1):
         for n in range(0,nr):

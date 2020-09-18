@@ -92,7 +92,7 @@ def sortDict(DataDict,keyval,excld=[]):
 def ckDir(dirName,logFlg=False,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if logFlg: logFlg.error('Directory %s does not exist' % dirName)
         if exitFlg: sys.exit()
         return False
@@ -102,7 +102,7 @@ def ckDir(dirName,logFlg=False,exitFlg=False):
 def ckFile(fName,logFlg=False,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if logFlg: logFlg.error('Unable to find file: %s' % fName)
         if exitFlg: sys.exit()
         return False
@@ -115,7 +115,7 @@ def tryopen(fname):
         with open(fname, 'r' ) as fopen:
             return fopen.readlines()
     except IOError as errmsg:
-        print errmsg
+        print (errmsg)
         return False
 
 def convrtD(rhs):
@@ -144,7 +144,7 @@ def dbFilterUL(fltrParam,lwrVal=False,uprVal=False):
     # At least one bound must be set. Check this
     #-------------------------------------------
     if (not lwrVal) and (not uprVal):
-        print "Must specify at least one bound in dbFilterUL"
+        print ("Must specify at least one bound in dbFilterUL")
         return
 
     #----------------------------------------
@@ -209,7 +209,7 @@ def bias(xData,yData):
     # Make sure arrays are same size
     #-------------------------------
     if ( yData.shape[0] != xData.shape[0] ): 
-        print 'Data sets must have same size in corrcoef: xData = {}, yData = {}'.format(xData.shape[0],yData.shape[0])
+        print ('Data sets must have same size in corrcoef: xData = {}, yData = {}'.format(xData.shape[0],yData.shape[0]))
         sys.exit() 
 
     biasCalc = sum( yData - xData ) / len(yData) 
@@ -230,7 +230,7 @@ def rmse(xData, yData):
     # Make sure arrays are same size
     #-------------------------------
     if ( yData.shape[0] != xData.shape[0] ): 
-        print 'Data sets must have same size in corrcoef: xData = {}, yData = {}'.format(xData.shape[0],yData.shape[0])
+        print ('Data sets must have same size in corrcoef: xData = {}, yData = {}'.format(xData.shape[0],yData.shape[0]))
         sys.exit() 
 
     #---------------------------------
@@ -790,7 +790,7 @@ class _DateRange(object):
             newyears = [inYear for inYear in self.dateList if inYear.year == year]
             return newyears
         else:
-            print 'Error!! Year must be type int for daysInYear'
+            print ('Error!! Year must be type int for daysInYear')
             return False
 
 
@@ -800,7 +800,7 @@ class ReadOutputData(_DateRange):
     def __init__(self,dataDir,primGas='',ctlF='',iyear=False,imnth=False,iday=False,fyear=False,fmnth=False,fday=False,incr=1):
         
         if (not primGas) and (not ctlF):
-            print 'Either primGas or ctlF needs to be specify'
+            print ('Either primGas or ctlF needs to be specify')
             return False
         
         self.PrimaryGas = primGas            
@@ -838,7 +838,7 @@ class ReadOutputData(_DateRange):
             if 'gas.profile.list' in self.ctl: self.gasList += self.ctl['gas.profile.list'] 
             if 'gas.column.list' in self.ctl:  self.gasList += self.ctl['gas.column.list']
             if not self.gasList: 
-                print 'No gases listed in column or profile list....exiting'
+                print ('No gases listed in column or profile list....exiting')
                 sys.exit()
                 
             self.gasList = filter(None,self.gasList)  # Filter out all empty strings
@@ -948,7 +948,7 @@ class ReadOutputData(_DateRange):
         # Filter Data
         #------------
         nobs = len(np.asarray(self.summary[gasName+'_FITRMS']))
-        print 'Number of total observations before filtering = {}'.format(nobs)
+        print ('Number of total observations before filtering = {}'.format(nobs))
                 
         #---------------------------------
         # Filter based on specified months
@@ -971,7 +971,7 @@ class ReadOutputData(_DateRange):
         #-----------------------------
         if tcFlg:
             if not gasName+'_RetColmn' in self.summary:
-                print 'TotColmn values do not exist...exiting..'
+                print ('TotColmn values do not exist...exiting..')
                 sys.exit()
                 
             indsT =  np.where(np.asarray(self.summary[gasName+'_RetColmn']) <= 0.0)[0]
@@ -983,14 +983,14 @@ class ReadOutputData(_DateRange):
         #---------------------------------------------
         if tcMinMaxFlg:
             if not gasName+'_RetColmn' in self.summary:
-                print 'TotColmn values do not exist...exiting..'
+                print ('TotColmn values do not exist...exiting..')
                 sys.exit()
                 
             indsT1 = np.where(np.asarray(self.summary[gasName+'_RetColmn']) < minTC)[0]
             indsT2 = np.where(np.asarray(self.summary[gasName+'_RetColmn']) > maxTC)[0]
             indsT  = np.union1d(indsT1,indsT2)
-            print "Total number of observations found with total column < minTotalColumn = {}".format(len(indsT1))
-            print "Total number of observations found with total column > maxTotalColumn = {}".format(len(indsT2))
+            print ("Total number of observations found with total column < minTotalColumn = {}".format(len(indsT1)))
+            print ("Total number of observations found with total column > maxTotalColumn = {}".format(len(indsT2)))
             self.inds = np.union1d(indsT, self.inds)        
                 
         #-----------------------------
@@ -998,7 +998,7 @@ class ReadOutputData(_DateRange):
         #-----------------------------
         if rmsFlg:
             if not gasName+'_FITRMS' in self.summary:
-                print 'RMS values do not exist...exiting..'
+                print ('RMS values do not exist...exiting..')
                 sys.exit()            
                 
             indsT = np.where(np.asarray(self.summary[gasName+'_FITRMS']) >= mxrms)[0]
@@ -1011,7 +1011,7 @@ class ReadOutputData(_DateRange):
         #-----------------------------------
         if pcFlg:
             if not gasName in self.rprfs:
-                print 'Profile values do not exist...exiting..'
+                print ('Profile values do not exist...exiting..')
                 sys.exit()   
                 
             rprf_neg = np.asarray(self.rprfs[gasName]) <= 0
@@ -1024,7 +1024,7 @@ class ReadOutputData(_DateRange):
         #-----------------------------------
         if errFlg:
             if not gasName in self.rprfs:
-                print 'Profile values do not exist...exiting..'
+                print ('Profile values do not exist...exiting..')
                 sys.exit()   
             err_max = (np.asarray(self.error['Total_Systematic_Error'])
             +np.asarray(self.error['Total_Random_Error']))
@@ -1040,14 +1040,14 @@ class ReadOutputData(_DateRange):
         #-------------------------------------
         if szaFlg:
             if 'sza' not in self.pbp:
-                print 'SZA not found.....exiting'
+                print ('SZA not found.....exiting')
                 sys.exit()  
             
             sza_inds1 = np.where(self.pbp['sza'] > mxsza)[0]
             sza_inds2 = np.where(self.pbp['sza'] < minsza)[0]
             sza_inds  = np.union1d(sza_inds1, sza_inds2)
-            print 'Total number of observations with SZA greater than {0:} = {1:}'.format(mxsza,len(sza_inds1))
-            print 'Total number of observations with SZA less than    {0:} = {1:}'.format(minsza,len(sza_inds2))
+            print ('Total number of observations with SZA greater than {0:} = {1:}'.format(mxsza,len(sza_inds1)))
+            print ('Total number of observations with SZA less than    {0:} = {1:}'.format(minsza,len(sza_inds2)))
             self.inds = np.union1d(sza_inds,self.inds)
 
         #-------------------------------------
@@ -1056,10 +1056,10 @@ class ReadOutputData(_DateRange):
 
         if chi2Flg:
             chi_2_inds = np.where(np.asarray(self.summary[self.PrimaryGas.upper()+'_CHI_2_Y']) > maxCHI2)[0]
-            print 'Total number of observations with CHI_2_Y greater than {0:} = {1:}'.format(maxCHI2,len(chi_2_inds))
+            print ('Total number of observations with CHI_2_Y greater than {0:} = {1:}'.format(maxCHI2,len(chi_2_inds)))
             self.inds = np.union1d(chi_2_inds,self.inds)
             chi_2_inds = np.where(np.asarray(self.summary[self.PrimaryGas.upper()+'_CHI_2_Y']) < 0.0)[0]
-            print 'Total number of observations with CHI_2_Y smaller than {0:} = {1:}'.format(0.0,len(chi_2_inds))
+            print ('Total number of observations with CHI_2_Y smaller than {0:} = {1:}'.format(0.0,len(chi_2_inds)))
             self.inds = np.union1d(chi_2_inds,self.inds)
             
         #-------------------------------------
@@ -1069,7 +1069,7 @@ class ReadOutputData(_DateRange):
         if minvmrFlg:
             minvmr_inds = np.unique(np.where(self.rprfs[self.PrimaryGas]
                                              < minVMR)[0])
-            print 'Total number of observations with VMR smaller than {0:} = {1:}'.format(minVMR,len(minvmr_inds))
+            print ('Total number of observations with VMR smaller than {0:} = {1:}'.format(minVMR,len(minvmr_inds)))
             self.inds = np.union1d(minvmr_inds,self.inds)
 
         #-------------------------------------
@@ -1079,7 +1079,7 @@ class ReadOutputData(_DateRange):
         if maxvmrFlg:
             maxvmr_inds = np.unique(np.where(self.rprfs[self.PrimaryGas]
                                              > maxVMR)[0])
-            print 'Total number of observations with VMR greater than {0:} = {1:}'.format(maxVMR,len(maxvmr_inds))
+            print ('Total number of observations with VMR greater than {0:} = {1:}'.format(maxVMR,len(maxvmr_inds)))
             self.inds = np.union1d(maxvmr_inds,self.inds)
 
             
@@ -1088,7 +1088,7 @@ class ReadOutputData(_DateRange):
         #--------------------------
         if co2Flg:
             if not gasName+'_RetColmn' in self.summary:
-                print 'CO2 columns not retrieved...exiting..'
+                print ('CO2 columns not retrieved...exiting..')
                 sys.exit()
 
             co2_inds = np.unique(np.where(np.asarray(self.summary['CO2_RetColmn']) < minCO2)[0])   
@@ -1104,9 +1104,10 @@ class ReadOutputData(_DateRange):
         #--------------------------
         if dofFlg:
             if not gasName+'_DOFS_TRG' in self.summary:
-                print 'DOFs values do not exist...exiting..'
+                print ('DOFs values do not exist...exiting..')
                 sys.exit() 
-                
+
+            print (minDOF)
             indsT = np.where(np.asarray(self.summary[gasName+'_DOFS_TRG']) < minDOF)[0]
             print ('Total number observations found DOFs below {0:} = {1:}'.format(minDOF, len(indsT)))
             self.inds = np.union1d(indsT, self.inds)      
@@ -1117,7 +1118,7 @@ class ReadOutputData(_DateRange):
         #------------------------------------
         if cnvrgFlg:
             if not gasName+'_CONVERGED' in self.summary:
-                print 'Converged values do not exist...exiting..'
+                print ('Converged values do not exist...exiting..')
                 sys.exit()
                 
             indsT = np.where( np.asarray(self.summary[self.PrimaryGas.upper()+'_CONVERGED']) == 'F')[0]
@@ -1125,12 +1126,12 @@ class ReadOutputData(_DateRange):
             self.inds = np.union1d(indsT, self.inds)
     
         self.inds = np.array(self.inds)
-        print 'Total number of observations filtered = {}'.format(len(self.inds))
+        print ('Total number of observations filtered = {}'.format(len(self.inds)))
         
         self.fltrFlg = True
         
         if nobs == len(self.inds):
-            print '!!!! All observations have been filtered....'
+            print ('!!!! All observations have been filtered....')
             self.empty = True
             return False
         else: self.empty = False
@@ -1211,7 +1212,7 @@ class ReadOutputData(_DateRange):
                     #         self.refPrf.setdefault(val,[]).append([float(x[:-1]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
 
                 except Exception as errmsg:
-                    print errmsg
+                    print (errmsg)
                     continue
     
             self.readRefPrfFlg = True
@@ -1298,7 +1299,7 @@ class ReadOutputData(_DateRange):
                                                                                int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))
 
                 except Exception as errmsg:
-                    print errmsg
+                    print (errmsg)
                     continue
     
             self.readsummaryFlg = True
@@ -1365,14 +1366,14 @@ class ReadOutputData(_DateRange):
                                                                              int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))
 
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue                            
 
         #----------------------------
         # Test if Dictionary is empty
         #----------------------------
         if not self.deflt: 
-            print 'No Profiles exist...exiting'
+            print ('No Profiles exist...exiting')
             self.empty = True
             return  #sys.exit()
         else: self.empty = False
@@ -1470,7 +1471,7 @@ class ReadOutputData(_DateRange):
                     self.statevec.setdefault(key,[]).append(val)
                     
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue            
     
         #------------------------
@@ -1523,7 +1524,7 @@ class ReadOutputData(_DateRange):
                                                                          int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))
 
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue                            
 
             #-------------------------
@@ -1545,7 +1546,7 @@ class ReadOutputData(_DateRange):
                             self.error.setdefault('AVK_vmr',[]).append(totRand)                            
 
                 except Exception as errmsg:
-                    print errmsg
+                    print (errmsg)
                     continue                  
                 
             #------------------
@@ -1611,7 +1612,7 @@ class ReadOutputData(_DateRange):
                             self.error.setdefault('Total_Systematic_Error',[]).append(totSys)                            
 
                 except Exception as errmsg:
-                    print errmsg
+                    print (errmsg)
                     continue                    
 
                 #--------------------------------------------
@@ -1637,7 +1638,7 @@ class ReadOutputData(_DateRange):
                                 self.error.setdefault('Total_Systematic_Error_VMR',[]).append(totSys)                            
 
                     except Exception as errmsg:
-                        print errmsg
+                        print (errmsg)
                         continue                    
 
             # Systematic Error 
@@ -1661,7 +1662,7 @@ class ReadOutputData(_DateRange):
                         else: continue
 
                 except Exception as errmsg:
-                    print errmsg
+                    print (errmsg)
                     continue                    
 
                 #--------------------------------------------
@@ -1687,7 +1688,7 @@ class ReadOutputData(_DateRange):
                             else: continue                        
 
                     except Exception as errmsg:
-                        print errmsg
+                        print (errmsg)
                         continue                  
 
             # Systematic Error 
@@ -1711,7 +1712,7 @@ class ReadOutputData(_DateRange):
                         else: continue
 
                 except Exception as errmsg:
-                    print errmsg
+                    print (errmsg)
                     continue                    
 
                 #--------------------------------------------
@@ -1737,7 +1738,7 @@ class ReadOutputData(_DateRange):
                             else: continue                        
 
                     except Exception as errmsg:
-                        print errmsg
+                        print (errmsg)
                         continue                 
 
         #----------
@@ -1775,7 +1776,7 @@ class ReadOutputData(_DateRange):
                 with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()   
 
             except Exception as errmsg:
-                print errmsg
+                print (errmsg)
                 continue       
             
             #--------------------
@@ -2192,7 +2193,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         #----------------------------------------------------
         # Print total number of observations before filtering
         #----------------------------------------------------
-        print 'Number of total observations before filtering = {}'.format(len(self.HDFdates))
+        print ('Number of total observations before filtering = {}'.format(len(self.HDFdates)))
         
         #--------------------
         # Call to filter data
@@ -2233,7 +2234,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFlat         = np.delete(self.HDFlat,self.inds)
         self.HDFlon         = np.delete(self.HDFlon,self.inds)
         self.HDFinstAlt         = np.delete(self.HDFinstAlt,self.inds)
-        print 'Number of observations after filtering = {}'.format(len(self.HDFdates))   
+        print ('Number of observations after filtering = {}'.format(len(self.HDFdates))   )
 
 
 
@@ -2243,13 +2244,13 @@ class GatherHDF(ReadOutputData,DbInputFile):
         #-------------------------------------------
         ind = np.where(self.HDFh2oTC < 0.0)[0]
         if len(ind) > 0: 
-            print '\n\n***********************************'
-            print 'Retrievals found with negative H2O total column values!!!'
-            print 'Number of retrievals found = {}'.format(len(ind))
-            print 'Dates: '
+            print ('\n\n***********************************')
+            print ('Retrievals found with negative H2O total column values!!!')
+            print ('Number of retrievals found = {}'.format(len(ind)))
+            print ('Dates: ')
             for i in ind:
-                print self.HDFdates[i]
-            print '***********************************\n\n'
+                print (self.HDFdates[i])
+            print ('***********************************\n\n')
 
 #------------------------------------------------------------------------------------------------------------------------------        
 class PlotData(ReadOutputData):
@@ -2271,7 +2272,7 @@ class PlotData(ReadOutputData):
     def pltSpectra(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,szaFlg=False,chiFlg=False,cnvrgFlg=True,tcMMflg=False,mnthFltFlg=False):
         ''' Plot spectra and fit and Jacobian matrix '''
     
-        print '\nPlotting Spectral Data...........\n'
+        print ('\nPlotting Spectral Data...........\n')
         
         #------------------------
         # Determine Micro-windows
@@ -2573,7 +2574,7 @@ class PlotData(ReadOutputData):
         ''' Plot retrieved profiles '''
         
         
-        print '\nPrinting Profile Plots.......\n'
+        print ('\nPrinting Profile Plots.......\n')
         
         aprPrf       = {}
         rPrf         = {}
@@ -3108,7 +3109,7 @@ class PlotData(ReadOutputData):
                dofFlg=False,errFlg=False,szaFlg=False,partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,chiFlg=False,tcMMflg=False,mnthFltFlg=False):
         ''' Plot Averaging Kernel. Only for single retrieval '''
         
-        print '\nPlotting Averaging Kernel........\n'
+        print ('\nPlotting Averaging Kernel........\n')
         
         if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,
                                mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,
@@ -3130,7 +3131,7 @@ class PlotData(ReadOutputData):
                 self.readError(totFlg=False,sysFlg=False,randFlg=False,vmrFlg=True,avkFlg=True,KbFlg=False)
             
             if not self.error: 
-                print 'No Error output files found for AVK plot...exiting..'
+                print ('No Error output files found for AVK plot...exiting..')
                 sys.exit()   
                 
             #---------------------
@@ -3329,7 +3330,7 @@ class PlotData(ReadOutputData):
                    chiFlg=False,tcMMflg=False,mnthFltFlg=False):
         ''' Plot Time Series of Total Column '''
         
-        print '\nPrinting Total Column Plots.....\n'
+        print ('\nPrinting Total Column Plots.....\n')
         
         #------------------------------------------
         # Get Profile and Summary information. Need
