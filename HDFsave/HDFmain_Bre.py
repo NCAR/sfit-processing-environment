@@ -32,7 +32,7 @@ if __name__ != "__main__":
                             
 def main(args):
     if len(args) != 8:
-        print 'call as HDFmain_Bre Datadir HDFDir location gas YYYYMMDD (start) YYYYMMDD (end) nrt|final|cams27'
+        print ('call as HDFmain_Bre Datadir HDFDir location gas YYYYMMDD (start) YYYYMMDD (end) nrt|final|cams27')
         return()
 
     script_dir = os.path.dirname(args[0])
@@ -74,7 +74,7 @@ def main(args):
     source         = 'sun'
 
     if quality != 'nrt' and quality !='final' and quality != 'cams27':
-        print 'quality has to be nrt, final or cams27, not %s'%quality
+        print ('quality has to be nrt, final or cams27, not %s'%quality)
         exit()
 
     
@@ -116,7 +116,7 @@ def main(args):
         attribute_file = os.path.join(script_dir, 'paramaribo.txt.%s'%quality)
 
         if sdate.year < 2012 and edate.year > 2012:
-            print 'different PMB containers during the envisaged time'
+            print ('different PMB containers during the envisaged time')
             return
         
         if sdate.year < 2012:
@@ -184,7 +184,9 @@ def main(args):
         minVMR         = -1e-7
         maxVMR         = 2.0e-5
         if quality.lower()=='cams27':
-            maxSZA = 83            
+            maxSZA = 83
+            minDOFs = 1.5
+            dofFlag = True
 
 
     if gasName.lower() == 'ccl4':
@@ -313,6 +315,7 @@ def main(args):
         dofFlag        = True
         if quality.lower()=='cams27':
             minDOFs = 1.5
+            dofFlag = True
         else:
             minDOFs        = 0.8
 #        maxCHI2        = 100.0
@@ -422,7 +425,7 @@ def main(args):
     filename = myhdf.createHDF4()
     #myhdf.createHDF5()
     
-    print 'Finished creating HDF file'
+    print ('Finished creating HDF file')
     return(filename)
     
 if __name__ == "__main__":
