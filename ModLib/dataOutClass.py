@@ -1102,7 +1102,7 @@ class ReadOutputData(_DateRange):
             if 'gas.profile.list' in self.ctl: self.gasList += self.ctl['gas.profile.list'] 
             if 'gas.column.list' in self.ctl:  self.gasList += self.ctl['gas.column.list']
             if not self.gasList: 
-                print 'No gases listed in column or profile list....exiting'
+                print ('No gases listed in column or profile list....exiting')
                 sys.exit()
                 
             self.gasList = filter(None,self.gasList)  # Filter out all empty strings
@@ -1294,7 +1294,22 @@ class ReadOutputData(_DateRange):
             indsT = np.where( np.sum(rprf_neg,axis=1) > 0 )[0]
             print ('Total number observations found with negative partial column = {}'.format(len(indsT)))
             self.inds = np.union1d(indsT, self.inds)
+
+        #-----------------------------------
+        # Find error > maxTcTotError
+        #-----------------------------------
+        if errFlg:
+            if not gasName in self.rprfs:
+                print ('Profile values do not exist...exiting..')
+                sys.exit()   
+            err_max = (np.asarray(self.error['Total_Systematic_Error'])
+            +np.asarray(self.error['Total_Random_Error']))
+            indsE = np.where(err_max >= maxTCTotErr**2)[0]
+            print ('Total number observations found with error > {}'.format(len(indsE)))
+            self.inds = np.union1d(indsE, self.inds)
             
+
+
         #-------------------------------------
         # Find observations with SZA > max SZA
         #-------------------------------------
@@ -1324,10 +1339,10 @@ class ReadOutputData(_DateRange):
 
         if chi2Flg:
             chi_2_inds = np.where(np.asarray(self.summary[self.PrimaryGas.upper()+'_CHI_2_Y']) > maxCHI2)[0]
-            print 'Total number of observations with CHI_2_Y greater than {0:} = {1:}'.format(maxCHI2,len(chi_2_inds))
+            print ('Total number of observations with CHI_2_Y greater than {0:} = {1:}'.format(maxCHI2,len(chi_2_inds)))
             self.inds = np.union1d(chi_2_inds,self.inds)
             chi_2_inds = np.where(np.asarray(self.summary[self.PrimaryGas.upper()+'_CHI_2_Y']) < 0.0)[0]
-            print 'Total number of observations with CHI_2_Y smaller than {0:} = {1:}'.format(0.0,len(chi_2_inds))
+            print ('Total number of observations with CHI_2_Y smaller than {0:} = {1:}'.format(0.0,len(chi_2_inds)))
             self.inds = np.union1d(chi_2_inds,self.inds)
             
         #-------------------------------------
@@ -1337,7 +1352,7 @@ class ReadOutputData(_DateRange):
         if minvmrFlg:
             minvmr_inds = np.unique(np.where(self.rprfs[self.PrimaryGas]
                                              < minVMR)[0])
-            print 'Total number of observations with VMR smaller than {0:} = {1:}'.format(minVMR,len(minvmr_inds))
+            print ('Total number of observations with VMR smaller than {0:} = {1:}'.format(minVMR,len(minvmr_inds)))
             self.inds = np.union1d(minvmr_inds,self.inds)
 
         #-------------------------------------
@@ -1347,7 +1362,7 @@ class ReadOutputData(_DateRange):
         if maxvmrFlg:
             maxvmr_inds = np.unique(np.where(self.rprfs[self.PrimaryGas]
                                              > maxVMR)[0])
-            print 'Total number of observations with VMR greater than {0:} = {1:}'.format(maxVMR,len(maxvmr_inds))
+            print ('Total number of observations with VMR greater than {0:} = {1:}'.format(maxVMR,len(maxvmr_inds)))
             self.inds = np.union1d(maxvmr_inds,self.inds)
 
         #--------------------------
@@ -1355,7 +1370,7 @@ class ReadOutputData(_DateRange):
         #--------------------------
         if co2Flg:
             if not gasName+'_RetColmn' in self.summary:
-                print 'CO2 columns not retrieved...exiting..'
+                print ('CO2 columns not retrieved...exiting..')
                 sys.exit()
 
             co2_inds = np.unique(np.where(np.asarray(self.summary['CO2_RetColmn']) < minCO2)[0])   
@@ -1371,9 +1386,10 @@ class ReadOutputData(_DateRange):
         #--------------------------
         if dofFlg:
             if not gasName+'_DOFS_TRG' in self.summary:
-                print 'DOFs values do not exist...exiting..'
+                print ('DOFs values do not exist...exiting..')
                 sys.exit() 
-                
+
+            print (minDOF)
             indsT = np.where(np.asarray(self.summary[gasName+'_DOFS_TRG']) < minDOF)[0]
             print ('Total number observations found DOFs below {0:} = {1:}'.format(minDOF, len(indsT)))
             self.inds = np.union1d(indsT, self.inds)      
@@ -2629,7 +2645,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFlat         = np.delete(self.HDFlat,self.inds)
         self.HDFlon         = np.delete(self.HDFlon,self.inds)
         self.HDFinstAlt         = np.delete(self.HDFinstAlt,self.inds)
-        print 'Number of observations after filtering = {}'.format(len(self.HDFdates))   
+        print ('Number of observations after filtering = {}'.format(len(self.HDFdates))   )
 
 
 
@@ -2663,6 +2679,7 @@ class PlotData(ReadOutputData):
         super(PlotData,self).__init__(dataDir,primGas,ctlF,iyear,imnth,iday,fyear,fmnth,fday,incr)
         
     def closeFig(self):
+<<<<<<< HEAD
         self.pdfsav.close()      
 
     def pltbnr(self):  
@@ -2731,6 +2748,9 @@ class PlotData(ReadOutputData):
     def pltSpectra(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0, maxDOF=10.0, maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
                    dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,szaFlg=False,chiFlg=False,cnvrgFlg=True,tcMMflg=False,mnthFltFlg=False,
                    bckgFlg=False, minSlope=0.0, maxSlope=0.0, minCurv=1.0, maxCurv=10.0):
+        self.pdfsav.close()
+    
+    def pltSpectra(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,szaFlg=False,chiFlg=False,cnvrgFlg=True,tcMMflg=False,mnthFltFlg=False):
         ''' Plot spectra and fit and Jacobian matrix '''
     
         print ('\nPlotting Spectral Data...........\n')
@@ -2746,12 +2766,10 @@ class PlotData(ReadOutputData):
         #---------------------------------------
         if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
         if self.empty: return False
-        if not self.readsummaryFlg:  self.readsummary()                                      # Summary File info
-        if not self.readPbpFlg:      self.readPbp()                                          # observed, fitted, and difference spectra
-        if not self.readSpectraFlg:  self.readSpectra(self.gasList)                          # Spectra for each gas
-        if not self.readStateVecFlg: self.readStateVec()
-
-      
+        if not self.readsummaryFlg: self.readsummary()                                      # Summary File info
+        if not self.readPbpFlg:     self.readPbp()                                          # observed, fitted, and difference spectra
+        if not self.readSpectraFlg: self.readSpectra(self.gasList)                          # Spectra for each gas
+        
         Z = np.asarray(self.rprfs['Z'][0,:])          # get altitude
         
         #------------------------------------------
@@ -3903,6 +3921,7 @@ class PlotData(ReadOutputData):
         ''' Plot Averaging Kernel. Only for single retrieval '''
         
         print ('\nPlotting Averaging Kernel........\n')
+<<<<<<< HEAD
 
         #---------------------------------------
         # Get profile, summary and spectral data

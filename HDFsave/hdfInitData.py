@@ -40,7 +40,7 @@ sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(_
 import datetime as dt
 import numpy as np
 import scipy.io as si
-from itertools import izip
+#from itertools import izip
 import dataOutClass as dc
 
 class HDFinitData(object):
@@ -85,7 +85,7 @@ class HDFinitData(object):
         #------------------------------------
         YYYYMMDD   = dataStrc['ds']['YYYYMMDD']
         HHMMSS     = dataStrc['ds']['HHMMSS']        
-        self.dates = np.array([dt.datetime(int(ymd[0:4]),int(ymd[4:6]),int(ymd[6:]),int(hms[0:2]),int(hms[2:4]),int(hms[4:])) for (ymd,hms) in izip(YYYYMMDD,HHMMSS)])
+        self.dates = np.array([dt.datetime(int(ymd[0:4]),int(ymd[4:6]),int(ymd[6:]),int(hms[0:2]),int(hms[2:4]),int(hms[4:])) for (ymd,hms) in zip(YYYYMMDD,HHMMSS)])
         
         #------------------------------------------
         # Find indicies of dates in specified range
