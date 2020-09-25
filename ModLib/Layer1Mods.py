@@ -775,9 +775,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Insert retrieval grid in sbctldefaults and substitute default values for SbctlFileVars
     #----------------------------------
     z=sumVars.aprfs['Z']
-    gridvars=filter(lambda k: fnmatch.fnmatch(k,'sb.*.grid'),sbctldefaults.inputs.keys())
+    gridvars=list(filter(lambda k: fnmatch.fnmatch(k,'sb.*.grid'),sbctldefaults.inputs.keys()))
     print(list(gridvars))
     for gk in gridvars:
+      print(gk)
       print(list(gridvars))
       grid=sbctldefaults.inputs[gk]
       for ErrType in ('random','systematic'):
@@ -786,7 +787,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
       del sbctldefaults.inputs[gk]
     SbDict=DictWithDefaults(SbctlFileVars.inputs,defaults=sbctldefaults.inputs)
 
-
+    
     #------------------------------------------------------------------------------
     # Read in output files from sfit4 run
     #  -- k.output to calculate averaging kernel
@@ -863,7 +864,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     x_start = int( lines[1].strip().split()[2] )
     n_layer = int( lines[1].strip().split()[3] )
     x_stop  = x_start + n_layer
-    K       = np.array([[float(x) for x in row.split()] for row in lines[3:]]
+    K       = np.array([[float(x) for x in row.split()] for row in lines[3:]])
     
     #--------------------
     # Read in or calculate Gain matrix
@@ -874,7 +875,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         if logFile: logFile.error('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
         return False    # Critical file, if missing terminate program   
 
-
+    D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
     
     #------------------
     # Read in Kb matrix
