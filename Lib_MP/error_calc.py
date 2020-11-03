@@ -18,7 +18,6 @@ def calc_now(direc, sbctl,rootdir):
     Sbctl.getInputs()
     errAnalysis(ctl,Sbctl,direc, False)
     try:    
-
         print ('errorcalculation in path: '+direc)
     except:
         print ('failed in path: '+direc)
