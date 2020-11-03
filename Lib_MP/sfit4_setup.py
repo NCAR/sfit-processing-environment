@@ -99,11 +99,15 @@ class reference_prf:
         # interpolates the in columns 2 and 3 of zpt given pressure and temperature
         # to the grid used here
 
-        if not np.all(np.diff(zpt[:,0]) > 0):
+        print(self.t)
+        if not np.all(np.diff(zpt[0:10,0]) > 0):
             zpt = np.flipud(zpt)
-        self.t = np.interp(self.z, zpt[:,0], zpt[:,2])
-        self.p = np.exp(np.interp(self.z, zpt[:,0], np.log(zpt[:,1])))
-    
+            print(zpt)
+        ind = np.where((self.z>np.min(zpt[:,0])) & (self.z<np.max(zpt[:,0])))[0]
+        self.t[ind] = np.interp(self.z[ind], zpt[:,0], zpt[:,2])
+        self.p[ind] = np.exp(np.interp(self.z[ind], zpt[:,0], np.log(zpt[:,1])))
+
+        print (self.t)
 
     def insert_vmr_from_file(self, prffile, gas_nr, gas_name, note):
         # reads the two column profile (z,vmr) from prffile, interpolates 
@@ -126,13 +130,19 @@ class reference_prf:
             self.insert_vmr(vmr_n, gas_nr, gasname, 'inserted from statevec')
         
     def insert_vmr(self, prf, gas_nr, gas_name, note):
-        # reads the two column profile (z,vmr) from prffile, interpolates 
+        # reads the two column profile (z,vmr) from prf, interpolates 
         # it to the altitude grid contained in self.z and inserts gas_nr, gas_name, notes and vmr in self
 
-        vmr = np.interp(self.z[::-1],prf[:,0], prf[:,1])
+        
+        vmr = np.interp(self.z[::-1],prf[:,0], prf[:,1],left = -1.0, right=-1.0)
+        ind = np.where(vmr[::-1] == -1)[0]
+        breakpoint()
+        vmr2 = np.interp(self.z[ind], self.z[::-1], self.vmr[gas_nr-1,::-1])
         self.vmr[gas_nr-1,:] = vmr[::-1]
+        self.vmr[gas_nr-1,ind] = vmr2
         self.gasname[gas_nr-1]=gas_name
         self.notes[gas_nr-1] = note
+        
 
 #     def insert_statevec(self, stvfile):
 #         x = stv.stv(stvfile)
@@ -185,6 +195,7 @@ class reference_prf:
         return(list(vmr))
 
 
+
     def write_reference_prf(self, prffile, nopt=False):
         
         fid = open(prffile, 'w')
@@ -193,25 +204,25 @@ class reference_prf:
         line = '    ALTITUDE\n'
         fid.write(line)
         for n in range(0,self.nr_layers,5):
-            line = string.join(map (lambda x:'%11.3e,'%x, self.z[n:np.min((n+5,self.nr_layers))]))
+            line = ''.join(map (lambda x:'%11.3e,'%x, self.z[n:np.min((n+5,self.nr_layers))]))
             fid.write(' '+line+'\n')
         if not nopt:
             line = '    PRESSURE\n'
             fid.write(line)
             for n in range(0,self.nr_layers,5):
-                line = string.join(map (lambda x:'%11.3e,'%x, self.p[n:np.min((n+5,self.nr_layers))]))
+                line = ''.join(map (lambda x:'%11.3e,'%x, self.p[n:np.min((n+5,self.nr_layers))]))
                 fid.write(' '+line+'\n')
             line = '    TEMPERATURE\n'
             fid.write(line)
             for n in range(0,self.nr_layers,5):
-                line = string.join(map (lambda x:'%11.3e,'%x, self.t[n:np.min((n+5,self.nr_layers))]))
+                line = ''.join(map (lambda x:'%11.3e,'%x, self.t[n:np.min((n+5,self.nr_layers))]))
                 fid.write(' '+line+'\n')
 
         for gas in range(0,self.nr_gas):
-            line = '%5d%8s %s' %(self.gas[gas],self.gasname[gas],self.notes[gas])
+            line = '%5d%8s %s' %(self.gas_nr[gas],self.gasname[gas],self.notes[gas])
             fid.write(line+'\n')
             for n in range(0,self.nr_layers,5):
-                line = string.join(map (lambda x:'%11.3e,'%x, 
+                line = ''.join(map (lambda x:'%11.3e,'%x, 
                                         self.vmr[gas,n:np.min((n+5,self.nr_layers))]))
                 fid.write(' '+line+'\n')
 
@@ -309,7 +320,7 @@ class sfit4_ctl:
     def get_value(self, tag):
 
         tag = tag.strip()
-        if self.value.has_key(tag):
+        if tag in self.value:
             return self.value[tag].strip()
         else:
             print ('key ' + tag.strip() + ' not found')
