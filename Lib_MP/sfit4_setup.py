@@ -136,7 +136,6 @@ class reference_prf:
         
         vmr = np.interp(self.z[::-1],prf[:,0], prf[:,1],left = -1.0, right=-1.0)
         ind = np.where(vmr[::-1] == -1)[0]
-        breakpoint()
         vmr2 = np.interp(self.z[ind], self.z[::-1], self.vmr[gas_nr-1,::-1])
         self.vmr[gas_nr-1,:] = vmr[::-1]
         self.vmr[gas_nr-1,ind] = vmr2
