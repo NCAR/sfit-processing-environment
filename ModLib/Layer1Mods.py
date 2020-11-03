@@ -702,9 +702,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Insert retrieval grid in sbctldefaults and substitute default values for SbctlFileVars
     #----------------------------------
     z=sumVars.aprfs['Z']
-    gridvars=filter(lambda k: fnmatch.fnmatch(k,'sb.*.grid'),sbctldefaults.inputs.keys())
+    gridvars=list(filter(lambda k: fnmatch.fnmatch(k,'sb.*.grid'),sbctldefaults.inputs.keys()))
     print(list(gridvars))
     for gk in gridvars:
+      print(gk)
       print(list(gridvars))
       grid=sbctldefaults.inputs[gk]
       for ErrType in ('random','systematic'):
@@ -712,37 +713,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         sbctldefaults.inputs[defk]=interp(z,*zip(*sorted(zip(grid,sbctldefaults.inputs[defk]),key=lambda x: x[0])))
       del sbctldefaults.inputs[gk]
     SbDict=DictWithDefaults(SbctlFileVars.inputs,defaults=sbctldefaults.inputs)
-
-    def _expandgridsinputs(d):
-      """dummy function to replace coarse uncertainty input grid in a dict d to the retrieval grid z"""
-      gridvars=filter(lambda k: fnmatch.fnmatch(k,'sb.*.grid'),d.keys())
-
-
-      for gk in list(gridvars):
-        grid=d[gk]
-        for ErrType in ('random','systematic'):
-          defk=gk.replace('grid',ErrType)
-          
-          d[defk]=interp(z,*zip(*sorted(zip(grid,d[defk]),key=lambda x: x[0])))
-        del d[gk]
-      return
-
-    #----------------------------------
-    # Setup the Sb dictionary as a pair of dictionaries: 
-    #   one dict represents the sb.ctl contents, 
-    #   the second is the default values dict (which may be empty if eg sbdefflg=F
-    # Any exact match with a key in the first (sb.ctl) has priority above any match with a key in the second 
-    # default dict. Only the second default dict allows wildcards (microwindows,gases,...).
-    # For the second/default dict an exact match will have priority above wildcard matches.
-    # Both dicts allow std profile definitions on coarse grids.
-    # These are interpolated to the retrieval grid using _expandgridsinputs
-    #----------------------------------
-
-    _expandgridsinputs(SbctlFileVars.inputs)
-    SbDict = DictWithDefaults({}, defaults=SbctlFileVars.inputs)
-
-    #SbDict = DictWithDefaults(SbctlFileVars.inputs, defaults=SbctlFileVars.inputs)
-    #_expandgridsinputs(SbDict) #in the case the user also uses coarse grids...
 
     #------------------------------------------------------------------------------
     # Read in output files from sfit4 run
@@ -886,6 +856,14 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         if logFile: logFile.error('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
         return False    # Critical file, if missing terminate program   
 
+    K_param = lines[2].strip().split()
+
+    n_wav   = int( lines[1].strip().split()[0] )
+    x_start = int( lines[1].strip().split()[2] )
+    n_layer = int( lines[1].strip().split()[3] )
+    x_stop  = x_start + n_layer
+    K       = np.array([[float(x) for x in row.split()] for row in lines[3:]])
+    
     #--------------------
     # Read in Gain matrix
     #--------------------
@@ -896,7 +874,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         return False    # Critical file, if missing terminate program   
 
     D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
-
     #------------------
     # Read in Kb matrix
     #------------------   

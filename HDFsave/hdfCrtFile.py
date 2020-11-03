@@ -45,7 +45,7 @@ class HDF5File(object):
       #-------------------------------------------      
       self.fopen=h5py.File(filename,'w')
       
-      for k,val in attrDict.iteritems():
+      for k,val in attrDict.items():
          self.fopen.attrs[k] = val
 
    def createDataSet(self,dataSetName, dimSpec, data, attrDict, typeOvrd=''):
@@ -63,7 +63,7 @@ class HDF5File(object):
       #-----------------
       # store attributes
       #-----------------
-      for k,val in attrDict.iteritems():
+      for k,val in attrDict.items():
          dtSet.attrs[k] = val
 
    def closeFile(self):
@@ -95,7 +95,7 @@ class HDF4File(object):
       #--------------------------------
       # Write global attributes to file
       #--------------------------------
-      for k,val in attrDict.iteritems():
+      for k,val in attrDict.items():
          setattr(self.fopen,k,val)
 
    
@@ -129,7 +129,7 @@ class HDF4File(object):
       # Store attributes in file. Rules state that numerical meta-data
       # must have same data-type as data set.
       #---------------------------------------------------------------
-      for k,val in attrDict.iteritems():
+      for k,val in attrDict.items():
          
          #-------------------------------------------
          # Determine if attribute is string or number

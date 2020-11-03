@@ -1105,7 +1105,7 @@ class ReadOutputData(_DateRange):
                 print ('No gases listed in column or profile list....exiting')
                 sys.exit()
                 
-            self.gasList = filter(None,self.gasList)  # Filter out all empty strings
+            self.gasList = list(filter(None,self.gasList))  # Filter out all empty strings
             self.ngas    = len(self.gasList)   
             
             for gas in self.gasList:
@@ -1139,9 +1139,8 @@ class ReadOutputData(_DateRange):
             # Walk through first level of directories and
             # collect directory names for processing
             #--------------------------------------------
-
-            for drs in next(iter(os.walk(dataDir)))[1]: 
-           
+            for drs in next(os.walk(dataDir))[1]: 
+                
                 #-------------------------------------------
                 # Test directory to make sure it is a number
                 #-------------------------------------------
@@ -2340,7 +2339,6 @@ class DbInputFile(_DateRange):
                 #------------------------------------------------------
                 if None in row: del row[None]                    
 
-                #for col,val in row.iteritems():
                 for col,val in row.items():
                     try:
                         val = float(val)                                                         # Convert string to float
@@ -2363,7 +2361,7 @@ class DbInputFile(_DateRange):
             
             if self.inRange(datestmp[0], datestmp[1], datestmp[2]): inds.append(ind)             # Check if date stamp in spectral db is within range
                 
-        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())  # Rebuild filtered dictionary. Syntax compatible with python 2.6   
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items())  # Rebuild filtered dictionary. Syntax compatible with python 2.6   
         #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
         return dbFltInputs
 
@@ -2403,9 +2401,9 @@ class DbInputFile(_DateRange):
         for ind,(val1,val2) in enumerate(itertools.izip(fltDict['LWN'],fltDict['HWN'])):
             if ( nuLower >= val1 and nuUpper <= val2 ):                                          # Check if wavenumber is within range of ctl files
                 inds.append(ind)
-        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items())   # Rebuild filtered dictionary. Syntax compatible with python 3
-        #dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
-        ##dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
+
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
+        #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
         return dbFltInputs
 
     def dbFilterFltrID(self,fltrID,fltDict=False):
@@ -2422,8 +2420,7 @@ class DbInputFile(_DateRange):
                 if str(val) == str(fltrID):
                     inds.append(ind)                
 
-        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items())   # Rebuild filtered dictionary. Syntax compatible with python 3
-        #dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items())   # Rebuild filtered dictionary. Syntax compatible with python 2.6
 
         return dbFltInputs
     
@@ -2550,7 +2547,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         for i,val in enumerate(self.HDFdates):
             tempSpecDB = self.dbFindDate(self.HDFdates[i])
             self.HDFlat[i]     = np.array(tempSpecDB['N_Lat'])
-            if tempSpecDB.has_key('W_Lon'):
+            if 'W_Lon' in tempSpecDB:
                 self.HDFlon[i]     = -np.array(tempSpecDB['W_Lon'])
             else:
                 self.HDFlon[i]     = np.array(tempSpecDB['E_Lon'])
@@ -2558,11 +2555,11 @@ class GatherHDF(ReadOutputData,DbInputFile):
             self.HDFintT[i] = tempSpecDB['Dur']
             self.HDFazi[i]  = tempSpecDB['SAzm']
             self.HDFazi[i] = np.mod(self.HDFazi[i] + 180,360.0)
-            if tempSpecDB.has_key('S_PRES'):
+            if 'S_PRES' in tempSpecDB:
                 self.HDFsurfP[i]      = np.array(tempSpecDB['S_PRES'])    # Surface Pressure
             else:
                 self.HDFsurfP[i]      = np.array(-99999)
-            if tempSpecDB.has_key('S_TEMP'):
+            if 'S_TEMP' in tempSpecDB:
                 self.HDFsurfT[i]      = np.array(tempSpecDB['S_TEMP'])    # Surface Temperature
             else:
                 self.HDFsurfT[i]      = np.array(-99999) 
