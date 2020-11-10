@@ -31,7 +31,7 @@ class load_H4:
     def __init__(self, h4file):
         self.h4 = SD.SD(h4file)
         self.keys = self.h4.datasets().keys()
-        self.h4file = file
+        self.h4file = h4file
         # in hdf file datenum since 2000-1-1-0-0-0
         self.dates = dates.num2date(self.h4.select('DATETIME').get()+730120.0)
         self.data_template = self.h4.attributes()['DATA_TEMPLATE']
@@ -90,14 +90,14 @@ class load_H4:
 
     def get_profile(self,gas):
         if self.data_template == 'GEOMS-TE-FTIR-001':
-            unit = string.atof(self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR').attributes()['VAR_SI_CONVERSION'].split(';')[1])
+            unit = float(self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR').attributes()['VAR_SI_CONVERSION'].split(';')[1])
             vmrt = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR').get()*unit
-            unit = string.atof(self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_APRIORI').attributes()['VAR_SI_CONVERSION'].split(';')[1])
+            unit = float(self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_APRIORI').attributes()['VAR_SI_CONVERSION'].split(';')[1])
             vmap = self.h4.select(gas+'.MIXING.RATIO_ABSORPTION.SOLAR_APRIORI').get()*unit
         else:
-            unit = string.atof(self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR').attributes()['VAR_SI_CONVERSION'].split(';')[1])
+            unit = float(self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR').attributes()['VAR_SI_CONVERSION'].split(';')[1])
             vmrt = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR').get()*unit
-            unit = string.atof(self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI').attributes()['VAR_SI_CONVERSION'].split(';')[1])
+            unit = float(self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI').attributes()['VAR_SI_CONVERSION'].split(';')[1])
             vmap = self.h4.select(gas+'.MIXING.RATIO.VOLUME_ABSORPTION.SOLAR_APRIORI').get()*unit
         z = self.h4.select('ALTITUDE').get()
         return(vmrt,vmap,z)
@@ -430,7 +430,7 @@ class load_hdf:
             src_hdf = self.h5
         else:
             src_hdf = self.h4
-        fid = open(file, 'write')
+        fid = open(file, 'w')
         fid.write('Date Smoothing_error total_Column')
         for hf in src_hdf:
             dd = []
@@ -478,7 +478,7 @@ class load_hdf:
         er = np.array(err)[ind]
         es = np.array(ess)[ind]
 
-        fid = open(file, 'write')
+        fid = open(file, 'w')
         fid.write('date dnum retr apr ran, sys\n')
         for d,r,a,rr,ss in zip(dd,rt,ap,er,es):
             dstring = dates.num2date(d).strftime('%Y%m%d%H%M%S')
@@ -649,4 +649,4 @@ if __name__ == '__main__':
         h4.plot_results(sys.argv[3])
     h4.save_all_columns(sys.argv[3],file='columns_%s_%s.dat'%(sys.argv[2],sys.argv[3]))
     print ('Hit any key in this window to terminate program')
-    raw_input()
+    input()
