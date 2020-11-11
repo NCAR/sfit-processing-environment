@@ -1,4 +1,5 @@
-#! /usr/local/python-2.7/bin/python
+#! /usr/bin/python3
+##! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
 # Name:
@@ -27,15 +28,30 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import datetime                                            as dt
 import dataOutClass                                        as dc
 import numpy                                               as np
 from scipy.interpolate import InterpolatedUnivariateSpline as intrpUniSpl
 import matplotlib.pyplot                                   as plt
 from matplotlib.backends.backend_pdf import PdfPages
+import getopt
 
+plt.rcParams.update({'figure.max_open_warning': 0})
+
+
+#------------------------
+# Define helper functions
+#------------------------
+def usage():
+    print('retWaterPrf.py -s <loc>  -v <version> -d <20190101_20191231> -?] \n\n'
+         '-s <loc>                               : Location (three letter id, eg., fl0, mlo)\n'
+         '-v <version>                           : Version of water vapor\n'
+         '-d <20190101> or <20190101_20191231>   : Date or Date range\n'
+         'Note: hardcoded inputs are included')
+
+    sys.exit()
 
                         #-------------------------------------#
                         # Define helper functions and classes #
@@ -44,7 +60,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 def ckDir(dirName,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -53,7 +69,7 @@ def ckDir(dirName,exitFlg=False):
 def ckFile(fName,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -61,6 +77,11 @@ def ckFile(fName,exitFlg=False):
 
 def segmnt(seq,n):
     '''Yeilds successive n-sized segments from seq'''
+    try:
+        xrange
+    except NameError:
+        xrange = range
+        
     for i in xrange(0,len(seq),n): yield seq[i:i+n]
 
 def findCls(dataArray, val):
@@ -74,21 +95,97 @@ def findCls(dataArray, val):
                             #                            #
                             #----------------------------#
 
-def main():
+def main(argv):
+
+    #--------------------------------
+    # Retrieve command line arguments
+    #--------------------------------
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 's:d:v:?')
+
+    except getopt.GetoptError as err:
+        print (str(err))
+        usage()
+        sys.exit()
+
+    #-----------------------------
+    # Parse command line arguments
+    #-----------------------------
+    for opt, arg in opts:
+        # Check input file flag and path
+        if opt == '-s':
+
+            loc = arg.lower()
+
+        elif opt == '-v':
+
+            ver = arg
+
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+
+            else:
+                print ('Error in input date')
+                usage()
+                sys.exit()
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
+
+        else:
+            print ('Unhandled option: ' + opt)
+            sys.exit()
+
 
     #----------------
     # Initializations
     #----------------
-    loc        = 'fl0'                 # Name of station location
+    #loc        = 'fl0'                 # Name of station location
     gasName    = 'h2o'                 # Name of gas
-    ver        = 'Current'             # Name of retrieval version to process
+    
+    #ver        = 'Current_NCEP'         # Name of retrieval version to process
+    #ver        = 'Current_v10'         # Name of retrieval version to process
+    #ver        = 'Current_v6_50'         # Name of retrieval version to process
+    
+    #verW       = 'v77'                 # version 99 is used for individual retrievals at specific times
     verW       = 'v99'                 # version 99 is used for individual retrievals at specific times
+    
+    #ctlF       = 'sfit4_v10.ctl'
+    if loc == 'fl0': ctlF       = 'sfit4.ctl'
+    else:            ctlF       = 'sfit4_v1.ctl'
+    #ctlF       = 'sfit4_v1.ctl'
 
     #------
     # Flags
     #------
-    fltrFlg    = True                  # Flag to filter the data
-    maxrms     = 1.50                  # Max Fit RMS to filter data. Data is filtered according to <= maxrms
+    fltrFlg    = True               # Flag to filter the data
+    maxrms     = 2                  # Max Fit RMS to filter data. Data is filtered according to <= maxrms
     pltFlg     = True
     logFlg     = True         # Flag to do interpolation of log of water
 
@@ -100,12 +197,12 @@ def main():
     #-----------------------
     # Date Range of interest
     #-----------------------
-    iyear          = 2015
-    imnth          = 1
-    iday           = 1
-    fyear          = 2015
-    fmnth          = 12
-    fday           = 31
+    #iyear          = 2018
+    #imnth          = 12
+    #iday           = 1
+    #fyear          = 2018
+    #fmnth          = 12
+    #fday           = 31
 
     #---------------------
     # Input Data Directory
@@ -120,7 +217,7 @@ def main():
     #------
     # Files
     #------
-    ctlFile  = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/'+'x.'+gasName.lower()+'/sfit4.ctl'
+    ctlFile  = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/'+'x.'+gasName.lower()+'/'+ctlF
 
     #---------------------------------------
     # Altitude levels for different stations
@@ -250,7 +347,7 @@ def main():
             ax1.grid(True,which='both')
             ax1.legend(prop={'size':9})
             ax1.set_ylabel('Altitude [km]')
-            ax1.set_xlabel('VMR [ppv]')
+            ax1.set_xlabel('VMR')
             ax1.tick_params(axis='x',which='both',labelsize=8)
             ax1.set_ylim((Z[-1],60))
             #ax1.set_xlim((0,np.max((waccmW[-1,mnthInd],dayShum[-1]))))
@@ -262,4 +359,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

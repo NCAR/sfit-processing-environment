@@ -11,7 +11,7 @@
 #
 #
 # Version History:
-#       Created, October, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
+#       Created, October, 2013  Eric Nussbaumer (ebaumer@ucar.edu) & Modified/edited Ivan Ortega
 #
 #
 # License:
@@ -44,24 +44,29 @@ import itertools
 from collections import OrderedDict
 import os
 from os import listdir
-from os.path import isfile, join
+from os.path import isfile, join, getsize
 import re
-#import statsmodels.api as sm
 from scipy.integrate import simps
-
+import matplotlib.animation as animation
+import matplotlib
+from cycler import cycler
 import matplotlib.dates as md
-from matplotlib.dates import DateFormatter, MonthLocator, YearLocator
-
+from matplotlib.dates import DateFormatter, MonthLocator, YearLocator, DayLocator, HourLocator, MinuteLocator
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 from matplotlib.ticker import FormatStrFormatter, MultipleLocator,AutoMinorLocator,ScalarFormatter
-from matplotlib.backends.backend_pdf import PdfPages #to save multiple pages in 1 pdf...
+from matplotlib.backends.backend_pdf import PdfPages 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.cm as mplcm
 import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
-import matplotlib.gridspec as gridspec
+import matplotlib.ticker as mtick
+from mpl_toolkits.mplot3d import Axes3D  
 
+#----------------------------------------------------------------------------------------
+#### matplotlib.style.use('classic')   #classic style (https://matplotlib.org/users/dflt_style_changes.html)
+#----------------------------------------------------------------------------------------
+plt.rcParams.update({'figure.max_open_warning': 0})
                                             #------------------#
                                             # Define functions #
                                             #------------------#
@@ -488,6 +493,7 @@ def readCtlF(ctlF):
     
     ctl = {}
     lines = tryopen(ctlF)
+
     
     if lines:
         gas_flg = True
@@ -517,19 +523,7 @@ def readCtlF(ctlF):
 
 
                 ctl[lhs] = [convrtD(val) for val in rhs]
-                #for rhs_part in rhs:                          
-                    #if 'd' in rhs_part.lower():                               # Test and handle strings containing D (ie 1.0D0)
-                        #mant,trsh,expo = rhs_part.lower().partition('d')
-                        #try:
-                            #rhs_part = float(mant)*10**int(expo)
-                        #except ValueError:
-                            #pass
-                    #else:                                                # Handle strings => number
-                        #try:
-                            #rhs_part = [float(ind) for ind in rhs_part]
-                        #except ValueError:
-                            #pass
-                    #ctl[lhs] = rhs
+               
 
             else:                                                        # Handle multiple line assignments
                 rhs = line.strip().split()             
@@ -544,7 +538,7 @@ def readCtlF(ctlF):
             #----------------------    
             # Primary Retrieval Gas
             #----------------------
-            # Search for primary retrieval gas in gas.column.list or gas.profile.list
+            # Search for primary retrieval gas in gas or gas.profile.list
             # The first gas listed is considered the primary retrieval gas
             if gas_flg:
                 match = re.match(r'\s*gas\.\w+\.list\s*=\s*(\w+)', line)
@@ -580,8 +574,6 @@ def readCtlF(ctlF):
 # A simple code for finding linear 
 # trend with prediciton intervals
 #---------------------------------
-
-
 
 #-------------------------------------
 # Code to do boot strap trend analysis
@@ -638,7 +630,7 @@ def fit_driftfourier(x, data, weights, degree, half_period=0.5):
         matrix of "coefficients"
     
     """
-    xmin = x.min()
+    xmin  = x.min()
     xnorm = x - xmin
     
     # coefficient matrix
@@ -648,7 +640,8 @@ def fit_driftfourier(x, data, weights, degree, half_period=0.5):
     
     # linear weighted least squares
     results = np.linalg.lstsq(A * weights[:, np.newaxis],
-                              data * weights)
+                              data * weights, rcond=None)
+
     
     params = results[0]
     intercept = params[0]
@@ -738,8 +731,278 @@ def cf_driftfourier(x, data, weights, degree,
     pfourier = params_boot[2:]
     
     return perc, intercept, slope, pfourier
+
+def readstatlayer(stfile):
+    ''' Read the stat layer'''
+
+    stlay = {}
+    lines = tryopen(stfile)
     
+    if lines:
+        
+        for line in lines:
+            line = line.strip()
+            print (line)
+            exit()  
+
+            #---------------------------------------------
+            # Lines which start with comments and comments
+            # embedded within lines
+            #---------------------------------------------                
+            if line.startswith('#'): continue                # For lines which start with comments
+            if '#' in line: line = line.partition('#')[0]    # For comments embedded in lines
+            #-------------------
+            # Handle empty lines
+            #-------------------
+            if len(line) == 0: continue
+
+def readPspec(directory):
+    ''' Read the stat layer'''
+
+    ckDir(directory,exitFlg=True)
+
+    fname = 'pspec.input'
+    pspec = []
+
+    try:
+
+        with open(directory + fname) as fopen:
+
+            for line in fopen:
+
+                line = line.strip()  
+                #---------------------------------------------
+                # Lines which start with comments and comments
+                # embedded within lines
+                #---------------------------------------------                
+                if line.startswith('#'): continue 
+
+                pspec.append(line)
+
+        return pspec      
+
+    except: return False
+
+
+def readbnr(bnrFile):
+    ''' Read the bnr '''
+
+    ckFile(bnrFile,exitFlg=True)
+
+    nbytes = getsize(bnrFile)
+
+    print('\n*******************************')
+    print('             bnr file          ')
+    print('*******************************\n')
+
+    print('File: {}'.format(bnrFile))
+
+    try:
     
+        with open(bnrFile, 'rb') as file:
+            # read size of record
+            file.seek(0)
+            
+            n = np.fromfile(file, dtype='int32', count=1)[0]
+            
+            header = file.read(n)
+            print('File header: {}'.format(header))
+
+            n2     = np.fromfile(file, dtype=np.float64, count=4)
+            wlo    = n2[1]
+            whi    = n2[2] 
+            spa    = n2[3]
+
+            n2     = np.fromfile(file, dtype='int32', count=3)[0]
+
+            npp    = n2
+
+            print('first wn: {0:f}; last wn: {1:f}; spacing: {2:f}, npoints: {3:}\n'.format(wlo, whi, spa, npp))
+
+            print('*******************************\n')
+            
+            spc = np.fromfile(file, dtype='float32')
+            
+        spc = spc[:-1]
+        wvn = wlo+spa*np.arange(npp) 
+
+        bnrout = {}
+        bnrout['spc'] = spc
+        bnrout['wvn'] = wvn
+
+        return bnrout
+
+    except: return False
+
+
+def readbnrZeroed(directory):
+    ''' Read the zeroed bnr'''
+
+    ckDir(directory,exitFlg=True)
+
+    bnrFile = directory + 'zeroed.bnr'
+    ckFile(bnrFile,exitFlg=True)
+
+
+    nbytes = getsize(bnrFile)
+
+    print('\n*******************************')
+    print('             Zeroed bnr file          ')
+    print('*******************************\n')
+
+    print('File: {}'.format(bnrFile))
+
+
+    try:
+    
+        with open(bnrFile, 'rb') as file:
+            # read size of record
+            file.seek(0)
+            
+            n = np.fromfile(file, dtype='int32', count=1)[0]
+            
+            header = file.read(n)
+            print('File header: {}'.format(header))
+
+
+            n2     = np.fromfile(file, dtype=np.float64, count=4)
+            wlo    = n2[1]
+            whi    = n2[2] 
+            spa    = n2[3]
+
+            n2     = np.fromfile(file, dtype='int32', count=3)[0]
+
+            npp    = n2
+
+            print('first wn: {0:f}; last wn: {1:f}; spacing: {2:f}, npoints: {3:}\n'.format(wlo, whi, spa, npp))
+
+            print('*******************************\n')
+
+            
+            spc = np.fromfile(file, dtype='float32')
+            
+        spc = spc[:-1]
+        wvn = wlo+spa*np.arange(npp) 
+
+        bnrZout = {}
+        bnrZout['spc'] = spc
+        bnrZout['wvn'] = wvn
+
+        return bnrZout
+
+    except: return False
+
+    
+
+def readRaytrace(fname,longitude=None,azimuth=None,target_grid=None):
+      #def read_raytrace(rayf,logger=rootlogger,longitude=None,azimuth=None,target_grid=None):
+  """Reads the detailed output of the Raytrace module
+  
+  lon in degrees (lon positive to east)
+  azimuth in degrees (0 is N, clockwise)
+  target_grid: provide grid towards LOS will be interpolated (use retrieval grid to get output ready for GEOMS), use True to interpolate to grid found in raytrace out
+  
+  Output is (attribute, np.array)
+  """
+  from scipy.interpolate import interp1d
+  import pyproj
+  from shapely.geometry import LineString,Point, mapping
+  from shapely.affinity import rotate #shapely.affinity.rotate(geom, angle, origin='center', use_radians=False)
+  from functools import partial
+  from shapely.ops import transform 
+  from collections import OrderedDict
+  import logging
+
+
+
+  logging.basicConfig(level=logging.ERROR) #replace ERROR by DEBUG for more information
+  logger=logging.getLogger('raytrace')
+  
+  header=OrderedDict()
+  gridboundaries=[]
+
+  ckFile(fname, exitFlg=True)
+
+  lines = tryopen(fname)
+  if len(lines) <10:
+    print("File size not correct: {}".format(fname))
+    return False
+
+   
+
+  with open(fname) as fid: 
+    #header info
+    sfithead=fid.readline().strip()
+
+
+    for i in range(6): l=fid.readline()
+
+    while ('USER DEFINED BOUNDARIES' not in l):
+      if '=' in l: 
+        k,v=l.strip().rsplit('=',1)
+        header[k.split(',')[-1].strip()]=v.strip()
+      l=fid.readline()
+    logger.debug('Found raytrace output with header \n\t%s'%'\n\t'.join(['%s=%s'%(k,v) for k,v in header.items()]))
+    for i in range(2): fid.readline()
+    for i in range(int(header['IBMAX'])):
+      gridboundaries.append(float(fid.readline().strip().split()[-1]))
+    gridboundaries=np.array(gridboundaries,dtype=np.float); #grid,gridboundaries not used right now... maybe a standard value for target_grid???
+    grid=gridboundaries[:-1]+np.diff(gridboundaries)/2
+    logger.debug('Found raytrace grid boundaries %s'%gridboundaries)
+    logger.debug('Found raytrace grid midpoints %s'%grid)
+    while (' APPARENT ZENITH ANGLE CALCULATIONS FINISHED.' not in l): l=fid.readline()
+    while ('CALCULATION OF THE REFRACTED PATH THROUGH THE ATMOSPHERE' not in l): 
+      if '=' in l:
+        k,v=l.strip().rsplit('=',1)
+        header[k.split(',')[-1].strip()]=v.strip()
+      l=fid.readline()
+    header['COLUMN_DESCRIPTION']=list(map(str.strip,fid.readline().split()))
+    header['COLUMN_DESCRIPTION'].insert(1,'ALTITUDE')
+    logger.debug('Updated raytrace output header \n\t%s'%'\n\t'.join(['%s=%s'%(k,v) for k,v in header.items()]))
+    for i in range(6): l=fid.readline()
+    out=[]
+    while l.strip():
+      out.append(list(map(np.float,l.split())))
+      l=fid.readline()
+    out=np.array(out,dtype=np.float)
+    logger.debug('Loaded data matrix with shape %s'%(out.shape,))
+    if out.shape[-1]!=len(header['COLUMN_DESCRIPTION']): raise ValueError('Unexpected matrix shape')
+    
+  #### Calculate lat/lon coordinates from azimuthal equidistant projection  
+    if longitude!=None and azimuth!=None:
+        latitude=np.float(header['REF_LAT'].split()[0])
+        re=np.float(header['RE'].split()[0])*1e3 #radius earth used in raytrace, reuse it in aeqd projetion
+        local_azimuthal_projection = "+proj=aeqd +R=%s +units=m +lat_0=%5.2f +lon_0=%5.2f"%(re,latitude,longitude)
+        aeqd_to_wgs84 = partial(
+            pyproj.transform,
+            pyproj.Proj(local_azimuthal_projection),
+            pyproj.Proj('+proj=longlat +datum=WGS84 +no_defs'),
+        )
+        y=np.deg2rad(np.concatenate([[0.],out[:,header['COLUMN_DESCRIPTION'].index('BETA')]]))*re
+    if np.array_equal(target_grid,None): #give detailed output
+          x=np.zeros(y.shape)
+          LOS=rotate(LineString(zip(x,y)),angle=-azimuth,origin=(0,0)) #LOS = line along great circle (transversal intersection of sphere), defined to North, then rotated to azimuth in aeqd projection
+          LOS_transformed = transform(aeqd_to_wgs84,LOS)
+          #return LOS_transformed
+          header['COLUMN_DESCRIPTION'].extend(['LOS_LONGITUDE','LOS_LATITUDE']);out=np.concatenate([out,np.array(LOS_transformed.xy).T[1:,:]],axis=1)
+
+    else: #gives interpolated lat,lon on line of sight on target grid... 
+          if np.array_equal(target_grid,True): target_grid=grid*1e3 #use grid from raytrace out file
+          i=header['COLUMN_DESCRIPTION'].index('ALTITUDE')
+          source_grid=np.concatenate([[out[0,i]],out[:,i+1]])*1e3
+          #logger.debug('Source grid =%s'%source_grid)
+          y=interp1d(source_grid,y,fill_value=np.nan,assume_sorted=True)(target_grid) #in m
+          x=np.zeros(y.shape)
+          LOS=rotate(LineString(zip(x,y)),angle=-azimuth,origin=(0,0))
+          LOS_transformed = transform(aeqd_to_wgs84,LOS)
+          out=np.concatenate([target_grid.reshape(target_grid.shape+(1,)),np.array(LOS_transformed.xy).T],axis=1)
+          header={'COLUMN_DESCRIPTION':['GRID','LONGITUDE','LATITUDE']}
+    
+    return header,out
+
+
+
+
 
                                                 #----------------#
                                                 # Define classes #
@@ -823,6 +1086,7 @@ class ReadOutputData(_DateRange):
         self.readErrorFlg['vmrFlg']   = False
         self.readErrorFlg['avkFlg']   = False
         self.readErrorFlg['KbFlg']    = False
+        self.readt15Flg               = False
         self.readPrfFlgApr            = {}
         self.readPrfFlgRet            = {}
 
@@ -868,7 +1132,7 @@ class ReadOutputData(_DateRange):
             
             self.dirDateTime = []
             self.dirFlg      = True
-
+            
             _DateRange.__init__(self, iyear, imnth, iday, fyear, fmnth, fday, incr=1)
             
             #--------------------------------------------
@@ -880,7 +1144,6 @@ class ReadOutputData(_DateRange):
                 #-------------------------------------------
                 # Test directory to make sure it is a number
                 #-------------------------------------------
-
                 try:    int(drs[0:4])
                 except: continue
 
@@ -890,7 +1153,6 @@ class ReadOutputData(_DateRange):
                     # Seconds can only go from 0-59. If this is case reduce seconds by 1. This is a 
                     # temp solution until coadd can be fixed.
                     #-----------------------------------------------------------------------------------
-
                     if drs[13:] == '60': ss = int(drs[13:]) - 1
                     else:                ss = int(drs[13:]) 
                     self.dirDateTime.append(dt.datetime(int(drs[0:4]), int(drs[4:6]), int(drs[6:8]), int(drs[9:11]), int(drs[11:13]), ss ) )
@@ -920,8 +1182,10 @@ class ReadOutputData(_DateRange):
         else: 
             self.dirLst = [dataDir]
             self.dirFlg = False
-            
 
+        #-----------------------
+        # Read ctl File if given
+        #-----------------------
 
     def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,minsza=0.0,minDOF=1.0,
                  dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,
@@ -1005,6 +1269,17 @@ class ReadOutputData(_DateRange):
             print ('Total number observations found above max rms value = {}'.format(len(indsT)))
             self.inds = np.union1d(indsT, self.inds)
             
+        #------------------------------
+        # Find values above max chi_2_y
+        #------------------------------
+        if chiFlg:
+            if not gasName+"_CHI_2_Y" in self.summary:
+                print ('CHI_2_Y values do not exist...exiting..')
+                sys.exit()            
+                
+            indsT = np.where(np.asarray(self.summary[gasName+"_CHI_2_Y"]) >= maxCHI)[0]
+            print ('Total number observations found above max chi_2_y value = {}'.format(len(indsT)))
+            self.inds = np.union1d(indsT, self.inds)            
                     
         #-----------------------------------
         # Find any partial column amount < 0
@@ -1034,7 +1309,6 @@ class ReadOutputData(_DateRange):
             
 
 
-            
         #-------------------------------------
         # Find observations with SZA > max SZA
         #-------------------------------------
@@ -1049,6 +1323,14 @@ class ReadOutputData(_DateRange):
             print ('Total number of observations with SZA greater than {0:} = {1:}'.format(mxsza,len(sza_inds1)))
             print ('Total number of observations with SZA less than    {0:} = {1:}'.format(minsza,len(sza_inds2)))
             self.inds = np.union1d(sza_inds,self.inds)
+        
+        #--------------------------
+        # Filter data based on DOFs
+        #--------------------------
+        if dofFlg:
+            if not gasName+'_DOFS_TRG' in self.summary:
+                print ('DOFs values do not exist...exiting..')
+                sys.exit() 
 
         #-------------------------------------
         # Find observations with CHI2 > max CHI2
@@ -1082,7 +1364,6 @@ class ReadOutputData(_DateRange):
             print ('Total number of observations with VMR greater than {0:} = {1:}'.format(maxVMR,len(maxvmr_inds)))
             self.inds = np.union1d(maxvmr_inds,self.inds)
 
-            
         #--------------------------
         # Filter data based on retrieved CO2 column
         #--------------------------
@@ -1121,7 +1402,7 @@ class ReadOutputData(_DateRange):
                 print ('Converged values do not exist...exiting..')
                 sys.exit()
                 
-            indsT = np.where( np.asarray(self.summary[self.PrimaryGas.upper()+'_CONVERGED']) == 'F')[0]
+            indsT = np.where( np.asarray(self.summary[gasName+'_CONVERGED']) == 'F')[0]
             print ('Total number observations that did not converge = {}'.format(len(indsT)))    
             self.inds = np.union1d(indsT, self.inds)
     
@@ -1205,11 +1486,10 @@ class ReadOutputData(_DateRange):
                     ind = ind+nlines+1
                     self.refPrf.setdefault('TEMPERATURE',[]).append(lines[ind+1:ind+nlines+1])
                     
-                    
-                    # for ind,line in enumerate(lines):
-                    #     if any(p in line for p in parms):
-                    #         val = [x for x in parms if x in line][0]
-                    #         self.refPrf.setdefault(val,[]).append([float(x[:-1]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
+                    for ind,line in enumerate(lines):
+                        if any(p in line for p in parms):
+                            val = [x for x in parms if x in line][0]
+                            self.refPrf.setdefault(val,[]).append([float(x[:-1]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
 
                 except Exception as errmsg:
                     print (errmsg)
@@ -1227,19 +1507,18 @@ class ReadOutputData(_DateRange):
     def readsummary(self,fname=''):
             ''' Reads in summary data from SFIT output '''
             self.summary = {}
+            self.t15asc  = {}
                 
             if not fname: fname = 'summary'
             
             #-----------------------------------
             # Loop through collected directories
             #-----------------------------------
-
             for sngDir in self.dirLst:
-    
     
                 try:
                     with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
-                                    
+    
                     #--------------------------------
                     # Get retrieved column amount for 
                     # each gas retrieved
@@ -1249,11 +1528,13 @@ class ReadOutputData(_DateRange):
                     indGasName = lines[ind1].strip().split().index('GAS_NAME')
                     indRETCOL  = lines[ind1].strip().split().index('RET_COLUMN')
                     indAPRCOL  = lines[ind1].strip().split().index('APR_COLUMN')
+
     
                     for i in range(ind1+1,ind1+ngas+1):
                         gasname = lines[i].strip().split()[indGasName]
                         self.summary.setdefault(gasname.upper()+'_RetColmn',[]).append(float(lines[i].strip().split()[indRETCOL]))
                         self.summary.setdefault(gasname.upper()+'_AprColmn',[]).append(float(lines[i].strip().split()[indAPRCOL]))
+
     
                     #---------------------------------------------------------
                     # Get NPTSB, FOVDIA, and INIT_SNR
@@ -1272,18 +1553,20 @@ class ReadOutputData(_DateRange):
                         indFitSNR= lines[ind2].strip().split().index('FIT_SNR') - 9 
                             
                     lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
-            
+
+
                     for lnum in range(ind2+1,lend,2):
                         band = lines[lnum].strip().split()[0] # Get band number
                         self.summary.setdefault('nptsb_'+band,[]).append(  float( lines[lnum].strip().split()[indNPTSB] ) )
                         self.summary.setdefault('FOVDIA_'+band,[]).append( float( lines[lnum].strip().split()[indFOV]   ) )
                         self.summary.setdefault('SNR_'+band,[]).append(    float( lines[lnum+1].strip().split()[indSNR] ) )       # Add 1 to line number because INIT_SNR exists on next line
                         self.summary.setdefault('FIT_SNR_'+band,[]).append(float( lines[lnum+1].strip().split()[indFitSNR] ) )    # Add 1 to line number because FIT_SNR exists on next line
-                        
+                    
                     #----------------------------------------------------------------
                     # Get fit rms, chi_y^2, degrees of freedom target, converged flag
                     #----------------------------------------------------------------
                     ind2       = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0]
+                   
                     indRMS     = lines[ind2].strip().split().index('FITRMS')
                     indCHIY2   = lines[ind2].strip().split().index('CHI_2_Y')
                     indDOFtrgt = lines[ind2].strip().split().index('DOFS_TRG')
@@ -1298,6 +1581,11 @@ class ReadOutputData(_DateRange):
                         self.summary.setdefault('date',[]).append( dt.datetime(int(dirname[0:4]), int(dirname[4:6]), int(dirname[6:8]), 
                                                                                int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))
 
+
+                    #----------------------------------------------------------------
+                    #
+                    #----------------------------------------------------------------
+
                 except Exception as errmsg:
                     print (errmsg)
                     continue
@@ -1309,10 +1597,54 @@ class ReadOutputData(_DateRange):
             #------------------------
             for k in self.summary:
                 self.summary[k] = np.asarray(self.summary[k])
-
+    
             if self.dirFlg: self.summary = sortDict(self.summary, 'date')
             else:           return self.summary    
             
+        if not fname: fname = 't15asc.4'
+        
+        #-----------------------------------
+        # Loop through collected directories
+        #-----------------------------------
+        for sngDir in self.dirLst:
+
+            if ckFile(sngDir + fname):
+
+                try:
+                    with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
+    
+                    #--------------------------------
+                    # Get retrieved column amount for 
+                    # each gas retrieved
+                    #--------------------------------
+                    line1       = lines[0].strip().split()
+                    self.t15asc.setdefault('sza'  ,[]).append( float( line1[0] ))
+                    self.t15asc.setdefault('lat'  ,[]).append( float( line1[2] ))
+                    self.t15asc.setdefault('lon'  ,[]).append( float( line1[3] ))
+
+                    if len(line1) == 6:
+
+                        self.t15asc.setdefault('ZERO'  ,[]).append( float( line1[-1] ))
+
+                    line3       = lines[3].strip().split()
+
+                    self.t15asc.setdefault('WNi'  ,[]).append( float( line3[0] ))
+                    self.t15asc.setdefault('WNf'  ,[]).append( float( line3[1] ))
+                    
+
+                except Exception as errmsg:
+                    print (errmsg)
+                    continue
+
+        #------------------------
+        # Convert to numpy arrays
+        # and sort based on date
+        #------------------------
+        for k in self.t15asc:
+            self.t15asc[k] = np.asarray(self.t15asc[k])
+            #print(k, self.t15asc[k])
+
+        self.readt15Flg = True 
             
             
     def readprfs(self,rtrvGasList,fname='',retapFlg=1):
@@ -1322,6 +1654,8 @@ class ReadOutputData(_DateRange):
         self.deflt = {}
         retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']   # These profiles will always be retrieved
 
+        if "H2O" in rtrvGasList: retrvdAll = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS']
+        else: retrvdAll   = ['Z','ZBAR','TEMPERATURE','PRESSURE','AIRMASS', 'H2O']
 
         if not fname: 
             if   retapFlg == 1: fname = 'rprfs.table'
@@ -1332,14 +1666,15 @@ class ReadOutputData(_DateRange):
         # Add user specified retrieved gas list 
         # to standard retrievals
         #--------------------------------------
-        #orginalRtrvGasList = rtrvGasList
-        #rtrvGasList = [g.upper() for g in rtrvGasList if g.upper() != 'H2O']   # Remove water from gas list since this read by default
-        retrvdAll.extend(rtrvGasList)
         
+        retrvdAll.extend(rtrvGasList)
+
         #-----------------------------------
         # Loop through collected directories
         #-----------------------------------
-        for sngDir in self.dirLst:       
+
+        for sngDir in self.dirLst: 
+            
             try:
                 with open(sngDir + fname,'r') as fopen:
                     
@@ -1348,14 +1683,16 @@ class ReadOutputData(_DateRange):
                     #--------------------------------
                     # Get Names of profiles retrieved
                     #--------------------------------
-
                     defltParm = defltLines[3].strip().split()
     
                     #----------------------------------------
                     # Loop through retrieved profiles to read
                     #----------------------------------------
+
                     for rtrvdSing in retrvdAll:
-                        self.deflt.setdefault(rtrvdSing,[]).append([ float(row.strip().split()[defltParm.index(rtrvdSing.upper())]) for row in defltLines[4:] ] )
+                        
+                        self.deflt.setdefault(rtrvdSing,[]).append([ np.float_(row.strip().split()[defltParm.index(rtrvdSing.upper())]) for row in defltLines[4:] ] )
+
     
                     #-------------------------------
                     # Get date and time of retrieval
@@ -1390,9 +1727,11 @@ class ReadOutputData(_DateRange):
         #--------------------------------------------------------
         # If retrieved profiles is a gas, get total column amount
         #--------------------------------------------------------
-        for gas in rtrvGasList:
+        for i, gas in enumerate(rtrvGasList):
+
             self.deflt[gas+'_tot_col'] = np.sum(self.deflt[gas] * self.deflt['AIRMASS'], axis=1)
-  
+
+           
         #-------------------------------------------
         # Assign to aprfs or rprfs according to flag
         #-------------------------------------------
@@ -1459,14 +1798,29 @@ class ReadOutputData(_DateRange):
                 nlines = int(np.ceil(nparms/5.0))
                 parms = []
                 vals  = []
-                
+
+                #----------------------------------------
+                # Get parameters (names)
+                #----------------------------------------
                 for lineNum in range(0,nlines):
-                    parms.extend(lines[nskip+lineNum+1].strip().split())
-                    skipVal = nskip + lineNum + nlines*3 - 1
-                    vals.extend(lines[skipVal].strip().split())
-                    
+                    nskipline = nskip+lineNum+1
+                    parms.extend(lines[nskipline].strip().split())
+                  
+                #----------------------------------------
+                # skip a prioris
+                #----------------------------------------
+                for lineNum in range(0,nlines):
+                    nskipline +=1
+
+                #----------------------------------------
+                # Get values
+                #----------------------------------------
+                for lineNum in range(0,nlines):
+                    nskipline +=1
+                    vals.extend(lines[nskipline].strip().split())
+                      
                 vals = [float(val) for val in vals]
-    
+
                 for key,val in zip(*(parms,vals)):
                     self.statevec.setdefault(key,[]).append(val)
                     
@@ -1509,10 +1863,7 @@ class ReadOutputData(_DateRange):
                 #---------------------------------------------------------
                 for line in errSumLines[3:]:
                     header = line.strip().split('=')[0].strip()
-                    tmpval = line.strip().split('=')[1].split()[0]
-                    if tmpval == 'none':
-                        tmpval = 0
-                    val    = float(tmpval)
+                    val    = float(line.strip().split('=')[1].split()[0])
                     self.error.setdefault(header,[]).append( val )
 
                 #-------------------------------
@@ -1661,6 +2012,7 @@ class ReadOutputData(_DateRange):
 
                         else: continue
 
+
                 except Exception as errmsg:
                     print (errmsg)
                     continue                    
@@ -1758,8 +2110,9 @@ class ReadOutputData(_DateRange):
             if k =='date': self.error[k] = np.asarray(self.error[k])        
     
 
-    def readPbp(self,fname=''):
-        ''' Reads data from the pbp file'''
+    def readPbp(self,fname='', cnvrAzFlg=True):
+        ''' Reads data from the pbp file
+            cnvrAzFlg == True converts saa defined as South 0 to North 0'''
         self.pbp = {}
 
         if not fname: fname = 'pbpfile'
@@ -1782,8 +2135,10 @@ class ReadOutputData(_DateRange):
             #--------------------
             # Get Number of bands
             #--------------------
-            nbands = int(lines[1].strip().split()[1])
-            
+            #nbands = int(lines[1].strip().split()[1])
+            nbands = int(lines[1].strip().split()[0])   #IVAN - Change to read the first number, some retrieval fails for certain windows
+
+
             #-------------------------------------------------------
             # Loop through bands. Header of first band is on line[3]
             #-------------------------------------------------------
@@ -1794,6 +2149,9 @@ class ReadOutputData(_DateRange):
                 #--------------------------
                 # Only take the SZA from first micro-window
                 if i == 1: self.pbp.setdefault('sza',[]).append( float(lines[lstart].strip().split()[0])/ 1000.0 )
+                # Read the SAA
+                if i == 1: self.pbp.setdefault('saa',[]).append( float(lines[lstart-1].strip().split()[3].split(':')[1]))
+
                 nspac = float(lines[lstart].strip().split()[1])
                 npnts = int(lines[lstart].strip().split()[2])
                 iWN   = float(lines[lstart].strip().split()[3])
@@ -1828,6 +2186,20 @@ class ReadOutputData(_DateRange):
                                                                    int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))                        
     
        # if self.dirFlg: self.pbp = sortDict(self.pbp, 'date')
+
+       #--------------------------
+       # For NCAR sites - Convert SAA to 0.0- North
+       #--------------------------
+        if cnvrAzFlg:
+            try:
+                for i, az in enumerate(self.pbp['saa']):
+                    if az >= 180.0:
+                        self.pbp['saa'][i] = np.abs(360. - az  - 180.)
+                    elif az < 180.0:
+                        self.pbp['saa'][i] = 180.0 + az
+            except: pass
+
+
         
         #------------------------
         # Convert to numpy arrays
@@ -1883,10 +2255,10 @@ class ReadOutputData(_DateRange):
                 # Create list of micro-window wavenumber points
                 #----------------------------------------------
                 if not 'MW_'+nsng in self.spc:
-                    LWN   = float(lines[1].strip().split()[0])
-                    UWN   = float(lines[1].strip().split()[1])
-                    spac  = float(lines[1].strip().split()[2])
-                    npnts = float(lines[1].strip().split()[3])
+                    LWN                  = float(lines[1].strip().split()[0])
+                    UWN                  = float(lines[1].strip().split()[1])
+                    self.spc['spac_'+nsng]= float(lines[1].strip().split()[2])
+                    npnts                = float(lines[1].strip().split()[3])
                     self.spc['MW_'+nsng] = np.linspace(LWN,UWN,num=npnts)
                     
                 #---------------------------
@@ -1914,6 +2286,9 @@ class ReadOutputData(_DateRange):
                         
                     self.spc.setdefault(gas.upper()+'_'+nsng,[]).append([float(x.strip()) for x in lines[2:] ])
 
+                #print (self.spc)
+                #exit()
+
             #-------------------------------
             # Get date and time of retrieval
             #-------------------------------
@@ -1934,7 +2309,9 @@ class ReadOutputData(_DateRange):
             
         self.readSpectraFlg = True
         
-        if not self.dirFlg: return self.spc        
+        if not self.dirFlg: return self.spc 
+
+
 
 #------------------------------------------------------------------------------------------------------------------------------    
 class DbInputFile(_DateRange):
@@ -1962,7 +2339,6 @@ class DbInputFile(_DateRange):
                 #------------------------------------------------------
                 if None in row: del row[None]                    
 
-                
                 for col,val in row.items():
                     try:
                         val = float(val)                                                         # Convert string to float
@@ -1972,7 +2348,6 @@ class DbInputFile(_DateRange):
                     self.dbInputs.setdefault(col,[]).append(val)                                 # Construct input dictionary                  
                     if '' in self.dbInputs: del self.dbInputs['']                                # Sometimes empty key is created (not sure why). This removes it.
 
-                    
     def dbFilterDate(self,fltDict=False):#=self.dbInputs):
         ''' Filter spectral db dicitonary based on date range class previously established'''
         inds = []
@@ -2053,7 +2428,7 @@ class DbInputFile(_DateRange):
 
 class GatherHDF(ReadOutputData,DbInputFile):
     
-    def __init__(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imnth,iday,fyear,fmnth,fday,mtype,errFlg=True,incr=1):
+    def __init__(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imnth,iday,fyear,fmnth,fday,errFlg=True,incr=1):
         primGas = ''
 
         #-----------------------------------------
@@ -2066,7 +2441,6 @@ class GatherHDF(ReadOutputData,DbInputFile):
         #---------------
         # ReadOutputData
         #---------------
-
         ReadOutputData.__init__(self,dataDir,primGas,ctlF,iyear,imnth,iday,fyear,fmnth,fday,incr)    
 
         #------------
@@ -2078,18 +2452,20 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # Gather Retrieval output data, filter set, and then find corresponding specDB
         # entries for specDB data
         #-----------------------------------------------------------------------------
-
         if "H2O" not in self.PrimaryGas:
             self.readprfs([self.PrimaryGas,'H2O'],retapFlg=1)          # Retrieved Profiles
         else:
             self.readprfs([self.PrimaryGas],retapFlg=1)          # Retrieved Profiles
         self.readprfs([self.PrimaryGas],retapFlg=0)                # A priori Profiles
 
+        #self.readprfs([self.PrimaryGas],retapFlg=1)          # Retrieved Profiles
+        self.readprfs([self.PrimaryGas],retapFlg=0)                # A priori Profiles
         self.readsummary()                                         # Summary file information
         self.readError(totFlg=True,avkFlg=True,vmrFlg=True)        # Read Error Data
         self.readPbp()                                             # Read pbp file for sza
         self.readStatLyrs(statLyrFile)                             # Read station layer file
         self.readRefPrf()                                          # Read reference.prf file
+        self.readStateVec()                                        # Read statevectorfile
         
         #-------------------------------------
         # Assign values to temporary variables
@@ -2103,6 +2479,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFaGasPrfVMR = np.asarray(self.aprfs[self.PrimaryGas])                                    # A priori primary gas profile [VMR]
         self.HDFrGasPrfMol = self.HDFrGasPrfVMR * self.HDFairMass                                       # Retrieved primary gas profile [mol cm^-2]
         self.HDFaGasPrfMol = self.HDFaGasPrfVMR * self.HDFairMass                                       # A priori primary gas profile [mol cm^-2]
+        self.HDFsurfP      = np.squeeze(self.refPrf['PRESSURE'][:,-1])                                  # Surface Pressure from Pressure profile
+        self.HDFsurfT      = np.squeeze(self.refPrf['TEMPERATURE'][:,-1])                               # Surface Temperature from temperature profile
         self.HDFh2oVMR     = np.asarray(self.rprfs['H2O'])                                              # Retrieved H2O profile [VMR]
         self.HDFaltBnds    = np.vstack((self.alt[:-1],self.alt[1:]))        
 
@@ -2127,7 +2505,6 @@ class GatherHDF(ReadOutputData,DbInputFile):
             self.HDFrandErr.fill(-9.0E4)
             self.HDFtcSysErr.fill(-9.0E4)
             self.HDFtcRanErr.fill(-9.0E4)
-            
                         
         # Total Column
         self.HDFretTC     = np.asarray(self.rprfs[self.PrimaryGas+'_tot_col'])                          # Primary gas retrieved total column
@@ -2187,8 +2564,39 @@ class GatherHDF(ReadOutputData,DbInputFile):
             else:
                 self.HDFsurfT[i]      = np.array(-99999) 
             
+            self.HDFintT[i] = tempSpecDB['Dur']
 
-    def fltrHDFdata(self,maxRMS,maxSZA,minDOF,dofF,rmsF,tcF,pcF,cnvF,szaF,maxCHI2,maxVMR,minVMR,co2F,minCO2, maxCO2, valF, maxTCTotErr):
+            try:
+                #-----------------------------
+                # Latitude - defined as positive North in database
+                #-----------------------------
+                self.HDFazi[i]  = tempSpecDB['NAzm']
+            except:
+                #-----------------------------
+                # Latitude - defined as positive South in database
+                #-----------------------------
+                self.HDFazi[i]  = tempSpecDB['SAzm']
+
+                if i == 0: 
+                    print ('\nSolar Azimuth defined as positive South in database')
+                    SAzmFlg = True
+
+        #----------------------------------------------
+        # In the Database Solar Azimuth is defined as positive South. 
+        # Convert to North Solar Azimuth (2016 GEOMS CONVENTION)
+        #----------------------------------------------
+        if SAzmFlg:
+            print ('Converting S-Azimuth to N-Azimuth in HDF files....\n')
+            
+            for i, az in enumerate(self.HDFazi):
+                if az >= 180.0:
+                    self.HDFazi[i] = np.abs(360. - az - 180.)
+                elif az < 180.0:
+                    self.HDFazi[i] = 180. + az
+                
+                
+            
+    def fltrHDFdata(self,maxRMS,minSZA,maxSZA,minDOF,maxDOF, maxCHI,minTC,maxTC,dofF,rmsF,tcF,pcF,cnvF,szaF,chiFlg,tcMMflg, h2oFlg, bckgFlg, minSlope, maxSlope, minCurv, maxCurv):
 
         #----------------------------------------------------
         # Print total number of observations before filtering
@@ -2252,21 +2660,91 @@ class GatherHDF(ReadOutputData,DbInputFile):
                 print (self.HDFdates[i])
             print ('***********************************\n\n')
 
+        
 #------------------------------------------------------------------------------------------------------------------------------        
 class PlotData(ReadOutputData):
 
-    def __init__(self,dataDir,ctlF,iyear=False,imnth=False,iday=False,fyear=False,fmnth=False,fday=False,incr=1,outFname=''):
+    def __init__(self,dataDir,ctlF,iyear=False,imnth=False,iday=False,fyear=False,fmnth=False,fday=False,incr=1, saveFlg=False, outFname=''):
         primGas = ''
         #------------------------------------------------------------
         # If outFname is specified, plots will be saved to this file,
         # otherwise plots will be displayed to screen
         #------------------------------------------------------------
-        if outFname: self.pdfsav = PdfPages(outFname)
-        else:        self.pdfsav = False
+        if saveFlg: self.pdfsav = PdfPages(outFname)
+        else:       self.pdfsav = False
         
         super(PlotData,self).__init__(dataDir,primGas,ctlF,iyear,imnth,iday,fyear,fmnth,fday,incr)
         
     def closeFig(self):
+<<<<<<< HEAD
+        self.pdfsav.close()      
+
+    def pltbnr(self):  
+
+        print ('\nPlotting bnr Spectral ...........\n')
+
+        #------------------------------------------
+        # Read Jacobian Matrix for single retrieval
+        #------------------------------------------
+        if len(self.dirLst) == 1:
+
+            pspecInput = readPspec(self.dirLst[0])
+            bnrFile    = pspecInput[-2]
+
+            #--------------------------------
+            # Read bnr
+            #--------------------------------
+            bnrData    = readbnr(bnrFile)
+
+            #--------------------------------
+            # Read Zeroed bnr
+            #--------------------------------
+            bnrZData   = readbnrZeroed(self.dirLst[0])
+
+            self.readt15()
+            print(self.t15asc['WNi'], self.t15asc['WNf'])
+
+            zeroValue       =  self.t15asc['ZERO'][0]
+
+            #--------------------------------
+            # plot bnr
+            #--------------------------------    
+            if bnrData:        
+
+                fig, ax1  = plt.subplots(2, figsize=(12,7))
+                
+                ax1[0].plot(bnrData['wvn'], bnrData['spc'], color='k', label='bnr')  
+
+                if bnrZData:  ax1[0].plot(bnrZData['wvn'], bnrZData['spc'], alpha=0.5, color='r', label=str(np.round(zeroValue,3))+'- zeroed')  
+               
+                ax1[0].grid(True)
+                ax1[0].set_ylabel('a.u', fontsize=12)
+                ax1[0].set_title(bnrFile)
+                ax1[0].xaxis.set_minor_locator(AutoMinorLocator())
+                ax1[0].tick_params(which='both',labelsize=11)
+
+                ax1[0].legend(prop={'size':10},loc='upper left',fancybox=True)
+
+
+                ax1[1].plot(bnrData['wvn'], bnrData['spc'], color='k', label='bnr')  
+
+                if bnrZData:  ax1[1].plot(bnrZData['wvn'], bnrZData['spc'], alpha=0.5, color='r', label=str(np.round(zeroValue,3))+'- zeroed')  
+               
+                ax1[1].grid(True)
+                ax1[1].set_ylabel('a.u', fontsize=12)
+                ax1[1].set_xlabel('wavenumber [cm$^{-1}$]', fontsize=12)
+                ax1[1].xaxis.set_minor_locator(AutoMinorLocator())
+                ax1[1].tick_params(which='both',labelsize=11)
+                ax1[1].set_xlim(self.t15asc['WNi'][0], self.t15asc['WNf'][0])
+                
+                if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                else:           plt.show(block=False) 
+
+
+        
+    def pltSpectra(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0, maxDOF=10.0, maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
+                   dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,szaFlg=False,chiFlg=False,cnvrgFlg=True,tcMMflg=False,mnthFltFlg=False,
+                   bckgFlg=False, minSlope=0.0, maxSlope=0.0, minCurv=1.0, maxCurv=10.0):
         self.pdfsav.close()
     
     def pltSpectra(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,szaFlg=False,chiFlg=False,cnvrgFlg=True,tcMMflg=False,mnthFltFlg=False):
@@ -2296,14 +2774,35 @@ class PlotData(ReadOutputData):
         #------------------------------------------
         if len(self.dirLst) == 1:
             lines   = tryopen(self.dirLst[0]+self.ctl['file.out.k_matrix'][0])
-            nlyrs   = int(lines[1].strip().split()[-1])
-            nstrt   = int(lines[1].strip().split()[-2])
-            JacbMat = np.array( [ [ float(x) for x in line.strip().split()[nstrt:(nstrt+nlyrs)] ] for line in lines[3:] ] )        
+            
+            nlyrs   = int(lines[1].strip().split()[3])
+            nstrt   = int(lines[1].strip().split()[2])
+            JacbMat = np.array( [ [ float(x) for x in line.strip().split()[nstrt:(nstrt+nlyrs)] ] for line in lines[3:] ] ) 
+
+            #------------------------------------------
+            # Developing - Raytrace
+            #------------------------------------------
+            saa   = self.pbp['saa'][0]
+            
+            if not self.readt15Flg: self.readt15()
+     
+            lon  = 360. - self.t15asc['lon'][0]
+
+
+            if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0) 
+            rayFlg = False
+            try:
+                raytrace_header,line_of_sight=readRaytrace(self.dirLst[0] + 'raytrace.out',longitude=lon,azimuth=saa,target_grid=self.aprfs['Z'][0]*1e3) #raytrace.out is the default...better to take file.out.raytrace? 
+                rayFlg = True
+            except: pass
+
         
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minDOF=minDOF,dofFlg=dofFlg,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,valFlg=True,maxTCTotErr=maxTCTotErr)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,mnthFltFlg=mnthFltFlg,
+                               bckgFlg=bckgFlg, minSlope=minSlope, maxSlope=maxSlope, minCurv=minCurv, maxCurv=maxCurv)
         else: self.inds = np.array([]) 
         
         if self.empty: return False
@@ -2311,15 +2810,17 @@ class PlotData(ReadOutputData):
         #---------------------
         # Get SZA for Plotting
         #---------------------
-        sza = np.delete(self.pbp["sza"],self.inds)
-        
+        try: sza = np.delete(self.pbp["sza"],self.inds)
+        except: pass
+
         #------------
         # Get spectra
         #------------
-        dataSpec  = OrderedDict()
-        gasSpec   = OrderedDict()
-        gasAbs    = OrderedDict()
-        gasAbsSNR = OrderedDict()
+        dataSpec   = OrderedDict()
+        gasSpec    = OrderedDict()
+        gasAbs     = OrderedDict()
+        gasAbsSNR  = OrderedDict()
+        dataState  = OrderedDict()
         
         for x in mw:  # Loop through micro-windows
             dataSpec['Obs_'+x]        = np.delete(self.pbp['Obs_'+x],self.inds,axis=0)
@@ -2327,8 +2828,17 @@ class PlotData(ReadOutputData):
             dataSpec['Difference_'+x] = np.delete(self.pbp['Difference_'+x]*100.0,self.inds,axis=0)
             dataSpec['WaveN_'+x]      = self.spc['MW_'+x]
             dataSpec['All_'+x]        = np.delete(self.spc['All_'+x],self.inds,axis=0)
-            if self.solarFlg: dataSpec['Sol_'+x]        = np.delete(self.spc['Solar_'+x],self.inds,axis=0)
-    
+            if self.solarFlg:       dataSpec['Sol_'+x]         = np.delete(self.spc['Solar_'+x],self.inds,axis=0)
+
+        #------------
+        # Get retreival parameters
+        #------------
+        try:
+            for key in self.statevec:
+                dataState[key] = np.delete(self.statevec[key], self.inds,axis=0)
+        except: pass
+
+       
         #------------------------------
         # Get dates for timeseries plot
         #------------------------------
@@ -2351,18 +2861,20 @@ class PlotData(ReadOutputData):
         mwList = OrderedDict()        # Use ordered dictionary so that micro-window plots print in order
         for x in mw: mwList[x] = self.ctl['band.'+x+'.gasb']
         #mwList  = {x:self.ctl['band.'+x+'.gasb'] for x in mw}
-        gasSpec = {gas.upper()+'_'+m:np.delete(self.spc[gas.upper()+'_'+m],self.inds,axis=0) for m in mwList for gas in mwList[m]}    
-    
+        gasSpec = {gas.upper()+'_'+m:np.delete(self.spc[gas.upper()+'_'+m],self.inds,axis=0) for m in mwList for gas in mwList[m]}  
+
         #---------------------
         # Calculate Statistics
         #---------------------
         for x in mw:  # Loop through micro-windows
-
+            
             #-------------------------------------------------------------
             # Calculate the total Observed absorption in micro-window
             # This must be done first because below code modifies dataSpec
             #-------------------------------------------------------------
-            gasAbs["Total_"+x] = simps(1.0 - dataSpec['Obs_'+x],x=dataSpec['WaveN_'+x],axis=1)               
+          
+            #gasAbs["Total_"+x] = simps(1.0 - dataSpec['Obs_'+x],x=dataSpec['WaveN_'+x],axis=1)     
+            gasAbs["Total_"+x] = np.trapz(1.0 - dataSpec['Obs_'+x],x=dataSpec['WaveN_'+x],axis=1)               
                         
             if len(self.dirLst) > 1:
                 dataSpec['Obs_'+x]        = np.mean(dataSpec['Obs_'+x],axis=0)
@@ -2378,41 +2890,75 @@ class PlotData(ReadOutputData):
                 dataSpec['Difference_'+x] = dataSpec['Difference_'+x][0]
                 dataSpec['All_'+x]        = dataSpec['All_'+x][0]
                 if self.solarFlg:dataSpec['Sol_'+x]        = dataSpec['Sol_'+x][0]
+
+            #----------------------------------------
                                 
-            if len(self.dirLst) > 1:    
+            if len(self.dirLst) > 1:
+
+                if self.PrimaryGas+"_"+x in gasSpec:  
+                    
                 #---------------------------------------------------
                 # Calculate the integrate absorption for primary gas
-                #---------------------------------------------------                
-                gasAbs[self.PrimaryGas+"_"+x] = simps(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)       
+                #---------------------------------------------------               
+                    #gasAbs[self.PrimaryGas+"_"+x] = simps(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)   
+                    gasAbs[self.PrimaryGas+"_"+x] = np.trapz(1.0 - gasSpec[self.PrimaryGas+"_"+x],x=dataSpec['WaveN_'+x],axis=1)      
                 
                 #-----------------------------------
                 # Calculate the peak absorption of 
                 # primary gas for each micro-window
                 #-----------------------------------
-                gasAbs[self.PrimaryGas+"_trans_"+x] = 1.0 - np.min(gasSpec[self.PrimaryGas+"_"+x],axis=1)
+                    gasAbs[self.PrimaryGas+"_trans_"+x] = 1.0 - np.min(gasSpec[self.PrimaryGas+"_"+x],axis=1)
                 
                 #---------------------------------------------
                 # Determine product of SNR and Peak Absorption
                 #---------------------------------------------
-                tempSNR  = np.delete(self.summary["SNR_"+x],self.inds)
-                gasAbsSNR[self.PrimaryGas+"_"+x] = gasAbs[self.PrimaryGas+"_"+x] * tempSNR 
+                    tempSNR  = np.delete(self.summary["SNR_"+x],self.inds)
+                    gasAbsSNR[self.PrimaryGas+"_"+x] = gasAbs[self.PrimaryGas+"_"+x] * tempSNR 
                         
   
         if len(self.dirLst) > 1:
             gasSpec = {gas.upper()+'_'+x:np.mean(gasSpec[gas.upper()+'_'+x],axis=0) for x in mwList for gas in mwList[x]}   
         else:
             for x in gasSpec: gasSpec[x] = gasSpec[x][0]
+
+        #---------------------------
+        self.dataSpec  = dataSpec
+        self.mwList    = mwList
+        self.gasSpec   = gasSpec
+        self.gasAbs    = gasAbs
+        self.dataState = dataState
  
         #---------------------------
         # Date locators for plotting
         #---------------------------
-        clmap        = 'jet'
+        clmap        = 'bwr'
         cm           = plt.get_cmap(clmap)              
         yearsLc      = YearLocator()
         monthsAll    = MonthLocator()
         #months       = MonthLocator(bymonth=1,bymonthday=1)
         months       = MonthLocator()
-        DateFmt      = DateFormatter('%m\n%Y')      
+        DateFmt      = DateFormatter('%m\n%Y') 
+
+
+        if rayFlg:     
+
+            fig, ax  = plt.subplots()
+            ax = plt.axes(projection='3d')                   
+            ax.plot(line_of_sight[:,1], line_of_sight[:,2], line_of_sight[:,0]/1000., linewidth=2)
+            
+            ax.tick_params(which='both',labelsize=8)
+            ax.set_xlabel('Longitude')
+            ax.set_ylabel('Latitude')
+            ax.set_zlabel('Altitude [km]')
+
+            ax.set_title('Line of sight')
+
+            ax.view_init(30, 50)
+            
+            
+            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False)
+
  
         #----------------------------------------
         # Plot Jacobian only if there are
@@ -2421,32 +2967,48 @@ class PlotData(ReadOutputData):
         if ('gas.profile.list' in self.ctl) and self.ctl['gas.profile.list'] and (len(self.dirLst) == 1):
             fig1   = plt.figure()
             gs1    = gridspec.GridSpec(2,numMW,height_ratios=(1,60))
-            levels = np.arange(np.round(np.min(JacbMat),decimals=3)-0.001,np.round(np.max(JacbMat),decimals=3)+0.001,0.001)
+            
+            #levels = np.arange(np.round(np.min(JacbMat),decimals=3)-0.001, np.round(np.max(JacbMat),decimals=3)+0.001, np.round(  (np.round(np.max(JacbMat),decimals=3) - np.round(np.min(JacbMat),decimals=3) )/20., decimals=4))
+           
             ipnt   = 0
             for i,x in enumerate(mwList):
                 npnts = np.shape(dataSpec['WaveN_'+x])[0]
                 ax    = plt.subplot(gs1[1,i])
-                im    = ax.contourf(dataSpec['WaveN_'+x],Z,np.transpose(JacbMat[ipnt:(ipnt+npnts),:]),levels,cmap=mplcm.jet) 
+                im    = ax.contourf(dataSpec['WaveN_'+x],Z,np.transpose(JacbMat[ipnt:(ipnt+npnts),:]), 100, cmap=cm) 
+
+                norm  = matplotlib.colors.Normalize(vmin=im.cvalues.min(), vmax=im.cvalues.max())
+                
+                sm = plt.cm.ScalarMappable(norm=norm, cmap=cm)
+                
+                sm.set_array([])
+
                 ipnt += npnts
                 ax.grid(True)
                 if i == 0: ax.set_ylabel('Altitude [km]')
                 ax.xaxis.set_major_formatter(ScalarFormatter(useOffset=False))
+                
+                if i !=0:  plt.setp(ax.get_yticklabels(),visible=False)
+                
     
             fig1.text(0.5,0.04,'Wavenumber [cm$^{-1}$]',ha='center',va='center')
             fig1.autofmt_xdate()
-            caxb = fig1.add_axes([0.2,0.9,0.6,0.05])
-            fig1.colorbar(im,cax=caxb,orientation='horizontal')
+            caxb = fig1.add_axes([0.15,0.9,0.7,0.03])
+            #fig1.colorbar(im,cax=caxb,orientation='horizontal')
+            fig1.colorbar(sm,  cax=caxb,orientation='horizontal')
+            plt.suptitle('Jacobian Matrix')
                 
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-            else:           plt.show(block=False)         
- 
+            else:           plt.show(block=False)
+
+        
         #--------------------------------
         # Plot data for each micro-window
         #--------------------------------            
         for x in mwList:
-            fig  = plt.figure()
+            fig, (ax1, ax2)  = plt.subplots(2, figsize=(12,7), sharex=True)
+
             gs   = gridspec.GridSpec(2,1,height_ratios=[1,3])
-            ax1  = plt.subplot(gs[0])
+            ax1  = plt.subplot(gs[0], sharex=ax2)
             ax2  = plt.subplot(gs[1],sharex=ax1)
             ax1.plot(dataSpec['WaveN_'+x],dataSpec['Difference_'+x],color='k')
             ax1.axhline(y=0,color='r')
@@ -2466,6 +3028,43 @@ class PlotData(ReadOutputData):
             for g in mwList[x]: 
                 sclfct += 0.02
                 ax2.plot(dataSpec['WaveN_'+x],gasSpec[g.upper()+'_'+x]+(gasSpec[g.upper()+'_'+x]*sclfct),label=g.upper())
+
+            ax2.legend(prop={'size':9},loc='upper center', bbox_to_anchor=(0.5, 1.065), fancybox=True, ncol=len(mwList[x])+3)
+
+            #----------------------------------------
+            # Retrieval parameters (non profile)
+            #----------------------------------------
+            try:
+                if len(self.dirLst) > 1:
+                    for key in self.statevec: dataState[key]  = np.mean(dataState[key])  
+                else:
+                    for key in self.statevec: dataState[key]  = dataState[key][0] 
+            except: pass
+
+            #----------------------------------------
+            # plot slope/curvature
+            #----------------------------------------
+            # try:
+
+            #     xbckg  = np.asarray([float(self.spc['spac_'+x])*float(i) for i in range(0, len(dataSpec['WaveN_'+x]))])
+
+            #     try:    curvature = np.asarray(dataState['BckGrdCur_'+x])
+            #     except: curvature = np.zeros(len(dataSpec['WaveN_'+x]))
+
+            #     try:   slope = np.asarray(dataState['BckGrdSlp_'+x])
+            #     except: slope = np.zeros(len(dataSpec['WaveN_'+x]))
+
+            #     ybckg  = xbckg * (slope + (xbckg*curvature) )
+            #     yslp   = xbckg * slope
+            #     ycrv   = xbckg * ((xbckg*curvature) )
+
+            #     p1, =ax2.plot(dataSpec['WaveN_'+x],ybckg, color='red',   label='BckGrd', alpha=0.25) 
+            #     if 'BckGrdSlp_'+x in dataState: p2, =ax2.plot(dataSpec['WaveN_'+x],yslp,  color='blue',  label='slp', alpha=0.25) 
+            #     if 'BckGrdCur_'+x in dataState: p3, =ax2.plot(dataSpec['WaveN_'+x],ycrv,  color='green', label='curv', alpha=0.25)  
+
+            #     l2 = plt.legend(handles=[p1,p2,p3], prop={'size':9}, loc=4, fancybox=True, ncol=3)          
+
+            # except: pass                   
             
             ax2.grid(True)
             ax2.set_xlabel('Wavenumber [cm$^{-1}$]')
@@ -2473,104 +3072,105 @@ class PlotData(ReadOutputData):
             #ax2.set_ylim(bottom=0.0)
             ax2.set_xlim((np.min(dataSpec['WaveN_'+x]),np.max(dataSpec['WaveN_'+x])))
 
-            ax2.legend(prop={'size':9},loc='upper center', bbox_to_anchor=(0.5, 1.065),
-                      fancybox=True, ncol=len(mwList[x])+3)  
-            ax1.tick_params(axis='x',which='both',labelsize=8)
-            ax1.tick_params(axis='y',which='both',labelsize=8)
-            ax2.tick_params(axis='x',which='both',labelsize=8)
+            
+            ax1.tick_params(axis='x',which='both',labelsize=12)
+            ax1.tick_params(axis='y',which='both',labelsize=12)
+            ax2.tick_params(axis='x',which='both',labelsize=12)
+            ax1.tick_params(axis='y',which='both',labelsize=12)
    
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-            else:           plt.show(block=False)            
-            
-            
+            else:           plt.show(block=False)
+      
             #---------------------------------------------------------------
             # Plot time series of integrated absorption for each microwindow
             # Colored by SZA if multiple directories
             #---------------------------------------------------------------   
             if len(self.dirLst) > 1:
-                fig,ax1  = plt.subplots()
-                tcks = range(np.int(np.floor(np.min(sza))),np.int(np.ceil(np.max(sza)))+2)
-                norm = colors.BoundaryNorm(tcks,cm.N)                        
-                sc1  = ax1.scatter(dates,gasAbs[self.PrimaryGas+"_"+x],c=sza,cmap=cm,norm=norm)
+                if self.PrimaryGas+"_"+x in gasSpec:
+                    fig,ax1  = plt.subplots()
+                    tcks = range(np.int(np.floor(np.min(sza))),np.int(np.ceil(np.max(sza)))+2)
+                    norm = colors.BoundaryNorm(tcks,cm.N)                        
+                    sc1  = ax1.scatter(dates,gasAbs[self.PrimaryGas+"_"+x],c=sza,cmap=cm,norm=norm)
+
+                        
+                    ax1.grid(True,which='both')
+                    ax1.set_xlabel('Date')
+                    ax1.set_ylabel('Integrated Spectral Absorption',fontsize=9)
+                    ax1.set_title("Fractional Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')        
+                    ax1.tick_params(axis='x',which='both',labelsize=8)
                     
-                ax1.grid(True,which='both')
-                ax1.set_xlabel('Date')
-                ax1.set_ylabel('Integrated Spectral Absorption',fontsize=9)
-                ax1.set_title("Fractional Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')        
-                ax1.tick_params(axis='x',which='both',labelsize=8)
-                
-                fig.subplots_adjust(right=0.82)
-                cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+                    fig.subplots_adjust(right=0.82)
+                    cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+                        
+                    cbar = fig.colorbar(sc1, cax=cax, format='%2i')
+                    cbar.set_label('SZA')    
                     
-                cbar = fig.colorbar(sc1, cax=cax, format='%2i')
-                cbar.set_label('SZA')    
-                
-                if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-                else:           plt.show(block=False)   
+                    if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                    else:           plt.show(block=False)   
     
                 
-                #--------------------------------------------------------------------------
-                # Plot time series of fractional integrated absorption for each microwindow
-                #---------------------------------------------------------------    
-                fig1,ax1 = plt.subplots()
-                ax1.plot(dates,gasAbs[self.PrimaryGas+"_"+x]/gasAbs["Total_"+x],'k.',markersize=4)
-                ax1.grid(True)
-                ax1.set_ylabel("Fractional Integrated Spectral Absorption")
-                ax1.set_xlabel('Date [MM]')
-                ax1.set_title("Fractional Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')
+                    #--------------------------------------------------------------------------
+                    # Plot time series of fractional integrated absorption for each microwindow
+                    #---------------------------------------------------------------    
+                    fig1,ax1 = plt.subplots()
+                    ax1.plot(dates,gasAbs[self.PrimaryGas+"_"+x]/gasAbs["Total_"+x],'k.',markersize=4)
+                    ax1.grid(True)
+                    ax1.set_ylabel("Fractional Integrated Spectral Absorption")
+                    ax1.set_xlabel('Date [MM]')
+                    ax1.set_title("Fractional Integrated Spectral Absorption\nMicro-window {}".format(x),multialignment='center')
+                    
+                    if yrsFlg:
+                        #plt.xticks(rotation=45)
+                        ax1.xaxis.set_major_locator(yearsLc)
+                        ax1.xaxis.set_minor_locator(months)
+                        #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                        ax1.xaxis.set_major_formatter(DateFmt) 
+                        #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                        ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                        ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+                    else:
+                        ax1.xaxis.set_major_locator(monthsAll)
+                        ax1.xaxis.set_major_formatter(DateFmt)
+                        ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                        ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                        fig1.autofmt_xdate()
+                    
+                    if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+                    else:           plt.show(block=False)          
                 
-                if yrsFlg:
-                    #plt.xticks(rotation=45)
-                    ax1.xaxis.set_major_locator(yearsLc)
-                    ax1.xaxis.set_minor_locator(months)
-                    #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                    ax1.xaxis.set_major_formatter(DateFmt) 
-                    #ax1.xaxis.set_tick_params(which='major', pad=15)  
-                    ax1.xaxis.set_tick_params(which='major',labelsize=8)
-                    ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-                else:
-                    ax1.xaxis.set_major_locator(monthsAll)
-                    ax1.xaxis.set_major_formatter(DateFmt)
-                    ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                    ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                    fig1.autofmt_xdate()
-                
-                if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-                else:           plt.show(block=False)          
-                
-                #----------------------------------------------
-                # Plot time series of peak absorption times SNR
-                #----------------------------------------------
-                fig1,ax1 = plt.subplots()
-                ax1.plot(dates,gasAbsSNR[self.PrimaryGas+"_"+x],'k.',markersize=4)
-                ax1.grid(True)
-                ax1.set_ylabel("Peak Spectral Absorption * SNR")
-                ax1.set_xlabel('Date [MM]')
-                ax1.set_title("Peak Spectral Absorption * SNR\nMicro-window {}".format(x),multialignment='center')
-                
-                if yrsFlg:
-                    #plt.xticks(rotation=45)
-                    ax1.xaxis.set_major_locator(yearsLc)
-                    ax1.xaxis.set_minor_locator(months)
-                    #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                    ax1.xaxis.set_major_formatter(DateFmt) 
-                    #ax1.xaxis.set_tick_params(which='major', pad=15)  
-                    ax1.xaxis.set_tick_params(which='major',labelsize=8)
-                    ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-                else:
-                    ax1.xaxis.set_major_locator(monthsAll)
-                    ax1.xaxis.set_major_formatter(DateFmt)
-                    ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                    ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                    fig1.autofmt_xdate()
-                
-                if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-                else:           plt.show(block=False)               
-            
+                    #----------------------------------------------
+                    # Plot time series of peak absorption times SNR
+                    #----------------------------------------------
+                    fig1,ax1 = plt.subplots()
+                    ax1.plot(dates,gasAbsSNR[self.PrimaryGas+"_"+x],'k.',markersize=4)
+                    ax1.grid(True)
+                    ax1.set_ylabel("Peak Spectral Absorption * SNR")
+                    ax1.set_xlabel('Date [MM]')
+                    ax1.set_title("Peak Spectral Absorption * SNR\nMicro-window {}".format(x),multialignment='center')
+                    
+                    if yrsFlg:
+                        #plt.xticks(rotation=45)
+                        ax1.xaxis.set_major_locator(yearsLc)
+                        ax1.xaxis.set_minor_locator(months)
+                        #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
+                        ax1.xaxis.set_major_formatter(DateFmt) 
+                        #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                        ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                        ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+                    else:
+                        ax1.xaxis.set_major_locator(monthsAll)
+                        ax1.xaxis.set_major_formatter(DateFmt)
+                        ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
+                        ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                        fig1.autofmt_xdate()
+                    
+                    if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+                    else:           plt.show(block=False)        
             
         
-    def pltPrf(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,dofFlg=False,rmsFlg=True,tcFlg=True,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
-               pcFlg=True,cnvrgFlg=True,allGas=True,sclfct=1.0,sclname='ppv',pltStats=True,szaFlg=False,errFlg=False,chiFlg=False,tcMMflg=False,mnthFltFlg=False):
+    def pltPrf(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0, maxDOF=10.0, maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,dofFlg=False,rmsFlg=True,tcFlg=True,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
+               pcFlg=True,cnvrgFlg=True,allGas=True,sclfct=1.0,sclname=' ',pltStats=True,szaFlg=False,errFlg=False,chiFlg=False,tcMMflg=False,mnthFltFlg=False,
+               bckgFlg=False, minSlope=0.0, maxSlope=0.0, minCurv=1.0, maxCurv=10.0):
         ''' Plot retrieved profiles '''
         
         
@@ -2586,28 +3186,31 @@ class PlotData(ReadOutputData):
         if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
         if self.empty: return False
         if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
-        aprPrf[self.PrimaryGas] = np.asarray(self.aprfs[self.PrimaryGas][0,:]) * sclfct
+        aprPrf[self.PrimaryGas] = np.asarray(self.aprfs[self.PrimaryGas]) * sclfct
         rPrf[self.PrimaryGas]   = np.asarray(self.rprfs[self.PrimaryGas]) * sclfct
         rPrfMol                 = np.asarray(self.rprfs[self.PrimaryGas]) * np.asarray(self.rprfs['AIRMASS'])
         if len(self.dirLst) > 1: dates                   = self.rprfs['date'] 
 
         alt = np.asarray(self.rprfs['Z'][0,:])
-        
+
+        if not self.readStateVecFlg: self.readStateVec()
+
+    
         if not self.readsummaryFlg: self.readsummary()                                      # Summary File info
         rms     = np.asarray(self.summary[self.PrimaryGas+'_FITRMS'])
         dofs    = np.asarray(self.summary[self.PrimaryGas+'_DOFS_TRG'])
         totClmn = np.asarray(self.summary[self.PrimaryGas.upper()+'_RetColmn'])
+
         
         if not self.readPbpFlg: self.readPbp()                                              # Pbp file info
         sza   = self.pbp['sza']
+        saa   = self.pbp['saa']
+
                  
         if errFlg:                                    # Error info
             
-            if not all((self.readErrorFlg['totFlg'],
-                        self.readErrorFlg['sysFlg'],
-                        self.readErrorFlg['randFlg'])):
-                self.readError(totFlg=True,sysFlg=True,randFlg=True,
-                               vmrFlg=False,avkFlg=False,KbFlg=False) 
+            if not all((self.readErrorFlg['totFlg'],self.readErrorFlg['sysFlg'],self.readErrorFlg['randFlg'])):
+                self.readError(totFlg=True,sysFlg=True,randFlg=True,vmrFlg=False,avkFlg=False,KbFlg=False) 
             
             npnts    = np.shape(self.error['Total_Random_Error'])[0]
             nlvls    = np.shape(alt)[0]
@@ -2628,13 +3231,9 @@ class PlotData(ReadOutputData):
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,
-                               mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,
-                               minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
-                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,
-                               pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,
-                               chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,
-                               mnthFltFlg=mnthFltFlg,maxTCTotErr=maxTCTotErr)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF, maxDOF=maxDOF, maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,mnthFltFlg=mnthFltFlg,
+                               bckgFlg=bckgFlg, minSlope=minSlope, maxSlope=maxSlope, minCurv=minCurv, maxCurv=maxCurv)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False
@@ -2647,23 +3246,35 @@ class PlotData(ReadOutputData):
             for gas in nonPgas:
                 if not self.readPrfFlgRet[gas.upper()]: self.readprfs([gas.upper()],retapFlg=1)   # Retrieved Profiles
                 if not self.readPrfFlgApr[gas.upper()]: self.readprfs([gas.upper()],retapFlg=0)   # Apriori Profiles
-                aprPrf[gas.upper()] = np.asarray(self.aprfs[gas.upper()][0,:]) * sclfct
+                aprPrf[gas.upper()] = np.asarray(self.aprfs[gas.upper()]) * sclfct
                 rPrf[gas.upper()]   = np.asarray(self.rprfs[gas.upper()]) * sclfct
                 localGasList.append(gas)
+
+        #--------------------
+        # Retr parameters
+        #--------------------
+        dataState = {}
+        try:
+            for key in self.statevec:
+                dataState[key] = np.delete(self.statevec[key], self.inds,axis=0)
+        except: pass
                 
         #----------------------------
         # Remove inds based on filter
         #----------------------------
         nfltr   = len(self.inds)
+
         rms     = np.delete(rms,self.inds)
         ntot    = len(rms)
         sza     = np.delete(sza,self.inds)
+        saa     = np.delete(saa,self.inds)
         if len(self.dirLst) > 1: dates   = np.delete(dates,self.inds)
         dofs    = np.delete(dofs,self.inds)
         totClmn = np.delete(totClmn,self.inds)
         rPrfMol = np.delete(rPrfMol,self.inds,axis=0)
         for gas in rPrf:
-            rPrf[gas]  = np.delete(rPrf[gas],self.inds,axis=0)
+            rPrf[gas]    = np.delete(rPrf[gas],self.inds,axis=0)
+            aprPrf[gas]  = np.delete(aprPrf[gas],self.inds,axis=0)
             
         if errFlg:
             rand_err = np.delete(rand_err,self.inds,axis=0)
@@ -2680,8 +3291,11 @@ class PlotData(ReadOutputData):
         # Calculate statistics
         #---------------------
         if len(self.dirLst) > 1:
-            prfMean = {gas:np.mean(rPrf[gas],axis=0) for gas in rPrf}
-            prfSTD  = {gas:np.std(rPrf[gas],axis=0) for gas in rPrf}
+            prfMean    = {gas:np.mean(rPrf[gas],axis=0) for gas in rPrf}
+            prfSTD     = {gas:np.std(rPrf[gas],axis=0) for gas in rPrf}
+
+            aprPrfMean = {gas:np.mean(aprPrf[gas],axis=0) for gas in rPrf}
+            aprPrfSTD  = {gas:np.std(aprPrf[gas],axis=0) for gas in rPrf}
         
         #----------------------------
         # Determine if multiple years
@@ -2689,37 +3303,51 @@ class PlotData(ReadOutputData):
         if len(self.dirLst) > 1:
             years = [ singDate.year for singDate in dates]      # Find years for all date entries
             if len(list(set(years))) > 1: yrsFlg = True         # Determine all unique years
-            else:                         yrsFlg = False        
-        
+            else:                         yrsFlg = False
+
         #---------------------------
         # Plot Profiles for each gas
         #---------------------------       
         for gas in localGasList:
+            
             #-------------------------------
             # Single Profile or Mean Profile
             #-------------------------------
             fig,(ax1,ax2) = plt.subplots(1,2,sharey=True)
+           
             if len(self.dirLst) > 1:
+        
                 ax1.plot(prfMean[gas],alt,color='k',label=gas+' Retrieved Profile Mean')
                 ax1.fill_betweenx(alt,prfMean[gas]-prfSTD[gas],prfMean[gas]+prfSTD[gas],alpha=0.5,color='0.75')
+
+                ax1.plot(aprPrfMean[gas],alt,color='r',label='A priori')
+                ax1.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.2,color='r')
+               
                 ax2.plot(prfMean[gas],alt,color='k',label=gas+' Retrieved Profile Mean')
-                ax2.fill_betweenx(alt,prfMean[gas]-prfSTD[gas],prfMean[gas]+prfSTD[gas],alpha=0.5,color='0.75')   
+                ax2.fill_betweenx(alt,prfMean[gas]-prfSTD[gas],prfMean[gas]+prfSTD[gas],alpha=0.5,color='0.75')
+
+                ax2.plot(aprPrfMean[gas],alt,color='r',label='A priori')
+                ax2.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.2,color='r')   
             else:
+
                 ax1.plot(rPrf[gas][0],alt,color='k',label=gas)
                 ax2.plot(rPrf[gas][0],alt,color='k',label=gas)
-                 
-            ax1.plot(aprPrf[gas],alt,color='r',label='A priori')
-            ax2.plot(aprPrf[gas],alt,color='r',label='A priori')
+
+                ax1.plot(aprPrf[gas][0],alt, color='r',label='A priori')
+                ax2.plot(aprPrf[gas][0],alt, color='r',label='A priori')
             
             ax1.grid(True,which='both')
             ax2.grid(True,which='both')
             
             ax1.legend(prop={'size':9})
-            ax2.legend(prop={'size':9})     
-            ax1.text(-0.1,1.1, 'Number of Obs Filtered        = '+str(nfltr),ha='left',va='center',transform=ax1.transAxes,fontsize=8)
-            ax1.text(-0.1,1.05,'Number of Obs After Filtering = '+str(ntot), ha='left',va='center',transform=ax1.transAxes,fontsize=8)
-            
-            
+            ax2.legend(prop={'size':9}) 
+
+            if fltr:  
+                ax1.text(-0.1,1.09, 'Max RMS = '+str(maxRMS),ha='left',va='center',transform=ax1.transAxes,fontsize=6)
+                ax1.text(-0.1,1.07, 'Min DOF = '+str(minDOF), ha='left',va='center',transform=ax1.transAxes,fontsize=6)
+                ax1.text(-0.1,1.05, 'Number of Obs Filtered        = '+str(nfltr),ha='left',va='center',transform=ax1.transAxes,fontsize=6)
+                ax1.text(-0.1,1.03,'Number of Obs After Filtering = '+str(ntot), ha='left',va='center',transform=ax1.transAxes,fontsize=6)
+         
             ax1.set_ylabel('Altitude [km]')
             ax1.set_xlabel('VMR ['+sclname+']')
             ax2.set_xlabel('Log Scale VMR ['+sclname+']')
@@ -2730,8 +3358,9 @@ class PlotData(ReadOutputData):
             plt.suptitle(gas, fontsize=16)
 
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-            else:      plt.show(block=False)   
-            
+            else:      plt.show(block=False)
+
+
             #------------------
             # Multiple Profiles
             #------------------
@@ -2747,16 +3376,20 @@ class PlotData(ReadOutputData):
                 scalarMap      = mplcm.ScalarMappable( norm=cNorm, cmap=cm )
                 
                 scalarMap.set_array(rms)
-    
-                ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in rms] )
-                ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in rms] )
+
+                ax1.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in rms] ) )
+                ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in rms] ) )
                 
                 for i in range(len(rms)):
                     ax1.plot(rPrf[gas][i,:],alt,linewidth=0.75)
                     ax2.plot(rPrf[gas][i,:],alt,linewidth=0.75)
+
                     
-                ax1.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
-                ax2.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
+                ax1.plot(aprPrfMean[gas],alt,'k--',linewidth=4,label='A priori')
+                ax1.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.25,color='0.75')
+
+                ax2.plot(aprPrfMean[gas],alt,'k--',linewidth=4,label='A priori')
+                ax2.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.25,color='0.75')
                 
                 ax1.set_ylabel('Altitude [km]')
                 ax1.set_xlabel('VMR ['+sclname+']')
@@ -2789,15 +3422,24 @@ class PlotData(ReadOutputData):
                 
                 scalarMap.set_array(sza)
     
-                ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in sza] )
-                ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in sza] )
+                #ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in sza] )
+                #ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in sza] )
+
+                ax1.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in sza] ) )
+                ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in sza] ) )
                 
                 for i in range(len(sza)):
                     ax1.plot(rPrf[gas][i,:],alt,linewidth=0.75)
                     ax2.plot(rPrf[gas][i,:],alt,linewidth=0.75)
+
+                ax1.plot(aprPrfMean[gas],alt,'k--',linewidth=4,label='A priori')
+                ax1.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.5,color='0.75')
+
+                ax2.plot(aprPrfMean[gas],alt,'k--',linewidth=4,label='A priori')
+                ax2.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.5,color='0.75')
                     
-                ax1.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
-                ax2.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
+                #ax1.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
+                #ax2.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
                 
                 ax1.set_ylabel('Altitude [km]')
                 ax1.set_xlabel('VMR ['+sclname+']')
@@ -2830,16 +3472,22 @@ class PlotData(ReadOutputData):
                 scalarMap      = mplcm.ScalarMappable( norm=cNorm, cmap=cm )
                 
                 scalarMap.set_array(month)
-    
-                ax1.set_color_cycle( [scalarMap.to_rgba(x) for x in month] )
-                ax2.set_color_cycle( [scalarMap.to_rgba(x) for x in month] )
-                
+
+                ax1.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in month] ) )
+                ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in month] ) )
+
                 for i in range(len(month)):
                     ax1.plot(rPrf[gas][i,:],alt,linewidth=0.75)
                     ax2.plot(rPrf[gas][i,:],alt,linewidth=0.75)
                 
-                ax1.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
-                ax2.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
+                
+                ax1.plot(aprPrfMean[gas],alt,'k--',linewidth=4,label='A priori')
+                ax1.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.5,color='0.75')
+
+                ax2.plot(aprPrfMean[gas],alt,'k--',linewidth=4,label='A priori')
+                ax2.fill_betweenx(alt,aprPrfMean[gas]-aprPrfSTD[gas],aprPrfMean[gas]+aprPrfSTD[gas],alpha=0.5,color='0.75')
+                #ax1.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
+                #ax2.plot(aprPrf[gas],alt,'k--',linewidth=4,label='A priori')
                 
                 ax1.set_ylabel('Altitude [km]')
                 ax1.set_xlabel('VMR ['+sclname+']')
@@ -2860,8 +3508,9 @@ class PlotData(ReadOutputData):
                 plt.suptitle(gas, fontsize=16)
     
                 if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-                else:           plt.show(block=False)               
-                
+                else:           plt.show(block=False) 
+
+   
                 #-------------------------------
                 # Plot average profiles by month
                 #-------------------------------
@@ -2871,22 +3520,45 @@ class PlotData(ReadOutputData):
                     inds     = np.where(months == m)[0]
                     mnthMean = np.mean(rPrf[gas][inds,:],axis=0)
                     mnthSTD  = np.std(rPrf[gas][inds,:],axis=0)
+
+                    mnthMeanApr = np.mean(aprPrf[gas][inds,:],axis=0)
+                    mnthSTDApr  = np.std(aprPrf[gas][inds,:],axis=0)
+
                 
-                    fig,ax1  = plt.subplots()
+                    fig,(ax1,ax2)  = plt.subplots(1,2,sharey=True)
                     ax1.plot(mnthMean,alt,color='k',label='Monthly Mean Profile, Nobs = '+str(len(inds)))
-                    ax1.fill_betweenx(alt,mnthMean-mnthSTD,mnthMean+mnthSTD,alpha=0.5,color='0.75')  
-                    ax1.plot(aprPrf[gas],alt,color='r',label='A Priori Profile')
-                    ax1.set_title('Month = '+str(m))
+                    ax1.fill_betweenx(alt,mnthMean-mnthSTD,mnthMean+mnthSTD,alpha=0.5,color='0.75')
+
+                    ax1.plot(mnthMeanApr,alt,color='r',label='Monthly Mean A priori Profile')
+                    ax1.fill_betweenx(alt,mnthMeanApr-mnthSTDApr,mnthMeanApr+mnthSTDApr,alpha=0.25,color='r')  
+
+                    ax2.plot(mnthMean,alt,color='k',label='Monthly Mean Profile, Nobs = '+str(len(inds)))
+                    ax2.fill_betweenx(alt,mnthMean-mnthSTD,mnthMean+mnthSTD,alpha=0.5,color='0.75')
+
+                    ax2.plot(mnthMeanApr,alt,color='r',label='Monthly Mean A priori Profile')
+                    ax2.fill_betweenx(alt,mnthMeanApr-mnthSTDApr,mnthMeanApr+mnthSTDApr,alpha=0.25,color='r')    
+                    
+                    #ax1.plot(aprPrf[gas],alt,color='r',label='A Priori Profile')
+
+                    plt.suptitle('Month = '+str(m), fontsize=16)
+                    
+                    #ax1.set_title('Month = '+str(m))
                     ax1.set_ylabel('Altitude [km]')
                     ax1.set_xlabel('VMR ['+sclname+']')    
                     ax1.grid(True,which='both')
                     ax1.legend(prop={'size':9})
+
+                    ax2.set_xlabel('VMR ['+sclname+']')    
+                    ax2.grid(True,which='both')
+                    ax2.legend(prop={'size':9})
+                    ax2.set_xscale('log')
                     
                     if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-                    else:           plt.show(block=False)                         
-                    
+                    else:           plt.show(block=False)
+
+                   
                 #-------------------------------------
-                # Plot statistics of multiple profiles
+                # 
                 #-------------------------------------
                 if pltStats:
                     #-----------------
@@ -2894,18 +3566,15 @@ class PlotData(ReadOutputData):
                     #-----------------
                     doy   = np.array([d.timetuple().tm_yday for d in dates])
              
-                    # Figure 1
+                    #-----------------
+                    # RMS and DOF as a function of SZA color coded by DOY 
+                    #-----------------
                     fig,(ax1,ax2)  = plt.subplots(2,1,sharex=True)
-                    if yrsFlg:
-                        tcks = range(np.min(years),np.max(years)+2)
-                        norm = colors.BoundaryNorm(tcks,cm.N)                        
-                        sc1 = ax1.scatter(sza,rms,c=years,cmap=cm,norm=norm)
-                        ax2.scatter(sza,dofs,c=years,cmap=cm,norm=norm)
-                    else:
-                        #tcks = range(np.min(doy),np.max(doy)+2)
-                        #norm = colors.BoundaryNorm(tcks,cm.N)                          
-                        sc1 = ax1.scatter(sza,rms,c=doy,cmap=cm)
-                        ax2.scatter(sza,dofs,c=doy,cmap=cm)      
+
+                    #tcks = range(np.min(doy),np.max(doy)+2)
+                    #norm = colors.BoundaryNorm(tcks,cm.N)                          
+                    sc1 = ax1.scatter(sza,rms,c=doy,cmap=cm)
+                    ax2.scatter(sza,dofs,c=doy,cmap=cm)      
                         
                     ax1.grid(True,which='both')
                     ax2.grid(True,which='both')                    
@@ -2919,34 +3588,177 @@ class PlotData(ReadOutputData):
                     fig.subplots_adjust(right=0.82)
                     cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
  
+                    cbar = fig.colorbar(sc1, cax=cax,format='%3i')
+                    cbar.set_label('DOY')
+                    #plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
+                    
+                    if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                    else:           plt.show(block=False)
+
+                    #-----------------
+                    # RMS and DOF as a function of SZA color coded by Year (if more than 1 year) 
+                    #-----------------
+
                     if yrsFlg:
+
+                        fig,(ax1,ax2)  = plt.subplots(2,1,sharex=True)
+                        
+                        tcks = range(np.min(years),np.max(years)+2)
+                        norm = colors.BoundaryNorm(tcks,cm.N)                       
+                        sc1 = ax1.scatter(sza,rms,c=years,cmap=cm,norm=norm)
+                        ax2.scatter(sza,dofs,c=years,cmap=cm,norm=norm)   
+                            
+                        ax1.grid(True,which='both')
+                        ax2.grid(True,which='both')                    
+                        ax2.set_xlabel('SZA')
+                        ax1.set_ylabel('RMS')
+                        ax2.set_ylabel('DOFS')
+                    
+                        ax1.tick_params(axis='x',which='both',labelsize=8)
+                        ax2.tick_params(axis='x',which='both',labelsize=8)  
+                        
+                        fig.subplots_adjust(right=0.82)
+                        cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+     
                         cbar = fig.colorbar(sc1, cax=cax, ticks=tcks, norm=norm, format='%4i')                           
                         cbar.set_label('Year')
                         plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
-                    else:      
+                        
+                        if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                        else:           plt.show(block=False)
+
+
+                    #-----------------
+                    # Bckg slope and curvature as a function of SZA color coded by DOY 
+                    #-----------------
+        
+                    try:
+                    
+                        curvature = np.asarray(dataState['BckGrdCur_1'])*1e5
+                        slope = np.asarray(dataState['BckGrdSlp_1'])*1e3
+    
+
+                        fig,(ax1,ax2)  = plt.subplots(2,1,sharex=True)
+                         
+                        sc1 = ax1.scatter(sza,slope,c=doy,cmap=cm)
+                        ax2.scatter(sza,curvature,c=doy,cmap=cm)      
+                            
+                        ax1.grid(True,which='both')
+                        ax2.grid(True,which='both')                    
+                        ax2.set_xlabel('SZA')
+                        ax2.set_ylabel('BckGrdCur-1 [x10$^{-5}$]')
+                        ax1.set_ylabel('BckGrdSlp-1 [x10$^{-3}$]')
+                        
+                        ax1.tick_params(axis='x',which='both',labelsize=8)
+                        ax2.tick_params(axis='x',which='both',labelsize=8)  
+                        
+                        fig.subplots_adjust(right=0.82)
+                        cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+                        
                         cbar = fig.colorbar(sc1, cax=cax,format='%3i')
                         cbar.set_label('DOY')
                         #plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
-                    
-                    if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-                    else:           plt.show(block=False)                      
+                        
+                        if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                        else:           plt.show(block=False)
 
-                    # Figure 2
+                    except: pass
+
+                    if yrsFlg:
+
+                        try:
+
+                            fig,(ax1,ax2)  = plt.subplots(2,1,sharex=True)
+                            
+                            tcks = range(np.min(years),np.max(years)+2)
+                            norm = colors.BoundaryNorm(tcks,cm.N)                       
+                            
+                            sc1 = ax1.scatter(sza, slope ,c=years,cmap=cm,norm=norm)
+                            ax2.scatter(sza,curvature,c=years,cmap=cm,norm=norm)   
+                                
+                            ax1.grid(True,which='both')
+                            ax2.grid(True,which='both')                    
+                            ax2.set_xlabel('SZA')
+                            ax2.set_ylabel('BckGrdCur-1 [x10$^{-5}$]')
+                            ax1.set_ylabel('BckGrdSlp-1 [x10$^{-3}$]')
+                        
+                            ax1.tick_params(axis='x',which='both',labelsize=8)
+                            ax2.tick_params(axis='x',which='both',labelsize=8)  
+                            
+                            fig.subplots_adjust(right=0.82)
+                            cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+         
+                            cbar = fig.colorbar(sc1, cax=cax, ticks=tcks, norm=norm, format='%4i')                           
+                            cbar.set_label('Year')
+                            plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
+                            
+                            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                            else:           plt.show(block=False)
+
+                        except: pass
+
+
+                    #-----------------
+                    # Total Column as a function of SZA and SAA color coded by DOY 
+                    #-----------------                   
                     fig,(ax1,ax2)  = plt.subplots(2,1)
-                    ax1.scatter(sza,totClmn)
-                    ax2.scatter(doy,sza)
+                         
+                    sc1 = ax1.scatter(sza,totClmn,c=doy,cmap=cm)
+                    ax2.scatter(saa,totClmn,c=doy,cmap=cm)
+
                     ax1.grid(True,which='both')
                     ax2.grid(True,which='both')
                     ax1.set_xlabel('SZA')
-                    ax2.set_xlabel('DOY')
+                    #ax2.set_xlabel('DOY')
+                    ax2.set_xlabel('SAA')
                     ax1.set_ylabel('Total Column')
-                    ax2.set_ylabel('SZA')
+                    ax2.set_ylabel('Total Column')
+                    #ax2.set_ylabel('SZA')
                 
                     ax1.tick_params(axis='x',which='both',labelsize=8)
-                    ax2.tick_params(axis='x',which='both',labelsize=8)   
+                    ax2.tick_params(axis='x',which='both',labelsize=8)
+
+                    fig.subplots_adjust(right=0.82)
+                    cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+                    
+                    cbar = fig.colorbar(sc1, cax=cax,format='%3i')
+                    cbar.set_label('DOY')
                     
                     if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-                    else:           plt.show(block=False)                       
+                    else:           plt.show(block=False)
+
+                    #-----------------
+                    # Total Column as a function of SZA and SAA color coded by Year (if more than 1 year) 
+                    #-----------------                   
+                    if yrsFlg:
+                        fig,(ax1,ax2)  = plt.subplots(2,1)
+
+                        tcks = range(np.min(years),np.max(years)+2)
+                        norm = colors.BoundaryNorm(tcks,cm.N)                       
+                        sc1 = ax1.scatter(sza,totClmn,c=years,cmap=cm,norm=norm)
+                        ax2.scatter(saa,totClmn,c=years,cmap=cm,norm=norm)
+                   
+                        ax1.grid(True,which='both')
+                        ax2.grid(True,which='both')
+                        ax1.set_xlabel('SZA')
+                        #ax2.set_xlabel('DOY')
+                        ax2.set_xlabel('SAA')
+                        ax1.set_ylabel('Total Column')
+                        ax2.set_ylabel('Total Column')
+                        #ax2.set_ylabel('SZA')
+                        
+                        ax1.tick_params(axis='x',which='both',labelsize=8)
+                        ax2.tick_params(axis='x',which='both',labelsize=8)
+
+                        fig.subplots_adjust(right=0.82)
+                        cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
+                        
+                        cbar = fig.colorbar(sc1, cax=cax, ticks=tcks, norm=norm, format='%4i')                           
+                        cbar.set_label('Year')
+                        plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
+                        
+                        if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+                        else:           plt.show(block=False)                       
 
             #------------------------------
             # Plot Errors On (mean) Profile
@@ -2974,12 +3786,12 @@ class PlotData(ReadOutputData):
                 fig,(ax1,ax2)  = plt.subplots(1,2, sharey=True)
                 if len(self.dirLst) > 1:
                     ax1.plot(mnthMean,alt,color='k',label=gas+' Retrieved Monthly Mean')
-                    ax1.errorbar(mnthMean,alt,fmt=None,xerr=rand_std,ecolor='r',label='Total Random Error')
+                    ax1.errorbar(mnthMean,alt,fmt='none',xerr=rand_std,ecolor='r',label='Total Random Error')
                     ax1.fill_betweenx(alt,mnthMean-rand_max,mnthMean+rand_max,alpha=0.5,color='0.75')  
                     ax1.set_title('Random Error')
                 else:
                     ax1.plot(rPrfMol[0],alt,color='k',label=gas+' Retrieved Profile')
-                    ax1.errorbar(rPrfMol[0],alt,fmt=None,xerr=rand_err[0],ecolor='r',label='Total Random Error')
+                    ax1.errorbar(rPrfMol[0],alt,fmt='none',xerr=rand_err[0],ecolor='r',label='Total Random Error')
                     ax1.fill_betweenx(alt,rPrfMol[0]-tot_err[0],rPrfMol[0]+tot_err[0],alpha=0.5,color='0.75')
                     ax1.set_title('Errorbars = Random Error\nShadded Region = Total Error',multialignment='center',fontsize=10)
                     
@@ -2989,12 +3801,12 @@ class PlotData(ReadOutputData):
                 
                 if len(self.dirLst) > 1:
                     ax2.plot(mnthMean,alt,color='k',label=gas+' Retrieved Monthly Mean')
-                    ax2.errorbar(mnthMean,alt,fmt=None,xerr=sys_std,ecolor='r',label='Total Systematic Error')
+                    ax2.errorbar(mnthMean,alt,fmt='none',xerr=sys_std,ecolor='r',label='Total Systematic Error')
                     ax2.fill_betweenx(alt,mnthMean-sys_max,mnthMean+sys_max,alpha=0.5,color='0.75')      
                     ax2.set_title('Systematic Error')
                 else:
                     ax2.plot(rPrfMol[0],alt,color='k',label=gas+' Retrieved Profile')
-                    ax2.errorbar(rPrfMol[0],alt,fmt=None,xerr=sys_err[0],ecolor='r',label='Total Systematic Error')
+                    ax2.errorbar(rPrfMol[0],alt,fmt='none',xerr=sys_err[0],ecolor='r',label='Total Systematic Error')
                     ax2.fill_betweenx(alt,rPrfMol[0]-tot_err[0],rPrfMol[0]+tot_err[0],alpha=0.5,color='0.75')       
                     ax2.set_title('Errorbars = Systematic Error\nShadded Region = Total Error',multialignment='center',fontsize=10)
                 
@@ -3010,7 +3822,7 @@ class PlotData(ReadOutputData):
                     #-------------------------------------------------------
                     fig,ax1  = plt.subplots()
                     ax1.plot(mnthMean,alt,color='k',label=gas+' Retrieved Monthly Mean')
-                    ax1.errorbar(mnthMean,alt,fmt=None,xerr=tot_std,ecolor='r',label='Total Error')
+                    ax1.errorbar(mnthMean,alt,fmt='none',xerr=tot_std,ecolor='r',label='Total Error')
                     ax1.fill_betweenx(alt,mnthMean-tot_max,mnthMean+tot_max,alpha=0.5,color='0.75')                
                     ax1.set_title('Total Error')
                     ax1.set_ylabel('Altitude [km]')
@@ -3018,17 +3830,12 @@ class PlotData(ReadOutputData):
                     ax1.grid(True,which='both')
                     
                     if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-                    else:           plt.show(block=False)              
-                    
-                    
-                #---------------------------------------------
+                    else:           plt.show(block=False)
+
+                #-------------------------------------------------------
                 # Plot individual components of error analysis
-                #---------------------------------------------
-                #-------
-                # Random
-                #-------
-                fig,ax1  = plt.subplots()           
-                
+                #-------------------------------------------------------
+                fig,(ax1,ax2)  = plt.subplots(1,2, sharey=True)
                 #---------------------------------
                 # Plot systematic error components
                 #---------------------------------                
@@ -3037,21 +3844,24 @@ class PlotData(ReadOutputData):
                         errPlt = np.mean(np.sqrt(rand_cmpnts[k]),axis=0)
                         retPrf = np.mean(rPrfMol,axis=0)
                     else:
-                        errPlt = rand_cmpnts[k][0]
+                        errPlt = np.sqrt(rand_cmpnts[k][0])
                         retPrf = rPrfMol[0]
                     
                     #-------------------------------------------------
                     # Normalize error as fraction of retrieved profile
                     #-------------------------------------------------
-                    errPlt = errPlt / retPrf         
+                    errPlt = errPlt / retPrf    
+
+                    try: lab = k.replace('_Random_Error', '')
+                    except: lab = k
                         
-                    ax1.plot(errPlt,alt,linewidth=0.75, label=k)
+                    ax1.plot(errPlt,alt,linewidth=0.75, label=lab)
                     
                 #------------------------
                 # Plot total random error
                 #------------------------
                 randMean = np.mean(rand_err,axis=0) / retPrf
-                ax1.plot(randMean,alt,linewidth=0.75, label='Total Random Error')                
+                ax1.plot(randMean,alt,linewidth=0.75, label='Total Random')                
 
                 ax1.set_ylabel('Altitude [km]')
                 ax1.set_xlabel('Fraction of Retrieved Profile')             
@@ -3059,16 +3869,8 @@ class PlotData(ReadOutputData):
                 ax1.legend(prop={'size':9})
                 
                 ax1.tick_params(axis='both',which='both',labelsize=8) 
-                ax1.set_title('Random Error Components')
-    
-                if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-                else:           plt.show(block=False)   
+                ax1.set_title('Random Error Components')               
                 
-                #-----------
-                # Systematic
-                #-----------                
-                fig,ax1  = plt.subplots()        
-                                
                 #-----------------------------
                 # Plot random error components
                 #-----------------------------
@@ -3077,47 +3879,60 @@ class PlotData(ReadOutputData):
                         errPlt = np.mean(np.sqrt(sys_cmpnts[k]),axis=0)
                         retPrf = np.mean(rPrfMol,axis=0)
                     else:
-                        errPlt = sys_cmpnts[k][0]
+                        errPlt = np.sqrt(sys_cmpnts[k][0])
                         retPrf = rPrfMol[0]
                     
                     #-------------------------------------------------
                     # Normalize error as fraction of retrieved profile
                     #-------------------------------------------------
-                    errPlt = errPlt / retPrf         
+                    errPlt = errPlt / retPrf      
+
+                    try: lab = k.replace('_Systematic_Error', '')
+                    except: lab = k   
                         
-                    ax1.plot(errPlt,alt,linewidth=0.75, label=k)
+                    ax2.plot(errPlt,alt,linewidth=0.75, label=lab)
     
                 #------------------------
                 # Plot total random error
                 #------------------------
                 sysMean  = np.mean(sys_err,axis=0) / retPrf
-                ax1.plot(sysMean,alt,linewidth=0.75, label='Total Systematic Error')
+                ax2.plot(sysMean,alt,linewidth=0.75, label='Total Systematic')
 
-                ax1.set_ylabel('Altitude [km]')
-                ax1.set_xlabel('Fraction of Retrieved Profile')             
-                ax1.grid(True,which='both')
-                ax1.legend(prop={'size':9})
+                ax2.set_xlabel('Fraction of Retrieved Profile')             
+                ax2.grid(True,which='both')
+                ax2.legend(prop={'size':9})
                 
-                ax1.tick_params(axis='both',which='both',labelsize=8) 
-                ax1.set_title('Systematic Error Components')
-    
+                ax2.tick_params(axis='both',which='both',labelsize=8) 
+                ax2.set_title('Systematic Error Components')
+                
                 if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
                 else:           plt.show(block=False)                 
+                    
+                    
+                
                                    
 
-    def pltAvk(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
-               dofFlg=False,errFlg=False,szaFlg=False,partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,chiFlg=False,tcMMflg=False,mnthFltFlg=False):
+    def pltAvk(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0, maxDOF=10.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
+               dofFlg=False,errFlg=False,szaFlg=False,partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,chiFlg=False,tcMMflg=False,mnthFltFlg=False,
+               bckgFlg=False, minSlope=0.0, maxSlope=0.0, minCurv=1.0, maxCurv=10.0):
         ''' Plot Averaging Kernel. Only for single retrieval '''
         
         print ('\nPlotting Averaging Kernel........\n')
+<<<<<<< HEAD
+
+        #---------------------------------------
+        # Get profile, summary and spectral data
+        #---------------------------------------
+        if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
+        if self.empty: return False
+        if not self.readsummaryFlg:  self.readsummary()                                      # Summary File info
+        if not self.readPbpFlg:      self.readPbp()                                          # observed, fitted, and difference spectra
+        if not self.readSpectraFlg:  self.readSpectra(self.gasList)                          # Spectra for each gas
+        if not self.readStateVecFlg: self.readStateVec()
         
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,
-                               mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,
-                               minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
-                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,
-                               pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,
-                               chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,
-                               mnthFltFlg=mnthFltFlg,maxTCTotErr=maxTCTotErr)
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF, maxDOF=maxDOF,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,mnthFltFlg=mnthFltFlg,
+                               bckgFlg=bckgFlg, minSlope=minSlope, maxSlope=maxSlope, minCurv=minCurv, maxCurv=maxCurv)
         else:    self.inds = np.array([]) 
         
         if self.empty: return False    
@@ -3186,13 +4001,17 @@ class PlotData(ReadOutputData):
                 avkSCF  = np.mean(avkSCF,axis=0)
                 avkVMR  = np.mean(avkVMR,axis=0)
                 dofs    = np.trace(avkSCF)
-                dofs_cs = np.cumsum(np.diag(avkSCF)[::-1])[::-1]                    
+                dofs_cs = np.cumsum(np.diag(avkSCF)[::-1])[::-1]
+
+
 
         #-------------
         # Get Altitude
         #-------------
         if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
-        alt = np.asarray(self.rprfs['Z'][0,:])
+        alt     = np.asarray(self.rprfs['Z'][0,:])
+        Airmass = np.asarray(self.rprfs['AIRMASS'])
+        Airmass = np.mean(Airmass, axis=0)
         
         #--------
         # Ploting
@@ -3246,7 +4065,10 @@ class PlotData(ReadOutputData):
         cNorm     = colors.Normalize(vmin=np.min(alt), vmax=np.max(alt))
         scalarMap = mplcm.ScalarMappable(norm=cNorm,cmap=clmap)
         scalarMap.set_array(alt)
-        ax.set_color_cycle([scalarMap.to_rgba(x) for x in alt])
+        #ax.set_color_cycle([scalarMap.to_rgba(x) for x in alt])
+        ax.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in alt] ) )
+
+
         
         for i in range(len(alt)):
             ax.plot(avkSCF[i,:],alt)
@@ -3257,16 +4079,32 @@ class PlotData(ReadOutputData):
         cbar = fig.colorbar(scalarMap,orientation='vertical')
         cbar.set_label('Altitude [km]')
         ax.set_title('Averaging Kernels Scale Factor')
+
+        #----------------------------------------
+        # Calculate total column averaging kernel
+        #----------------------------------------
+        AirMinv   = np.diag(1.0/Airmass)
+
+        avkTC    = np.dot(np.dot(Airmass,avkSCF),AirMinv)
         
-        axb.plot(np.sum(avkSCF,axis=0),alt,color='k')
+        axb.plot(np.sum(avkSCF,axis=1),alt,color='b', label='Sum of AK')
+        axb.plot(avkTC, alt,color='k', label='TC AK')
+       
         axb.grid(True)
-        axb.set_xlabel('Averaging Kernel Area')
-        axb.tick_params(axis='x',which='both',labelsize=8)        
+        axb.legend(prop={'size':9})
+        #axb.set_xlabel('Averaging Kernel Area')
+        axb.set_xlabel('Total Column AK')
+        #axb.tick_params(axis='x',which='both',labelsize=8)    
+        axb.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1f'))      
+        axb.tick_params(axis='x', which='major', labelrotation=45) 
+        axb.set_xlim(-0.5, 2.5)
 
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
         else:           plt.show(block=False)         
-
+        
+        #----------------------------------------
         # VMR AVK
+        #----------------------------------------
         fig       = plt.figure()
         gs        = gridspec.GridSpec(1,2,width_ratios=[3,1])
         ax        = plt.subplot(gs[0])
@@ -3275,7 +4113,10 @@ class PlotData(ReadOutputData):
         cNorm     = colors.Normalize(vmin=np.min(alt), vmax=np.max(alt))
         scalarMap = mplcm.ScalarMappable(norm=cNorm,cmap=clmap)
         scalarMap.set_array(alt)
-        ax.set_color_cycle([scalarMap.to_rgba(x) for x in alt])
+
+        #ax.set_color_cycle([scalarMap.to_rgba(x) for x in alt])
+
+        ax.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in alt] ) )
         
         for i in range(len(alt)):
             ax.plot(avkVMR[i,:],alt)
@@ -3286,14 +4127,21 @@ class PlotData(ReadOutputData):
         cbar = fig.colorbar(scalarMap,orientation='vertical')
         cbar.set_label('Altitude [km]')
         ax.set_title('Averaging Kernels VMR')
+
+        avkTCvmr    = np.dot(np.dot(Airmass,avkVMR),AirMinv)
         
-        axb.plot(np.sum(avkVMR,axis=0),alt,color='k')
+        axb.plot(avkTCvmr,alt,color='k', label='TC AK')
+        axb.plot(np.sum(avkVMR,axis=1),alt,color='b' , label='Sum of AK')
         axb.grid(True)
-        axb.set_xlabel('Averaging Kernel Area')
-        axb.tick_params(axis='x',which='both',labelsize=8)        
+        axb.set_xlabel('Total Column AK')
+        axb.legend(prop={'size':9})
+        #axb.tick_params(axis='x',which='both',labelsize=8)  
+        axb.xaxis.set_major_formatter(mtick.FormatStrFormatter('%.1f'))     
+        axb.tick_params(axis='x', which='major',labelrotation=45)  
 
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-        else:           plt.show(block=False)    
+        else:           plt.show(block=False)
+
 
         #--------------------------------------
         # Plot cumulative sum of DOFs with user 
@@ -3323,11 +4171,10 @@ class PlotData(ReadOutputData):
         else:           plt.show(block=False)                         
         
         
-    def pltTotClmn(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0,maxCHI=2.0,
-                   minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
+    def pltTotClmn(self,fltr=False,minSZA=0.0,maxSZA=80.0,maxRMS=1.0,minDOF=1.0, maxDOF=10.0,maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,mnthFltr=[1,2,3,4,5,6,7,8,9,10,11,12],
                    dofFlg=False,errFlg=False,szaFlg=False,sclfct=1.0,sclname='ppv',
-                   partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,
-                   chiFlg=False,tcMMflg=False,mnthFltFlg=False):
+                   partialCols=False,cnvrgFlg=True,pcFlg=True,tcFlg=True,rmsFlg=True,chiFlg=False,tcMMflg=False,mnthFltFlg=False,
+                   bckgFlg=False, minSlope=0.0, maxSlope=0.0, minCurv=1.0, maxCurv=10.0):
         ''' Plot Time Series of Total Column '''
         
         print ('\nPrinting Total Column Plots.....\n')
@@ -3338,13 +4185,23 @@ class PlotData(ReadOutputData):
         #------------------------------------------
         if not self.readPrfFlgRet[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=1)   # Retrieved Profiles
         if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0)   # Apriori Profiles
+
         try:    
             if not self.readPrfFlgApr['H2O']:           self.readprfs(['H2O'],retapFlg=0)             # Apriori H2O Profiles
         except: self.readprfs(['H2O'],retapFlg=0)
+
         if self.empty: return False
         if not self.readsummaryFlg:                 self.readsummary()                            # Summary File info
         if not self.readPbpFlg:                     self.readPbp()                                # Pbp file info
-        sza = self.pbp['sza']
+
+        if not self.readStateVecFlg: self.readStateVec()
+        if not self.readt15Flg: self.readt15()
+
+        sza     = self.pbp['sza']
+        saa     = self.pbp['saa']
+
+
+        
         
         if errFlg:
             if not self.readErrorFlg['totFlg']:
@@ -3356,17 +4213,26 @@ class PlotData(ReadOutputData):
             randErrs = {}
             for k in tempKeys:
                 if 'Total random uncertainty' in k: randErrs[k] = np.array(self.error[k])
-            
+
+            # print '***********************'
+            # print '   Mean Total Errors   '
+            # print '***********************'
+            # tempKeys.sort()
+
+            # ind = np.where(np.asarray(self.error['Measurement error (Sm)']) < 300.0)[0]
+    
+            # for k in tempKeys: 
+            #     if not ('Primary gas') in k:
+            #         if not ('date') in k: 
+                        
+            #             print '{:50s}  = {:15.3E}'.format(k, np.mean(np.array(self.error[k])[ind]))
+        
         #--------------------
         # Call to filter data
         #--------------------
-        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,
-                               mxsza=maxSZA,minDOF=minDOF,maxCHI=maxCHI,
-                               minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
-                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,
-                               pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,
-                               chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,
-                               mnthFltFlg=mnthFltFlg,maxTCTotErr=maxTCTotErr)     
+        if fltr: self.fltrData(self.PrimaryGas,mxrms=maxRMS,minsza=minSZA,mxsza=maxSZA,minDOF=minDOF, maxDOF=maxDOF,maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,mnthFltr=mnthFltr,
+                               dofFlg=dofFlg,rmsFlg=rmsFlg,tcFlg=tcFlg,pcFlg=pcFlg,szaFlg=szaFlg,cnvrgFlg=cnvrgFlg,chiFlg=chiFlg,tcMinMaxFlg=tcMMflg,mnthFltFlg=mnthFltFlg,
+                               bckgFlg=bckgFlg, minSlope=minSlope, maxSlope=maxSlope, minCurv=minCurv, maxCurv=maxCurv)     
         else:    self.inds = np.array([]) 
         
         if self.empty: return False          
@@ -3376,6 +4242,7 @@ class PlotData(ReadOutputData):
         #--------------------------
         totClmn = np.asarray(self.summary[self.PrimaryGas.upper()+'_RetColmn'])
         dates   = np.asarray(self.summary['date'])
+
         rms     = np.asarray(self.summary[self.PrimaryGas.upper()+'_FITRMS'])
         dofs    = np.asarray(self.summary[self.PrimaryGas.upper()+'_DOFS_TRG'])
         chi2y   = np.asarray(self.summary[self.PrimaryGas.upper()+'_CHI_2_Y'])
@@ -3385,12 +4252,20 @@ class PlotData(ReadOutputData):
         rPrfDry = np.asarray(self.rprfs[self.PrimaryGas]) / (1.0 - np.asarray(self.aprfs['H2O']))* sclfct
         rPrfMol = np.asarray(self.rprfs[self.PrimaryGas]) * Airmass
         alt     = np.asarray(self.rprfs['Z'][0,:])
-        
+
+        try: zeroOff    = np.asarray(self.t15asc['ZERO'])
+        except: pass
+
+        try: totClmnh2o = np.asarray(self.summary['H2O_RetColmn'])
+        except: pass
+
         snr    = {}
         fitsnr = {}
+
         for i in range(1,nbands+1):
             snr[i]     = np.asarray(self.summary['SNR_'+str(i)])
             fitsnr[i]  = np.asarray(self.summary['FIT_SNR_'+str(i)])
+            
         
         #-----------------
         # Get Total Errors 
@@ -3407,12 +4282,19 @@ class PlotData(ReadOutputData):
         dates   = np.delete(dates,self.inds)
         rms     = np.delete(rms,self.inds)
         sza     = np.delete(sza,self.inds)
+        saa     = np.delete(saa,self.inds)
         dofs    = np.delete(dofs,self.inds)
         chi2y   = np.delete(chi2y,self.inds)
         rPrf    = np.delete(rPrf,self.inds,axis=0)
         rPrfDry = np.delete(rPrfDry,self.inds,axis=0)
         rPrfMol = np.delete(rPrfMol,self.inds,axis=0)
         Airmass = np.delete(Airmass,self.inds,axis=0)
+
+        try: totClmnh2o = np.delete(totClmnh2o,self.inds)
+        except: pass
+
+        try: zeroOff      = np.delete(zeroOff,self.inds)
+        except: pass
         
         for i in range(1,nbands+1):
             snr[i]     = np.delete(snr[i],self.inds)
@@ -3423,52 +4305,117 @@ class PlotData(ReadOutputData):
             tot_rnd    = np.delete(tot_rnd,self.inds)
             for k in randErrs:
                 randErrs[k] = np.delete(randErrs[k],self.inds)
-                randErrs[k] = randErrs[k] / totClmn * 100.00  # Convert total random error components to 
-            
+                randErrs[k] = np.divide(randErrs[k], totClmn) * 100.00  # Convert total random error components to 
+        
+        #--------------------
+        # Retr parameters
+        #--------------------
+        dataState = {}
+        try:
+            for key in self.statevec:
+                dataState[key] = np.delete(self.statevec[key], self.inds,axis=0)
+        except: pass
+   
+        #----------------------------
+        # DETERMINE FORMAT OF X-AXIS
+        #----------------------------
+
         #----------------------------
         # Determine if multiple years
         #----------------------------
-        years = [ singDate.year for singDate in dates]      # Find years for all date entries
-        if len(list(set(years))) > 1: yrsFlg = True         # Determine all unique years
-        else:                         yrsFlg = False
+        yrsFlg   = False
+        monthFlg = False
 
+        years  = [ singDate.year for singDate in dates]      # Find years for all date entries
+        months = [ singDate.month for singDate in dates]
+        
+        if len(list(set(years))) > 1:  yrsFlg    = True         # Determine all unique years
+        else: 
+            if len(list(set(months))) > 1:  monthFlg    = True
+           
         #-----------------
         # Plot time series
         #-----------------
         clmap        = 'jet'
         cm           = plt.get_cmap(clmap)    
-        yearsLc      = YearLocator()
-        monthsAll    = MonthLocator()
         #months       = MonthLocator(bymonth=1,bymonthday=1)
-        months       = MonthLocator()
-        DateFmt      = DateFormatter('%m\n%Y')        
-        
+
+        if yrsFlg: 
+            majorLc      = YearLocator()
+            majorFmt     = DateFormatter('%Y')
+            minorLc      = MonthLocator()
+            minorFmt     = DateFormatter('%m')
+            xlabel       = 'Year'
+
+        if monthFlg:
+            majorLc      = MonthLocator()
+            majorFmt     = DateFormatter('%m')
+            minorLc      = AutoMinorLocator()  
+            minorFmt     = DateFormatter('%d')
+            xlabel       = 'Month'
+
+        else:      
+
+            diffDates    = abs((dt.date(dates[0].year, dates[0].month, dates[0].day) - dt.date(dates[-1].year, dates[-1].month, dates[-1].day)).days)
+
+            if diffDates == 0:
+                majorLc       = HourLocator()
+                majorFmt      = DateFormatter('%H')
+                #minorLc       = AutoMinorLocator()
+                xlabel        = 'Hour'
+
+            elif (diffDates > 0) and (diffDates <= 4):
+                majorLc       = DayLocator(interval=1)
+                majorFmt      = DateFormatter('%m/%d')  
+                minorLc       = HourLocator()
+                xlabel        = 'Day [Hour]'
+
+            elif (diffDates > 4) and (diffDates <= 7):
+                majorLc       = DayLocator(interval=1)
+                majorFmt      = DateFormatter('%m/%d')  
+                minorLc       = AutoMinorLocator()
+                xlabel        = 'Day [Hour]'
+
+            elif (diffDates > 7) and (diffDates <= 15):
+                majorLc       = DayLocator(interval=2)
+                majorFmt      = DateFormatter('%m/%d')  
+                minorLc       = DayLocator()
+                xlabel        = 'Day [Hour]' 
+
+            elif (diffDates > 15) and (diffDates <= 31):
+                majorLc       = DayLocator(interval=4)
+                majorFmt      = DateFormatter('%m/%d')  
+                minorLc       = DayLocator()
+                xlabel        = 'Day [Hour]' 
+
+        #----------------------------
+        #             PLOTS
+        #----------------------------
+
+        #----------------------------
+        # time Series of Retrieved Total Column
+        #----------------------------
         fig1,ax1 = plt.subplots()
-        ax1.plot(dates,totClmn,'k.',markersize=4)
+        ax1.plot(dates,totClmn,'k.',markersize=6)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
+        ax1.set_xlabel(xlabel)
         ax1.set_title('Time Series of Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         
         if yrsFlg:
-            #plt.xticks(rotation=45)
-            ax1.xaxis.set_major_locator(yearsLc)
-            ax1.xaxis.set_minor_locator(months)
-            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax1.xaxis.set_major_formatter(DateFmt) 
-            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            if len(list(set(years))) > 10: plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
             ax1.xaxis.set_tick_params(which='major',labelsize=8)
             ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
         else:
-            ax1.xaxis.set_major_locator(monthsAll)
-            ax1.xaxis.set_major_formatter(DateFmt)
-            ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            fig1.autofmt_xdate()
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            #ax1.xaxis.set_minor_locator(minorLc)
         
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-        else:           plt.show(block=False)  
-        
+        else:           plt.show(block=False)    
                 
         #--------------------------------------
         # Plot time series color coded with SZA
@@ -3477,27 +4424,24 @@ class PlotData(ReadOutputData):
         norm = colors.BoundaryNorm(tcks,cm.N)   
         
         fig1,ax1 = plt.subplots()
+        ax1.plot(dates,totClmn,'',markersize=0, linestyle='none')
         sc1 = ax1.scatter(dates,totClmn,c=sza,cmap=cm,norm=norm)
         ax1.grid(True)
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
-        ax1.set_title('Time Series of Retrieved Total Column with SZA\n[molecules cm$^{-2}$]',multialignment='center')
+        ax1.set_xlabel(xlabel)
+        ax1.set_title('Time Series of Retrieved Total Column f(SZA)\n[molecules cm$^{-2}$]',multialignment='center')
         
         if yrsFlg:
-            #plt.xticks(rotation=45)
-            ax1.xaxis.set_major_locator(yearsLc)
-            ax1.xaxis.set_minor_locator(months)
-            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax1.xaxis.set_major_formatter(DateFmt) 
-            #ax1.xaxis.set_tick_params(which='major', pad=15)  
+            if len(list(set(years))) > 10: plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
             ax1.xaxis.set_tick_params(which='major',labelsize=8)
             ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
         else:
-            ax1.xaxis.set_major_locator(monthsAll)
-            ax1.xaxis.set_major_formatter(DateFmt)
-            ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            fig1.autofmt_xdate()
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            #ax1.xaxis.set_minor_locator(minorLc)
         
         fig1.subplots_adjust(right=0.82)
         cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
@@ -3506,20 +4450,311 @@ class PlotData(ReadOutputData):
         cbar.set_label('SZA')    
         
         if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-        else:           plt.show(block=False)           
+        else:           plt.show(block=False) 
+ 
+        #--------------------------------------
+        # Plot time series color coded with SAA
+        #--------------------------------------    
+        tcks = range(np.int(np.floor(np.min(saa))),np.int(np.ceil(np.max(saa)))+2)
+        norm = colors.BoundaryNorm(tcks,cm.N)
         
+        fig1,ax1 = plt.subplots()
+        ax1.plot(dates,totClmn,'',markersize=0 ,linestyle='none')
+        sc1 = ax1.scatter(dates,totClmn,c=saa,cmap=cm,norm=norm)
+        ax1.grid(True)
+        ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+        ax1.set_xlabel(xlabel)
+        ax1.set_title('Time Series of Retrieved Total Column f(SAA)\n[molecules cm$^{-2}$]',multialignment='center')
         
+        if yrsFlg:
+            if len(list(set(years))) > 10: plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
+            ax1.xaxis.set_tick_params(which='major',labelsize=8)
+            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+        else:
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            #ax1.xaxis.set_minor_locator(minorLc)
+            #fig1.autofmt_xdate()
+        
+        fig1.subplots_adjust(right=0.82)
+        cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
+            
+        cbar = fig1.colorbar(sc1, cax=cax, format='%2i')
+        cbar.set_label('SAA (Relative to North)')    
+        
+        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+        else:           plt.show(block=False)  
+
+        #--------------------------------------
+        # Plot time series color coded with RMS
+        #--------------------------------------         
+        norm = colors.Normalize( vmin=np.nanmin(rms), vmax=np.nanmax(rms) )
+      
+        fig1,ax1 = plt.subplots()
+        ax1.plot(dates,totClmn,'',markersize=0,  linestyle='none')
+        sc1 = ax1.scatter(dates,totClmn,c=rms,cmap=cm,norm=norm)
+        ax1.grid(True)
+        ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+        ax1.set_xlabel(xlabel)
+        ax1.set_title('Time Series of Retrieved Total Column f(RMS)\n[molecules cm$^{-2}$]',multialignment='center')
+        
+        if yrsFlg:
+            if len(list(set(years))) > 10: plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
+            ax1.xaxis.set_tick_params(which='major',labelsize=8)
+            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+        else:
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            #ax1.xaxis.set_minor_locator(minorLc)
+        
+        fig1.subplots_adjust(right=0.82)
+        cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
+            
+        cbar = fig1.colorbar(sc1, cax=cax)
+        cbar.set_label('RMS')    
+        
+        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+        else:           plt.show(block=False)
+
+        #--------------------------------------
+        # Plot time series color coded with DOF
+        #--------------------------------------         
+        norm = colors.Normalize( vmin=np.nanmin(dofs), vmax=np.nanmax(dofs) )
+      
+        fig1,ax1 = plt.subplots()
+        ax1.plot(dates,totClmn,'',markersize=0 ,linestyle='none')
+        sc1 = ax1.scatter(dates,totClmn,c=dofs,cmap=cm,norm=norm)
+        ax1.grid(True)
+        ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+        ax1.set_xlabel(xlabel)
+        ax1.set_title('Time Series of Retrieved Total Column f(DOF)\n[molecules cm$^{-2}$]',multialignment='center')
+        
+        if yrsFlg:
+            if len(list(set(years))) > 10: plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
+            ax1.xaxis.set_tick_params(which='major',labelsize=8)
+            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+        else:
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            #ax1.xaxis.set_minor_locator(minorLc)
+        
+        fig1.subplots_adjust(right=0.82)
+        cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
+            
+        cbar = fig1.colorbar(sc1, cax=cax)
+        cbar.set_label('DOF')    
+        
+        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+        else:           plt.show(block=False)   
+
+        #--------------------------------------
+        # Plot time series color coded with zeroOff
+        #--------------------------------------   
+        try:   
+
+            norm = colors.Normalize( vmin=np.nanmin(zeroOff), vmax=np.nanmax(zeroOff) )
+            #norm = colors.Normalize( vmin=0.0, vmax=np.nanmax(zeroOff) )
+            
+            fig1,ax1 = plt.subplots()
+            ax1.plot(dates,totClmn,'',markersize=0, linestyle='none')
+            sc1 = ax1.scatter(dates,totClmn,c=zeroOff,cmap=cm,norm=norm)
+            ax1.grid(True)
+            ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel(xlabel)
+            ax1.set_title('Time Series of Retrieved Total Column f(zeroOff)\n[molecules cm$^{-2}$]',multialignment='center')
+            
+            if yrsFlg:
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                #ax1.xaxis.set_minor_locator(minorLc)
+            
+            fig1.subplots_adjust(right=0.82)
+            cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
+                
+            cbar = fig1.colorbar(sc1, cax=cax)
+            cbar.set_label('zeroOff')    
+            
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False) 
+
+        except: pass
+
+        #--------------------------------------
+        # Plot time series color coded with slope is present
+        #--------------------------------------  
+        try:
+
+            slope = np.asarray(dataState['BckGrdSlp_1'])*1e3
+
+            norm = colors.Normalize( vmin=np.nanmin(slope), vmax=np.nanmax(slope) )
+          
+            fig1,ax1 = plt.subplots()
+            ax1.plot(dates,totClmn,'',markersize=0 ,linestyle='none')
+            sc1 = ax1.scatter(dates,totClmn,c=slope,cmap=cm,norm=norm)
+            ax1.grid(True)
+            ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel(xlabel)
+            ax1.set_title('Time Series of Retrieved Total Column f(BckGrdSlp)\n[molecules cm$^{-2}$]',multialignment='center')
+            
+            if yrsFlg:
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                #ax1.xaxis.set_minor_locator(minorLc)
+            
+            fig1.subplots_adjust(right=0.82)
+            cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
+                
+            cbar = fig1.colorbar(sc1, cax=cax)
+            cbar.set_label('Slope [10$^{-3}$]')    
+            
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)
+
+        except: pass
+
+        #--------------------------------------
+        # Plot time series color coded with Curvature is present
+        #--------------------------------------  
+        try:
+
+            curvature = np.asarray(dataState['BckGrdCur_1'])*1e5
+
+            norm = colors.Normalize( vmin=np.nanmin(curvature), vmax=np.nanmax(curvature) )
+          
+            fig1,ax1 = plt.subplots()
+            ax1.plot(dates,totClmn,'',markersize=0 ,linestyle='none')
+            sc1 = ax1.scatter(dates,totClmn,c=curvature,cmap=cm,norm=norm)
+            ax1.grid(True)
+            ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel(xlabel)
+            ax1.set_title('Time Series of Retrieved Total Column f(BckGrdCur)\n[molecules cm$^{-2}$]',multialignment='center')
+            
+            if yrsFlg:
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                #ax1.xaxis.set_minor_locator(minorLc)
+            
+            fig1.subplots_adjust(right=0.82)
+            cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
+                
+            cbar = fig1.colorbar(sc1, cax=cax)
+            cbar.set_label('Curvature [10$^{-5}$]')    
+            
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)   
+
+        except: pass
+
+        #--------------------------------------
+        # Plot time series color coded with Curvature is present
+        #--------------------------------------  
+        try:
+
+            norm = colors.Normalize( vmin=np.nanmin(totClmnh2o), vmax=np.nanmax(totClmnh2o) )
+          
+            fig1,ax1 = plt.subplots()
+            ax1.plot(dates,totClmn,'',markersize=0 ,linestyle='none')
+            sc1 = ax1.scatter(dates,totClmn,c=totClmnh2o,cmap=cm,norm=norm)
+            ax1.grid(True)
+            ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel(xlabel)
+            ax1.set_title('Time Series of Retrieved Total Column f(H$_2$O)\n[molecules cm$^{-2}$]',multialignment='center')
+            
+            if yrsFlg:
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                #ax1.xaxis.set_minor_locator(minorLc)
+            
+            fig1.subplots_adjust(right=0.82)
+            cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
+                
+            cbar = fig1.colorbar(sc1, cax=cax)
+            cbar.set_label('H2O total column [molecules cm$^{-2}$]')    
+            
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)   
+
+        except: pass
+
+
+        #--------------------------------------
+        # Plot time series color coded with Curvature is present
+        #--------------------------------------  
+        try:
+
+            norm = colors.Normalize( vmin=np.nanmin(slope), vmax=np.nanmax(slope) )
+          
+            fig1,ax1 = plt.subplots()
+            ax1.plot(totClmnh2o,totClmn,'',markersize=0 ,linestyle='none')
+            sc1 = ax1.scatter(totClmnh2o,totClmn,c=slope,cmap=cm,norm=norm)
+            ax1.grid(True)
+            ax1.set_xlabel('Retrieved H2O Column [molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_ylabel('Retrieved {} Column'.format(self.PrimaryGas.upper()))
+            ax1.set_title('Correlation with H2O f(Slope)',multialignment='center')
+
+            ax1.xaxis.set_tick_params(which='major',labelsize=8)
+            ax1.xaxis.set_tick_params(which='minor',labelbottom='off') 
+            
+            fig1.subplots_adjust(right=0.82)
+            cax  = fig1.add_axes([0.86, 0.1, 0.03, 0.8])
+                
+            cbar = fig1.colorbar(sc1, cax=cax)
+            cbar.set_label('Slope [10$^{-3}$]')    
+            
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)   
+
+        except: pass
+
         #-----------------------------------
         # Plot trend analysis of time series
         #-----------------------------------
         # Actual data
         #------------
-        dateYearFrac = toYearFraction(dates)
-        weights      = np.ones_like(dateYearFrac)
-        res          = fit_driftfourier(dateYearFrac, totClmn, weights, 2)
-        f_drift, f_fourier, f_driftfourier = res[3:6]
-        
         try:
+            dateYearFrac = toYearFraction(dates)
+            weights      = np.ones_like(dateYearFrac)
+            res          = fit_driftfourier(dateYearFrac, totClmn, weights, 2)
+            f_drift, f_fourier, f_driftfourier = res[3:6]
+        
+        
             fig1,ax1 = plt.subplots()
             ax1.scatter(dates,totClmn,s=4,label='data')
             ax1.plot(dates,f_drift(dateYearFrac),label='Fitted Anual Trend')
@@ -3527,33 +4762,27 @@ class PlotData(ReadOutputData):
             ax1.grid(True)
             ax1.set_ylim([np.min(totClmn)-0.1*np.min(totClmn), np.max(totClmn)+0.15*np.max(totClmn)])
             ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-            ax1.set_xlabel('Date [MM]')
+            ax1.set_xlabel(xlabel)
             ax1.set_title('Trend Analysis with Boot Strap Resampling\nIndividual Retrievals',multialignment='center')
             ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(totClmn)*100.0),transform=ax1.transAxes)
             ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
             ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(totClmn)*100.0),transform=ax1.transAxes) 
             
-            
             if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax1.xaxis.set_major_locator(yearsLc)
-                ax1.xaxis.set_minor_locator(months)
-                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax1.xaxis.set_major_formatter(DateFmt) 
-                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax1.xaxis.set_major_locator(monthsAll)
-                ax1.xaxis.set_major_formatter(DateFmt)
-                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                fig1.autofmt_xdate()  
-                
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                #ax1.xaxis.set_minor_locator(minorLc)
+            
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-            else:           plt.show(block=False)          
-            
-            
+            else:           plt.show(block=False)       
+  
             #------
             # Daily
             #------
@@ -3570,27 +4799,23 @@ class PlotData(ReadOutputData):
             ax1.grid(True)
             ax1.set_ylim([np.min(dailyVals['dailyAvg'])-0.1*np.min(dailyVals['dailyAvg']), np.max(dailyVals['dailyAvg'])+0.15*np.max(dailyVals['dailyAvg'])])
             ax1.set_ylabel('Daily Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-            ax1.set_xlabel('Date [MM]')
+            ax1.set_xlabel(xlabel)
             ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
             ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)
             ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
             ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(dailyVals['dailyAvg'])*100.0),transform=ax1.transAxes)   
         
             if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax1.xaxis.set_major_locator(yearsLc)
-                ax1.xaxis.set_minor_locator(months)
-                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax1.xaxis.set_major_formatter(DateFmt) 
-                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax1.xaxis.set_major_locator(monthsAll)
-                ax1.xaxis.set_major_formatter(DateFmt)
-                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                fig1.autofmt_xdate()    
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                ax1.xaxis.set_minor_locator(minorLc)
                 
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)            
@@ -3611,27 +4836,23 @@ class PlotData(ReadOutputData):
             ax1.grid(True)
             ax1.set_ylim([np.min(mnthlyVals['mnthlyAvg'])-0.1*np.min(mnthlyVals['mnthlyAvg']), np.max(mnthlyVals['mnthlyAvg'])+0.15*np.max(mnthlyVals['mnthlyAvg'])])
             ax1.set_ylabel('Monthly Averaged Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-            ax1.set_xlabel('Date [MM]')
-            ax1.set_title('Trend Analysis with Boot Strap Resampling\nDaily Averaged Retrievals',multialignment='center')
+            ax1.set_xlabel(xlabel)
+            ax1.set_title('Trend Analysis with Boot Strap Resampling\nMonthly Averaged Retrievals',multialignment='center')
             ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)
             ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
             ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(mnthlyVals['mnthlyAvg'])*100.0),transform=ax1.transAxes)  
         
             if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax1.xaxis.set_major_locator(yearsLc)
-                ax1.xaxis.set_minor_locator(months)
-                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax1.xaxis.set_major_formatter(DateFmt) 
-                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax1.xaxis.set_major_locator(monthsAll)
-                ax1.xaxis.set_major_formatter(DateFmt)
-                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                fig1.autofmt_xdate()        
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                ax1.xaxis.set_minor_locator(minorLc)
                 
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)                 
@@ -3657,55 +4878,53 @@ class PlotData(ReadOutputData):
                 ax2.set_ylabel('Retrieved Partial Column\n[molecules cm$^{-2}$]',multialignment='center')
                 ax1.set_title('Partial Column Weighted VMR and molecules cm$^{-2}$\nAltitude Layer '+str(alt[ind1])+'[km] - '+str(alt[ind2])+'[km]',
                               multialignment='center',fontsize=12)
+                ax2.set_xlabel(xlabel)
                 
                 if yrsFlg:
-                    ax2.xaxis.set_major_locator(yearsLc)
-                    ax2.xaxis.set_minor_locator(months)
-                    ax2.xaxis.set_major_formatter(DateFmt) 
-                    ax2.xaxis.set_tick_params(which='major',labelsize=8)
-                    ax2.xaxis.set_tick_params(which='minor',labelbottom='off')
+                    if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                    ax1.xaxis.set_major_locator(majorLc)
+                    ax1.xaxis.set_minor_locator(minorLc)
+                    ax1.xaxis.set_major_formatter(majorFmt) 
+                    ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                    ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
                 else:
-                    ax2.xaxis.set_major_locator(monthsAll)
-                    ax2.xaxis.set_major_formatter(DateFmt)
-                    ax2.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                    ax2.xaxis.set_minor_locator(AutoMinorLocator())
-                    fig.autofmt_xdate()
+                    ax1.xaxis.set_major_locator(majorLc)
+                    ax1.xaxis.set_major_formatter(majorFmt)
+                    #ax1.xaxis.set_minor_locator(minorLc)
                 
                 if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
                 else:           plt.show(block=False)            
-        
-        
+          
         #-------------------------------------
         # Plot time series of Monthly Averages
         #-------------------------------------
-        mnthVals = mnthlyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
+        try:
+            mnthVals = mnthlyAvg(totClmn,dates,dateAxis=1, meanAxis=0)
     
-        fig1,ax1 = plt.subplots()
-        ax1.plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'k.',markersize=4)
-        ax1.errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],yerr=mnthVals['std'],fmt='k.',markersize=4,ecolor='grey')
-        ax1.grid(True)
-        ax1.set_ylabel('Monthly Averaged Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
-        ax1.set_title('Monthly Averaged Time Series of Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            fig1,ax1 = plt.subplots()
+            ax1.plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'k.',markersize=4)
+            ax1.errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],yerr=mnthVals['std'],fmt='k.',markersize=4,ecolor='grey')
+            ax1.grid(True)
+            ax1.set_ylabel('Monthly Averaged Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
+            ax1.set_xlabel(xlabel)
+            ax1.set_title('Monthly Averaged Time Series of Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
         
-        if yrsFlg:
-            #plt.xticks(rotation=45)
-            ax1.xaxis.set_major_locator(yearsLc)
-            ax1.xaxis.set_minor_locator(months)
-            #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax1.xaxis.set_major_formatter(DateFmt) 
-            #ax1.xaxis.set_tick_params(which='major', pad=15)  
-            ax1.xaxis.set_tick_params(which='major',labelsize=8)
-            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
-        else:
-            ax1.xaxis.set_major_locator(monthsAll)
-            ax1.xaxis.set_major_formatter(DateFmt)
-            ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            fig1.autofmt_xdate()
+            if yrsFlg:
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                #ax1.xaxis.set_minor_locator(minorLc)
+
         
-        if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
-        else:           plt.show(block=False)          
+            if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
+            else:           plt.show(block=False)
+        except: pass        
         
         #----------------------------------
         # Plot time series with Total Error
@@ -3716,24 +4935,20 @@ class PlotData(ReadOutputData):
             ax1.errorbar(dates,totClmn,yerr=tot_std,fmt='k.',markersize=4,ecolor='red')
             ax1.grid(True)
             ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-            ax1.set_xlabel('Date [MM]')
+            ax1.set_xlabel(xlabel)
             ax1.set_title('Time Series of Retrieved Total Column with Total Error\n[molecules cm$^{-2}$]',multialignment='center')
             
             if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax1.xaxis.set_major_locator(yearsLc)
-                ax1.xaxis.set_minor_locator(months)
-                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax1.xaxis.set_major_formatter(DateFmt) 
-                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax1.xaxis.set_major_locator(monthsAll)
-                ax1.xaxis.set_major_formatter(DateFmt)
-                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                fig1.autofmt_xdate()
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                #ax1.xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)        
@@ -3746,24 +4961,20 @@ class PlotData(ReadOutputData):
             ax1.errorbar(dates,totClmn,yerr=tot_rnd,fmt='k.',markersize=4,ecolor='red')
             ax1.grid(True)
             ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-            ax1.set_xlabel('Date [MM]')
+            ax1.set_xlabel(xlabel)
             ax1.set_title('Time Series of Retrieved Total Column with Random Error\n[molecules cm$^{-2}$]',multialignment='center')
             
             if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax1.xaxis.set_major_locator(yearsLc)
-                ax1.xaxis.set_minor_locator(months)
-                #ax1.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax1.xaxis.set_major_formatter(DateFmt) 
-                #ax1.xaxis.set_tick_params(which='major', pad=15)  
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
                 ax1.xaxis.set_tick_params(which='major',labelsize=8)
                 ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax1.xaxis.set_major_locator(monthsAll)
-                ax1.xaxis.set_major_formatter(DateFmt)
-                ax1.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                fig1.autofmt_xdate()
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                #ax1.xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig1,dpi=200)
             else:           plt.show(block=False)              
@@ -3773,28 +4984,24 @@ class PlotData(ReadOutputData):
             #-----------------------------------------------
             totErr_frac = tot_std / totClmn * 100.0
             ranErr_frac = tot_rnd / totClmn * 100.0
-            fig, ax = plt.subplots()           
-            ax.plot(dates,totErr_frac,'k.',markersize=4)
-            ax.grid(True)
-            ax.set_ylabel('Total Error as Precentage of Total Column [%]')
-            ax.set_xlabel('Date [MM]')
-            ax.set_title('Total Error as % of Retrieved Total Column')
+            fig, ax1 = plt.subplots()           
+            ax1.plot(dates,totErr_frac,'k.',markersize=4)
+            ax1.grid(True)
+            ax1.set_ylabel('Total Error as Precentage of Total Column [%]')
+            ax1.set_xlabel(xlabel)
+            ax1.set_title('Total Error as % of Retrieved Total Column')
             
             if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax.xaxis.set_major_locator(yearsLc)
-                ax.xaxis.set_minor_locator(months)
-                #ax.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax.xaxis.set_major_formatter(DateFmt) 
-                #ax.xaxis.set_tick_params(which='major', pad=15)  
-                ax.xaxis.set_tick_params(which='major',labelsize=8)
-                ax.xaxis.set_tick_params(which='minor',labelbottom='off')
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax.xaxis.set_major_locator(monthsAll)
-                ax.xaxis.set_major_formatter(DateFmt)
-                ax.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                fig.autofmt_xdate()
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                #ax1.xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
             else:           plt.show(block=False)     
@@ -3802,58 +5009,236 @@ class PlotData(ReadOutputData):
             #------------------------------------------------
             # Plot random error as a fraction of total column
             #------------------------------------------------
-            fig, ax = plt.subplots()           
-            ax.plot(dates,ranErr_frac,'k.',markersize=4)
-            ax.grid(True)
-            ax.set_ylabel('Random Error as Precentage of Total Column [%]')
-            ax.set_xlabel('Date [MM]')
-            ax.set_title('Random Error as % of Retrieved Total Column')
+            fig, ax1 = plt.subplots()           
+            ax1.plot(dates,ranErr_frac,'k.',markersize=4)
+            ax1.grid(True)
+            ax1.set_ylabel('Random Error as Precentage of Total Column [%]')
+            ax1.set_xlabel(xlabel)
+            ax1.set_title('Random Error as % of Retrieved Total Column')
             
             if yrsFlg:
-                #plt.xticks(rotation=45)
-                ax.xaxis.set_major_locator(yearsLc)
-                ax.xaxis.set_minor_locator(months)
-                #ax.xaxis.set_minor_formatter(DateFormatter('%m'))
-                ax.xaxis.set_major_formatter(DateFmt) 
-                #ax.xaxis.set_tick_params(which='major', pad=15)  
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_minor_locator(minorLc)
+                ax1.xaxis.set_major_formatter(majorFmt) 
+                ax1.xaxis.set_tick_params(which='major',labelsize=8)
+                ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax1.xaxis.set_major_locator(majorLc)
+                ax1.xaxis.set_major_formatter(majorFmt)
+                #ax1.xaxis.set_minor_locator(minorLc)
+            
+            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False) 
+                
+        #----------------------------
+        # Plot time series of daily SNR, RMS, and DOF
+        #----------------------------
+        fig, ax = plt.subplots(3,1,sharex=True)
+        clr = ('k', 'r', 'b', 'g', 'gray' )
+
+        for i in range(1, nbands+1):
+        #for i in range(1, 2):          
+            #ax[0].plot(dates,snr[i],'k.', color=clr[i-1], label= 'band '+str(i),markersize=4)
+            ax[0].plot(dates, snr[i], 'k.', color=clr[i-1],markersize=4, label='band {}'.format(i))
+            #ax[0].errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],yerr=mnthVals['std'],ecolor=clr[i-1])
+            #ax[0].scatter(mnthVals['dates'],mnthVals['mnthlyAvg'],facecolors=clr[i-1], edgecolors='black', s=35,  label='band {}'.format(i))
+            #ax[0].set_ylim(0, 5000)
+        ax[0].legend(prop={'size':8})
+        ax[0].grid(True)
+        ax[0].set_ylabel('SNR')
+        ax[0].set_title('Time Series of SNR')
+        #ax[0].legend(prop={'size':12})
+
+        ax[1].plot(dates ,rms,'k.', markersize=4)
+        ax[1].grid(True)
+        ax[1].set_title('Time Series of RMS')
+        ax[1].set_ylabel('RMS')
+
+        ax[2].plot(dates ,dofs,'k.', markersize=4)
+        ax[2].grid(True)
+        ax[2].set_title('Time Series of DOF')
+        ax[2].set_ylabel('DOF')
+        ax[2].set_xlabel(xlabel)
+        
+        for pp in range(1,3):
+        
+            if yrsFlg:
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax[pp].xaxis.set_major_locator(majorLc)
+                ax[pp].xaxis.set_minor_locator(minorLc)
+                ax[pp].xaxis.set_major_formatter(majorFmt) 
+                ax[pp].xaxis.set_tick_params(which='major',labelsize=8)
+                ax[pp].xaxis.set_tick_params(which='minor',labelbottom='off')
+            else:
+                ax[pp].xaxis.set_major_locator(majorLc)
+                ax[pp].xaxis.set_major_formatter(majorFmt)
+                #ax[pp].xaxis.set_minor_locator(minorLc)
+        
+        if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+        else:           plt.show(block=False)
+
+        #----------------------------
+        # Plot time series of zero offset
+        #----------------------------
+        try:
+            fig, ax = plt.subplots()
+
+            ax.plot(dates, zeroOff, 'k.',markersize=4)
+            ax.grid(True)
+            ax.set_ylabel('zeroOff')
+            ax.set_title('Time Series of zeroOff')
+            ax.set_xlabel(xlabel)
+
+            ax.set_ylim(0, 0.05)
+        
+            if yrsFlg:
+                if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                ax.xaxis.set_major_locator(majorLc)
+                ax.xaxis.set_minor_locator(minorLc)
+                ax.xaxis.set_major_formatter(majorFmt) 
                 ax.xaxis.set_tick_params(which='major',labelsize=8)
                 ax.xaxis.set_tick_params(which='minor',labelbottom='off')
             else:
-                ax.xaxis.set_major_locator(monthsAll)
-                ax.xaxis.set_major_formatter(DateFmt)
-                ax.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-                ax1.xaxis.set_minor_locator(AutoMinorLocator())
-                fig.autofmt_xdate()
+                ax.xaxis.set_major_locator(majorLc)
+                ax.xaxis.set_major_formatter(majorFmt)
+          
+            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False)  
+
+        except: pass
+
+        #----------------------------
+        # Plot time series of Bckg slope and curvature
+        #---------------------------- 
+
+        if ('BckGrdCur_1' in dataState) or ('BckGrdSlp_1' in dataState):
+
+            fig, ax = plt.subplots(2,1,sharex=True)
+
+            for i in range(1, nbands+1):
+
+                try: slope = np.asarray(dataState['BckGrdSlp_'+str(i)])*1e3
+                except: slope = np.zeros(len(dates))
+
+                try: curvature = np.asarray(dataState['BckGrdCur_'+str(i)])*1e5
+                except: curvature = np.zeros(len(dates))
+
+                ax[0].plot(dates, slope, 'k.', color=clr[i-1],markersize=4, label='band {}'.format(i))
+                ax[1].plot(dates, curvature, 'k.', color=clr[i-1],markersize=4, label='band {}'.format(i))
+                
+
+            ax[0].legend(prop={'size':8})
+            ax[0].grid(True)
+            ax[0].set_title('Time Series of BckGrdSlp')
+            ax[0].set_ylabel('BckGrdSlp [x10$^{-3}$]')
+
+            ax[1].set_ylabel('BckGrdCur [x10$^{-5}$]')
+            ax[1].set_title('Time Series of BckGrdCur')
+            ax[1].grid(True)
+            ax[1].set_xlabel(xlabel)
+            
+            
+            for pp in range(1,2):
+            
+                if yrsFlg:
+                    if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                    ax[pp].xaxis.set_major_locator(majorLc)
+                    ax[pp].xaxis.set_minor_locator(minorLc)
+                    ax[pp].xaxis.set_major_formatter(majorFmt) 
+                    ax[pp].xaxis.set_tick_params(which='major',labelsize=8)
+                    ax[pp].xaxis.set_tick_params(which='minor',labelbottom='off')
+                else:
+                    ax[pp].xaxis.set_major_locator(majorLc)
+                    ax[pp].xaxis.set_major_formatter(majorFmt)
+                    #ax[pp].xaxis.set_minor_locator(minorLc)
             
             if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-            else:           plt.show(block=False)               
+            else:           plt.show(block=False)   
+
+       
+
+        #----------------------------
+        # Plot time series of Monthly SNR, RMS, and DOF
+        #----------------------------
+        if len(list(set(months))) > 1:
+
+            fig, ax = plt.subplots(3,1,sharex=True)
+            clr = ('k', 'r', 'b', 'g', 'gray' )
+
+            for i in range(1, nbands+1):
+            #for i in range(1, 2):
+                mnthVals = mnthlyAvg(snr[i],dates,dateAxis=1, meanAxis=0)           
+                #ax[0].plot(dates,snr[i],'k.', color=clr[i-1], label= 'band '+str(i),markersize=4)
+                ax[0].plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'', linestyle='None', color=clr[i-1],markersize=0)
+                ax[0].errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'], linestyle='None', yerr=mnthVals['std'],ecolor=clr[i-1])
+                ax[0].scatter(mnthVals['dates'],mnthVals['mnthlyAvg'],facecolors=clr[i-1], edgecolors='black', s=35,  label='band {}'.format(i))
+                #ax[0].set_ylim(0, 5000)
+            ax[0].legend(prop={'size':8})
+            ax[0].grid(True)
+            ax[0].set_ylabel('SNR')
+            ax[0].set_title('Monthly Averaged Time Series of SNR')
+            #ax[0].legend(prop={'size':12})
+
+            mnthVals = mnthlyAvg(rms,dates,dateAxis=1, meanAxis=0) 
+            #ax[1].plot(dates,rms,'k.',markersize=4)
+            ax[1].plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'',linestyle='None', markersize=0)
+            ax[1].errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],linestyle='None', yerr=mnthVals['std'],ecolor='red')
+            ax[1].scatter(mnthVals['dates'],mnthVals['mnthlyAvg'],facecolors='red', edgecolors='black', s=35)
+            ax[1].grid(True)
+            ax[1].set_title('Monthly Averaged Time Series of RMS')
+            ax[1].set_ylabel('RMS')
+
+            mnthVals = mnthlyAvg(dofs,dates,dateAxis=1, meanAxis=0)
+
+            ax[2].plot(mnthVals['dates'],mnthVals['mnthlyAvg'],'',linestyle='None', markersize=0)
+            ax[2].errorbar(mnthVals['dates'],mnthVals['mnthlyAvg'],linestyle='None', yerr=mnthVals['std'],ecolor='red')
+            ax[2].scatter(mnthVals['dates'],mnthVals['mnthlyAvg'],facecolors='red', edgecolors='black', s=35)
+            ax[2].grid(True)
+            ax[2].set_title('Monthly Averaged Time Series of DOF')
+            ax[2].set_ylabel('DOF')
+            ax[2].set_xlabel(xlabel)
+     
+            for pp in range(1,3):
+      
+                if yrsFlg:
+                    if len(list(set(years))) > 10: plt.xticks(rotation=45)
+                    ax[pp].xaxis.set_major_locator(majorLc)
+                    ax[pp].xaxis.set_minor_locator(minorLc)
+                    ax[pp].xaxis.set_major_formatter(majorFmt) 
+                    ax[pp].xaxis.set_tick_params(which='major',labelsize=8)
+                    ax[pp].xaxis.set_tick_params(which='minor',labelbottom='off')
+                else:
+                    ax[pp].xaxis.set_major_locator(majorLc)
+                    ax[pp].xaxis.set_major_formatter(majorFmt)
+                    #ax[pp].xaxis.set_minor_locator(minorLc)
+
+            #fig.subplots_adjust(bottom=0.15,top=0.95, left=0.1, right=0.97)
             
+            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False)       
             
         #----------------------------
         # Plot time series of CHI_2_Y
         #----------------------------
-        fig, ax = plt.subplots()           
-        ax.plot(dates,chi2y,'k.',markersize=4)
-        ax.grid(True)
-        ax.set_ylabel(r'$\chi_y^{2}$')
-        ax.set_xlabel('Date [MM]')
-        ax.set_title(r'$\chi_y^{2}$')
+        fig, ax1 = plt.subplots()           
+        ax1.plot(dates,chi2y,'k.',markersize=4)
+        ax1.grid(True)
+        ax1.set_ylabel(r'$\chi_y^{2}$')
+        ax1.set_xlabel(xlabel)
+        ax1.set_title(r'$\chi_y^{2}$')
         
         if yrsFlg:
-            #plt.xticks(rotation=45)
-            ax.xaxis.set_major_locator(yearsLc)
-            ax.xaxis.set_minor_locator(months)
-            #ax.xaxis.set_minor_formatter(DateFormatter('%m'))
-            ax.xaxis.set_major_formatter(DateFmt) 
-            #ax.xaxis.set_tick_params(which='major', pad=15)  
-            ax.xaxis.set_tick_params(which='major',labelsize=8)
-            ax.xaxis.set_tick_params(which='minor',labelbottom='off')
+            if len(list(set(years))) > 10: plt.xticks(rotation=45)
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_minor_locator(minorLc)
+            ax1.xaxis.set_major_formatter(majorFmt) 
+            ax1.xaxis.set_tick_params(which='major',labelsize=8)
+            ax1.xaxis.set_tick_params(which='minor',labelbottom='off')
         else:
-            ax.xaxis.set_major_locator(monthsAll)
-            ax.xaxis.set_major_formatter(DateFmt)
-            ax.set_xlim((dt.date(years[0],1,1), dt.date(years[0],12,31)))
-            ax1.xaxis.set_minor_locator(AutoMinorLocator())
-            fig.autofmt_xdate()
+            ax1.xaxis.set_major_locator(majorLc)
+            ax1.xaxis.set_major_formatter(majorFmt)
+            #ax1.xaxis.set_minor_locator(minorLc)
         
         if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
         else:           plt.show(block=False)          
@@ -3945,7 +5330,7 @@ class PlotData(ReadOutputData):
         ax1.errorbar(mnthSort,mnthMean,yerr=mnthSTD,fmt='k.',markersize=6,ecolor='red')     
         ax1.grid(True,which='both')
         ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-        ax1.set_xlabel('Date [MM]')
+        ax1.set_xlabel('Month')
         ax1.set_title('Retrieved Monthly Mean with Standard Deviation')
         ax1.set_xlim((0,13))
         ax1.set_xticks(range(1,13))
@@ -3998,8 +5383,8 @@ class PlotData(ReadOutputData):
             ax1.grid(True,which='both')
             ax2.grid(True,which='both')   
             ax2.set_xlabel('SZA')
-            ax1.set_ylabel('Percent Total Column Error',fontsize=9)
-            ax2.set_ylabel('Percent Random Error',fontsize=9)
+            ax1.set_ylabel('Total Column Error [%]',fontsize=9)
+            ax2.set_ylabel('Random Error [%]',fontsize=9)
                     
             ax1.tick_params(axis='x',which='both',labelsize=8)
             ax2.tick_params(axis='x',which='both',labelsize=8)  
@@ -4033,7 +5418,7 @@ class PlotData(ReadOutputData):
                     sc1 = ax1.scatter(sza,randErrs[k],c=doy,cmap=cm)   
                     
                 ax1.grid(True,which='both')
-                ax1.set_ylabel('Percent Error of Total Column',fontsize=9)
+                ax1.set_ylabel('Error of Total Column [%]',fontsize=9)
                 ax1.set_xlabel('SZA',fontsize=9)
                 ax1.set_title(k)
                 ax1.tick_params(axis='x',which='both',labelsize=8)
@@ -4051,47 +5436,7 @@ class PlotData(ReadOutputData):
                 
                 if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
                 else:           plt.show(block=False)              
-            
-            
-            #--------------------------------------
-            # Plot Measurement error vs SZA and RMS
-            #--------------------------------------           
-            # These plots do not seem to tell interesting
-            # story
-            #----------------------------------------------
-            #fig,(ax1,ax2)  = plt.subplots(1,2,sharey=True)
-            #if yrsFlg:
-                #tcks = range(np.min(years),np.max(years)+2)
-                #norm = colors.BoundaryNorm(tcks,cm.N)                        
-                #sc1  = ax1.scatter(sza,totMeasErr,c=years,cmap=cm,norm=norm)
-                #ax2.scatter(rms,totMeasErr,c=years,cmap=cm,norm=norm)
-            #else:
-                ##tcks = range(np.min(doy),np.max(doy)+2)
-                ##norm = colors.BoundaryNorm(tcks,cm.N)                                
-                #sc1 = ax1.scatter(sza,totMeasErr,c=doy,cmap=cm)
-                #ax2.scatter(rms,totMeasErr,c=doy,cmap=cm)      
-                
-            #ax1.grid(True,which='both')
-            #ax2.grid(True,which='both')   
-            #ax2.set_xlabel('SZA')
-            #ax1.set_xlabel('RMS')
-            #ax1.set_ylabel('Measurement Uncertainty [Fraction of Total Column]')
         
-            #ax1.tick_params(axis='x',which='both',labelsize=8)
-            #ax2.tick_params(axis='x',which='both',labelsize=8)  
-            
-            #fig.subplots_adjust(right=0.82)
-            #cax  = fig.add_axes([0.86, 0.1, 0.03, 0.8])
-            
-            #if yrsFlg:
-                #cbar = fig.colorbar(sc1, cax=cax, ticks=tcks, norm=norm, format='%4i')                           
-                #cbar.set_label('Year')
-                #plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
-            #else:      
-                #cbar = fig.colorbar(sc1, cax=cax, format='%3i')
-                #cbar.set_label('DOY')    
-                ##plt.setp(cbar.ax.get_yticklabels()[-1], visible=False)
-            
-            #if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
-            #else:           plt.show(block=False)         
+
+          
                      

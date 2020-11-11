@@ -1,4 +1,5 @@
-#! /usr/local/python-2.7/bin/python
+#!/usr/bin/python3
+##! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
 # Name:
@@ -59,13 +60,17 @@ import csv
                                                      
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'NCEPnmcFormat.py -i <File>'
+    print ('\nThere are two options to run NCEPnmcFormat.py:')
+    print ('(1) NCEPnmcFormat.py -i <File>. In this case the input file needs to be modified accordingly.')
+    print ('(2) NCEPnmcFormat.py -s tab/mlo/fl0 -y 2018')
+    print ('Note: Additional paths are hardcoded in NCEPnmcFormat.py\n')
+
 
         
 def ckDir(dirName):
     '''Check if a directory exists'''
     if not os.path.exists( dirName ):
-        print 'Directory %s does not exist' % (dirName)
+        print ('Directory %s does not exist' % (dirName))
         return False
     else:
         return True
@@ -73,7 +78,7 @@ def ckDir(dirName):
 def ckFile(fName,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exit:
             sys.exit()
         return False
@@ -122,16 +127,18 @@ def main(argv):
     # Initializations and defaults
     #-----------------------------
 
+    inpFlg = False
+
     
                                                 #---------------------------------#
                                                 # Retrieve command line arguments #
                                                 #---------------------------------#
     #------------------------------------------------------------------------------------------------------------#                                             
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:D:')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:s:y:?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
         
@@ -148,38 +155,92 @@ def main(argv):
             
             # Check if file exists
             ckFile(inputFile,True)
+
+            inpFlg = True
+
+        elif opt == '-s':  
+
+            loc = arg
+
+        elif opt == '-y':
+
+            year   = int(arg)
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
             
         #------------------
         # Unhandled options
         #------------------
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             usage()
             sys.exit()
     #------------------------------------------------------------------------------------------------------------#                       
-       
+    
+
     #----------------
     # Read input file
     #----------------
     inputs = {}
-    execfile(inputFile, inputs)
-    if '__builtins__' in inputs:
-        del inputs['__builtins__']       
-        
-    #-----------------------------------
-    # Check the existance of directories
-    # and files given in input file
-    #-----------------------------------
-    # Check base directory of NCEP nmc data
-    if 'dataDir' in inputs and inputs['dataDir']:                           
-        if not ckDir(inputs['dataDir']):
-            sys.exit()
-        # check if '/' is included at end of path
-        if not( inputs['dataDir'].endswith('/') ):
-            inputs['dataDir'] = inputs['dataDir'] + '/'    
 
-    # Check for station layer file if doing interpolation 
-    if inputs['IntrpFileFlg']: ckFile(inputs['stationlyrs'],True)
+    if inpFlg:
+
+        try:
+            execfile(inputFile, inputs)
+
+        except IOError as errmsg:
+            print (errmsg)
+            sys.exit()
+
+        except:
+            exec(compile(open(inputFile, "rb").read(), inputFile, 'exec'), inputs)
+
+        if '__builtins__' in inputs:
+            del inputs['__builtins__']       
+            
+        #-----------------------------------
+        # Check the existance of directories
+        # and files given in input file
+        #-----------------------------------
+        # Check base directory of NCEP nmc data
+        if 'dataDir' in inputs and inputs['dataDir']:                           
+            if not ckDir(inputs['dataDir']):
+                sys.exit()
+            # check if '/' is included at end of path
+            if not( inputs['dataDir'].endswith('/') ):
+                inputs['dataDir'] = inputs['dataDir'] + '/'    
+
+        # Check for station layer file if doing interpolation 
+        if inputs['IntrpFileFlg']: ckFile(inputs['stationlyrs'],True)
+
+    else:
+
+        inputs['years'] = [year]
+        inputs['loc']   = loc
+
+        #------
+        # Flags
+        #------
+        inputs['IntrpFileFlg']    = False
+        inputs['NonIntrpFileFlg'] = True
+
+
+        #--------------------
+        # Base Data Directory
+        #--------------------
+        inputs['dataDir']   = '/data1/ancillary_data/NCEP_NMC/'    # Base directory with all external station data
+
+        #------
+        # Files
+        #------
+        #stationlyrs  = '/Users/ebaumer/Data/TestBed2/station.layers'                                # Station layers file
+        inputs['HgtBaseDir']      = '/data/Campaign/'+loc.upper()+'/NCEP_nmc/'   # Height nmc data
+        inputs['TempBaseDir']     = '/data/Campaign/'+loc.upper()+'/NCEP_nmc/'   # Temp nmc data
+        inputs['IntrpBaseDir']    = '/data/Campaign/'+loc.upper()+'/NCEP_nmc/'   # Interpolated Temperatures
+
+
        
     #-------------------
     # Loop through years
@@ -192,7 +253,7 @@ def main(argv):
         nmcHgtFiles = glob( inputs['dataDir'] + 'height' + '/' + str(curYear) + '/ht*.nmc')
         
         if len(nmcHgtFiles) == 0:
-            print 'No .nmc files found in: '+ inputs['dataDir'] + 'height' + '/' + str(curYear)
+            print ('No .nmc files found in: '+ inputs['dataDir'] + 'height' + '/' + str(curYear))
             sys.exit()
             
         nmcHgtData  = {}
@@ -303,7 +364,7 @@ def main(argv):
                 fopen.write('#   Height at 1000mb            m              19        -999         \n')
                 fopen.write('#---------------------------------------------------------------------\n')
     
-                for k,val in iter(sorted(nmcHgtData.iteritems())):
+                for k,val in iter(sorted(nmcHgtData.items())):
                     
                     YYYYMMDD = "{0:02d}".format(k.year)+"{0:02d}".format(k.month)+"{0:02d}".format(k.day) 
                     val.insert(0,YYYYMMDD)
@@ -337,7 +398,7 @@ def main(argv):
                 fopen.write('#   Temperature at 1000mb       C              19        -999         \n')
                 fopen.write('#---------------------------------------------------------------------\n')
     
-                for k,val in iter(sorted(nmcTempData.iteritems())):
+                for k,val in iter(sorted(nmcTempData.items())):
                     
                     YYYYMMDD = "{0:02d}".format(k.year)+"{0:02d}".format(k.month)+"{0:02d}".format(k.day) 
                     #---------------------------------------------------------------------------

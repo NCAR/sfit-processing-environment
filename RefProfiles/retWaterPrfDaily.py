@@ -1,8 +1,9 @@
-#! /usr/local/python-2.7/bin/python
+#! /usr/bin/python3
+##! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
 # Name:
-#      NCEPwaterPrf.py
+#      retWaterPrfDaily.py
 #
 # Purpose:
 #      This program creates water VMR from NCEP daily water data and writes an output file
@@ -35,25 +36,35 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import glob
 import datetime          as dt
 import sfitClasses       as sc
 import numpy             as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+import getopt
 
+plt.rcParams.update({'figure.max_open_warning': 0})
 
 
                         #-------------------------------------#
                         # Define helper functions and classes #
                         #-------------------------------------#
 
+def usage():
+    print('retWaterPrfDaily.py -s <loc>  -d <20190101_20191231> -?] \n\n'
+         '-s <loc>                               : Location (three letter id, eg., fl0, mlo)\n'
+         '-d <20190101> or <20190101_20191231>   : Date or Date range\n'
+         'Note: hardcoded inputs are included\n')
+
+    sys.exit()
+
 def ckDir(dirName,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -62,7 +73,7 @@ def ckDir(dirName,exitFlg=False):
 def ckFile(fName,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -70,6 +81,11 @@ def ckFile(fName,exitFlg=False):
 
 def segmnt(seq,n):
     '''Yeilds successive n-sized segments from seq'''
+    try:
+        xrange
+    except NameError:
+        xrange = range
+        
     for i in xrange(0,len(seq),n): yield seq[i:i+n]
 
 def findCls(dataArray, val):
@@ -83,12 +99,73 @@ def findCls(dataArray, val):
                             #                            #
                             #----------------------------#
 
-def main():
+def main(argv):
+
+    #--------------------------------
+    # Retrieve command line arguments
+    #--------------------------------
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 's:d:?:')
+
+    except getopt.GetoptError as err:
+        print (str(err))
+        usage()
+        sys.exit()
+
+    #-----------------------------
+    # Parse command line arguments
+    #-----------------------------
+    for opt, arg in opts:
+        # Check input file flag and path
+        if opt == '-s':
+
+            loc = arg
+
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+
+            else:
+                print ('Error in input date')
+                usage()
+                sys.exit()
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
+
+        else:
+            print ('Unhandled option: ' + opt)
+            sys.exit()
 
     #---------
     # Location
     #---------
-    loc = 'fl0'
+    #loc = 'fl0'
 
     #------------------------------------
     # Version number to append water file
@@ -103,12 +180,12 @@ def main():
     #-----------------------
     # Date Range of interest
     #-----------------------
-    iyear          = 2015
-    imnth          = 1
-    iday           = 1
-    fyear          = 2015
-    fmnth          = 12
-    fday           = 31
+    #iyear          = 2018
+    #imnth          = 12
+    #iday           = 1
+    #fyear          = 2018
+    #fmnth          = 12
+    #fday           = 31
 
     #---------------------------------------
     # Size of altitude grid for each station
@@ -170,7 +247,8 @@ def main():
     # data directory and collect directory names
     #--------------------------------------------
     dirLst = []
-    for drs in os.walk(dataDir).next()[1]:
+
+    for drs in next(iter(os.walk(dataDir)))[1]: 
 
         #-------------------------------------------
         # Test directory to make sure it is a number
@@ -213,7 +291,8 @@ def main():
         # Write out water file
         #---------------------
         with open(sngDir+'w-120.'+verW,'w') as fopen:
-            fopen.write('    1     Daily H2O profile from individual retrievals \n')
+            #fopen.write('    1     Daily H2O profile from individual retrievals \n')
+            fopen.write('    1     H2O Daily profile from individual retrievals \n')
 
             for row in segmnt(dailyH2O,5):
                 strformat = ','.join('{:>12.4E}' for i in row) + ', \n'
@@ -242,10 +321,9 @@ def main():
 
             pdfsav.savefig(fig1,dpi=250)
 
-
             pdfsav.close()
 
-        print 'Finished processing folder: {}'.format(sngDir)
+        print ('Finished processing folder: {}'.format(sngDir))
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

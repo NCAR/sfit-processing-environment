@@ -1,4 +1,5 @@
-#! /usr/local/python-2.7/bin/python
+#!/usr/bin/python
+##! /usr/local/python-2.7/bin/python
 
 # Change the above line to point to the location of your python executable
 
@@ -46,8 +47,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import itertools
 import getopt
 import subprocess as sp
@@ -55,6 +56,7 @@ import shutil
 import datetime as dt
 import DateRange as dr
 import sfitClasses as sc
+import numpy as np
 
                         #-------------------------------------#
                         # Define helper functions and classes #
@@ -63,13 +65,13 @@ import sfitClasses as sc
                                                      
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'mkSpecDB.py -i <File>'
+    print ('mkSpecDB.py -i <File>')
 
         
 def ckDir(dirName,logFlg=False,exit=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if logFlg: logFlg.error('Directory %s does not exist' % dirName)
         if exit: sys.exit()
         return False
@@ -79,7 +81,7 @@ def ckDir(dirName,logFlg=False,exit=False):
 def ckFile(fName,logFlg=False,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if logFlg: logFlg.error('Unable to find file: %s' % fName)
         if exit: sys.exit()
         return False
@@ -133,7 +135,7 @@ def main(argv):
         opts, args = getopt.getopt(sys.argv[1:], 'i:D:')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
         
@@ -152,7 +154,7 @@ def main(argv):
         # Unhandled options
         #------------------
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             usage()
             sys.exit()
     #------------------------------------------------------------------------------------------------------------#                       
@@ -237,8 +239,10 @@ def main(argv):
             exscn = int(OrgSpecDB.dbInputs['EXSCN'][ind])
             gfw   = int(OrgSpecDB.dbInputs['GFW'][ind])
             gbw   = int(OrgSpecDB.dbInputs['GBW'][ind])
+
             
-            if ( exscn/flscn != 2 ): continue
+            #if (exscn/flscn != 2 ): continue
+            if ( np.true_divide(exscn,flscn) != 2 ): continue
             
             #------------------------------------------------------
             # Extract the base file name and the date for filtering
@@ -251,6 +255,7 @@ def main(argv):
             daystr   = yyyymmdd[6:]
             curDate  = dt.date(int(yearstr),int(monthstr),int(daystr))
             
+            #print ind, baseName, extName, yyyymmdd
             #-------------------------------------------------------
             # Construct the bnr file name of the first file to coadd
             #-------------------------------------------------------
@@ -280,13 +285,15 @@ def main(argv):
             # of the original filename
             #---------------------------------------------
             # Construct file name of coadded partner
+
             newFname = baseName + '.' + str( int(extName) + 1 )
             indFind  = [i for i,dum in enumerate(flt1_OrgSpecDB['Filename']) if dum.endswith(newFname) ]
             if not indFind: continue
             if len(indFind) > 1: 
-                print 'More than one match found for: ' + newFname + ' Date: ' + yearstr + monthstr + daystr + ' ERROR!!'
+                print ('More than one match found for: ' + newFname + ' Date: ' + yearstr + monthstr + daystr + ' ERROR!!')
                 sys.exit()
             indFind = indFind[0]
+
             #-----------------------------------------
             # Check if this a valid coadded file pair:
             # Number of GFW in first file must equal
@@ -326,7 +333,7 @@ def main(argv):
             if not dayDir == os.getcwd():
                 os.chdir(dayDir)            
             
-            paramList = [DBinputs.inputs['coaddex'],'-S' + DBinputs.inputs['loc'],'-TOPU']
+            paramList = [DBinputs.inputs['coaddex'],'-S' + DBinputs.inputs['loc'],'-TOPU', '-c']
             rtn       = sp.Popen(paramList, stdout=sp.PIPE, stderr=sp.PIPE)
             stdoutCom, stderrCom = rtn.communicate()
             
@@ -344,8 +351,8 @@ def main(argv):
             #--------------------------------------
             with open(dayDir + 'coad.err', 'r') as fopenCerr: coadErr = fopenCerr.readlines()
             if (not coadErr) or (not 'Closed bnr file: temp.bnr' in coadErr[-1]):
-                print 'Error processing coad files for {}'.format(dayDir)
-                print coadErr
+                print ('Error processing coad files for {}'.format(dayDir))
+                print (coadErr)
                 continue
             
             szaOut    = coadOut[0].strip()
@@ -378,7 +385,7 @@ def main(argv):
             if os.path.isfile(dayDir + 'temp.bnr'):
                 shutil.move(dayDir + 'temp.bnr', dayDir + TstampNew + '.bnrc')
             else:
-                print 'Unable to move file: %s to %s' %(dayDir + TstampNew + '.bnrc')            
+                print ('Unable to move file: %s to %s' %(dayDir + TstampNew + '.bnrc') )           
                 
             #------------------------------------------------------------------------
             # Find the averages for surface temperature, pressure and RH measurements

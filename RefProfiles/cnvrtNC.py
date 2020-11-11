@@ -1,4 +1,5 @@
-#! /usr/local/python-2.7/bin/python
+#!/usr/bin/python
+##! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
 # Name:
@@ -35,8 +36,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import shutil
 import subprocess
 import logging
@@ -60,7 +61,7 @@ def subProcRun( fnameIn, outDir, logFlg=False ):
     rtn = subprocess.Popen( 'ncl_convert2nc ' + fnameIn + ' -o ' + outDir, shell=True, stderr=subprocess.PIPE )
     outstr = ''
     for line in iter(rtn.stderr.readline, b''):
-        print 'STDERR from {}: '.format(fnameIn) + line.rstrip()
+        print ('STDERR from {}: '.format(fnameIn) + line.rstrip())
         if logFlg: outstr += line
 
     if logFlg: logFlg.info(outstr)
@@ -70,7 +71,7 @@ def subProcRun( fnameIn, outDir, logFlg=False ):
 def ckDir(dirName,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -79,7 +80,7 @@ def ckDir(dirName,exitFlg=False):
 def ckFile(fName,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -106,18 +107,18 @@ def main():
     #-----------------------
     # Date Range of interest
     #-----------------------
-    iyear          = 2012
+    iyear          = 2019
     imnth          = 1
     iday           = 1
-    fyear          = 2012
-    fmnth          = 1
-    fday           = 1
+    fyear          = 2019
+    fmnth          = 12
+    fday           = 31
     
     #-----------------------
     # File name for log file
     #-----------------------
-    logFname = '/Volumes/data1/ebaumer/ERAdata/ncLog.log'
-    
+    logFname = '/data1/ancillary_data/ERAdata/ncLog4.log'
+
     #---------------------
     # Establish date range
     #---------------------
@@ -126,7 +127,9 @@ def main():
     #------------------------------
     # ERA Reanalysis data directory
     #------------------------------
-    ERAdir = '/Volumes/data1/ebaumer/ERAdata/'
+    ERAdir = '/data1/ancillary_data/ERAdata/'
+    #ERAdir = '/data1/ancillary_data/ERAdata/wind/'   ->Use for Wind in TAB
+
         
     #----------------------------
     # File and directory checking
@@ -159,6 +162,15 @@ def main():
         fName3 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'12'
         fName4 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pl.regn128sc.'+YYYY+MM+DD+'18'
 
+        #------------------------------------
+        #Use for Wind in TAB
+        #------------------------------------
+        #fName1 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'00'
+        #fName2 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'06'
+        #fName3 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'12'
+        #fName4 = ERAdir + YYYY + MM +'/'+'ei.oper.an.pv.regn128sc.'+YYYY+MM+DD+'18'
+
+
         ckFile(fName1, exitFlg=True)
         ckFile(fName2, exitFlg=True)
         ckFile(fName3, exitFlg=True)
@@ -184,13 +196,12 @@ def main():
         #-----------------
         # Remove grib file
         #-----------------
-        #os.remove(fName1+'.grb')
-        #os.remove(fName2+'.grb')
-        #os.remove(fName3+'.grb')
-        #os.remove(fName4+'.grb')
+        os.remove(fName1+'.grb')
+        os.remove(fName2+'.grb')
+        os.remove(fName3+'.grb')
+        os.remove(fName4+'.grb')
     
-        
-        print 'Finished processing day: {}'.format(sngDay)
+        print ('Finished processing day: {}'.format(sngDay))
                                                                                     
 if __name__ == "__main__":
     main()

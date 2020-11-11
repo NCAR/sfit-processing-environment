@@ -43,7 +43,6 @@ class HDF5File(object):
       #-------------------------------------------
       # Open file and write file global attributes
       #-------------------------------------------      
-
       self.fopen=h5py.File(filename,'w')
       
       for k,val in attrDict.items():
@@ -81,7 +80,6 @@ if __name__ == "__main__":
 class HDF4File(object):
    ''' Interface for creating writing HDF4 files '''
    
-
    def __init__(self,dType):
       self.fopen = None
       self.dType = dType
@@ -93,6 +91,7 @@ class HDF4File(object):
       # Create HDF4 file
       #-----------------      
       self.fopen = SD(filename,SDC.TRUNC | SDC.WRITE | SDC.CREATE) 
+      
       #--------------------------------
       # Write global attributes to file
       #--------------------------------

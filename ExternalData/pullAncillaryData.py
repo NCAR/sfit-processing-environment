@@ -1,5 +1,5 @@
-#! /usr/local/python-2.7/bin/python
-
+#!/usr/bin/python
+##! /usr/local/python-2.7/bin/python
 #----------------------------------------------------------------------------------------
 # Name:
 #        pullAncillaryData.py
@@ -10,7 +10,7 @@
 #
 # Notes:
 #       1) Command line arguments
-#            -d   YYYYMMDD       : Specify the start and stop date to get data.
+#            -d   YYYYMMDD_YYYMMDD       : Specify the start and stop date to get data.
 #                                  Default is previous utc day
 #
 # Usage:

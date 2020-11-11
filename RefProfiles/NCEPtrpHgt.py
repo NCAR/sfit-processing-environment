@@ -35,8 +35,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import datetime as dt
 import sfitClasses as sc
 import numpy as np
@@ -90,7 +90,7 @@ def main():
     #---------
     # Location
     #---------
-    loc = 'fl0'
+    loc = 'nya'
     
     #-----------------------------------------
     # Interpolation flag for NCEP re-analysis: 
@@ -108,20 +108,21 @@ def main():
     #-----------------------
     # Date Range of interest
     #-----------------------
-    year           = 2014
-    
-    iyear          = year
+    yyyy           = 2015
+    iyear          = yyyy
     imnth          = 1
     iday           = 1
-    fyear          = year
-    fmnth          = 10
-    fday           = 1
+    fyear          = yyyy
+    fmnth          = 12
+    fday           = 31
     
     #-------------------------------
     # NCEP Reanalysis data directory
     #-------------------------------
-    NCEPTrppdir = '/Volumes/data1/ebaumer/NCEP_trpp/'
-    NCEPhgtDir  = '/Volumes/data1/ebaumer/NCEP_hgt/'
+    #NCEPTrppdir = '/Volumes/data1/ebaumer/NCEP_trpp/'
+    #NCEPhgtDir  = '/Volumes/data1/ebaumer/NCEP_hgt/'
+    NCEPTrppdir = '/data1/ancillary_data/NCEPdata/NCEP_trpp/'
+    NCEPhgtDir  = '/data1/ancillary_data/NCEPdata/NCEP_hgt/'
 
     #---------------------
     # Establish date range
@@ -142,7 +143,11 @@ def main():
         
     elif loc.lower() == 'fl0':
         sLat = 40.4
-        sLon = 254.76                # 105.24 W = (360 - 105.24) = 254.76 E    
+        sLon = 254.76                # 105.24 W = (360 - 105.24) = 254.76 E
+
+    elif loc.lower() == 'nya':
+        sLat = 78.92
+        sLon = 11.93                # 11.93 E     
       
     #----------------------------
     # File and directory checking
@@ -158,7 +163,7 @@ def main():
         #-------------------
         # Yearly Output File
         #-------------------
-        outFile  = '/Volumes/data1/ebaumer/NCEP_trpp/TropHght_'+loc.lower()+'_'+str(iyear)+'.dat'        
+        outFile  = '/data1/ancillary_data/NCEPdata/NCEP_trpp/TropHght_'+loc.lower()+'_'+str(iyear)+'.dat'        
 
         #-------------------------------
         # Open and read year NetCDF file
@@ -169,15 +174,13 @@ def main():
         #-------------------------
         # Tropopause Pressure File
         #-------------------------
-        #with netcdf.netcdf_file(shumFile,'r',mmap=False) as shumF:      # Can only be done with scipy Ver > 0.12.0
         #TrppObj  = netcdf.netcdf_file(trppFile,'r',mmap=False)
         TrppObj  = nc.Dataset(trppFile,'r')
         Trpp     = TrppObj.variables['pres']                # Mean daily Pressure at Tropopause (Pascals)
         timeTrpp = TrppObj.variables['time']                # hours since 1-1-1 00:00:0.0
         latTrpp  = TrppObj.variables['lat']                 # degrees_north
         lonTrpp  = TrppObj.variables['lon']                 # degrees_east
-        
-        
+
         #-----------------------------------------------------------
         # 'Unpack' the data => (data[int])*scale_factor + add_offset
         #-----------------------------------------------------------
@@ -209,8 +212,8 @@ def main():
         #-------------------------
         # Geopotential Height file
         #-------------------------
-        #with netcdf.netcdf_file(ghghtFile,'r',mmap=False) as gHghtF:      # Can only be done with scipy Ver > 0.12.0
-        #gHghtF   = netcdf.netcdf_file(ghghtFile,'r',mmap=False)
+        ##with netcdf.netcdf_file(ghghtFile,'r',mmap=False) as gHghtF:      # Can only be done with scipy Ver > 0.12.0
+        ##gHghtF   = netcdf.netcdf_file(ghghtFile,'r',mmap=False)
         gHghtF       = nc.Dataset(ghghtFile,'r')
         hgt          = gHghtF.variables['hgt'][:]                                # Height in [meters]. Dimensions: [time][vert][lat][lon]
         PlvlHghtData = gHghtF.variables['level'][:]
@@ -251,7 +254,7 @@ def main():
             
             for lvl in range(0,np.shape(dayHghtMat)[0]):      
                 dayHgtLvl    = np.squeeze(dayHghtMat[lvl,:,:])
-                if interpFlg: dayHgt[lvl] = interp2d(lonTrpp[:],latTrpp[:],dayHgtLvl,kind='linear',bounds_error=True)(sLon,sLat)
+                if interpFlg: dayHgt[lvl] = interp2d(lonTrpp[:],latTrpp[:],dayHgtLvl,kind='linear', bounds_error=True)(sLon,sLat)
                 else:         dayHgt[lvl] = dayHgtLvl[latind,lonind]  
 
                
@@ -263,16 +266,27 @@ def main():
             #-------------------------------------------------------------
             TrppDay = np.squeeze(TrppData[i,:,:])
             
-            if interpFlg: TrppSite[i] = interp2d(lonTrpp[:],latTrpp[:],TrppDay,kind='linear',bounds_error=True)(sLon,sLat)
-            else:         TrppSite[i] = TrppDay[latind,lonind]              
-            
+            if interpFlg: TrppSite[i] = interp2d(lonTrpp[:],latTrpp[:],TrppDay,kind='linear', bounds_error=True)(sLon,sLat)
+            else: TrppSite[i] = TrppDay[latind,lonind] 
+
             #------------------------------------
             # Interpolate Tropopause pressure on 
             # height to find height of tropopuase
-            #------------------------------------
-            Trph[i] = interp1d(PlvlHghtData,dayHgt,kind='linear')(TrppSite[i])
-            
-            
+            #------------------------------------     
+            #Trph[i] = interp1d(PlvlHghtData,dayHgt, kind='linear')(TrppSite[i])
+
+            ###Combine lists into list of tuples          
+            points = zip(PlvlHghtData, dayHgt)
+            ### Sort list of tuples by x-value
+            points = sorted(points, key=lambda point: point[0])
+            ###Split list of tuples into two list of x values any y values
+            PlvlHghtData_sort, dayHgt_sort = zip(*points)
+
+            PlvlHghtData_sort = np.asarray(PlvlHghtData_sort)
+            dayHgt_sort = np.asarray(dayHgt_sort)
+
+            Trph[i] = interp1d(PlvlHghtData_sort,dayHgt_sort, kind='linear')(TrppSite[i])
+
         #----------------------------------------
         # Write Tropopause heights to yearly file
         #----------------------------------------
@@ -285,8 +299,7 @@ def main():
                 daystr = "{0:04d}{1:02d}{2:02d}".format(indDay.year,indDay.month,indDay.day)
                 temp   = [daystr,Trph[i],TrppSite[i]]
                 fopen.write(strformat.format(*temp))
-                
-        
+                    
         TrppObj.close()
                                                                                     
 if __name__ == "__main__":
