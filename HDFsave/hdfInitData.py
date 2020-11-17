@@ -35,10 +35,12 @@
 #    along with sfit4.  If not, see <http://www.gnu.org/licenses/>
 #
 #----------------------------------------------------------------------------------------
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import datetime as dt
 import numpy as np
 import scipy.io as si
-from itertools import izip
+#from itertools import izip
 import dataOutClass as dc
 
 class HDFinitData(object):
@@ -83,7 +85,7 @@ class HDFinitData(object):
         #------------------------------------
         YYYYMMDD   = dataStrc['ds']['YYYYMMDD']
         HHMMSS     = dataStrc['ds']['HHMMSS']        
-        self.dates = np.array([dt.datetime(int(ymd[0:4]),int(ymd[4:6]),int(ymd[6:]),int(hms[0:2]),int(hms[2:4]),int(hms[4:])) for (ymd,hms) in izip(YYYYMMDD,HHMMSS)])
+        self.dates = np.array([dt.datetime(int(ymd[0:4]),int(ymd[4:6]),int(ymd[6:]),int(hms[0:2]),int(hms[2:4]),int(hms[4:])) for (ymd,hms) in zip(YYYYMMDD,HHMMSS)])
         
         #------------------------------------------
         # Find indicies of dates in specified range
@@ -96,10 +98,9 @@ class HDFinitData(object):
         # Assign IDL data to attributes to be written to HDF
         #---------------------------------------------------
         self.datesJD2K                      = np.asarray(dataStrc['ds']['DATETIME'])
-
-        self.latitude                       = dataStrc['ds']['LATITUDE']
-        self.longitude                      = dataStrc['ds']['LONGITUDE']                                
-        self.instAltitudes                  = dataStrc['ds']['ALT_INSTRUMENT'] / 1000.0                          # Convert [m] -> [km]
+        self.latitude                       = dataStrc['ds']['LATITUDE'][0]
+        self.longitude                      = dataStrc['ds']['LONGITUDE'][0]
+        self.instAltitudes                  = dataStrc['ds']['ALT_INSTRUMENT'][0] / 1000.0                          # Convert [m] -> [km]
         self.surfPressures                  = np.asarray(dataStrc['ds']['SURFACE_PRESSURE'])
         self.surfTemperatures               = np.asarray(dataStrc['ds']['SURFACE_TEMPERATURE'])
         self.altitudes                      = dataStrc['ds']['ALTITUDE'][0]
@@ -121,7 +122,7 @@ class HDFinitData(object):
         self.gasColAbsSolarUncSys           = np.asarray(dataStrc['ds']['TOT_SYS_ERR'])  
         self.angleZastr                     = np.asarray(dataStrc['ds']['SZA']) 
         self.angleSolAz                     = np.asarray(dataStrc['ds']['AZI']) 
-        self.h2oMxRatAbsSolar               = np.vstack(dataStrc['ds']['H2O_VMR']).reshape(nobs,nlyrs)             / self.mxSclFctVal
+        self.h2oMxRatAbsSolar               = np.vstack(dataStrc['ds']['H2O_VMR']).reshape(nobs,nlyrs) 
         self.h2oColAbsSol                   = np.asarray(dataStrc['ds']['H2O_TC'])  
 
         #----------------------------------------------

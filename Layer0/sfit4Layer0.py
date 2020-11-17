@@ -68,6 +68,16 @@
 #----------------------------------------------------------------------------------------
 
 
+#---------------
+# Import modules
+#---------------
+import sys
+import os
+import getopt
+import sfitClasses as sc
+from Layer1Mods import errAnalysis
+from Tkinter import Tk
+from tkFileDialog import askopenfilename
 
 
 #------------------------

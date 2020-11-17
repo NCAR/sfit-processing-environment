@@ -4,21 +4,19 @@
 #
 # Purpose:
 #       This is the main input file for sfit4Layer1 processing. Contains directories, flags,
-#       etc for processing Layer 1. 
-#           
+#       etc for processing Layer 1.
+#
 #
 # Notes:
 #       1) The input file is read in as a python file, therefore you should follow python
 #          syntax when editing.
 #       2) The extension of this file should be .py !!!!
-#       3) The hbin file must be created prior to running Layer1
-#       4) The following inputs need to be specified through the ctl file and are not currently
+#       3) The following inputs need to be specified through the ctl file and are not currently
 #          part of the input file:
-#              -- Station layer file
-#              -- Solarlines file
-#              -- Hbin (linelist) file
-#              -- Sa input matrix file (if used)
-#              -- Isotope file (if used)
+#              -- file.in.sa_matrix
+#              -- file.in.isotope
+#              -- file.in.solarlines
+#              -- file.in.linelist
 #
 # Version History:
 #       Created, May, 2013  Eric Nussbaumer (ebaumer@ucar.edu)
@@ -52,52 +50,55 @@ loc = 'mlo'
 #------------------------------
 # Date Range of data to process
 #------------------------------
-# Starting 
-iyear = 2012               # Year
+# Starting
+iyear = 2019               # Year
 imnth = 1                  # Month
 iday  = 1                  # Day
 
 # Ending
-fyear = 2012               # Year
-fmnth = 3                  # Month
-fday  = 26                 # Day
+fyear = 2019               # Year
+fmnth = 12                 # Month
+fday  = 31                 # Day
 
 
 #------------
 # directories
 #------------
-BaseDirInput     = '/Users/ebaumer/Data/TestBed/Input/'            # Input base directory
-BaseDirOutput    = '/Users/ebaumer/Data/TestBed/Output/'           # Output base directory
-binDir           = '/Users/ebaumer/Code/sfit-core-code/src/'       # binary directory
-ilsDir           = ''                                              # ILS file(s). Options:
+BaseDirInput     = '/data1/'                                       # Input base directory
+BaseDirOutput    = '/data1/ebaumer/tab/co/'                        # Output base directory
+binDir           = '/data/ebaumer/Code/sfit-core-code/src/'        # binary directory
+ilsDir           = ''         # ILS file(s). Options:
                                                                    #   1) Use empty string ('') to indicate no ILS file!!
                                                                    #   2) If string points to directory finds ils file closest in date (ils file name must be in format: *ilsYYYYMMDD.*)
                                                                    #   3) If string points to specific file, this ils file is used for all data processing
-                                                                   
-RatioDir         = '/Users/ebaumer/Data/TestBed/fltrFiles/'        # Directory for ratio files ** Currently NOT used **
-logDirOutput     = '/Users/ebaumer/Data/TestBed/'                  # Directory to write log files and list files
+
+#RatioDir         = '/Users/ebaumer/Data/TestBed/fltrFiles/'       # Directory for ratio files ** Currently NOT used **
+logDirOutput     = '/data1/ebaumer/tab/co/'                         # Directory to write log files and list files
 
 #------
 # Files
 #------
-# FORMAT=>[Control file Path/name, Filter ID, Version Name] 
-#             Control file Path/name (str) -- Full name and path to control file 
+# FORMAT=>    [Control file Path/name, Filter ID, Version Name]
+#             Control file Path/name (str) -- Full name and path to control file
 #             Filter ID (str)              -- Filter ID
 #             Version Name (str)           -- Version name of control file. Used to create directory under timestamp directory
 ctlList   = [['/Users/ebaumer/Data/TestBed/ctlFiles/sfit4.ctl','','VerA']]
 
+ctlList   = [['/data1/ebaumer/tab/co/x.co/sfit4_v3.ctl','4','Current_v3'], ['/data1/ebaumer/tab/co/x.co/sfit4_v3.ctl','5','Current_v3']]  # e.g., Filter 4 and 5
 
-spcdbFile = '/Users/ebaumer/Data/TestBed/HRspDB_mlo_2012.dat'           # Spectral DB File
-WACCMfile = '/Users/ebaumer/Data/TestBed/waccm/WACCMref_V6.MLO'         # WACCM profile to use
-sbCtlFile = '/Users/ebaumer/Data/TestBed/sb.ctl'                        # Control file for error analysis
+spcdbFile = '/data/Campaign/TAB/Spectral_DB/HRspDB_tab_2019.dat'     # Spectral DB File
 
-# Optional files
-
+WACCMfile   = '/data/Campaign/TAB/waccm/WACCMref_V6.TAB'                        # WACCM profile to use
+WACCMfolder = '/data/Campaign/TAB/waccm/co/'                                    # WACCM folder with monthly profiles
 
 #--------------------
 # Flags and Constants
 #--------------------
-coaddFlg    = 0                                                # Flag to indicate processing coadded spectra                                                 
+waccmFlg    = 0                                                # Flag to use WACCM profiles: 0 = Use single WACCM file defined above (WACCMfile)
+                                                               #                             1 = Use Monthly mean WACCM profiles in the folder defined above (WACCMfolder)
+
+coaddFlg    = 0                                                # Flag to indicate processing coadded spectra
+
 ilsFlg      = 1                                                # ILS file flag: 1 = Use ils file/directory specified in ilsDir string
                                                                #                0 = No ils is specified in input file. What is specified in ctl file is used
 
@@ -105,7 +106,8 @@ scnFlg      = 0                                                # Flag to use mea
                                                                # 0 = Flag off - does not distinguish between forward and backward scans
                                                                # 1 = Only use files with FOWARD scans
                                                                # 2 = Only use files with BACKWARD scans
-                                                               
+
+
 pspecFlg    = 1                                                # 1 = run pspec,    0 = do not run pspec
 refmkrFlg   = 1                                                # 1 = run refmaker, 0 = do not run refmaker
 sfitFlg     = 1                                                # 1 = run sfit,     0 = do not run sfit
@@ -119,13 +121,13 @@ refMkrLvl   = 0                                                # Version of refe
                                                                #        surface pressure and temperature with values in database file. If those values
                                                                #        are not present, then default to original zpt file
 
-wVer        = 2                                                # Version of water profile to use.
+wVer        = 99                                               # Version of water profile to use.
                                                                #    <0 => Get the latest water version file
                                                                #   >=0 => Get user specified water version file. Latest file is taken if unable to find user specified
 #------------------
 # Pspec input flags
 #------------------
-nBNRfiles = 1                                                  # Number of BNR files to include in pspec input         
+nBNRfiles = 1                                                  # Number of BNR files to include in pspec input
 
 outFlg    = 1                                                  # Pspec output flag
                                                                #     1 = output t15asc file (ascii)
@@ -163,9 +165,9 @@ zFlg      = 2                                                  # zflag - zero of
 # input file. Edit at your own risk
 #---------------------------------------------
 fltrBndInputs = "9 \n\
-f1  4037.100 4037.200 \n\
+f1  4038.727 4038.871 \n\
 f2  3381.155 3381.536 \n\
-f3  2924.866 2925.050 \n\
+f3  2924.866 2925.100 \n\
 f4  2526.228 2526.618 \n\
 f5  1985.260 1985.510 \n\
 f6  1139.075 1139.168 \n\

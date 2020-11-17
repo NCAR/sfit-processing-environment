@@ -113,10 +113,15 @@ class show_results:
             button_spec.config(state=DISABLED)
         self.button_spec_by_gas = button_spec
 
+        options = ['TARGET']
+
+        if self.stv.tretflag:
+            options.append('T')
+        options.append('INTERF')
         if self.error.flag:
-            options =  ('TARGET', 'INTERF', 'ERR')
-        else:
-            options =  ('TARGET', 'INTERF')
+            options =  options.append('ERR')
+        options = tuple(options)
+            
         self.show_var = StringVar(self.tkroot)
         self.show_var.set(options[0])
         frame2 = Frame(self.tkroot)
@@ -162,6 +167,8 @@ class show_results:
                 self.show(type='target')
             if self.show_var.get() == 'INTERF':
                 self.show(type='vmr')
+            if self.show_var.get() == 'T':
+                self.show(type='T')
             if self.show_var.get() == 'ERR':
                 self.show(type='err')
 
@@ -347,6 +354,9 @@ class show_results:
             self.avk = sfit4.avk(direc+'/avk.output', norm_prof)
         else:
             self.avk = -1
+        if os.path.exists(direc+'/statevec'):
+            print(os.path.exists(direc+'/statevec'))
+            self.stv = sfit4.statevec(direc+'/statevec')
 
         self.error = sfit4.error('.', sbctl=sb_ctl,rprfs=direc+'/rprfs.table')
 
@@ -361,16 +371,17 @@ class show_results:
         plt.close(self.winfft)
 
     def show(self, type='vmr', nr = 0):
-        if (type == 'vmr' or type=='target'):
+        if (type == 'vmr' or type=='target' or type == 'T'):
             try:
                 self.winprf.clf()
                 self.winprf.show()
             except:
                 self.winprf=plt.figure()
-            if (type == 'vmr'):
+            if (type == 'vmr' or type == 'T'):
                 ax = self.winprf.add_subplot(121)
             else:
                 ax = self.winprf.add_subplot(111)
+
             vmr,z = self.retprf.get_gas_vmr(self.gases[0])
             apr,z = self.aprprf.get_gas_vmr(self.gases[0])
             l = ax.plot(vmr,z,'-',lw=3,label=self.gases[0])
@@ -378,7 +389,7 @@ class show_results:
             e_tot = np.sqrt(e_ran**2 + e_sys**2)
             ax.plot(vmr+e_tot,z,'--', color=l[0].get_color())
             ax.plot(vmr-e_tot,z,'--', color=l[0].get_color())
-
+            
             ax.plot(apr,z,'-', lw=1, label='a priori', color=l[0].get_color())
             ax.legend()
             ax.ticklabel_format(style='sci',scilimits=(0,4))
@@ -390,6 +401,16 @@ class show_results:
                     apr,z = self.aprprf.get_gas_vmr(self.gases[n])
                     ax.plot(apr,z,'--',lw=1, color=l[0].get_color())
                     ax.legend()
+            if (type == 'T'):
+                ax = self.winprf.add_subplot(122)
+                ax2 = ax.twiny()
+                tret = self.stv.Tret
+                tapr = self.stv.T
+                z = self.stv.Z
+                l = ax.plot(tret,z,lw=2,label='Tret')
+                ax.plot(tapr,z,'--',lw=1, color=l[0].get_color())
+                ax.legend()
+                ax2.plot([i/j for i,j in zip(tret,tapr)], z, lw=2, color='r')
             ax.set_ylabel('altitude [km]')
             ax.set_xlabel('VMR [ppm]')
             ax.ticklabel_format(style='sci',scilimits=(0,4))

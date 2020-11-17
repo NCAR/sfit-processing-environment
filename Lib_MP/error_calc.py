@@ -16,11 +16,11 @@ def calc_now(direc, sbctl,rootdir):
     ctl.getInputs()
     Sbctl = sc.CtlInputFile(sbctl)
     Sbctl.getInputs()
+    errAnalysis(ctl,Sbctl,direc, False)
     try:    
-        errAnalysis(ctl,Sbctl,direc, False)
-        print 'errorcalculation in path: '+direc
+        print ('errorcalculation in path: '+direc)
     except:
-        print 'failed in path: '+direc
+        print ('failed in path: '+direc)
         pass
 
     del ctl, Sbctl
@@ -38,26 +38,26 @@ def error_calc(**kwargs):
     start_date = '19900101'
     end_date = '20301231'
 
-    if not kwargs.has_key('dir'):
-        print 'Please provide the path to the results (dir=...)'
+    if not 'dir' in kwargs:
+        print ('Please provide the path to the results (dir=...)')
         return()
 
-    if not kwargs.has_key('sbctl'):
-        print 'Please provide the path to the sb.ctl (sbctl=...'
+    if not 'sbctl' in kwargs:
+        print ('Please provide the path to the sb.ctl (sbctl=...')
         return()
 
-    if kwargs.has_key('start_date'):
+    if 'start_date' in kwargs:
         start_date=kwargs['start_date']
-    if kwargs.has_key('end_date'):
+    if 'end_date' in kwargs:
         end_date=kwargs['end_date']
 
     
-    dd = filter(lambda x: os.path.isfile(kwargs['dir'] + '/' + x+'/sfit4.ctl')
+    dd = list(filter(lambda x: os.path.isfile(kwargs['dir'] + '/' + x+'/sfit4.ctl')
                 and x[0:8] >= start_date[0:8] 
-                and x[0:8] <= end_date[0:8], os.listdir(kwargs['dir']))
+                and x[0:8] <= end_date[0:8], os.listdir(kwargs['dir'])))
 
     dd.sort()
-    print start_date, end_date
+    print (start_date, end_date)
     direcs = []
     for direc in dd:
         direcs.append(kwargs['dir']+'/'+direc)
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     try:
         opts,arg = getopt.getopt(sys.argv[1:], [], ["dir=","sbctl=","start_date=","end_date="])
     except:
-        print 'error in arguments'
+        print ('error in arguments')
         exit()
     
     args= 'error_calc('

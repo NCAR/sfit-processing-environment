@@ -1,4 +1,5 @@
-#! /usr/local/python-2.7/bin/python
+#!/usr/bin/python3
+##! /usr/local/python-2.7/bin/python
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
 # Name:
@@ -59,8 +60,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import getopt
 import datetime as dt
 import DateRange as dr
@@ -76,13 +77,23 @@ import csv
                                                      
 def usage():
     ''' Prints to screen standard program usage'''
-    print 'mkSpecDB.py -i <File> -D <Directory>'
+    print ('appendSpecDB.py [-i <File> -D <Directory> -s tab/mlo/fl0 -y 2019 -?')
+    print ('There are two options to run appendSpecDB.py:')
+    print ('(1) appendSpecDB.py -i <File>. In this case the input file needs to be modified accordingly.')
+    print ('(2) appendSpecDB.py -s tab/mlo/fl0 -y 2018 -?')
+    print ('  -i             : input File')
+    print ('  -s             : Flag Must include location: e.g., mlo/tab/fl0')
+    print ('  -y      <YYYY> : Flag to specify year.')
+    print ('  -?             : Show all flags')
+    print ('Note: if input file is provided the location, dates, etc need to be modified accordingly')
+    print ('Note: if input file is not provided the location, dates, are taken from -s -d, and additional hardcoded inputs are in appendSpecDB.py')
+
 
         
 def ckDir(dirName):
     '''Check if a directory exists'''
     if not os.path.exists( dirName ):
-        print 'Directory %s does not exist' % (dirName)
+        print ('Directory %s does not exist' % (dirName))
         return False
     else:
         return True
@@ -90,7 +101,7 @@ def ckDir(dirName):
 def ckFile(fName,exit=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exit:
             sys.exit()
         return False
@@ -105,7 +116,7 @@ def filterDict(dataDict,idate,fdate):
         if idate <= val <= fdate:                                                   # Check if date-time is within range
             inds.append(ind)
             
-    fltDic = {key: [val[i] for i in inds] for key, val in dataDict.iteritems()}     # Rebuild filtered dictionary. Not compatible with python 2.6
+    fltDic = {key: [val[i] for i in inds] for key, val in dataDict.items()}     # Rebuild filtered dictionary. Not compatible with python 2.6
     return fltDic
         
 def sortDict(DataDict,keyval):
@@ -128,16 +139,17 @@ def main(argv):
     #-----------------------------
     statDirFlg = False             # Flag to indicate the presence of external station data
     houseFlg   = False             # Flag to indicate the presence of house data
+    inpFlg     = False
     
                                                 #---------------------------------#
                                                 # Retrieve command line arguments #
                                                 #---------------------------------#
     #------------------------------------------------------------------------------------------------------------#                                             
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:D:')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:s:y:?')
 
     except getopt.GetoptError as err:
-        print str(err)
+        print (str(err))
         usage()
         sys.exit()
         
@@ -154,12 +166,27 @@ def main(argv):
             
             # Check if file exists
             ckFile(inputFile,True)
+
+            inpFlg = True
+
+        elif opt == '-s':  
+
+            loc = arg.lower()
+
+        elif opt == '-y':
+
+            year   = int(arg)
+  
+
+        elif opt == '-?':
+            usage()
+            sys.exit()                               
             
         #------------------
         # Unhandled options
         #------------------
         else:
-            print 'Unhandled option: ' + opt
+            print ('Unhandled option: ' + opt)
             usage()
             sys.exit()
     #------------------------------------------------------------------------------------------------------------#                       
@@ -169,10 +196,69 @@ def main(argv):
     # Read input file
     #----------------
     DBinputs = {}
-    execfile(inputFile, DBinputs)
-    if '__builtins__' in DBinputs:
-        del DBinputs['__builtins__']       
+
+    if inpFlg:
         
+        try:
+            execfile(inputFile, DBinputs)
+
+        except IOError as errmsg:
+            print (errmsg)
+            sys.exit()
+
+        except:
+            exec(compile(open(inputFile, "rb").read(), inputFile, 'exec'), DBinputs)
+
+        if '__builtins__' in DBinputs:
+            del DBinputs['__builtins__']
+
+    else:
+
+        #---------------------
+        # Three letter station
+        # location
+        #---------------------
+        DBinputs['loc'] = loc
+
+        #----------------------------------
+        # Date Range of data to process
+        # Data processing includes starting
+        # and ending dates!!
+        #----------------------------------
+        # Starting
+        DBinputs['year'] = year               # Year
+       
+        # Flags
+        #------
+        DBinputs['readableFlg'] = True
+        DBinputs['csvFlg']      = False 
+
+        #------------
+        # directories
+        #------------
+        if loc.lower() == 'mlo':     DBinputs['statDir']   = '/data1/ancillary_data/mlo/cmdl/Minute_Data/'   # Base directory with all external station data (mlo)
+        elif loc.lower() == 'fl0':   DBinputs['statDir']   = '/data1/ancillary_data/fl0/eol/'
+        #else:                        DBinputs['statDir'] = ''
+        #statDir   = '/data/tools/gsfc/fl0/eol/'    # Base directory with all external station data (fl0)
+
+        #------
+        # Files
+        #------
+        DBinputs['specDBFile']         = '/data/Campaign/'+loc.upper()+'/Spectral_DB/spDB_'+loc.lower()+'_RD.dat'           # Old spectral database file
+        DBinputs['readableSpecDBFile'] = '/data/Campaign/'+loc.upper()+'/Spectral_DB/HRspDB_'+loc.lower()+'_RD.dat'         # Easily readable new spectral database file
+        DBinputs['csvSpecDBFile']      = '/data/Campaign/'+loc.upper()+'/Spectral_DB/CSVspDB_'+loc.lower()+'.dat'        # CSV new spectral database
+        DBinputs['houseFile']          = '/data/Campaign/'+loc.upper()+'/House_Log_Files/'+loc.upper()+'_HouseData_'+str(year)+'.dat'  # Yearly house data file
+
+        #----------------------
+        # Number of minutes to
+        # include for averaging
+        #----------------------
+        if loc.lower() == 'fl0': DBinputs['nminsStation'] = 30       # Number of minutes for averaging Temperature, Pressure, and RH from external station data (MLO)
+        else: DBinputs['nminsStation'] = 10
+        #nminsStation = 90        # Number of minutes for averaging Temperature, Pressure, and RH from external station data (TAB)
+        DBinputs['nminsHouse']   = 10        # Number of minutes for averaging Temperature, Pressure, and RH from House log data
+    
+
     #-----------------------------------
     # Check the existance of directories
     # and files given in input file
@@ -202,14 +288,15 @@ def main(argv):
         reader = csv.DictReader(fopen, delimiter=' ',skipinitialspace=True)
         DBfieldNames = reader.fieldnames
         for row in reader:
-            for key,val in row.iteritems():
+            #for key,val in row.iteritems():
+            for key,val in row.items():
                 specDBinputs.setdefault(key,[]).append(val)
                  
     #---------------------------------------------
     # Create a DateTime entry in SpecDB dictionary
     #---------------------------------------------
     DBdatetime = [dt.datetime(int(date[0:4]),int(date[4:6]),int(date[6:8]),int(time[0:2]),int(time[3:5]),int(time[6:8])) \
-                              for date,time in it.izip(specDBinputs['Date'],specDBinputs['Time'])]
+                              for date,time in zip(specDBinputs['Date'],specDBinputs['Time'])]
     specDBinputs.setdefault('DateTime',[]).extend(DBdatetime)    
       
            
@@ -241,7 +328,8 @@ def main(argv):
                             houseData.setdefault('W_Radiance',[]).append(float(row[30]))
                             
                             # These values are not present in the mlo house log data
-                            houseData.setdefault('Pres',[]).append(-9999)
+                            try:   houseData.setdefault('Pres',[]).append(float(row[31]))
+                            except: houseData.setdefault('Pres',[]).append(-9999)     
                             houseData.setdefault('Det_Intern_T_Swtch',[]).append(-9999)
                             houseData.setdefault('Ext_Solar_Sens',[]).append(-9999)
                             #houseData.setdefault('Quad_Sens',[]).append(-9999)                            
@@ -255,27 +343,34 @@ def main(argv):
                             houseData.setdefault('Quad_Sens',[]).append(float(row[27]))     
                           
         except IOError:
-            print 'Unable to find house data file: %s' % DBinputs['houseFile']
+            print ('Unable to find house data file: %s' % DBinputs['houseFile'])
             
     #--------------------------------------------------
     # Open and read external station data if applicable
     #--------------------------------------------------
     if statDirFlg:
         if DBinputs['loc'].lower() == 'mlo':
-            #   LABEL                       Units          Column    Missing Value
-            #---------------------------------------------------------------------
-            #   Year                        YYYY            2         NA           
-            #   Month                       MM              3         NA                 
-            #   Day                         DD              4         NA               
-            #   Hour                        HH              5         NA       
-            #   Minute                      MM              6         NA   
-            #   Barometric Pressure         hPa             9        -999.90
-            #   Temperature at 2m           C               10       -999.9
-            #   Relative Humidity           %               13       -99
-            #---------------------------------------------------------------------                                 
-            cmdlFiles = glob( DBinputs['statDir'] + str(DBinputs['year']) + '/' + \
+
+            #if DBinputs['year'] < 2019:
+                #   LABEL                       Units          Column    Missing Value
+                #---------------------------------------------------------------------
+                #   Year                        YYYY            2         NA           
+                #   Month                       MM              3         NA                 
+                #   Day                         DD              4         NA               
+                #   Hour                        HH              5         NA       
+                #   Minute                      MM              6         NA   
+                #   Barometric Pressure         hPa             9        -999.90
+                #   Temperature at 2m           C               10       -999.9
+                #   Relative Humidity           %               13       -99
+                #---------------------------------------------------------------------                                 
+                
+                #cmdlFiles = glob( DBinputs['statDir'] + str(DBinputs['year']) + '/' + \
+                #                  'met_mlo_insitu_1_obop_minute_'+ str(DBinputs['year']) + '*')
+
+            #---------CHANGED BELOW. AFTER 2015 THE MONTHLY FILES ARE NOT SAVED BY YEAR (IVAN)
+            cmdlFiles = glob( DBinputs['statDir']  + \
                               'met_mlo_insitu_1_obop_minute_'+ str(DBinputs['year']) + '*')
-            
+            #---------                 
             if not len(cmdlFiles) == 0:
                 statData = {}
                 for cmdlFile in cmdlFiles:
@@ -287,6 +382,7 @@ def main(argv):
                             statData.setdefault('Pres',[]).append(float(row[9]))
                             statData.setdefault('Temp',[]).append(float(row[10]))
                             statData.setdefault('RH',[]).append(float(row[13]))
+
                             
         elif DBinputs['loc'].lower() == 'fl0':
             #   LABEL                       Units          Column    Missing Value
@@ -300,12 +396,13 @@ def main(argv):
             #   Temperature                 C               6        -999.9
             #   Relative Humidity           %               7        -99
             #---------------------------------------------------------------------                   
-            eolFile =  DBinputs['statDir'] + 'fl0_met_data_' + str(DBinputs['year']) + '.txt'
+            eolFile =  DBinputs['statDir'] + 'fl0_met_data_' + str(DBinputs['year']) + '_v2.txt'
             if ckFile(eolFile):
                 statData = {}
                 with open(eolFile,'r') as fopen:
                     reader = csv.reader(fopen,delimiter=' ',skipinitialspace=True)
-                    reader.next()         # Skip first row
+                    try: reader.next()         # Skip first row
+                    except: next(reader)
                     for row in reader:
                         statData.setdefault('DateTime',[]).append(dt.datetime(int(row[0]),int(row[1]),int(row[2]),\
                                                                               int(row[3]),int(row[4]),0))
@@ -323,6 +420,7 @@ def main(argv):
         idate     = dateTime
         fdateH    = dateTime + dt.timedelta(minutes=DBinputs['nminsHouse'])
         fdateS    = dateTime + dt.timedelta(minutes=DBinputs['nminsStation'])
+
               
         #----------------------------------
         # If no house data exists for
@@ -331,7 +429,7 @@ def main(argv):
         if not 'houseData' in vars():
             specDBinputs.setdefault('HouseTemp',[]).append('-9999')
             specDBinputs.setdefault('HousePres',[]).append('-9999')
-            specDBinputs.setdefault('HouseRH',[]).append('-99')
+            specDBinputs.setdefault('HouseRH',[]).append('-999')
             specDBinputs.setdefault('Ext_Solar_Sens',[]).append('-9999')
             specDBinputs.setdefault('Quad_Sens',[]).append('-9999')
             specDBinputs.setdefault('Det_Intern_T_Swtch',[]).append('-9999')            
@@ -345,7 +443,8 @@ def main(argv):
             HouseRH   = np.array(fltrdData['RH']  )
             SolarSen  = np.array(fltrdData['Ext_Solar_Sens'])
             DetIntT   = np.array(fltrdData['Det_Intern_T_Swtch'])
-            
+
+          
             #--------------------------------------------------------------
             # If processing mlo have to determine whether to use E_radiance
             # or W_radiance for the Ext_Solar_Sens depending on Sazim angle
@@ -375,7 +474,7 @@ def main(argv):
             else: avgQS = str(round(avgQS,2))
             if np.isnan(avgDIT):   avgDIT   = '-9999'
             else: avgDIT = str(round(avgDIT,2))
-                    
+
             # Assign averages to main dictionary
             specDBinputs.setdefault('HouseTemp',[]).append(avgTemp)
             specDBinputs.setdefault('HousePres',[]).append(avgPres)
@@ -439,11 +538,14 @@ def main(argv):
     # advanced the number of columns
     #----------------------------------
     if DBinputs['readableFlg']:
-        with open(DBinputs['readableSpecDBFile'], 'wb') as fopen:
+        with open(DBinputs['readableSpecDBFile'], 'w') as fopen:
             #strformat = '{0:<15} {1:<10} {2:<10} {3:<10} {4:<10} {5:<10} {6:<10} {7:<10} {8:<10} {9:<10} {10:<10} {11:<10} {12:<10} {13:<10} {14:<10} {15:<10} '+\
             #            '{16:<10} {17:<10} {18:<10} {19:<10} {20:<5} {21:<13} {22:<13} {23:<10} {24:<10} {25:<10} {26:<10} {27:<10} {28:<10} {29:<10} {30:<15} {31:<15} {32:<15} \n'      
             strformat = ['{0:<15}'] + [' {'+str(i)+':<12}' for i in range(1,len(DBfieldNames))]
             strformat = ''.join(strformat).lstrip().rstrip() + '\n'
+
+            #specDBinputs  = [i.decode('utf-8') for i in specDBinputs]
+
             
             fopen.write(strformat.format(*[k for k in sorted(specDBinputs,key=order.get)]))
             for row in zip(*[specDBinputs[k] for k in sorted(specDBinputs, key=order.get)]):

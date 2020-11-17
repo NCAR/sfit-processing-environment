@@ -25,12 +25,12 @@
 # Three letter station
 # location
 #---------------------
-loc = 'fl0'                                    # Three letter station identifier
+loc = 'mlo'                                    # Three letter station identifier
 
 #----------------
 # Year to process
 #----------------
-years = [2015]                                   # Year to process
+years = [2019]                                   # Year to process
 
 #------
 # Flags

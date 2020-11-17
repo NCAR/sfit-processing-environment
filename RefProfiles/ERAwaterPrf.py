@@ -1,4 +1,5 @@
-#! /usr/local/python-2.7/bin/python
+#!/usr/bin/python
+##! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
 # Name:
@@ -35,8 +36,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import datetime as dt
 import sfitClasses as sc
 import numpy as np
@@ -46,6 +47,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import scipy as sp
 from scipy.io import netcdf
+import glob
 
                         #-------------------------------------#
                         # Define helper functions and classes #
@@ -54,7 +56,7 @@ from scipy.io import netcdf
 def ckDir(dirName,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -63,7 +65,7 @@ def ckDir(dirName,exitFlg=False):
 def ckFile(fName,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -89,12 +91,13 @@ def main():
     #---------
     # Location
     #---------
-    loc = 'mlo'
+    loc = 'tab'
     
     #------------------------------------
     # Version number to append water file
     #------------------------------------
-    verW = 'v4'
+    verW   = 'v4'  #version for daily Profile
+    verW_t = 'v66' #version for 6-hourly profiles
     
     #-----------------------------------------
     # Interpolation flag for NCEP re-analysis: 
@@ -112,11 +115,11 @@ def main():
     #-----------------------
     # Date Range of interest
     #-----------------------
-    iyear          = 2012
+    iyear          = 2019
     imnth          = 1
     iday           = 1
-    fyear          = 2012
-    fmnth          = 12
+    fyear          = 2019
+    fmnth          = 8
     fday           = 31
     
     #------------------------------
@@ -294,8 +297,8 @@ def main():
         #-----------------------------------------------
         if not interpFlg:
             latind = findCls(lat[:],sLat)
-            lonind = findCls(lon[:],sLon)        
-        
+            lonind = findCls(lon[:],sLon) 
+
         #-----------------------------------------------------
         # For each level interpolate hgt and specific humidity 
         # based on latitude and longitude of site
@@ -416,20 +419,92 @@ def main():
         ERAtop = Z_day[0]
         topInd  = np.argmin( abs(Z - ERAtop) )   # Where top of NCEP reanalysis fits in WACCM grid height
         
-        Zin  = np.concatenate( ( Z[0:(topInd-nSkip)]             , Z_day), axis=1 )
-        SHin = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], Q_day), axis=1 )
+        #Zin  = np.concatenate( ( Z[0:(topInd-nSkip)]             , Z_day), axis=1 )
+        #SHin = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], Q_day), axis=1 )
+
+        #Remove axis=0
+        
+        Zin  = np.concatenate( ( Z[0:(topInd-nSkip)]             , Z_day) )
+        
+        SHin = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], Q_day) )
+
+        SHin_00 = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], Qint_00) )
+        SHin_06 = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], Qint_06) )
+        SHin_12 = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], Qint_12) )
+        SHin_18 = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], Qint_18) )
         
         #--------------------------------------------------------------
         # Interpolate to specific humidity on WACCM grid. X data must 
         # be increasing => flip dimensions and then flip back
         #--------------------------------------------------------------
         if logFlg:                
-            SHout  = np.exp(np.flipud( intrpUniSpl( np.flipud(Zin), np.log(np.flipud(SHin)), k=intrpOrder )( np.flipud(Z) ) ) )
+            SHout     = np.exp(np.flipud( intrpUniSpl( np.flipud(Zin), np.log(np.flipud(SHin)), k=intrpOrder )( np.flipud(Z) ) ) )
+            SHout_00  = np.exp(np.flipud( intrpUniSpl( np.flipud(Zin), np.log(np.flipud(SHin_00)), k=intrpOrder )( np.flipud(Z) ) ) )
+            SHout_06  = np.exp(np.flipud( intrpUniSpl( np.flipud(Zin), np.log(np.flipud(SHin_06)), k=intrpOrder )( np.flipud(Z) ) ) )
+            SHout_12  = np.exp(np.flipud( intrpUniSpl( np.flipud(Zin), np.log(np.flipud(SHin_12)), k=intrpOrder )( np.flipud(Z) ) ) )
+            SHout_18  = np.exp(np.flipud( intrpUniSpl( np.flipud(Zin), np.log(np.flipud(SHin_18)), k=intrpOrder )( np.flipud(Z) ) ) )
+        
         else:
-            SHout  = np.flipud( intrpUniSpl( np.flipud(Zin), np.flipud(SHin), k=intrpOrder )( np.flipud(Z) ) )
+            SHout     = np.flipud( intrpUniSpl( np.flipud(Zin), np.flipud(SHin), k=intrpOrder )( np.flipud(Z) ) )
+            SHout_00  = np.flipud( intrpUniSpl( np.flipud(Zin), np.flipud(SHin_00), k=intrpOrder )( np.flipud(Z) ) )
+            SHout_06  = np.flipud( intrpUniSpl( np.flipud(Zin), np.flipud(SHin_06), k=intrpOrder )( np.flipud(Z) ) )
+            SHout_12  = np.flipud( intrpUniSpl( np.flipud(Zin), np.flipud(SHin_12), k=intrpOrder )( np.flipud(Z) ) )
+            SHout_18  = np.flipud( intrpUniSpl( np.flipud(Zin), np.flipud(SHin_18), k=intrpOrder )( np.flipud(Z) ) )
+
+        #------------------------
+        # remove v4 for 6-hourly files
+        #------------------------
+        waterFiles_test = glob.glob(sngDir+'w-120*'+verW)
+        waterFiles_test = [i for i in waterFiles_test if len(os.path.basename(i)) > 10]
+
+        if len(waterFiles_test) >= 1:
+            for f in waterFiles_test:
+                os.remove(f)
+
 
         #---------------------
-        # Write out water file
+        # Write out water file at 00
+        #---------------------
+        with open(sngDir+'w-120.'+YYYY+MM+DD+'.000000.'+verW_t,'w') as fopen:
+            fopen.write('    1     H2O from ERA reanalysis and WACCM V6 monthly mean \n')
+            
+            for row in segmnt(SHout_00,5):
+                strformat = ','.join('{:>12.4E}' for i in row) + ', \n'
+                fopen.write(strformat.format(*row)) 
+
+        #---------------------
+        # Write out water file at 06
+        #---------------------
+        with open(sngDir+'w-120.'+YYYY+MM+DD+'.060000.'+verW_t,'w') as fopen:
+            fopen.write('    1     H2O from ERA reanalysis and WACCM V6 monthly mean \n')
+            
+            for row in segmnt(SHout_06,5):
+                strformat = ','.join('{:>12.4E}' for i in row) + ', \n'
+                fopen.write(strformat.format(*row)) 
+
+        #---------------------
+        # Write out water file at 12
+        #---------------------
+        with open(sngDir+'w-120.'+YYYY+MM+DD+'.120000.'+verW_t,'w') as fopen:
+            fopen.write('    1     H2O from ERA reanalysis and WACCM V6 monthly mean \n')
+            
+            for row in segmnt(SHout_12,5):
+                strformat = ','.join('{:>12.4E}' for i in row) + ', \n'
+                fopen.write(strformat.format(*row))
+
+        #---------------------
+        # Write out water file at 18
+        #---------------------
+        with open(sngDir+'w-120.'+YYYY+MM+DD+'.180000.'+verW_t,'w') as fopen:
+            fopen.write('    1     H2O from ERA reanalysis and WACCM V6 monthly mean \n')
+            
+            for row in segmnt(SHout_18,5):
+                strformat = ','.join('{:>12.4E}' for i in row) + ', \n'
+                fopen.write(strformat.format(*row)) 
+
+
+        #---------------------
+        # Write out water file Daily
         #---------------------
         with open(sngDir+'w-120.'+verW,'w') as fopen:
             fopen.write('    1     H2O from ERA reanalysis and WACCM V6 monthly mean \n')
@@ -472,24 +547,34 @@ def main():
         pdfsav = PdfPages(sngDir+'WaterProfile_ERA.pdf')
         
         fig1,ax1 = plt.subplots()
-        ax1.plot(SHout,Z,'rx-', label='Interpolated SH')
+        ax1.plot(SHout_00,Z, color='green', label='Interpolated SH-00')
+        ax1.plot(SHout_06,Z, color='gold', label='Interpolated SH-06')
+        ax1.plot(SHout_12,Z, color='cyan', label='Interpolated SH-12')
+        ax1.plot(SHout_18,Z, color='gray', label='Interpolated SH-18')
+
+        ax1.plot(SHout,Z,'rx-', label='Interpolated SH-Mean')
+        ax1.plot(Q_day,Z_day,'kx-',label='ERA Reanalysis SH-Mean')
         ax1.plot(waccmW[:,mnthInd],Z,'bx-',label='WACCM V6 SH')
-        ax1.plot(Q_day,Z_day,'kx-',label='ERA Reanalysis SH')
         ax1.grid(True,which='both')
         ax1.legend(prop={'size':9})
         ax1.set_ylabel('Altitude [km]')
         ax1.set_xlabel('VMR [ppv]')
         ax1.tick_params(axis='x',which='both',labelsize=8)
         ax1.set_ylim((Z[-1],80))
-        ax1.set_xlim((0,np.max((waccmW[-1,mnthInd],Q_day[-1]))))
-        ax1.set_title(oneDay)
+        #ax1.set_xlim((0,np.max((waccmW[-1,mnthInd],Q_day[-1]))))
+        ax1.set_title(YYYY+'-'+MM+'-'+DD)
         
         pdfsav.savefig(fig1,dpi=250)
         
         fig2,ax2 = plt.subplots()
-        ax2.plot(SHout,Z,'rx-', label='Interpolated SH')
+        ax2.plot(SHout_00,Z, color='green', label='Interpolated SH-00')
+        ax2.plot(SHout_06,Z, color='gold', label='Interpolated SH-06')
+        ax2.plot(SHout_12,Z, color='cyan', label='Interpolated SH-12')
+        ax2.plot(SHout_18,Z, color='gray', label='Interpolated SH-18')
+
+        ax2.plot(SHout,Z,'rx-', label='Interpolated SH-Mean')
+        ax2.plot(Q_day,Z_day,'kx-',label='ERA Reanalysis SH-Mean')
         ax2.plot(waccmW[:,mnthInd],Z,'bx-',label='WACCM V6 SH')
-        ax2.plot(Q_day,Z_day,'kx-',label='ERA Reanalysis SH')
         ax2.grid(True,which='both')
         ax2.legend(prop={'size':9})
         ax2.set_ylabel('Altitude [km]')
@@ -497,14 +582,15 @@ def main():
         ax2.tick_params(axis='x',which='both',labelsize=8)
         ax2.set_xscale('log')
         ax2.set_ylim((Z[-1],80))
-        ax2.set_xlim((0,np.max((waccmW[-1,mnthInd],Q_day[-1]))))
-        ax2.set_title(oneDay)
+        #ax2.set_xlim((0,np.max((waccmW[-1,mnthInd],Q_day[-1]))))
+        ax2.set_title(YYYY+'-'+MM+'-'+DD)
         
         pdfsav.savefig(fig2,dpi=250)            
                 
         pdfsav.close()
         
-        print 'Finished processing folder: {}'.format(sngDir)
+        print ('Finished processing folder: {}'.format(sngDir))
+        #user_input = raw_input('Press any key to exit >>> ')
                                                                                     
 if __name__ == "__main__":
     main()

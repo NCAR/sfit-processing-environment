@@ -1,4 +1,5 @@
-#! /usr/local/python-2.7/bin/python
+#!/usr/bin/python3
+##! /usr/local/python-2.7/bin/python
 
 #----------------------------------------------------------------------------------------
 # Name:
@@ -17,7 +18,7 @@
 #
 #
 # Notes:
-#       1)
+#       1) compatible with python 2.7 or later
 #
 #
 # Usage:
@@ -35,8 +36,8 @@
                         #-------------------------#
                         # Import Standard modules #
                         #-------------------------#
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import datetime as dt
 import sfitClasses as sc
 import numpy as np
@@ -47,16 +48,25 @@ from matplotlib.backends.backend_pdf import PdfPages
 import scipy as sp
 from scipy.io import netcdf
 import netCDF4 as nc
+import getopt
 
 
                         #-------------------------------------#
                         # Define helper functions and classes #
                         #-------------------------------------#
 
+def usage():
+    ''' Prints to screen standard program usage'''
+    print ('\nNCEPwaterPrf.py [-s tab/mlo/fl0 -d 20180515 -?')
+    print ('  -s             : Flag Must include location: e.g., mlo/tab/fl0')
+    print ('  -d <20180515> or <20180515_20180530>  : Flag to specify input Dates. If not Date is specified current date is used.')
+    print ('  -?             : Show all flags')
+    print ('Note: Additional hardcoded inputs are in NCEPwaterPrf.py\n')
+
 def ckDir(dirName,exitFlg=False):
     ''' '''
     if not os.path.exists( dirName ):
-        print 'Input Directory %s does not exist' % (dirName)
+        print ('Input Directory %s does not exist' % (dirName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -65,7 +75,7 @@ def ckDir(dirName,exitFlg=False):
 def ckFile(fName,exitFlg=False):
     '''Check if a file exists'''
     if not os.path.isfile(fName):
-        print 'File %s does not exist' % (fName)
+        print ('File %s does not exist' % (fName))
         if exitFlg: sys.exit()
         return False
     else:
@@ -73,6 +83,10 @@ def ckFile(fName,exitFlg=False):
 
 def segmnt(seq,n):
     '''Yeilds successive n-sized segments from seq'''
+    try:
+        xrange
+    except NameError:
+        xrange = range
     for i in xrange(0,len(seq),n): yield seq[i:i+n]
 
 def findCls(dataArray, val):
@@ -86,13 +100,74 @@ def findCls(dataArray, val):
                             #                            #
                             #----------------------------#
 
-def main():
+def main(argv):
+
+    #--------------------------------
+    # Retrieve command line arguments
+    #--------------------------------
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], 's:d:?:')
+
+    except getopt.GetoptError as err:
+        print (str(err))
+        usage()
+        sys.exit()
+
+    #-----------------------------
+    # Parse command line arguments
+    #-----------------------------
+    for opt, arg in opts:
+        # Check input file flag and path
+        if opt == '-s':
+
+            loc = arg.lower()
+
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+
+            else:
+                print ('Error in input date')
+                usage()
+                sys.exit()
+
+        elif opt == '-?':
+            usage()
+            sys.exit()
+
+        else:
+            print ('Unhandled option: ' + opt)
+            sys.exit()
+
 
     #---------
     # Location
     #---------
-    loc = 'tab'
-    loc = 'fl0'
+    #loc = 'fl0'
 
     #------------------------------------
     # Version number to append water file
@@ -112,15 +187,6 @@ def main():
     intrpOrder = 1            # Order of interpolation
     logFlg     = True         # Flag to do interpolation of log of water
 
-    #-----------------------
-    # Date Range of interest
-    #-----------------------
-    iyear          = 2015
-    imnth          = 1
-    iday           = 1
-    fyear          = 2015
-    fmnth          = 12
-    fday           = 31
 
     #-------------------------------
     # NCEP Reanalysis data directory
@@ -132,7 +198,6 @@ def main():
     # Data Directory
     #---------------
     dataDir  = '/data1/'+loc.lower()+'/'
-
 
     #-------------------------
     # WACCM monthly means file
@@ -187,6 +252,9 @@ def main():
         sLat = 40.4
         sLon = 254.76                # 105.24 W = (360 - 105.24) = 254.76 E
 
+        ###sLat = 42.73
+        ###sLon = 253.68               #WYOBA
+
 
     #----------------------------
     # File and directory checking
@@ -217,7 +285,8 @@ def main():
     # data directory and collect directory names
     #--------------------------------------------
     dirLst = []
-    for drs in os.walk(dataDir).next()[1]:
+    #for drs in os.walk(dataDir).next()[1]:
+    for drs in next(iter(os.walk(dataDir)))[1]: 
 
         #-------------------------------------------
         # Test directory to make sure it is a number
@@ -365,8 +434,12 @@ def main():
             NCEPtop = dayHgt[-1]
             topInd  = np.argmin( abs(Z - NCEPtop) )   # Where top of NCEP reanalysis fits in WACCM grid height
 
-            Zin  = np.concatenate( ( Z[0:(topInd-nSkip)]             , np.flipud(dayHgt)) , axis=1 )
-            SHin = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], np.flipud(dayShum)), axis=1 )
+            #Zin  = np.concatenate( ( Z[0:(topInd-nSkip)]             , np.flipud(dayHgt)) , axis=1 )
+            #SHin = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], np.flipud(dayShum)), axis=1 )
+            
+            #Remove axis=1
+            Zin  = np.concatenate( ( Z[0:(topInd-nSkip)]             , np.flipud(dayHgt)))
+            SHin = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], np.flipud(dayShum)))
 
             #--------------------------------------------------------------
             # Interpolate to specific humidity on WACCM grid. X data must
@@ -406,6 +479,7 @@ def main():
             ax1.set_title(oneDay)
 
             pdfsav.savefig(fig1,dpi=250)
+            plt.close(fig1)
 
             fig2,ax2 = plt.subplots()
             ax2.plot(SHout,Z,'rx-', label='Interpolated SH')
@@ -418,16 +492,18 @@ def main():
             ax2.tick_params(axis='x',which='both',labelsize=8)
             ax2.set_xscale('log')
             ax2.set_ylim((Z[-1],60))
-            ax2.set_xlim((0,np.max((waccmW[-1,mnthInd],dayShum[-1]))))
+            ax2.set_xlim((1e-10,np.max((waccmW[-1,mnthInd],dayShum[-1]))))
             ax2.set_title(oneDay)
 
             pdfsav.savefig(fig2,dpi=250)
 
             pdfsav.close()
 
-            print 'Finished processing folder: {}'.format(sngDir)
+            plt.clf()
+            plt.close(fig2)
 
 
+            print ('Finished processing folder: {}'.format(sngDir))
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
