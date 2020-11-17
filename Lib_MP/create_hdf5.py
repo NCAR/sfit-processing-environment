@@ -142,7 +142,7 @@ def create_hdf5(**kwargs):
                 continue
 	    gasnames = rprf.get_retrieval_gasnames()
 	    rvmr,z = rprf.get_gas_vmr(gasnames[0])
-	    avmr = aprf.get_gas_vmr(gasnames[0])
+	    avmr,z = aprf.get_gas_vmr(gasnames[0])
 	    rcol = rprf.get_gas_col(gasnames[0])
 	    acol = aprf.get_gas_col(gasnames[0])
 	    len_vmr = len(z)
@@ -327,7 +327,7 @@ def create_hdf5(**kwargs):
 		    h_surface.append(np.double(-90000))
 	
 	    vmr_rt.append(np.reshape(rvmr,(len_vmr,-1)))
-	    vmr_ap.append(np.reshape(avmr,(len_vmr, -1)))
+	    vmr_ap.append(np.reshape(avmr,(len_vmr,-1)))
 	    ivmr_rt.append(np.reshape(i_rvmr, (len_vmr, nr_gas-1, 1)))
             ivmr_ap.append(np.reshape(i_avmr, (len_vmr, nr_gas-1, 1)))  
 	    icol_rt.append(np.reshape(i_col, (nr_gas-1, 1)))

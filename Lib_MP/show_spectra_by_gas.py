@@ -42,21 +42,15 @@ def spectra_by_gas(direc,ax=-1,nr_iter = -1, nr_band=1,gases='All'):
         max_s = np.max(s['clc'])
         max_s = 1.0
         if gases == 'All':
-            print (s['gas'],s['iteration'],s['band'])
             if int(s['iteration']) == nr_iter and int(s['band']) == nr_band:
-                if not s['gas'] == 'ALL':
-                    ax1.plot(s['nu'], s['clc'],label=s['gas'])
-                    try:
-                        gas_sum = gas_sum -np.log(s['clc'])
-                    except:
-                        gas_sum = -np.log(s['clc'])
-                        nu = s['nu']
+                ax1.plot(s['nu'], s['clc'],label=s['gas'])
+                try:
+                    gas_sum = gas_sum -np.log(s['clc'])
+                except:
+                    gas_sum = -np.log(s['clc'])
+                    nu = s['nu']
 #                    gas_sum = np.exp(-gas_sum)
 #                    ax1.plot(nu, gas_sum,label='SUM')
-                else:
-                    print (s['gas'])
-                    gas_all = s['clc']
-                    nu_all = s['nu']
                     
         else:
             #                pdb.set_trace()

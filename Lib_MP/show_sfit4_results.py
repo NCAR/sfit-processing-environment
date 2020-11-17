@@ -1,7 +1,7 @@
 import sys
 sys.path.append('/home/mathias/sfit-processing-environment/Lib_MP/')
 import read_result_sfit4 as sfit4
-from tkinter import *
+from Tkinter import *
 import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import matplotlib.gridspec as gridspec

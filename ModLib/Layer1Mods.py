@@ -825,18 +825,21 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #---------------------------------------------------------------
     #se  = np.zeros((np.sum(sumVars.summary['nptsb'],dtype=int),np.sum(sumVars.summary['nptsb'],dtype=int)), float)
     
-
+    
     if SbDict['seinputflg'][0].upper() == 'F':
-        snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(sumVars.summary['SNR'],sumVars.summary['nptsb'])]))
-        snrList[:] = [val**-2 for val in snrList]
+      snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in it.izip(sumVars.summary['SNR'],sumVars.summary['nptsb'])]))
+      snrList[:] = [val**-2 for val in snrList]
     else:
-        if not sc.ckFile(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], exitFlg=False,quietFlg=False): return False
-        lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
-        snrList    = np.array([float(x) for line in lines[2:] for x in line.strip().split()])
-        snrList[:] = 1.0/snrList
-
+      if not sc.ckFile(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], exitFlg=False,quietFlg=False): return False
+      lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
+      snrList    = np.array([float(x) for line in lines[2:] for x in line.strip().split()])
+      snrList[:] = 1.0/snrList
+      
     #np.fill_diagonal(se,snrList)    
     se=np.array(snrList) #avoid setting up a full 2d matrix for this diagonal matrix...
+#    import ipdb
+#    ipdb.set_trace()
+    seinv = np.diag(1/se)
     #-----------------------------------------------------
     # Test if Se matrix is symmetric and positive definite
     #-----------------------------------------------------
@@ -860,17 +863,22 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     x_start = int( lines[1].strip().split()[2] )
     n_layer = int( lines[1].strip().split()[3] )
     x_stop  = x_start + n_layer
-    K       = np.array([[float(x) for x in row.split()] for row in lines[3:]]
+    K       = np.array([[float(x) for x in row.split()] for row in lines[3:]])
     
     #--------------------
     # Read in or calculate Gain matrix
     #--------------------
+    
+#    import ipdb
+#    ipdb.set_trace()
+
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.g_matrix'][0], logFile)
     if not lines:
       print 'file.out.g_matrix missing for observation, directory: ' + wrkingDir
-      D=K.dot(seinv.dot(k.t)) #=retdata['shat'].dot(retdata['k'].T).dot(diag(retdata['seinv']))
-                              # but the first calculation is much faster
-      logFile.info('Calculated the contribution matrix G')
+      KtSeinv = K.T.dot(seinv)
+      shat = np.linalg.inv(sa) + KtSeinv.dot(K)
+      D = np.linalg.inv(shat).dot(KtSeinv)
+#      logFile.error('Calculated the contribution matrix G')
 #      if logFile: logFile.error('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
 #      return False    # Critical file, if missing terminate program   
     else:
