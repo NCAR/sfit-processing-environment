@@ -49,6 +49,8 @@ def create_hdf5(**kwargs):
         dirs.sort()
         
 
+        ctl = sfit4_ctl()
+        ctl.read(ctlfile)
         sbctl = sfit4_ctl()
         sbctl.read(sb_ctl)
         h5file = hdf5.open_file(filename, mode = "w", title = "sfit4 results")
@@ -88,6 +90,10 @@ def create_hdf5(**kwargs):
         for dd in dirs:
             print (dd)
             # Essential quantities fist
+            ctlfile = ''.join((direc, '/', dd, '/', 'sfit4.ctl'))
+            if not os.path.isfile(ctlfile):
+                print ('no sfit4.ctl file')
+                continue
             sumfile =  ''.join((direc, '/', dd, '/', 'summary'))
             if not os.path.isfile(sumfile):
                 print ('No summary file')
@@ -129,6 +135,12 @@ def create_hdf5(**kwargs):
                 print ('summary file not readable')
                 continue
 
+            if (ctl.get_value('rt.temperature') == 'T'):
+                    flag_temprt = True
+            else:
+                    flag_temprt = False
+            
+        
             flag_h2o = False
             try:
                 rprf = sfit4.read_table(rprfsfile)
@@ -146,7 +158,7 @@ def create_hdf5(**kwargs):
 	    rcol = rprf.get_gas_col(gasnames[0])
 	    acol = aprf.get_gas_col(gasnames[0])
 	    len_vmr = len(z)
-
+            
             try:
                 stv = sfit4.statevec(statefile)
             except:
@@ -158,7 +170,9 @@ def create_hdf5(**kwargs):
             aux_retrieved = stv.rt_aux
             nr_aux = len(aux_apriori)
 
-        
+            if flag_temprt:
+                t_ret = stv.Tret
+                    
             nr_gas = len(gasnames)
             i_rvmr=np.zeros((len_vmr,0))
             i_avmr=np.zeros((len_vmr,0))
@@ -203,6 +217,8 @@ def create_hdf5(**kwargs):
                 air_col=np.zeros(nr_entries) * np.nan
                 P = np.zeros((len_vmr, nr_entries)) *np.nan
                 T = np.zeros((len_vmr, nr_entries)) *np.nan
+                if flag_tret:
+                        Tret = np.zeros((len_vmr, nr_entries)) *np.nan
                 airmass = np.zeros((len_vmr, nr_entries)) *np.nan
                 vmr_h2o_ap = np.zeros((len_vmr, nr_entries)) *np.nan
 
@@ -245,6 +261,9 @@ def create_hdf5(**kwargs):
                 P = h5file.create_earray("/", 'P', hdf5.Float32Atom(), 
                                         (len_vmr,0), title="Pressure", expectedrows=nr_entries)
                 T = h5file.create_earray("/", 'T', hdf5.Float32Atom(), 
+                                        (len_vmr,0), title="Temperature", expect
+                if flag_Tret:
+                     Tret = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
                                         (len_vmr,0), title="Temperature", expectedrows=nr_entries)
                 air_mass = h5file.create_earray("/", 'air_mass', hdf5.Float32Atom(), 
                                              (len_vmr,0), title="AIRMASS", expectedrows=nr_entries)
@@ -387,6 +406,8 @@ def create_hdf5(**kwargs):
             pcol_ap.append(np.reshape(acol[0],(len_vmr, -1)))
             P.append(np.reshape(p,(len_vmr, -1)))
             T.append(np.reshape(t,(len_vmr, -1)))
+            if flag_tret:
+                    Tret.append(np.reshape(t,(len_vmr, -1)))
             air_mass.append(np.reshape(ac,(len_vmr, -1)))
 
             h2o, z = aprf.get_gas_vmr('H2O')
