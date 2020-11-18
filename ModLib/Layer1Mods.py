@@ -681,7 +681,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Make sure input working directory ends in '/'
     #----------------------------------------------
     if not wrkingDir.endswith('/'): wrkingDir += '/'
-
+    
     #--------------------------------------------
     # Read values from sfit4 output. Initialize 
     # output class for summary, profiles, and pbp
@@ -873,9 +873,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 #    ipdb.set_trace()
 
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.g_matrix'][0], logFile)
-<<<<<<< HEAD
     if not lines:
-      print 'file.out.g_matrix missing for observation, directory: ' + wrkingDir
+      print ('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
       KtSeinv = K.T.dot(seinv)
       shat = np.linalg.inv(sa) + KtSeinv.dot(K)
       D = np.linalg.inv(shat).dot(KtSeinv)
@@ -886,12 +885,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
       D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
 
 
-=======
-    if not lines: 
-        print ('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
-        if logFile: logFile.error('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
-        return False    # Critical file, if missing terminate program   
->>>>>>> 1d6eae08597e7f97d45fd907b9610b154a3a6dc6
 
     D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
     #------------------
@@ -1142,12 +1135,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                         diagFill = np.array(SbDict['sb.temperature.'+ErrType])
                         if len(diagFill) != len(sumVars.aprfs['TEMPERATURE']): raise ExitError('Number of Sb for temperature, type:'+ErrType+' does not match atmospheric layers!!')
                         diagFill = diagFill / sumVars.aprfs['TEMPERATURE']
-
-                #------------
-                # Profile Gas
-                #------------
-                elif Kbl.upper() in [x.upper() for x in kb_profile_gas]:
-                    diagFill = np.array(SbctlFileVars.inputs['sb.profile.'+Kbl+'.'+ErrType])
 
                     #------------
                     # Profile Gas
