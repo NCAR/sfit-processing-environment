@@ -491,10 +491,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     """
     def getSFITversion(wrkingDir):
       """retrieves the version of sfit4 as a 4tuple from the output file"""
-      with open(wrkingDir+'sfit4.dtl','r') as fid: header=fid.readline().strip()
+      with open(wrkingDir+'/sfit4.dtl','r') as fid: header=fid.readline().strip()
       # first integer found is SFIT 4: ('SFIT4:V')
       return tuple(map(int,header.split(':')[1][1:].split('.'))) # tuple(map(int,re.sub('\D','',header)[1:5]))
-    version=getSFITversion()
+    version=getSFITversion(wrkingDir)
     print ('SFIT4 Version=%s'%(version,))
     
     
@@ -505,8 +505,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Sb labels: are taken from sbctldefaults which contains either the labels set by the user in his defaults file, or the labels from the Layer1/sbDefaults.ctl file
     #----------------------------------
     Kb_labels = {}
-    for i in range(0, len(SbctlFileVars.inputs['kb_info']), 4):
-      Kb_labels[SbctlFileVars.inputs['kb_info'][i]] = SbctlFileVars.inputs['kb_info'][i+1]
+#    for i in range(0, len(SbctlFileVars.inputs['kb_info']), 4):
+#      Kb_labels[SbctlFileVars.inputs['kb_info'][i]] = SbctlFileVars.inputs['kb_info'][i+1]
 
     #----------------------------------
     # Adapt label definitions according to sfit version

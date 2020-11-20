@@ -3,7 +3,7 @@
 import sys
 sys.path.append('/home/mathias/sfit-processing-environment/ModLib')
 
-from Layer1Mods import errAnalysis
+from Layer1Mods_v2 import errAnalysis
 import sfitClasses as sc
 import os,shutil
 from multiprocessing import Pool
@@ -16,7 +16,9 @@ def calc_now(direc, sbctl,rootdir):
     ctl.getInputs()
     Sbctl = sc.CtlInputFile(sbctl)
     Sbctl.getInputs()
-    errAnalysis(ctl,Sbctl,direc, False)
+    SbctlDefaults = sc.CtlInputFile('sbDefaults.ctl')
+    SbctlDefaults.getInputs()
+    errAnalysis(ctl,Sbctl,SbctlDefaults,direc, False)
     try:    
         print ('errorcalculation in path: '+direc)
     except:
