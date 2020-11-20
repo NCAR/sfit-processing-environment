@@ -48,6 +48,10 @@ def create_hdf5(**kwargs):
                 return
         dirs.sort()
         
+        ctlfile = ''.join((direc, '/', 'sfit4.ctl'))
+        if not os.path.isfile(ctlfile):
+                print ('no sfit4.ctl file')
+                return
 
         ctl = sfit4_ctl()
         ctl.read(ctlfile)
@@ -90,10 +94,6 @@ def create_hdf5(**kwargs):
         for dd in dirs:
             print (dd)
             # Essential quantities fist
-            ctlfile = ''.join((direc, '/', dd, '/', 'sfit4.ctl'))
-            if not os.path.isfile(ctlfile):
-                print ('no sfit4.ctl file')
-                continue
             sumfile =  ''.join((direc, '/', dd, '/', 'summary'))
             if not os.path.isfile(sumfile):
                 print ('No summary file')
@@ -136,9 +136,9 @@ def create_hdf5(**kwargs):
                 continue
 
             if (ctl.get_value('rt.temperature') == 'T'):
-                    flag_temprt = True
+                    flag_tret = True
             else:
-                    flag_temprt = False
+                    flag_tret = False
             
         
             flag_h2o = False
@@ -152,12 +152,12 @@ def create_hdf5(**kwargs):
             except:
                 print ('aprf file not readable')
                 continue
-	    gasnames = rprf.get_retrieval_gasnames()
-	    rvmr,z = rprf.get_gas_vmr(gasnames[0])
-	    avmr,z = aprf.get_gas_vmr(gasnames[0])
-	    rcol = rprf.get_gas_col(gasnames[0])
-	    acol = aprf.get_gas_col(gasnames[0])
-	    len_vmr = len(z)
+            gasnames = rprf.get_retrieval_gasnames()
+            rvmr,z = rprf.get_gas_vmr(gasnames[0])
+            avmr,z = aprf.get_gas_vmr(gasnames[0])
+            rcol = rprf.get_gas_col(gasnames[0])
+            acol = aprf.get_gas_col(gasnames[0])
+            len_vmr = len(z)
             
             try:
                 stv = sfit4.statevec(statefile)
@@ -170,7 +170,7 @@ def create_hdf5(**kwargs):
             aux_retrieved = stv.rt_aux
             nr_aux = len(aux_apriori)
 
-            if flag_temprt:
+            if flag_tret:
                 t_ret = stv.Tret
                     
             nr_gas = len(gasnames)
@@ -261,8 +261,8 @@ def create_hdf5(**kwargs):
                 P = h5file.create_earray("/", 'P', hdf5.Float32Atom(), 
                                         (len_vmr,0), title="Pressure", expectedrows=nr_entries)
                 T = h5file.create_earray("/", 'T', hdf5.Float32Atom(), 
-                                        (len_vmr,0), title="Temperature", expect
-                if flag_Tret:
+                                        (len_vmr,0), title="Temperature", expectedrows=nr_entries)
+                if (flag_tret):
                      Tret = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
                                         (len_vmr,0), title="Temperature", expectedrows=nr_entries)
                 air_mass = h5file.create_earray("/", 'air_mass', hdf5.Float32Atom(), 
@@ -309,47 +309,6 @@ def create_hdf5(**kwargs):
                 print ('no avk found')
                 continue    
 
-<<<<<<< HEAD
-	    print 'akzepted'
-	    col_rt[:,nr_res] = summary.retriev
-	    col_ap[:,nr_res] = summary.apriori
-	    airmass[:,nr_res] = ac
-	    air_col[nr_res] = np.sum(ac)
-	    snr_clc.append(np.mean(summary.snr_ret))
-	    snr_the.append(np.mean(summary.snr_apr))
-	    dofs[nr_res] = summary.dofs
-	    iter.append(summary.iter)
-	    itmx.append(summary.iter_max)
-	    dir.append(dd)
-	
-	    mdate.append(df(dd))
-	    sza = np.hstack((sza,sz))
-	    azi = np.hstack((azi,az))
-	    lat = np.hstack((lat, lati))
-	    lon = np.hstack((lon, long))
-	    alt = np.hstack((alt,alti))
-	    dur = np.hstack((dur, du))
-	    spectra.extend(spectrum)
-	    # fisrt argument is test of existence of PTH from misc.out
-	    if pth.size > 0 and np.double(pth[0]) > 500.0:
-		    p_surface.append(pth[0])
-	    else:
-		    p_surface.append(-90000)
-
-	    if  pth.size == 0 or pth[1] > 90:
-		    t_surface.append(-90000)
-	    else:
-		    t_surface.append(pth[1] + 273.15) 
-
-	    if  pth.size > 0 and np.double(pth[2]) > 0.0:
-		    h_surface.append(pth[2])
-	    else:
-		    h_surface.append(np.double(-90000))
-	
-	    vmr_rt.append(np.reshape(rvmr,(len_vmr,-1)))
-	    vmr_ap.append(np.reshape(avmr,(len_vmr,-1)))
-	    ivmr_rt.append(np.reshape(i_rvmr, (len_vmr, nr_gas-1, 1)))
-=======
             print ('akzepted')
             col_rt[:,nr_res] = summary.retriev
             col_ap[:,nr_res] = summary.apriori
@@ -387,9 +346,8 @@ def create_hdf5(**kwargs):
                     h_surface.append(np.double(-90000))
         
             vmr_rt.append(np.reshape(rvmr,(len_vmr,-1)))
-            vmr_ap.append(np.reshape(avmr,(len_vmr, -1)))
+            vmr_ap.append(np.reshape(avmr,(len_vmr,-1)))
             ivmr_rt.append(np.reshape(i_rvmr, (len_vmr, nr_gas-1, 1)))
->>>>>>> 1d6eae08597e7f97d45fd907b9610b154a3a6dc6
             ivmr_ap.append(np.reshape(i_avmr, (len_vmr, nr_gas-1, 1)))  
             icol_rt.append(np.reshape(i_col, (nr_gas-1, 1)))
             if nr_aux > 0:
