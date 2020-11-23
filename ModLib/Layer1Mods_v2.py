@@ -496,7 +496,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
     """
     def getSFITversion(wrkingDir):
       """retrieves the version of sfit4 as a 4tuple from the output file"""
-      with open(wrkingDir+'sfit4.dtl','r') as fid: header=fid.readline().strip()
+      print(wrkingDir)
+      with open(wrkingDir+'/sfit4.dtl','r') as fid: header=fid.readline().strip()
       # first integer found is SFIT 4: ('SFIT4:V')
       return tuple(map(int,re.sub('\D','',header)[1:5]))
     version=getSFITversion(wrkingDir)
@@ -857,8 +858,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
             if np.array_equal(Sb,None): print ('Error building covariance matrix for %s'%sbcorkey);raise ValueError('Bad setting for %s'%sbcorkey)
             if np.array_equal(Sb_syst,None): print ('Error building systematic covariance matrix for %s'%sbcorkey);raise ValueError('Bad setting for %s'%sbcorkey)
             #fill the sb in the inintial sa
-            sa[np.meshgrid(sa_idx,sa_idx,indexing='ij')]=Sb
-            sa_syst[np.meshgrid(sa_idx,sa_idx,indexing='ij')]=Sb_syst
+            sa[tuple(np.meshgrid(sa_idx,sa_idx,indexing='ij'))]=Sb
+            sa_syst[tuple(np.meshgrid(sa_idx,sa_idx,indexing='ij'))]=Sb_syst
 
     
     #-----------------------------------------------------
@@ -1338,9 +1339,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
         fout.write('Measurement error (Sm)                        = {0:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
         fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
         fout.write('Interference error (interfering spcs)         = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
-        
-        fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
-        fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
+        if temperature in S_ran:
+          fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
+          fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
         if 'h2o' in S_ran: fout.write('Water Vapor (Random)                          = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
         if 'h2o' in S_sys: fout.write('Water Vapor (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['h2o'][2]/retdenscol*100)              )
         

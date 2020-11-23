@@ -491,10 +491,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     """
     def getSFITversion(wrkingDir):
       """retrieves the version of sfit4 as a 4tuple from the output file"""
-      with open(wrkingDir+'sfit4.dtl','r') as fid: header=fid.readline().strip()
+      with open(wrkingDir+'/sfit4.dtl','r') as fid: header=fid.readline().strip()
       # first integer found is SFIT 4: ('SFIT4:V')
       return tuple(map(int,header.split(':')[1][1:].split('.'))) # tuple(map(int,re.sub('\D','',header)[1:5]))
-    version=getSFITversion()
+    version=getSFITversion(wrkingDir)
     print ('SFIT4 Version=%s'%(version,))
     
     
@@ -505,8 +505,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Sb labels: are taken from sbctldefaults which contains either the labels set by the user in his defaults file, or the labels from the Layer1/sbDefaults.ctl file
     #----------------------------------
     Kb_labels = {}
-    for i in range(0, len(SbctlFileVars.inputs['kb_info']), 4):
-      Kb_labels[SbctlFileVars.inputs['kb_info'][i]] = SbctlFileVars.inputs['kb_info'][i+1]
+#    for i in range(0, len(SbctlFileVars.inputs['kb_info']), 4):
+#      Kb_labels[SbctlFileVars.inputs['kb_info'][i]] = SbctlFileVars.inputs['kb_info'][i+1]
 
     #----------------------------------
     # Adapt label definitions according to sfit version
@@ -681,7 +681,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Make sure input working directory ends in '/'
     #----------------------------------------------
     if not wrkingDir.endswith('/'): wrkingDir += '/'
-
+    
     #--------------------------------------------
     # Read values from sfit4 output. Initialize 
     # output class for summary, profiles, and pbp
@@ -839,6 +839,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
       
    
 
+
     #-----------------------------------------------------
     # Test if Se matrix is symmetric and positive definite
     #-----------------------------------------------------
@@ -867,11 +868,23 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #--------------------
     # Read in Gain matrix
     #--------------------
+    
+#    import ipdb
+#    ipdb.set_trace()
+
     lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.g_matrix'][0], logFile)
-    if not lines: 
-        print ('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
-        if logFile: logFile.error('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
-        return False    # Critical file, if missing terminate program   
+    if not lines:
+      print ('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
+      KtSeinv = K.T.dot(seinv)
+      shat = np.linalg.inv(sa) + KtSeinv.dot(K)
+      D = np.linalg.inv(shat).dot(KtSeinv)
+#      logFile.error('Calculated the contribution matrix G')
+#      if logFile: logFile.error('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
+#      return False    # Critical file, if missing terminate program   
+    else:
+      D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
+
+
 
     D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
     #------------------
@@ -1122,12 +1135,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
                         diagFill = np.array(SbDict['sb.temperature.'+ErrType])
                         if len(diagFill) != len(sumVars.aprfs['TEMPERATURE']): raise ExitError('Number of Sb for temperature, type:'+ErrType+' does not match atmospheric layers!!')
                         diagFill = diagFill / sumVars.aprfs['TEMPERATURE']
-
-                #------------
-                # Profile Gas
-                #------------
-                elif Kbl.upper() in [x.upper() for x in kb_profile_gas]:
-                    diagFill = np.array(SbctlFileVars.inputs['sb.profile.'+Kbl+'.'+ErrType])
 
                     #------------
                     # Profile Gas
