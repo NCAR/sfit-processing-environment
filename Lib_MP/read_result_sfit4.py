@@ -230,7 +230,17 @@ class calc_diagnostics(sfit4_ctl):
         self.F_SA = True
         
     def read_seinv_matrix(self, filename):
-        self.seinv = np.genfromtxt(filename,skip_header=2)
+        with open(filename) as fid:
+            fid.readline()
+            nr_values = int(fid.readline().split()[0])
+            seinv = []
+            line = fid.readline()
+            while line != '':
+                seinv.extend(list(map(lambda x: float(x), line.split())))
+                line = fid.readline()
+                #        self.seinv = np.genfromtxt(filename,skip_header=2)
+        fid.close()
+        self.seinv = np.array(seinv)
         self.F_SE = True
         
     def calc_AVK(self):
