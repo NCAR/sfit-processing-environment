@@ -347,7 +347,7 @@ class sfit4_ctl:
     def replace(self, tag, value):
 
         tag = tag.strip()
-        if self.value.has_key(tag):
+        if tag in self.value:
             self.value[tag] = value.strip()
         else:
             print ('key ' + tag.strip() + ' not found')
