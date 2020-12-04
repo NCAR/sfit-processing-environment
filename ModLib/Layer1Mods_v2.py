@@ -1339,8 +1339,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
         fout.write('Measurement error (Sm)                        = {0:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
         fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
         fout.write('Interference error (interfering spcs)         = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
-        if 'temperature' in S_ran:
-          fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
+        if 'temperature' in S_ran:          
+          fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
           fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
         if 'h2o' in S_ran: fout.write('Water Vapor (Random)                          = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
         if 'h2o' in S_sys: fout.write('Water Vapor (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['h2o'][2]/retdenscol*100)              )
