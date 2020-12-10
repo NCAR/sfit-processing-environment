@@ -520,8 +520,9 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     if version>(0,9,5,0): 
       for label in ('dwshift','maxopd'): #only these 2?? TODO
         if label in Kb_labels: del Kb_labels[label]
-    
-  
+
+    temp_retrieval_flag=(ctlFileVars.inputs.get('rt.temperature',['F'])[0]=='T') #flag to know if temp is retrieved
+    temp_retrieval_tikhonov=(ctlFileVars.inputs.get('rt.temperature.lambda',[0])[0]>0) #flag to know if it is done with tikhonov
     def matPosDefTest(mat):
         ''' Test if matrix is positive definite'''
         
@@ -780,35 +781,40 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 
     sa_syst=np.zeros(sa.shape)   #create an empty analogue of the sa matrix for systematic contributions
 
-
-    for gas in ctlFileVars.inputs['gas.profile.list']:
+    for gas in ctlFileVars.inputs['gas.profile.list']+['TEMPERATURE']*int(temp_retrieval_flag):
 
         sbinputforsa=False
         
         sbkey_rand ='sb.%s.%s'%('profile.%s'%gas.lower() if gas.lower()!='temperature' else 'temperature','random')
         sbkey_syst=sbkey_rand.replace('.random','.systematic')
+        
+        tempcase=(gas=='TEMPERATURE')
+        
  
-        if ctlFileVars.inputs['gas.profile.%s.correlation'%gas.lower()][0]=='T' and ctlFileVars.inputs['gas.profile.%s.correlation.type'%gas.lower()][0]==5: 
+        if tempcase or ( ctlFileVars.inputs['gas.profile.%s.correlation'%gas.lower()][0]=='T' and ctlFileVars.inputs['gas.profile.%s.correlation.type'%gas.lower()][0] in (5,6)):
             sbinputforsa=True #require input for Sb
-            print ('   detected sainv regularization file input for %s'%gas)
-            if sbkey_syst in SbDict and (np.diff(SbDict[sbkey_syst])==0).all(): print('   detected constant std profile for %s: might generate a zero uncertainty in case of Tikhonov'%sbkey_syst)
-
-        if gas=='TEMPERATURE': print ('WARNING !! Temperature Sb substitution in regul matrix sa is not yet implemented for type 5 sainv input');continue #not sure when this happens TODO
+            print ('   detected %s for %s'%('sa required input' if (tempcase and not temp_retrieval_tikhonov) else 'sainv regularization',gas))
+            if  (not tempcase or (tempcase and temp_retrieval_tikhonov)) and sbkey_syst in SbDict and (np.diff(SbDict[sbkey_syst])==0).all(): print('   detected constant std profile for %s: might generate a zero uncertainty in case of Tikhonov'%sbkey_syst)
  
         if (sbkey_rand not in SbctlFileVars.inputs or sbkey_syst not in SbctlFileVars.inputs) and sbinputforsa: print ('Error !! The sb.ctl file must contain information on random & systematic profile uncertainty for %s'%gas);raise ValueError('Missing input in sb.ctl for profile uncertainty for %s because of Tikhonov type retrieval'%gas)
- 
+
         if sbkey_rand in SbDict: #prefer the sb information above the sa matrix...
             #if gas in ('CH4','HDO'): continue #for debugging .... 
             #else: print gas
-            sa_idx=np.where(np.array(K_param)==gas)[0]
+            kgas=gas.replace('TEMPERATURE','TEMPERAT')
+            sa_idx=np.where(np.array(K_param)==kgas)[0]
             #get the Sb for this gas
             sbcorkey=sbkey_rand.replace('.random','.correlation.width')
             #only take correlation into account if random and if it is a profile (gas or temperature) in KB!!
-            Sb=createCovar(SbDict[sbkey_rand],**(dict(sbcorkey=sbcorkey,z=z,Sbctldict=SbDict))) #if temperature...need to check rel/abs unit TODO
+            if tempcase and SbDict.get(sbkey_rand+'.scaled',['F'])[0]=='F': scale=sumVars.aprfs[gas];print(scale) #T std profile is given in Kelvin
+            else: scale=1
+            Sb=createCovar(SbDict[sbkey_rand]/scale,**(dict(sbcorkey=sbcorkey,z=z,Sbctldict=SbDict)))
             if np.array_equal(Sb,None): print ('Error building covariance matrix for %s'%sbcorkey);raise ValueError('Bad setting for %s'%sbcorkey)
             sa[tuple(np.meshgrid(sa_idx,sa_idx,indexing='ij'))]=Sb
         if sbkey_syst in SbDict:
-            Sb_syst=createCovar(SbDict[sbkey_syst]) #if temperature...need to check rel/abs unit TODO
+            if tempcase and SbDict.get(sbkey_syst+'.scaled',['F'])[0]=='F': scale=sumVars.aprfs[gas] #T std profile is given in Kelvin
+            else: scale=1
+            Sb_syst=createCovar(SbDict[sbkey_syst]/scale)
             if np.array_equal(Sb_syst,None): print ('Error building systematic covariance matrix for %s'%sbcorkey);raise ValueError('Bad setting for %s'%sbcorkey)
             #fill the sb in the inintial sa
             sa_syst[tuple(np.meshgrid(sa_idx,sa_idx,indexing='ij'))]=Sb_syst
@@ -1020,12 +1026,12 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # 2) Interfering species
     #-----------------------
     n_int2                     = n_profile + n_column - 1
-    n_int2_column              = ( n_profile - 1 ) * n_layer + n_column
+    n_int2_column              = ( n_profile - 1 +bool(temp_retrieval_flag) ) * n_layer + n_column
     AK_int2                    = AK[x_start:x_stop, x_stop:x_stop + n_int2_column] 
     Sa_int2                    = sa[x_stop:x_stop + n_int2_column, x_stop:x_stop + n_int2_column]
-    #print 'random interfering specs'
+    #print 'random/systematic interfering specs'
     S_ran['interfering_species'] = calcCoVar(Sa_int2,AK_int2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
-    
+    S_sys['interfering_species'] = calcCoVar(sa_syst[x_stop:x_stop + n_int2_column, x_stop:x_stop + n_int2_column],AK_int2,sumVars.aprfs[primgas.upper()],sumVars.aprfs['AIRMASS'])
     #******************************************************************************************
     #-------------------------------------------
     # This is temprorary: calculate uncertainty
@@ -1296,27 +1302,28 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #--------------------------      
     with open(wrkingDir+SbDict['file.out.error.summary'][0], 'w') as fout:
         fout.write('sfit4 ERROR SUMMARY\n\n')
-        fout.write('Primary gas                                   = {0:>15s}\n'.format(primgas.upper())                                  )
-        fout.write('Total column amount                           = {0:15.5E} [molecules cm^-2]\n'.format(retdenscol)                    )
-        fout.write('DOFs (total column)                           = {0:15.3f}\n'.format(col_dofs)                                        )
-        fout.write('Smoothing error (Ss, using sa)                = {0:15.3f} [%]\n'.format(S_ran['smoothing'][2]        /retdenscol*100))
-        fout.write('Measurement error (Sm)                        = {0:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
-        fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
-        fout.write('Interference error (interfering spcs)         = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
+        fout.write('Primary gas                                       = {0:>15s}\n'.format(primgas.upper())                                  )
+        fout.write('Total column amount                               = {0:15.5E} [molecules cm^-2]\n'.format(retdenscol)                    )
+        fout.write('DOFs (total column)                               = {0:15.3f}\n'.format(col_dofs)                                        )
+        fout.write('Smoothing error (Ss, using sa)                    = {0:15.3f} [%]\n'.format(S_ran['smoothing'][2]        /retdenscol*100))
+        fout.write('Measurement error (Sm)                            = {0:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
+        fout.write('Interference error (retrieved params)             = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
+        fout.write('Interference error (interfering spcs)             = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
         
-        fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
-        fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
-        if 'h2o' in S_ran: fout.write('Water Vapor (Random)                          = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
-        if 'h2o' in S_sys: fout.write('Water Vapor (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['h2o'][2]/retdenscol*100)              )
+        if not temp_retrieval_flag:
+          fout.write('Temperature (Random)                              = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
+          fout.write('Temperature (Systematic)                          = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
+        if 'h2o' in S_ran: fout.write('Water Vapor (Random)                              = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
+        if 'h2o' in S_sys: fout.write('Water Vapor (Systematic)                         = {0:15.3f} [%]\n'.format(S_sys['h2o'][2]/retdenscol*100)              )
         
-        fout.write('Total random error                            = {0:15.3f} [%]\n'.format(S_tot['Random'][2]           /retdenscol*100))
-        fout.write('Total systematic error                        = {0:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
-        fout.write('Total random uncertainty                      = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Random'][2])            )
-        fout.write('Total systematic uncertainty                  = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Systematic'][2])        )
+        fout.write('Total random error                                = {0:15.3f} [%]\n'.format(S_tot['Random'][2]           /retdenscol*100))
+        fout.write('Total systematic error                            = {0:15.3f} [%]\n'.format(S_tot['Systematic'][2]       /retdenscol*100))
+        fout.write('Total random uncertainty                          = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Random'][2])            )
+        fout.write('Total systematic uncertainty                      = {0:15.3E} [molecules cm^-2]\n'.format(S_tot['Systematic'][2])        )
         for k in S_ran: 
-            fout.write('Total random uncertainty {0:<20s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_ran[k][2],S_ran[k][2]/retdenscol*100))
+            fout.write('Total random uncertainty {0:<24s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_ran[k][2],S_ran[k][2]/retdenscol*100))
         for k in S_sys:
-            fout.write('Total systematic uncertainty {0:<16s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_sys[k][2],S_sys[k][2]/retdenscol*100)) 
+            fout.write('Total systematic uncertainty {0:<20s} = {1:15.3E} [molecules cm^-2] \t {2:15.3f} [%]\n'.format(k,S_sys[k][2],S_sys[k][2]/retdenscol*100))
 
     #-----------------------------------
     # Write to file covariance matricies
