@@ -47,7 +47,7 @@ from collections import OrderedDict
 from os import listdir
 from os.path import isfile, join
 import re
-import hdfBaseRetDat
+#import hdfBaseRetDat
 
 from scipy.integrate import simps
 import matplotlib.animation as animation
@@ -1123,18 +1123,19 @@ class ReadHDFData():
             
             for var in Vars.keys():
 
-                #try:
-                data  = hdfid.select(var)
-                #units       = data.units
-                units       = data.VAR_UNITS
-                conv        = data.VAR_SI_CONVERSION.strip().split(';')
+                try:
+                    #print(var)
+                    data  = hdfid.select(var)
+                    #units       = data.units
+                    units       = data.VAR_UNITS
+                    conv        = data.VAR_SI_CONVERSION.strip().split(';')
 
-                self.HDF.setdefault(var,[]).append(data)
-                self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
-                self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
+                    self.HDF.setdefault(var,[]).append(data)
+                    self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
+                    self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
             
-                #except Exception as errmsg:
-                    #print (errmsg, ' : ', var)
+                except Exception as errmsg:
+                    print (errmsg, ' : ', var)
                     #exit()
         #---------------------------------
         #FLATTENED THE ARRAYS
@@ -1254,13 +1255,15 @@ class ReadHDFData():
             dates     = jd_to_datetime(self.HDF[self.getDatetimeName()])
             dates2     = [dt.date(d.year, d.month, d.day) for d in dates]
 
+            dates2  = np.asarray(dates2)
+
             indsT1 =  np.where(np.asarray(dates2) < idate)[0]
             indsT2 =  np.where(np.asarray(dates2) > fdate)[0]
             indsT  = np.union1d(indsT1,indsT2)
             
             print ('Total number observations below date range = {}'.format(len(indsT1)))
             print ('Total number observations above date range = {}'.format(len(indsT2)))
-            self.inds = np.union1d(indsT, self.inds)                
+            self.inds = np.union1d(indsT, self.inds)  
         
         #-----------------------------
         # Find total column amount < 0

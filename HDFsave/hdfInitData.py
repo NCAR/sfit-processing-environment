@@ -166,13 +166,14 @@ class HDFinitData(object):
     def initPy(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,
                mxRMS=1.0,minSZA=0.0,mxSZA=80.0,minDOF=0.0, maxDOF=10.0, maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,dofFlg=False,rmsFlg=True,
                tcFlg=True,pcFlg=True,cnvFlg=True,szaFlg=False,errFlg=True,chiFlg=False,tcMMflg=False, h2oFlg=False,
-               bckgFlg=False, minSlope=0.0, maxSlope=1e10, minCurv=0.0, maxCurv=1e10):
+               bckgFlg=False, minSlope=0.0, maxSlope=1e10, minCurv=0.0, maxCurv=1e10, geomsTmpl=False):
         ''' Interface for initializing data with python set of routines'''
         
         #---------------------------------------
         # Gather data using python read routines
         #---------------------------------------
-        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, statLyrFile, iyear, imonth, iday, fyear, fmonth, fday,errFlg=errFlg)
+
+        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, statLyrFile, iyear, imonth, iday, fyear, fmonth, fday, errFlg=errFlg, geomsTmpl=geomsTmpl)
         
         #------------
         # Filter data
@@ -218,6 +219,17 @@ class HDFinitData(object):
         self.h2oMxRatAbsSolar               = pyData.HDFh2oVMR       / self.mxSclFctVal
         self.h2oColAbsSol                   = pyData.HDFh2oTC
 
+        #------------------------------------------------
+        #
+        #------------------------------------------------
+        if int(geomsTmpl) >= int(3):
+            self.lonLOS                      = pyData.HDFlonLOS
+            self.latLOS                      = pyData.HDFlatLOS
+            self.airMass                     = pyData.HDFairMass    * self.mxSclFctZVal
+            self.h2oColApr                   = pyData.HDFh2oaprTC   * self.mxSclFctZVal
+            self.rh                          = pyData.HDFrh
+            self.ws                          = pyData.HDFws
+            self.wd                          = pyData.HDFwd
         
         
     def initDummy(self):

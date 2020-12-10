@@ -74,7 +74,7 @@ sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(_
 import glob
 import getopt
 import sfitClasses as sc
-from Layer1Mods import errAnalysis
+#from Layer1Mods import errAnalysis
 
 #---------------
 # python 3 or 2.7
@@ -117,7 +117,7 @@ def main(argv):
         'v3':   '/Users/jamesw/FDP/sfit/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
         'v4':   '/home/ebaumer/Code/sfit4/src/',
         'v5':   '/Users/jamesw/FDP/sfit/400/src/src-irwg14-mp',
-        'v6':   '/data/ebaumer/Code/sfit-core-code-1.0.5/src/'}
+        'v6':   '/data/ebaumer/Code/sfit-core-code-Official_Release_1.0/src/'}
 
         #----------
         # Run flags
@@ -127,12 +127,13 @@ def main(argv):
         sfitFlg  = False                                          # Flag to run sfit4
         errFlg   = False                                          # Flag to run error analysis
         clnFlg   = False                                          # Flag to clean directory of output files listed in ctl file
+        pyv2Flg  = False
 
         #--------------------------------
         # Retrieve command line arguments
         #--------------------------------
         try:
-            opts, args = getopt.getopt(sys.argv[1:], 'i:b:f:?')
+            opts, args = getopt.getopt(sys.argv[1:], 'i:b:f:o?')
 
         except getopt.GetoptError as err:
             print(str(err))
@@ -171,10 +172,17 @@ def main(argv):
             elif opt == '-?':
                 usage(binDirVer)
                 sys.exit()
+  
+            # Option to import error analysis v2 - temporary
+            elif opt == '-o':
+                pyv2Flg = True
 
             else:
                 print ('Unhandled option: {}'.format(opt))
                 sys.exit()
+
+        if pyv2Flg: from Layer1Mods_v2 import errAnalysis
+        else: from Layer1Mods import errAnalysis
 
         #--------------------------------------
         # If necessary change working directory
@@ -203,20 +211,55 @@ def main(argv):
         # Initialize sb ctl class
         #------------------------
         if errFlg:
-            if sc.ckFile(ctlFile.inputs.get('file.in.sbdflt',[''])[0]): sbCtlFileName = ctlFile.inputs['file.in.sbdflt'][0]
-                 
-            else:
-                sbCtlFileName=os.path.join(os.path.dirname(__file__),'..','Layer1','sbDefaults.ctl')
-                #try:
-                    #Tk().withdraw()
-                    #sbCtlFileName = tkFileDialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
-                #except:
-                    #sbCtlFileName =  filedialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
-            
-            
-            sbCtlFile = sc.CtlInputFile(sbCtlFileName)
-            sbCtlFile.getInputs()
 
+            if pyv2Flg:
+
+                #------------------------
+                #
+                #------------------------
+                if sc.ckFile(wrkDir+'sb.ctl'): sbCtlFileName = wrkDir + 'sb.ctl'
+                else: 
+
+                    try:
+                        Tk().withdraw()
+                        sbCtlFileName = tkFileDialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
+                    except:
+                        sbCtlFileName =  filedialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
+                    
+                sbCtlFile = sc.CtlInputFile(sbCtlFileName)
+                sbCtlFile.getInputs()
+
+
+                if 'sbdefflg' in sbCtlFile.inputs:
+
+                    if sbCtlFile.inputs['sbdefflg'][0] == 'T':
+
+                        if sc.ckFile(sbCtlFile.inputs['sbdefaults'][0], exitFlg=True):
+
+                            sbDefCtlFileName = sbCtlFile.inputs['sbdefaults'][0]
+                            sbctldefaults = sc.CtlInputFile(sbDefCtlFileName)
+                            sbctldefaults.getInputs()
+                    
+                    else: sbctldefaults = False
+
+                else: sbctldefaults = False
+
+            else:
+
+                if sc.ckFile(ctlFile.inputs['file.in.sbdflt'][0]): sbCtlFileName = ctlFile.inputs['file.in.sbdflt'][0]
+                    
+                else:
+                    try:
+                        Tk().withdraw()
+                        sbCtlFileName = tkFileDialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
+                    except:
+                        sbCtlFileName =  filedialog.askopenfilename(initialdir =wrkDir, title = "Select sb ctl file",filetypes = (("ctl files","*.ctl"),("all files","*.*")))
+                
+                
+                sbCtlFile = sc.CtlInputFile(sbCtlFileName)
+                sbCtlFile.getInputs()
+
+            
 
         #---------------------------
         # Clean up output from sfit4
@@ -267,7 +310,8 @@ def main(argv):
             print ('**********************')
             print ('Running error analysis')
             print ('**********************')
-            rtn = errAnalysis(ctlFile,sbCtlFile,wrkDir)
+            if pyv2Flg: rtn = errAnalysis(ctlFile,sbCtlFile,sbctldefaults,wrkDir)
+            else: rtn = errAnalysis(ctlFile,sbCtlFile,wrkDir)
 
 
 

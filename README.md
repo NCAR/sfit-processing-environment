@@ -1,6 +1,6 @@
 # sfit4 - pre/post processing python package distribution
 
-Python package used for pre and post-processing of sfit4. This package is recommended for the pending release of [SFIT4 v1](https://github.com/NCAR/sfit-core-code/releases/tag/V1.0.5)
+Python package used for pre and post-processing of sfit4. This package is recommended for the release of [SFIT4 v1.0](https://github.com/NCAR/sfit-core-code/tree/Official_Release_1.0x)
 
 Python package used for:
 
@@ -13,7 +13,7 @@ Python package used for:
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine.
-The step-by-step procedures and computing tools are described in more detailed in the **OT_FTS_Spectral_Processing.pdf**.
+The step-by-step procedures and computing tools are described in more detailed in the [OT_FTS_Spectral_Processing.pdf](https://github.com/NCAR/sfit-processing-environment/blob/Official_Release_v3.0/OT_FTS_Spectral_Processing.pdf).
 Additional resources can be found in the [sfit4wiki](https://wiki.ucar.edu/display/sfit4/) - The NCAR sfit wiki webpage.
 
 
@@ -33,7 +33,7 @@ scipy, pyhdf, cycler, h5py, abc, getopt, glob, logging, shutil, fileinput, subpr
 
 The sfit-processing-environment can be found here:
 
-* [1) github](https://github.com/NCAR/sfit-processing-environment.git) - The NCAR github sfit - sfit-processing-environment.
+* [github](https://github.com/NCAR/sfit-processing-environment.git) - The NCAR github sfit - sfit-processing-environment.
 
 This is the repository with several contributors/branches. The branch with the relese version is **Official_Release_v3.0**.
 To install Official_Release_v3.0 locally in the current working directory:
@@ -42,7 +42,7 @@ To install Official_Release_v3.0 locally in the current working directory:
 git clone -b Official_Release_v3.0 https://github.com/NCAR/sfit-processing-environment.git
 ```
 
-* [2) github - zip](https://github.com/NCAR/sfit-processing-environment/releases) - Here you can download a tar/zip file.
+<!--* [2) github - zip](https://github.com/NCAR/sfit-processing-environment/releases) - Here you can download a tar/zip file.
 
 Installation via its setup.py script
 
@@ -72,14 +72,14 @@ and will be installed, for example,
 ~//usr/local/lib/pythonX.Y/site-packages/
 ```
 
-where X.Y stands for the version of Python, for example 3.8
+where X.Y stands for the version of Python, for example 3.8 -->
 
 
 
 ### Deployment
 
-In theory, when using python3 setup.py install --user python automatically searches this directory for modules, so prepending this path to the PYTHONPATH environmental variable is not necessary.
-However, it is still recommended to add this directory to your PYTHONPATH and PATH environment variables. For example, add the following path to your shell, i.e., a program designed to start other programs (.bashrc, .bash_profile, .profile) e.g., open your .bash_profile
+<!--*In theory, when using python3 setup.py install --user python automatically searches this directory for modules, so prepending this path to the PYTHONPATH environmental variable is not necessary.  -->
+It is recommended to add this directory to your PYTHONPATH and PATH environment variables. For example, add the following path to your shell, i.e., a program designed to start other programs (.bashrc, .bash_profile, .profile) e.g., open your .bash_profile
 
 ```
 $ vi ~/.bash_profile

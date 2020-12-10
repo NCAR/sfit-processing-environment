@@ -61,6 +61,15 @@ import matplotlib.cm as mplcm
 import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
 import matplotlib.ticker as mtick
+from mpl_toolkits.mplot3d import Axes3D  
+
+from scipy.interpolate import interp1d
+import pyproj
+from shapely.geometry import LineString,Point, mapping
+from shapely.affinity import rotate #shapely.affinity.rotate(geom, angle, origin='center', use_radians=False)
+from functools import partial
+from shapely.ops import transform 
+import logging
 
 #----------------------------------------------------------------------------------------
 #### matplotlib.style.use('classic')   #classic style (https://matplotlib.org/users/dflt_style_changes.html)
@@ -819,13 +828,11 @@ def readbnr(bnrFile):
 def readbnrZeroed(directory):
     ''' Read the zeroed bnr'''
 
-    ckDir(directory,exitFlg=True)
+    ckDir(directory,exitFlg=False)
 
     bnrFile = directory + 'zeroed.bnr'
-    ckFile(bnrFile,exitFlg=True)
+    ckFile(bnrFile,exitFlg=False)
 
-
-    nbytes = getsize(bnrFile)
 
     print('\n*******************************')
     print('             Zeroed bnr file          ')
@@ -835,6 +842,8 @@ def readbnrZeroed(directory):
 
 
     try:
+
+        nbytes = getsize(bnrFile)
     
         with open(bnrFile, 'rb') as file:
             # read size of record
@@ -885,16 +894,6 @@ def readRaytrace(fname,longitude=None,azimuth=None,target_grid=None):
   
   Output is (attribute, np.array)
   """
-  from scipy.interpolate import interp1d
-  import pyproj
-  from shapely.geometry import LineString,Point, mapping
-  from shapely.affinity import rotate #shapely.affinity.rotate(geom, angle, origin='center', use_radians=False)
-  from functools import partial
-  from shapely.ops import transform 
-  from collections import OrderedDict
-  import logging
-
-
 
   logging.basicConfig(level=logging.ERROR) #replace ERROR by DEBUG for more information
   logger=logging.getLogger('raytrace')
@@ -904,10 +903,9 @@ def readRaytrace(fname,longitude=None,azimuth=None,target_grid=None):
 
   ckFile(fname, exitFlg=True)
 
-
   lines = tryopen(fname)
   if len(lines) <10:
-    print("File size might be low: {}".format(fname))
+    print("File size not correct: {}".format(fname))
     return False
 
    
@@ -1072,6 +1070,8 @@ class ReadOutputData(_DateRange):
         self.readPrfFlgApr            = {}
         self.readPrfFlgRet            = {}
 
+        self.rayFlg                   = False
+
 
         #---------------------------------
         # Test if date range given. If so 
@@ -1146,6 +1146,8 @@ class ReadOutputData(_DateRange):
             if not self.gasList: 
                 print ('No gases listed in column or profile list....exiting')
                 sys.exit()
+
+            if 'file.in.spectrum' in self.ctl: self.spectrum = self.ctl['file.in.spectrum'] 
             
             try: self.gasList = list(filter(None.__ne__, self.gasList) ) # Filter out all empty strings
             except: self.gasList = filter(None, self.gasList) # Filter out all empty strings
@@ -1531,7 +1533,9 @@ class ReadOutputData(_DateRange):
         ''' Reads in t15asc data from retrieval directory '''
         self.t15asc = {}
             
-        if not fname: fname = 't15asc.4'
+        if not fname: 
+            try: fname = self.spectrum[0]
+            except: fname = 't15asc.4'
         
         #-----------------------------------
         # Loop through collected directories
@@ -1542,7 +1546,7 @@ class ReadOutputData(_DateRange):
 
                 try:
                     with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
-    
+
                     #--------------------------------
                     # Get retrieved column amount for 
                     # each gas retrieved
@@ -1560,7 +1564,7 @@ class ReadOutputData(_DateRange):
 
                     self.t15asc.setdefault('WNi'  ,[]).append( float( line3[0] ))
                     self.t15asc.setdefault('WNf'  ,[]).append( float( line3[1] ))
-                    
+
 
                 except Exception as errmsg:
                     print (errmsg)
@@ -1574,8 +1578,8 @@ class ReadOutputData(_DateRange):
             self.t15asc[k] = np.asarray(self.t15asc[k])
             #print(k, self.t15asc[k])
 
-        self.readt15Flg = True 
-            
+        #self.readt15Flg = True             
+
             
     def readprfs(self,rtrvGasList,fname='',retapFlg=1):
         ''' Reads in retrieved profile data from SFIT output. Profiles are given as columns. Each row corresponds to
@@ -1656,6 +1660,7 @@ class ReadOutputData(_DateRange):
         #--------------------------------------------------------
         # If retrieved profiles is a gas, get total column amount
         #--------------------------------------------------------
+
         for i, gas in enumerate(rtrvGasList):
 
             self.deflt[gas+'_tot_col'] = np.sum(self.deflt[gas] * self.deflt['AIRMASS'], axis=1)
@@ -2039,8 +2044,9 @@ class ReadOutputData(_DateRange):
             if k =='date': self.error[k] = np.asarray(self.error[k])        
     
 
-    def readPbp(self,fname=''):
-        ''' Reads data from the pbp file'''
+    def readPbp(self,fname='', cnvrAzFlg=True):
+        ''' Reads data from the pbp file
+            cnvrAzFlg == True converts saa defined as South 0 to North 0'''
         self.pbp = {}
 
         if not fname: fname = 'pbpfile'
@@ -2118,13 +2124,14 @@ class ReadOutputData(_DateRange):
        #--------------------------
        # For NCAR sites - Convert SAA to 0.0- North
        #--------------------------
-        try:
-            for i, az in enumerate(self.pbp['saa']):
-                if az >= 180.0:
-                    self.pbp['saa'][i] = np.abs(360. - az  - 180.)
-                elif az < 180.0:
-                    self.pbp['saa'][i] = 180.0 + az
-        except: pass
+        if cnvrAzFlg:
+            try:
+                for i, az in enumerate(self.pbp['saa']):
+                    if az >= 180.0:
+                        self.pbp['saa'][i] = np.abs(360. - az  - 180.)
+                    elif az < 180.0:
+                        self.pbp['saa'][i] = 180.0 + az
+            except: pass
 
 
         
@@ -2239,6 +2246,125 @@ class ReadOutputData(_DateRange):
         if not self.dirFlg: return self.spc 
 
 
+    def readRay(self,longitude=None,azimuth=None,target_grid=None):
+          #def read_raytrace(rayf,logger=rootlogger,longitude=None,azimuth=None,target_grid=None):
+        """Reads the detailed output of the Raytrace module
+
+        lon in degrees (lon positive to east)
+        azimuth in degrees (0 is N, clockwise)
+        target_grid: provide grid towards LOS will be interpolated (use retrieval grid to get output ready for GEOMS), use True to interpolate to grid found in raytrace out
+
+        Output is (attribute, np.array)
+        """
+
+        fname = 'raytrace.out'
+
+        logging.basicConfig(level=logging.ERROR) #replace ERROR by DEBUG for more information
+        logger=logging.getLogger('raytrace')
+
+        header=OrderedDict()
+        gridboundaries=[]
+
+        self.ray = {}
+      
+        #-----------------------------------
+        # Loop through collected directories
+        #-----------------------------------
+        for indMain,sngDir in enumerate(self.dirLst): 
+
+            try:
+                with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()   
+
+            except Exception as errmsg:
+                print (errmsg)
+                continue   
+
+            if len(lines) <10:
+                print("File size not correct: {}".format(fname))
+                continue
+
+            with open(sngDir + fname) as fid: 
+                #header info
+                sfithead=fid.readline().strip()
+
+                for i in range(6): l=fid.readline()
+
+                while ('USER DEFINED BOUNDARIES' not in l):
+                  if '=' in l: 
+                    k,v=l.strip().rsplit('=',1)
+                    header[k.split(',')[-1].strip()]=v.strip()
+                  l=fid.readline()
+                logger.debug('Found raytrace output with header \n\t%s'%'\n\t'.join(['%s=%s'%(k,v) for k,v in header.items()]))
+                for i in range(2): fid.readline()
+                for i in range(int(header['IBMAX'])):
+                  gridboundaries.append(float(fid.readline().strip().split()[-1]))
+                gridboundaries=np.array(gridboundaries,dtype=np.float); #grid,gridboundaries not used right now... maybe a standard value for target_grid???
+                grid=gridboundaries[:-1]+np.diff(gridboundaries)/2
+                logger.debug('Found raytrace grid boundaries %s'%gridboundaries)
+                logger.debug('Found raytrace grid midpoints %s'%grid)
+                while (' APPARENT ZENITH ANGLE CALCULATIONS FINISHED.' not in l): l=fid.readline()
+                while ('CALCULATION OF THE REFRACTED PATH THROUGH THE ATMOSPHERE' not in l): 
+                  if '=' in l:
+                    k,v=l.strip().rsplit('=',1)
+                    header[k.split(',')[-1].strip()]=v.strip()
+                  l=fid.readline()
+                header['COLUMN_DESCRIPTION']=list(map(str.strip,fid.readline().split()))
+                header['COLUMN_DESCRIPTION'].insert(1,'ALTITUDE')
+                logger.debug('Updated raytrace output header \n\t%s'%'\n\t'.join(['%s=%s'%(k,v) for k,v in header.items()]))
+                for i in range(6): l=fid.readline()
+                out=[]
+                while l.strip():
+                  out.append(list(map(np.float,l.split())))
+                  l=fid.readline()
+                out=np.array(out,dtype=np.float)
+                logger.debug('Loaded data matrix with shape %s'%(out.shape,))
+                if out.shape[-1]!=len(header['COLUMN_DESCRIPTION']): raise ValueError('Unexpected matrix shape')
+
+                #### Calculate lat/lon coordinates from azimuthal equidistant projection  
+                if longitude!=None and azimuth!=None:
+                    latitude=np.float(header['REF_LAT'].split()[0])
+                    re=np.float(header['RE'].split()[0])*1e3 #radius earth used in raytrace, reuse it in aeqd projetion
+                    local_azimuthal_projection = "+proj=aeqd +R=%s +units=m +lat_0=%5.2f +lon_0=%5.2f"%(re,latitude,longitude)
+                    aeqd_to_wgs84 = partial(
+                        pyproj.transform,
+                        pyproj.Proj(local_azimuthal_projection),
+                        pyproj.Proj('+proj=longlat +datum=WGS84 +no_defs'),
+                    )
+                    y=np.deg2rad(np.concatenate([[0.],out[:,header['COLUMN_DESCRIPTION'].index('BETA')]]))*re
+                if np.array_equal(target_grid,None): #give detailed output
+                      x=np.zeros(y.shape)
+                      LOS=rotate(LineString(zip(x,y)),angle=-azimuth,origin=(0,0)) #LOS = line along great circle (transversal intersection of sphere), defined to North, then rotated to azimuth in aeqd projection
+                      LOS_transformed = transform(aeqd_to_wgs84,LOS)
+                      #return LOS_transformed
+                      header['COLUMN_DESCRIPTION'].extend(['LOS_LONGITUDE','LOS_LATITUDE']);out=np.concatenate([out,np.array(LOS_transformed.xy).T[1:,:]],axis=1)
+
+                else: #gives interpolated lat,lon on line of sight on target grid... 
+                      if np.array_equal(target_grid,True): target_grid=grid*1e3 #use grid from raytrace out file
+                      i=header['COLUMN_DESCRIPTION'].index('ALTITUDE')
+                      source_grid=np.concatenate([[out[0,i]],out[:,i+1]])*1e3
+                      #logger.debug('Source grid =%s'%source_grid)
+                      y=interp1d(source_grid,y,fill_value=np.nan,assume_sorted=True)(target_grid) #in m
+                      x=np.zeros(y.shape)
+                      LOS=rotate(LineString(zip(x,y)),angle=-azimuth,origin=(0,0))
+                      LOS_transformed = transform(aeqd_to_wgs84,LOS)
+                      out=np.concatenate([target_grid.reshape(target_grid.shape+(1,)),np.array(LOS_transformed.xy).T],axis=1)
+                      header={'COLUMN_DESCRIPTION':['GRID','LONGITUDE','LATITUDE']}
+
+
+                self.ray.setdefault('alt_los',[]).append(out[0])
+                self.ray.setdefault('lon_los',[]).append(out[1])
+                self.ray.setdefault('lat_los',[]).append(out[2])
+
+
+        #------------------------
+        # Convert to numpy arrays
+        # and sort based on date
+        #------------------------
+        for k in self.ray:
+            self.ray[k] = np.asarray(self.ray[k])    
+            
+        self.readRaytraceFlg = True
+        
 
 #------------------------------------------------------------------------------------------------------------------------------    
 class DbInputFile(_DateRange):
@@ -2357,7 +2483,7 @@ class DbInputFile(_DateRange):
 
 class GatherHDF(ReadOutputData,DbInputFile):
     
-    def __init__(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imnth,iday,fyear,fmnth,fday,errFlg=True,incr=1):
+    def __init__(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imnth,iday,fyear,fmnth,fday,errFlg=True, geomsTmpl=False,incr=1):
         primGas = ''
 
         #-----------------------------------------
@@ -2383,11 +2509,13 @@ class GatherHDF(ReadOutputData,DbInputFile):
         #-----------------------------------------------------------------------------
         if "H2O" not in self.PrimaryGas:
             self.readprfs([self.PrimaryGas,'H2O'],retapFlg=1)          # Retrieved Profiles
+            self.readprfs([self.PrimaryGas, 'H2O'],retapFlg=0) 
         else:
             self.readprfs([self.PrimaryGas],retapFlg=1)          # Retrieved Profiles
+            self.readprfs([self.PrimaryGas],retapFlg=0) 
 
         #self.readprfs([self.PrimaryGas],retapFlg=1)          # Retrieved Profiles
-        self.readprfs([self.PrimaryGas],retapFlg=0)                # A priori Profiles
+        #self.readprfs([self.PrimaryGas, 'H2O'],retapFlg=0)                # A priori Profiles
         self.readsummary()                                         # Summary file information
         self.readError(totFlg=True,avkFlg=True,vmrFlg=True)        # Read Error Data
         self.readPbp()                                             # Read pbp file for sza
@@ -2410,7 +2538,13 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFsurfP      = np.squeeze(self.refPrf['PRESSURE'][:,-1])                                  # Surface Pressure from Pressure profile
         self.HDFsurfT      = np.squeeze(self.refPrf['TEMPERATURE'][:,-1])                               # Surface Temperature from temperature profile
         self.HDFh2oVMR     = np.asarray(self.rprfs['H2O'])                                              # Retrieved H2O profile [VMR]
-        self.HDFaltBnds    = np.vstack((self.alt[:-1],self.alt[1:]))        
+        #self.HDFaltBnds    = np.asarray((self.alt[:-1],self.alt[1:]))  
+        self.HDFaltBnds    = np.vstack((self.alt[:-1],self.alt[1:]))  
+        #if int(geomsTmpl) <= int(2): self.HDFaltBnds    = np.vstack((self.alt[:-1],self.alt[1:]))  
+        #else:  self.HDFaltBnds    = np.asarray((self.alt[:-1],self.alt[1:]))    
+        
+        if int(geomsTmpl) >= int(3): self.HDFaltBnds    = self.HDFaltBnds.transpose()
+       
 
         # Error 
         if errFlg:
@@ -2437,7 +2571,9 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # Total Column
         self.HDFretTC     = np.asarray(self.rprfs[self.PrimaryGas+'_tot_col'])                          # Primary gas retrieved total column
         self.HDFaprTC     = np.asarray(self.aprfs[self.PrimaryGas+'_tot_col'])                          # Primary gas a priori total column
-        self.HDFh2oTC     = np.asarray(self.rprfs['H2O_tot_col'])                                       # Primary gas a priori total column       
+        self.HDFh2oTC     = np.asarray(self.rprfs['H2O_tot_col'])                                       # H2O total column
+        
+        if int(geomsTmpl) >= int(3): self.HDFh2oaprTC  = np.asarray(self.aprfs['H2O_tot_col'])                                       # H2O a priori total column       
         
         # Misc
         self.HDFdates     = np.asarray(self.rprfs['date'])                                              # Date stamp of retrieval
@@ -2463,15 +2599,26 @@ class GatherHDF(ReadOutputData,DbInputFile):
         #-----------------------------
         # Find Spectral DB information
         #-----------------------------
-        specDB        = self.getInputs()        
+        specDB        = self.getInputs()   
+
         self.HDFintT  = np.zeros(nobs)
         self.HDFazi   = np.zeros(nobs)
+
+        if int(geomsTmpl) >= int(3):
+
+            self.HDFrh = np.zeros(nobs)   # Humidity
+            self.HDFwd = np.zeros(nobs)   # wind direction
+            self.HDFws = np.zeros(nobs)   # wind speed
+
         SAzmFlg       = False
         
         for i,val in enumerate(self.HDFdates):
             tempSpecDB = self.dbFindDate(self.HDFdates[i])
            
-            if i == 0:
+            #-----------------------------
+            # currently Lat/Lon are used for a stationary ground-based instrument; work is neded for mobile platforms
+            #-----------------------------
+            if i == 0: 
                 #-----------------------------
                 # Latitude - North
                 #-----------------------------
@@ -2522,9 +2669,29 @@ class GatherHDF(ReadOutputData,DbInputFile):
 
                 print ('Longitude [E_Lon] in HDF file: {}'.format(self.HDFlon))
 
-                self.HDFinstAlt = np.array(tempSpecDB['Alt'] / 1000.0)
+                if int(geomsTmpl) >= int(3): self.HDFinstAlt = np.array(tempSpecDB['Alt'])  # in m
+                else:             self.HDFinstAlt = np.array(tempSpecDB['Alt']/ 1000.0)           # in km
             
+            #-----------------------------
+            #
+            #-----------------------------
             self.HDFintT[i] = tempSpecDB['Dur']
+
+            if int(geomsTmpl) >= int(3):
+
+                if (tempSpecDB['HouseRH'] < 0.0) & (tempSpecDB['ExtStatRH'] < 0.0): 
+                    self.HDFrh[i] = -9.0E4
+                elif (tempSpecDB['HouseRH'] > 0.0) & (tempSpecDB['ExtStatRH'] < 0.0):
+                    self.HDFrh[i] = tempSpecDB['HouseRH']
+                else: self.HDFrh[i] = tempSpecDB['ExtStatRH']
+                
+                if 'HouseWindSpeed' in tempSpecDB: self.HDFws[i] = tempSpecDB['HouseWindSpeed']
+                else: self.HDFws[i] = -9.0E4
+
+                if 'HouseWindDirection' in tempSpecDB: self.HDFwd[i] = tempSpecDB['HouseWindDirection']
+                else: self.HDFwd[i] = -9.0E4
+                
+                
 
             try:
                 #-----------------------------
@@ -2553,9 +2720,31 @@ class GatherHDF(ReadOutputData,DbInputFile):
                     self.HDFazi[i] = np.abs(360. - az - 180.)
                 elif az < 180.0:
                     self.HDFazi[i] = 180. + az
-                
-                
-            
+
+
+        if int(geomsTmpl) >= int(3):
+
+            print ('Calculating LOS....\n')
+
+            self.HDFlatLOS   = np.zeros((self.HDFrGasPrfVMR.shape))
+            self.HDFlonLOS   = np.zeros((self.HDFrGasPrfVMR.shape))
+
+            for i, az in enumerate(self.HDFazi):
+
+                try:
+
+                    raytrace_header,line_of_sight=readRaytrace(self.dirLst[i] + 'raytrace.out',longitude=self.HDFlon,azimuth=az,target_grid=self.HDFz*1e3) 
+
+                    self.HDFlonLOS[i,:] = line_of_sight[:,1]
+                    self.HDFlatLOS[i,:] = line_of_sight[:,2]
+
+                except:
+
+                    self.HDFlonLOS[i,:].fill(-9.0E4)
+                    self.HDFlatLOS[i,:].fill(-9.0E4)
+
+               
+     
     def fltrHDFdata(self,maxRMS,minSZA,maxSZA,minDOF,maxDOF, maxCHI,minTC,maxTC,dofF,rmsF,tcF,pcF,cnvF,szaF,chiFlg,tcMMflg, h2oFlg, bckgFlg, minSlope, maxSlope, minCurv, maxCurv):
 
         #----------------------------------------------------
@@ -2597,6 +2786,16 @@ class GatherHDF(ReadOutputData,DbInputFile):
         self.HDFazi         = np.delete(self.HDFazi,self.inds)
         self.HDFdatesJD2K   = np.delete(self.HDFdatesJD2K,self.inds)
         self.HDFsza         = np.delete(self.HDFsza,self.inds)
+
+        try:
+            self.HDFlatLOS         = np.delete(self.HDFlatLOS,self.inds,axis=0)
+            self.HDFlonLOS         = np.delete(self.HDFlonLOS,self.inds,axis=0)
+            self.HDFh2oaprTC       = np.delete(self.HDFh2oaprTC,self.inds)
+            self.HDFazi            = np.delete(self.HDFazi,self.inds)
+            self.HDFwd             = np.delete(self.HDFwd,self.inds)
+            self.HDFws             = np.delete(self.HDFws,self.inds)
+            self.HDFrh             = np.delete(self.HDFrh,self.inds)
+        except: pass
    
         print ('Number of observations after filtering = {}'.format(len(self.HDFdates)) )
         
@@ -2636,12 +2835,13 @@ class PlotData(ReadOutputData):
         print ('\nPlotting bnr Spectral ...........\n')
 
         #------------------------------------------
-        # Read Jacobian Matrix for single retrieval
+        # 
         #------------------------------------------
         if len(self.dirLst) == 1:
 
             pspecInput = readPspec(self.dirLst[0])
             bnrFile    = pspecInput[-2]
+
 
             #--------------------------------
             # Read bnr
@@ -2654,9 +2854,9 @@ class PlotData(ReadOutputData):
             bnrZData   = readbnrZeroed(self.dirLst[0])
 
             self.readt15()
-            print(self.t15asc['WNi'], self.t15asc['WNf'])
+            #print(self.t15asc['WNi'], self.t15asc['WNf'])
 
-            zeroValue       =  self.t15asc['ZERO'][0]
+            if 'ZERO' in  self.t15asc: zeroValue       =  self.t15asc['ZERO'][0]
 
             #--------------------------------
             # plot bnr
@@ -2706,7 +2906,7 @@ class PlotData(ReadOutputData):
         #------------------------
         mw    = [str(int(x)) for x in self.ctl['band']]     
         numMW = len(mw)
-        
+
         #---------------------------------------
         # Get profile, summary and spectral data
         #---------------------------------------
@@ -2723,6 +2923,7 @@ class PlotData(ReadOutputData):
         #------------------------------------------
         # Read Jacobian Matrix for single retrieval
         #------------------------------------------
+        
         if len(self.dirLst) == 1:
             lines   = tryopen(self.dirLst[0]+self.ctl['file.out.k_matrix'][0])
             
@@ -2733,18 +2934,21 @@ class PlotData(ReadOutputData):
             #------------------------------------------
             # Developing - Raytrace
             #------------------------------------------
-            # saa   = self.pbp['saa'][0]
+            saa   = self.pbp['saa'][0]
             
-            # if not self.readt15Flg: self.readt15()
-            # lon  = 360. - self.t15asc['lon'][0]
-            # print(lon, saa)
+            if not self.readt15Flg: self.readt15()
 
-            # if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0) 
+     
+            lon  = 360. - self.t15asc['lon'][0]
 
-            # try:
-            #     raytrace_header,line_of_sight=readRaytrace(self.dirLst[0] + 'raytrace.out',longitude=lon,azimuth=saa,target_grid=self.aprfs['Z'][0]*1e3) #raytrace.out is the default...better to take file.out.raytrace? 
-            #     print(raytrace_header, line_of_sight)
-            # except: pass
+
+            if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0) 
+
+            
+            try:
+                raytrace_header,line_of_sight=readRaytrace(self.dirLst[0] + 'raytrace.out',longitude=lon,azimuth=saa,target_grid=self.aprfs['Z'][0]*1e3) #raytrace.out is the default...better to take file.out.raytrace? 
+                self.rayFlg = True
+            except: pass
 
         
         #--------------------
@@ -2762,7 +2966,7 @@ class PlotData(ReadOutputData):
         #---------------------
         try: sza = np.delete(self.pbp["sza"],self.inds)
         except: pass
-        
+
         #------------
         # Get spectra
         #------------
@@ -2887,8 +3091,28 @@ class PlotData(ReadOutputData):
         monthsAll    = MonthLocator()
         #months       = MonthLocator(bymonth=1,bymonthday=1)
         months       = MonthLocator()
-        DateFmt      = DateFormatter('%m\n%Y')      
+        DateFmt      = DateFormatter('%m\n%Y') 
+
+
+        if self.rayFlg:     
+
+            fig, ax  = plt.subplots()
+            ax = plt.axes(projection='3d')                   
+            ax.plot(line_of_sight[:,1], line_of_sight[:,2], line_of_sight[:,0]/1000., linewidth=2)
             
+            ax.tick_params(which='both',labelsize=8)
+            ax.set_xlabel('Longitude')
+            ax.set_ylabel('Latitude')
+            ax.set_zlabel('Altitude [km]')
+
+            ax.set_title('Line of sight')
+
+            #ax.view_init(30, 50)
+            
+            
+            if self.pdfsav: self.pdfsav.savefig(fig,dpi=200)
+            else:           plt.show(block=False)
+
  
         #----------------------------------------
         # Plot Jacobian only if there are
@@ -2914,6 +3138,7 @@ class PlotData(ReadOutputData):
 
                 ipnt += npnts
                 ax.grid(True)
+                ax.set_ylim(1,45)
                 if i == 0: ax.set_ylabel('Altitude [km]')
                 ax.xaxis.set_major_formatter(ScalarFormatter(useOffset=False))
                 
@@ -3109,6 +3334,7 @@ class PlotData(ReadOutputData):
         aprPrf       = {}
         rPrf         = {}
         localGasList = [self.PrimaryGas]
+
         
         #-------------------------------------------------------
         # Get profile, summary for Primary gas.... for filtering
@@ -4234,7 +4460,8 @@ class PlotData(ReadOutputData):
             tot_rnd    = np.delete(tot_rnd,self.inds)
             for k in randErrs:
                 randErrs[k] = np.delete(randErrs[k],self.inds)
-                randErrs[k] = np.divide(randErrs[k], totClmn) * 100.00  # Convert total random error components to 
+                try: randErrs[k] = np.divide(randErrs[k], totClmn) * 100.00  # Convert total random error components to 
+                except: pass
         
         #--------------------
         # Retr parameters
@@ -4793,11 +5020,17 @@ class PlotData(ReadOutputData):
         #------------------------------------
         if partialCols:
             for pcol in partialCols:
-                ind1 = nearestind(pcol[0], alt)
-                ind2 = nearestind(pcol[1], alt)               
-                vmrP = np.average(rPrf[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
-                vmrPDry = np.average(rPrfDry[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
-                sumP = np.sum(rPrfMol[:,ind2:ind1],axis=1)
+                # ind1 = nearestind(pcol[0], alt)
+                # ind2 = nearestind(pcol[1], alt)               
+                # vmrP = np.average(rPrf[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
+                # vmrPDry = np.average(rPrfDry[:,ind2:ind1],axis=1,weights=Airmass[:,ind2:ind1]) 
+                # sumP = np.sum(rPrfMol[:,ind2:ind1],axis=1)
+
+                inds = np.where( (alt >= pcol[0]) & (alt <= pcol[1])  )[0]
+                vmrP = np.average(rPrf[:,inds],axis=1,weights=Airmass[:,inds]) 
+                vmrPDry = np.average(rPrfDry[:,inds],axis=1,weights=Airmass[:,inds]) 
+                sumP = np.sum(rPrfMol[:,inds],axis=1)
+
                 fig,(ax1,ax2)  = plt.subplots(2,1,sharex=True)
                 ax1.plot(dates,vmrPDry,'k.',markersize=4)
                 ax2.plot(dates,sumP,'k.',markersize=4)
@@ -4805,7 +5038,7 @@ class PlotData(ReadOutputData):
                 ax2.grid(True)
                 ax1.set_ylabel('VMR ['+sclname+'] Dry Air')
                 ax2.set_ylabel('Retrieved Partial Column\n[molecules cm$^{-2}$]',multialignment='center')
-                ax1.set_title('Partial Column Weighted VMR and molecules cm$^{-2}$\nAltitude Layer '+str(alt[ind1])+'[km] - '+str(alt[ind2])+'[km]',
+                ax1.set_title('Partial Column Weighted VMR and molecules cm$^{-2}$\nAltitude Layer '+str(alt[inds[-1]])+'[km] - '+str(alt[inds[0]])+'[km]',
                               multialignment='center',fontsize=12)
                 ax2.set_xlabel(xlabel)
                 
@@ -5339,12 +5572,15 @@ class PlotData(ReadOutputData):
             for k in randErrs:
                 errLabel = k.strip().split()[-1]
                 fig,ax1  = plt.subplots()
-                if yrsFlg:
-                    tcks = range(np.min(years),np.max(years)+2)
-                    norm = colors.BoundaryNorm(tcks,cm.N)                        
-                    sc1  = ax1.scatter(sza,randErrs[k],c=years,cmap=cm,norm=norm)
-                else:                             
-                    sc1 = ax1.scatter(sza,randErrs[k],c=doy,cmap=cm)   
+                try:
+                    if yrsFlg:
+                        tcks = range(np.min(years),np.max(years)+2)
+                        norm = colors.BoundaryNorm(tcks,cm.N)                        
+                        sc1  = ax1.scatter(sza,randErrs[k],c=years,cmap=cm,norm=norm)
+                    else:                             
+                        sc1 = ax1.scatter(sza,randErrs[k],c=doy,cmap=cm)  
+
+                except: pass 
                     
                 ax1.grid(True,which='both')
                 ax1.set_ylabel('Error of Total Column [%]',fontsize=9)
