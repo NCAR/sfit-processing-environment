@@ -1,6 +1,6 @@
 #----------------------------------------------------------------------------------------
 # Name:
-#        dataHDFClass.py
+#        HDFClassRead.py
 #
 # Purpose:
 #       This is a collection of classes and functions used for processing and ploting HDF files

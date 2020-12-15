@@ -442,7 +442,9 @@ def main(argv):
                             SbctlFileVars.getInputs()
 
                     else:
+                        print('Error Flag: True')
                         print('Error: file.in.sbdflt is missing in {}'.format(ctlFile))
+                        exit()
      
 
             #-----------------------------
