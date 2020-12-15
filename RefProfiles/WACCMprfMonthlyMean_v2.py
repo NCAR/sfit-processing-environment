@@ -92,25 +92,43 @@ def main():
     #Inputs
     #-----------------
     inputDir   = '/data/Campaign/FL0/waccm/Boulder.V6/'
+
+    #------------------------
+    # In case a gas is not in WACCM use this reference file (example provided but each site is different)
+    #------------------------
+    reffile    = '/data/Campaign/FL0/waccm/reference.prf.REFC1.3_v2'   
+
+    #------------------------
+    # mol_ID file (Order of Gases: FOR SFIT4 V1.0x)
+    #------------------------
+    gasidFile  = '/data/pbin/Dev_Ivan/RefProfiles/Mol_ID.txt'
+
+    #------------------------
+    # Header for WACCM (Comment for all WACCM species)
+    #------------------------
+    ctitle     = 'WACCM-V4 CESM REFC1.3 1980-2020 CCMVal/CCMI, 2012' 
     
     gasoi      = 'no2'  
     
-    outputFld  = '/data/Campaign/FL0/waccm/'+ gasoi.lower() + '/'
+    outputFld  = '/data/Campaign/FL0/waccm/'+ gasoi.lower() + 'x1.0/'
 
-    reffile    = '/data/Campaign/FL0/waccm/reference.prf.REFC1.3'   #In case a gas is not in WACCM use this reference file
+    #---------------------------------------------------------------------------------------------
+    #
+    #                                      START
+    #
+    #---------------------------------------------------------------------------------------------
     
-    #The order of the following 99 gases is important (see reference.prf.REFC1.3 file)
-    gases      = ['H2O','CO2','O3','N2O','CO','CH4','O2','NO','SO2','NO2',
-                  'NH3','HNO3','OH','HF','HCL','HBR','HI','CLO','OCS','H2CO',
-                  'HOCL','HO2','H2O2','HONO','HO2NO2','N2O5','CLONO2','HCN','CH3F','CH3CL',
-                  'CF4','CFC12','CFC11','CH3CCL3','CCL4','COF2','COCLF','C2H6','C2H4','C2H2',
-                  'N2','HCFC22','COCL2','CH3BR','CH3I','HCOOH','H2S','CHCL2F','O2','SF6',
-                  'NF3', 'OTHER', 'OTHER', 'OTHER', 'OTHER', 'OTHER', 'OTHER','OCLO', 'F134A', 'C3H8', 
-                  'F142B', 'CFC113', 'F141B', 'CH3OH', 'OTHER', 'OTHER','PAN', 'CH3CHO', 'CH3CN', 'OTHER', 
-                  'CH3COOH', 'C5H8', 'MVK', 'MACR', 'C3H6', 'C4H8','OTHER', 'OTHER', 'OTHER', 'OTHER', 
-                  'OTHER', 'OTHER', 'OTHER', 'OTHER', 'OTHER', 'OTHER', 'OTHER','OTHER','OTHER','OTHER',
-                  'OTHER','OTHER','OTHER','OTHER','OTHER','OTHER','OTHER','OTHER','OTHER']
-    
+    #------------------------
+    # Get ID Gas
+    #------------------------
+    if ckFile(gasidFile, exit=False):
+
+        with open(gasidFile,'r') as fopen: lines = fopen.readlines()
+
+        gases = []
+
+        for ind,line in enumerate(lines[1:]): gases.append(line.strip().split()[1])
+
     #-----------------
     #
     #-----------------
@@ -123,10 +141,6 @@ def main():
     if not ( os.path.exists(outputFld) ):
         os.makedirs( outputFld )
 
-    #-----------------
-    # Comment for WACCM species 
-    #----------------- 
-    ctitle = ' WACCM-V4 CESM REFC1.3 1980-2020 CCMVal/CCMI, 2012' 
 
     #-----------------
     # Open output file 
@@ -147,6 +161,15 @@ def main():
                 #-------------------------------------------
                 if indF >= 1: 
 
+                    print('\n{}: {}'.format(indF+1, gas))
+
+                    #-------------------------------------------
+                    # Open and read  .refprfs
+                    #-------------------------------------------
+
+                    if gas.upper() == 'H2CO': gasFile = 'CH2O'
+                    else:                     gasFile = gas
+
                     #-------------------------------------------
                     # Open and read Temperature File (T.refprfs)
                     #-------------------------------------------
@@ -157,22 +180,20 @@ def main():
                     #-------------------------------------------
                     if ckFile(ifile, exit=False):
                     
-                        with open(ifile,'r') as fopen:
-                            lines = fopen.readlines()
-                            
-                        if indF+1 < 10:
-                            line1='    '+str(indF+1)+'     '+gas+ctitle+'\n'   #The spaces in the output is important
+                        with open(ifile,'r') as fopen: lines = fopen.readlines()
 
-                        else:
-                            line1='   '+str(indF+1)+'     '+gas+ctitle+'\n'
 
-                        fout.write(line1)
+                        line2txt = '{:>5}{:>8}{:}{:}\n'.format(indF+1,gas,' ',ctitle)
+
+                        fout.write(line2txt)
 
                         #-------------------------------------------
                         # Get altitudes. These are reversed compared
                         # to output so we must flip
                         #-------------------------------------------
                         alt    = np.array([float(x) for x in lines[1].strip().split()])
+                        #indsAlt = np.where((alt  < 5.))[0]
+                        
                         
                         #-------------------
                         # Get list of months
@@ -202,6 +223,8 @@ def main():
                             inds      = np.where(months == mnth)[0]
                             data_mean = np.mean(data[inds,:], axis=0)  # [month, altitude]
 
+                            #data_mean[indsAlt]   = data_mean[indsAlt]*0.5 
+
                             for row in segmnt(data_mean, 5):
                                 strformat = ','.join('{:>12.3E}' for i in row) + ', \n'
                                 fout.write(strformat.format(*row))
@@ -214,13 +237,9 @@ def main():
                         #-------------------------------------------
                         #if gas is not in waccm folder use reference profile
                         #-------------------------------------------
-                        if indF+1 < 10:
-                            line1='    '+str(indF+1)+'     '+gas+ reffile+'\n'
+                        line2txt = '{:>5}{:>8}{:}{:}\n'.format(indF+1,gas,' ',reffile)
 
-                        else:
-                            line1='   '+str(indF+1)+'     '+gas+ reffile+'\n'
-
-                        fout.write(line1)
+                        fout.write(line2txt)
                     
                         ckFile(reffile,exit=True)
                         refprf = readRefPrf(fname=reffile, parms = [gas.upper()])
@@ -232,7 +251,7 @@ def main():
 
     prfgas = np.asarray(prfgas)
 
-    fig1, ax1 = plt.subplots(sharey=True)
+    fig1, ax1 = plt.subplots(sharey=True, figsize=(6,7))
     clmap = 'jet'  # jet, rainbow, gist_ncar
     
     cm             = plt.get_cmap(clmap)
@@ -252,7 +271,7 @@ def main():
     ax1.set_ylabel('Altitude [km]', fontsize=12)
     ax1.set_xlabel('VMR [ppb]', fontsize=12 )
     ax1.tick_params(which='both',labelsize=12)
-    ax1.set_ylim((0,120))
+    ax1.set_ylim((0,80))
     #ax1.set_xlim((0,np.max((waccmW[-1,mnthInd],Q_day[-1]))))
     #ax1.set_title(YYYY+'-'+MM+'-'+DD)
 
@@ -264,6 +283,7 @@ def main():
     # ax2.set_xscale('log')
 
     plt.show(block=False)
+    plt.savefig(outputFld+gasoi+'.png', bbox_inches='tight')
     user_input = raw_input('Press any key to exit >>> ')
     sys.exit()
 

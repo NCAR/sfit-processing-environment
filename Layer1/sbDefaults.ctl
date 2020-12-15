@@ -120,6 +120,11 @@ sb.profile.H2CO.correlation.width     = 4
 sb.profile.H2CO.random                = .30 0.5 0.5 0.5 .20 .20 #relative units
 sb.profile.H2CO.systematic            = .30 0.5 0.5 0.5 .20 .20
 
+sb.profile.NO2.grid                     = -0.02 120
+sb.profile.NO2.correlation.width        = 4
+sb.profile.NO2.random                   = .10 .10 #relative units
+sb.profile.NO2.systematic               = .10 .10 #relative units, profile shape is not changed! Will vanish for Tikhonov retrievals
+
 sb.profile.*.grid                     = -0.02 120
 sb.profile.*.correlation.width        = 4
 sb.profile.*.random                   = .10 .10 #relative units
@@ -150,7 +155,7 @@ sb.phase_fcn.*                        = 0.05
 sb.line*_*.random                     = 0.
 sb.lineInt_CH4.systematic             = 0.03     
 sb.lineInt_CO.systematic              = 0.02
-sb.lineInt_NO2.systematic             = 0.10     
+sb.lineInt_NO2.systematic             = 0.05     
 sb.lineInt_HNO3.systematic            = 0.1     
 sb.lineInt_O3.systematic              = 0.03 
 sb.lineInt_N2O.systematic             = 0.02     

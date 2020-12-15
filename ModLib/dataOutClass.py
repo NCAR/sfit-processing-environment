@@ -930,23 +930,25 @@ def readRaytrace(fname,longitude=None,azimuth=None,target_grid=None):
     grid=gridboundaries[:-1]+np.diff(gridboundaries)/2
     logger.debug('Found raytrace grid boundaries %s'%gridboundaries)
     logger.debug('Found raytrace grid midpoints %s'%grid)
-    while (' APPARENT ZENITH ANGLE CALCULATIONS FINISHED.' not in l): l=fid.readline()
-    while ('CALCULATION OF THE REFRACTED PATH THROUGH THE ATMOSPHERE' not in l): 
-      if '=' in l:
-        k,v=l.strip().rsplit('=',1)
-        header[k.split(',')[-1].strip()]=v.strip()
-      l=fid.readline()
-    header['COLUMN_DESCRIPTION']=list(map(str.strip,fid.readline().split()))
-    header['COLUMN_DESCRIPTION'].insert(1,'ALTITUDE')
-    logger.debug('Updated raytrace output header \n\t%s'%'\n\t'.join(['%s=%s'%(k,v) for k,v in header.items()]))
-    for i in range(6): l=fid.readline()
-    out=[]
-    while l.strip():
-      out.append(list(map(np.float,l.split())))
-      l=fid.readline()
-    out=np.array(out,dtype=np.float)
-    logger.debug('Loaded data matrix with shape %s'%(out.shape,))
-    if out.shape[-1]!=len(header['COLUMN_DESCRIPTION']): raise ValueError('Unexpected matrix shape')
+    while l:
+      while l and (' APPARENT ZENITH ANGLE CALCULATIONS FINISHED.' not in l): l=fid.readline()
+      while l and ('CALCULATION OF THE REFRACTED PATH THROUGH THE ATMOSPHERE' not in l):
+        if '=' in l:
+            k,v=l.strip().rsplit('=',1)
+            header[k.split(',')[-1].strip()]=v.strip()
+          l=fid.readline()
+      if l: #to capture EOF
+        header['COLUMN_DESCRIPTION']=list(map(str.strip,fid.readline().split()))
+        header['COLUMN_DESCRIPTION'].insert(1,'ALTITUDE')
+        logger.debug('Updated raytrace output header \n\t%s'%'\n\t'.join(['%s=%s'%(k,v) for k,v in header.items()]))
+        for i in range(6): l=fid.readline()
+        out=[]
+        while l.strip():
+          out.append(list(map(np.float,l.split())))
+          l=fid.readline()
+        out=np.array(out,dtype=np.float)
+        logger.debug('Loaded data matrix with shape %s'%(out.shape,))
+        if out.shape[-1]!=len(header['COLUMN_DESCRIPTION']): raise ValueError('Unexpected matrix shape')
     
   #### Calculate lat/lon coordinates from azimuthal equidistant projection  
     if longitude!=None and azimuth!=None:
@@ -4355,6 +4357,8 @@ class PlotData(ReadOutputData):
         sza     = self.pbp['sza']
         saa     = self.pbp['saa']
         
+        
+
         
         if errFlg:
             if not self.readErrorFlg['totFlg']:

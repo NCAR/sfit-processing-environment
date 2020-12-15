@@ -1,6 +1,6 @@
 # sfit4 - pre/post processing python package distribution
 
-Python package used for pre and post-processing of sfit4. This package is recommended for the release of [SFIT4 v1.0](https://github.com/NCAR/sfit-core-code/tree/Official_Release_1.0x)
+Python package used for pre and post-processing of sfit4. This package is recommended for the release of [SFIT4 v1.0](https://github.com/NCAR/sfit-core-code/tree/Official_Release_1.0)
 
 Python package used for:
 

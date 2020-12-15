@@ -117,7 +117,7 @@ def main(argv):
         'v3':   '/Users/jamesw/FDP/sfit/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
         'v4':   '/home/ebaumer/Code/sfit4/src/',
         'v5':   '/Users/jamesw/FDP/sfit/400/src/src-irwg14-mp',
-        'v6':   '/data/ebaumer/Code/sfit-core-code-Official_Release_1.0/src/'}
+        'v6':   '/data/ebaumer/Code/sfit4/Official_Release_1.0/src/'}
 
         #----------
         # Run flags
