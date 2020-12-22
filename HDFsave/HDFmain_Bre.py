@@ -25,10 +25,6 @@
 #
 #----------------------------------------------------------------------------------------                              
 
-if __name__ != "__main__":
-    import sys, os, datetime
-    sys.path.append(os.path.join('..','ModLib'))
-    import hdfsave as hdfsave
                             
 def main(args):
     if len(args) != 8:
@@ -432,5 +428,6 @@ if __name__ == "__main__":
     import sys, os
     import datetime
     sys.path.append(os.path.join(os.path.dirname(sys.argv[0]),'..','ModLib'))
-    import hdfsave as hdfsave
+    sys.path.append(os.path.join(os.path.dirname(sys.argv[0]),'..','HDFsave'))
+    import hdfsave
     filename = main(sys.argv)
