@@ -243,15 +243,25 @@ class calc_diagnostics(sfit4_ctl):
         self.seinv = np.array(seinv)
         self.F_SE = True
         
-    def calc_AVK(self):
+    def calc_AVK(self,huge=False):
         if self.F_K and self.F_SE and self.F_SA:
-            KS = np.dot(self.K_frac.T,np.diag(self.seinv))
-            KSK = np.dot(KS, self.K_frac)
+            
+            if huge:
+                # Calc AVK matrix if too large
+                SK = np.zeros(self.K_frac.shape)
+                for i in range(0,SK.shape[0]):
+                    SK[i,:] = np.dot(self.seinv[i],self.K_frac[i,:])
+            else:
+                SK = np.dot(np.diag(self.seinv),self.K_frac)
+            KSK = np.dot(self.K_frac.T,SK)
 
             self.AK_frac = np.dot(np.linalg.inv(self.sainv + KSK), KSK)
 
+
         else:
             print ('read K, SA and SE matrix first')
+
+            
             
                     
 class Kout:
