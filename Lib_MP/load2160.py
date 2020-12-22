@@ -8,7 +8,7 @@
 #	BMSinnhuber, 16.05.95
 #                    07.08.95
 # modified for python
-#       Mathias Palm 2014
+#       Mathias Palm 2014, 2020
 
 # start with 
 # execfile('/home/mathias/load2160.py')
@@ -18,18 +18,57 @@
 # date is in datenums (can be converted to a date by dates.num2date
 
 import numpy as np
-import sys
+import sys, os, re
 import matplotlib.dates as dates
-
+from tables import open_file, Float32Atom
 class sonde():
 
+    def __init__(self, direc, prefix):
+        self.basedir = direc
+        self.filename_prefix = prefix
+
+        g = re.compile('ny*.b*',re.I)
+        self.sondefiles = filter(g.search,os.listdir(direc))
+
+    def convert_sonde_h5(self):
+
+        with open_file('o3sondes.h5','w') as h5file:
+            Time  = h5file.create_earray("/", 'dnum', Float32Atom(),([0]), title="Time of measurement", expectedrows=366)
+            z = h5file.create_earray("/", 'Z', Float32Atom(),(10000,0), title="Altitude", expectedrows=366)
+            T = h5file.create_earray("/", 'T', Float32Atom(),(10000,0), title="Temperature", expectedrows=366)
+            o3ppmv = h5file.create_earray("/", 'O3', Float32Atom(),(10000,0), title="O3 PPMV", expectedrows=366)
+
+            for sondefile in self.sondefiles:
+                try:
+                    vals, mdate, header = self.load2160(sondefile)
+                    print(sondefile)
+                except:
+                    continue
+
+                nr_entry = vals.shape[0]
+                Time.append(np.reshape(mdate,(1)))
+                nr_entry = vals.shape[0]
+                o3 = np.nan*np.ones(10000)
+                o3[:nr_entry] = vals[:,5]/vals[:,1]
+                o3 = np.reshape(o3, (10000,1))
+                o3ppmv.append(o3)
+                alt = np.nan*np.ones(10000)
+                alt[:nr_entry] = vals[:,2]
+                alt = np.reshape(alt, (10000,1))
+                z.append(alt)
+                temp = np.nan*np.ones(10000)
+                temp[:nr_entry] = vals[:,3]
+                temp = np.reshape(temp, (10000,1))
+                T.append(temp)
+                
+                
     def load2160(self, name):
 
 
         #    import ipdb
         #    ipdb.set_trace()
         fid = open(name)
-        #    nlhead = fid.readline()
+        nlhead = fid.readline()
         ffi = fid.readline() # File format
         ffi = ffi.split()
         ffi = int(ffi[1])
@@ -43,7 +82,7 @@ class sonde():
             vals = -1
             vname = -1
             fid.close()
-            print name + ' not valid'
+            print (name + ' not valid')
             return(vals, mdate, vname)
     
         oname = fid.readline() # Supervisor
@@ -121,7 +160,7 @@ class sonde():
             for k in range(0,nscoml):
                 l = fid.readline();
                 scom.append(l);
-                print l
+                print (l)
         f = fid.readline();
         nncoml = int(f) # Length comment
         if nncoml == '':
@@ -147,10 +186,10 @@ class sonde():
             A.append(tmpNX[k])
 
 
-        # Depending o who did the conversion, this line is different
-        if x2.find('Ny Alesund') != -1:
-            tim = [A[4], A[5]]
-            mdate = mdate + int(tim[0])/24.0 + int(tim[1])/(24*60.0) 
+        # Depending on who did the conversion, this line is different
+        if x2.find('Ny-Aalesund') != -1:
+            tim = [A[6]]
+            mdate = mdate + float(tim[0])/24.0
         elif x2.find('Paramaribo') != -1:
             tim = A[1]
             mdate = mdate + int(tim[0])/24.0
