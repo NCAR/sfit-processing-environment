@@ -365,7 +365,7 @@ def create_hdf5(**kwargs):
             P.append(np.reshape(p,(len_vmr, -1)))
             T.append(np.reshape(t,(len_vmr, -1)))
             if flag_tret:
-                    Tret.append(np.reshape(t,(len_vmr, -1)))
+                    Tret.append(np.reshape(tret,(len_vmr, -1)))
             air_mass.append(np.reshape(ac,(len_vmr, -1)))
 
             h2o, z = aprf.get_gas_vmr('H2O')
