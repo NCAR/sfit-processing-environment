@@ -26,7 +26,7 @@ class show_results:
 
         self.sb_ctl = sb_ctl
         self.load_result(sb_ctl)
-        
+
         # Find a free figure for profile
         self.winprf = plt.figure('Profile')#figsize=(24,12))
         # Find a free figure for microwindow

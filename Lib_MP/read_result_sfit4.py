@@ -224,7 +224,7 @@ class calc_diagnostics(sfit4_ctl):
         self.F_K = True
         
     def read_sainv_matrix(self, filename):
-        self.sainv = np.genfromtxt(filename,skip_header=3)
+        self.sainv = np.genfromtxt(filename,skip_header=2)
         # if TP is used, construct the inverse SA matrix
 #        self.sainv = np.linalg.inv(self.sa)
         self.F_SA = True
@@ -243,15 +243,24 @@ class calc_diagnostics(sfit4_ctl):
         self.seinv = np.array(seinv)
         self.F_SE = True
         
-    def calc_AVK(self):
+    def calc_AVK(self,huge=False):
         if self.F_K and self.F_SE and self.F_SA:
-            KS = np.dot(self.K_frac.T,np.diag(self.seinv))
-            KSK = np.dot(KS, self.K_frac)
+            
+            if huge:
+                # Calc AVK matrix if too large
+                SK = np.zeros(self.K_frac.shape)
+                for i in range(0,SK.shape[0]):
+                    SK[i,:] = np.dot(self.seinv[i],self.K_frac[i,:])
+            else:
+                SK = np.dot(np.diag(self.seinv),self.K_frac)
+            KSK = np.dot(self.K_frac.T,SK)
 
             self.AK_frac = np.dot(np.linalg.inv(self.sainv + KSK), KSK)
 
         else:
             print ('read K, SA and SE matrix first')
+
+            
             
                     
 class Kout:
@@ -303,7 +312,6 @@ class avk:
 #        ipdb.set_trace()
         ap = read_table(self.prfsfile)
         prf,z = ap.get_gas_vmr(ap.get_retrieval_gasnames()[0])
-        print(prf.size)
         self.AK_vmr = np.dot(np.dot(np.diag(prf),self.AK_frac),np.diag(1/prf))
         prf,z = ap.get_gas_col(ap.get_retrieval_gasnames()[0])
         self.AK_col = np.dot(np.dot(np.diag(prf),self.AK_frac),np.diag(1/prf))

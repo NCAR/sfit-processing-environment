@@ -353,6 +353,7 @@ class sfit4_ctl:
             print ('key ' + tag.strip() + ' not found')
 
     def replace_in_file(self, ctlfile, newtag, newvalue):
+        newvalue = str(newvalue)
         fido = open(ctlfile, 'r')
         value = ''
         tag = ''

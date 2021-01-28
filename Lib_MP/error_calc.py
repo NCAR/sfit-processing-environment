@@ -11,12 +11,12 @@ from functools import partial
 import random, time
 import gc
 
-def calc_now(direc, sbctl,rootdir):
+def calc_now(direc,sbctl,sbDefaults,rootdir):
     ctl = sc.CtlInputFile(direc+'/sfit4.ctl')
     ctl.getInputs()
     Sbctl = sc.CtlInputFile(sbctl)
     Sbctl.getInputs()
-    SbctlDefaults = sc.CtlInputFile('sbDefaults.ctl')
+    SbctlDefaults = sc.CtlInputFile(sbDefaults)
     SbctlDefaults.getInputs()
     errAnalysis(ctl,Sbctl,SbctlDefaults,direc, False)
     try:    
@@ -73,7 +73,7 @@ if __name__ == '__main__':
     sys.path.append(os.path.dirname(sys.argv[0]))
     
     try:
-        opts,arg = getopt.getopt(sys.argv[1:], [], ["dir=","sbctl=","start_date=","end_date="])
+        opts,arg = getopt.getopt(sys.argv[1:], [], ["dir=","sbctl=","start_date=","end_date="."sbdefaults="])
     except:
         print ('error in arguments')
         exit()
@@ -88,5 +88,7 @@ if __name__ == '__main__':
             args = args + 'start_date="' + arg + '",'
         if opt == '--end_date':
             args = args + 'end_date="' + arg + '",'
+        if opt == '--sbdefaults':
+            args = args + 'sbDefaults="' + arg + '",'
     args=args+')'
     eval(args)
