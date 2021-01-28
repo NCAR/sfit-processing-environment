@@ -179,9 +179,9 @@ def create_hdf5(**kwargs):
             i_col = []
             for gas in gasnames[1:]:
                 vmr,z = rprf.get_gas_vmr(gas)
-                avmr,z = aprf.get_gas_vmr(gas)
                 i_rvmr = np.hstack((i_rvmr, np.reshape(vmr, (len_vmr,1))))
-                i_avmr = np.hstack((i_avmr, np.reshape(avmr, (len_vmr,1))))
+                vmr,z = aprf.get_gas_vmr(gas)
+                i_avmr = np.hstack((i_avmr, np.reshape(vmr, (len_vmr,1))))
                 col,z = rprf.get_gas_col(gas)
                 i_col.append(sum(col))
             i_col = np.array(i_col)
