@@ -171,7 +171,7 @@ def create_hdf5(**kwargs):
             nr_aux = len(aux_apriori)
 
             if flag_tret:
-                t_ret = stv.Tret
+                t_apriori = stv.T
                     
             nr_gas = len(gasnames)
             i_rvmr=np.zeros((len_vmr,0))
@@ -179,9 +179,9 @@ def create_hdf5(**kwargs):
             i_col = []
             for gas in gasnames[1:]:
                 vmr,z = rprf.get_gas_vmr(gas)
-                avmr,z = aprf.get_gas_vmr(gas)
                 i_rvmr = np.hstack((i_rvmr, np.reshape(vmr, (len_vmr,1))))
-                i_avmr = np.hstack((i_avmr, np.reshape(avmr, (len_vmr,1))))
+                vmr,z = aprf.get_gas_vmr(gas)
+                i_avmr = np.hstack((i_avmr, np.reshape(vmr, (len_vmr,1))))
                 col,z = rprf.get_gas_col(gas)
                 i_col.append(sum(col))
             i_col = np.array(i_col)
@@ -218,7 +218,7 @@ def create_hdf5(**kwargs):
                 P = np.zeros((len_vmr, nr_entries)) *np.nan
                 T = np.zeros((len_vmr, nr_entries)) *np.nan
                 if flag_tret:
-                        Tret = np.zeros((len_vmr, nr_entries)) *np.nan
+                        T_apriori = np.zeros((len_vmr, nr_entries)) *np.nan
                 airmass = np.zeros((len_vmr, nr_entries)) *np.nan
                 vmr_h2o_ap = np.zeros((len_vmr, nr_entries)) *np.nan
 
@@ -263,8 +263,8 @@ def create_hdf5(**kwargs):
                 T = h5file.create_earray("/", 'T', hdf5.Float32Atom(), 
                                         (len_vmr,0), title="Temperature", expectedrows=nr_entries)
                 if (flag_tret):
-                     Tret = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
-                                        (len_vmr,0), title="Temperature", expectedrows=nr_entries)
+                     T_apriori = h5file.create_earray("/", 'Tapriori', hdf5.Float32Atom(), 
+                                        (len_vmr,0), title="Temperature apriori", expectedrows=nr_entries)
                 air_mass = h5file.create_earray("/", 'air_mass', hdf5.Float32Atom(), 
                                              (len_vmr,0), title="AIRMASS", expectedrows=nr_entries)
         
@@ -365,7 +365,7 @@ def create_hdf5(**kwargs):
             P.append(np.reshape(p,(len_vmr, -1)))
             T.append(np.reshape(t,(len_vmr, -1)))
             if flag_tret:
-                    Tret.append(np.reshape(tret,(len_vmr, -1)))
+                    T_apriori.append(np.reshape(t_apriori,(len_vmr, -1)))
             air_mass.append(np.reshape(ac,(len_vmr, -1)))
 
             h2o, z = aprf.get_gas_vmr('H2O')
