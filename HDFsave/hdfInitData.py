@@ -155,7 +155,7 @@ class HDFinitData(object):
 
     def initPy(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,
                mxRMS=1.0,mxSZA=80.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,
-               cnvFlg=True,szaFlg=False, validFlg=False,maxCHI2=-1.0,minVMR=1,maxVMR=-1,
+               cnvFlg=True,szaFlg=False, validFlg=False,chiFlg=False,maxCHI2=-1.0,minVMR=1,maxVMR=-1,
                co2Flag=False, minCO2=-1e99, maxCO2=1e99,maxTCTotErr=1e99,mtype='stationary'):
 
         ''' Interface for initializing data with python set of routines'''
@@ -163,7 +163,8 @@ class HDFinitData(object):
         #---------------------------------------
         # Gather data using python read routines
         #---------------------------------------
-        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, statLyrFile, iyear, imonth, iday, fyear, fmonth, fday,mtype,errFlg=True)
+        errFlg = True
+        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, statLyrFile, iyear, imonth, iday, fyear, fmonth, fday,mtype,errFlg)
         
         #------------
         # Filter data
@@ -239,7 +240,7 @@ class HDFinitData(object):
     
         self.latitude                       = dummySingleArray
         self.longitude                      = dummySingleArray
-        self.instAltitudes                  = dummySingleArray
+        self.instAltitudes                  = dummyAngleData
         self.surfPressures                  = dummyAngleData
         self.surfTemperatures               = dummyAngleData
         self.altitudes                      = dummyLayerData
