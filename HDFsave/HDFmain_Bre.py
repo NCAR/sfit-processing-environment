@@ -25,6 +25,12 @@
 #
 #----------------------------------------------------------------------------------------                              
 
+import sys, os
+import datetime
+sys.path.append(os.path.join(os.path.dirname(__file__),'..','ModLib'))
+sys.path.append(os.path.join(os.path.dirname(__file__),'..','HDFsave'))
+import hdfsave
+
                             
 def main(args):
     if len(args) != 8:
@@ -314,7 +320,7 @@ def main(args):
             dofFlag = True
         else:
             minDOFs        = 0.8
-#        maxCHI2        = 100.0
+        maxCHI2        = 1000.0
         maxVMR         = 1e-4
         minVMR         = -1e-7
         cnvFlag        = True
@@ -406,10 +412,13 @@ def main(args):
     # using our pre-defined interface
     #------------------------------------------------
 
+    if maxCHI2 < 9e99:
+        chiFlg = True
+    
     myhdf.initPy(dataDir, ctlF,  spcDBfile, statLyrFile,iyear, imonth,
                  iday,   fyear, fmonth, fday, mxRMS=maxRMS, mxSZA=maxSZA,
                  rmsFlg=rmsFlag, tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,
-                 szaFlg=szaFlag, validFlg=validFlag,maxCHI2=maxCHI2,
+                 szaFlg=szaFlag, validFlg=validFlag,chiFlg=chiFlg,maxCHI2=maxCHI2,
                  minVMR=minVMR,maxVMR=maxVMR,dofFlg=dofFlag,minDOF=minDOFs,
                  co2Flag=co2Flag,minCO2=minCO2,maxCO2=maxCO2,
                  maxTCTotErr=maxTCTotErr)
@@ -425,9 +434,4 @@ def main(args):
     return(filename)
     
 if __name__ == "__main__":
-    import sys, os
-    import datetime
-    sys.path.append(os.path.join(os.path.dirname(sys.argv[0]),'..','ModLib'))
-    sys.path.append(os.path.join(os.path.dirname(sys.argv[0]),'..','HDFsave'))
-    import hdfsave
     filename = main(sys.argv)
