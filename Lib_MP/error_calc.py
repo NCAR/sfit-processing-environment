@@ -3,7 +3,7 @@
 import sys
 sys.path.append('/home/mathias/sfit-processing-environment/ModLib')
 
-from Layer1Mods_v2 import errAnalysis
+from Layer1Mods import errAnalysis
 import sfitClasses as sc
 import os,shutil
 from multiprocessing import Pool
@@ -11,12 +11,12 @@ from functools import partial
 import random, time
 import gc
 
-def calc_now(direc,sbctl,sbDefaults,rootdir):
+def calc_now(direc,sbctl,sbdefaults,rootdir):
     ctl = sc.CtlInputFile(direc+'/sfit4.ctl')
     ctl.getInputs()
     Sbctl = sc.CtlInputFile(sbctl)
     Sbctl.getInputs()
-    SbctlDefaults = sc.CtlInputFile(sbDefaults)
+    SbctlDefaults = sc.CtlInputFile(sbdefaults)
     SbctlDefaults.getInputs()
     errAnalysis(ctl,Sbctl,SbctlDefaults,direc, False)
     try:    
@@ -52,6 +52,8 @@ def error_calc(**kwargs):
         start_date=kwargs['start_date']
     if 'end_date' in kwargs:
         end_date=kwargs['end_date']
+    if 'sbDefaults' in kwargs:
+        sbdefaults=kwargs['sbDefaults']
 
     
     dd = list(filter(lambda x: os.path.isfile(kwargs['dir'] + '/' + x+'/sfit4.ctl')
@@ -66,14 +68,14 @@ def error_calc(**kwargs):
 
     p = Pool(processes=4)
     sbctl= kwargs['sbctl']
-    p.map(partial(calc_now, sbctl=sbctl,rootdir=kwargs['dir']), direcs)
+    p.map(partial(calc_now, sbctl=sbctl,sbdefaults=sbdefaults,rootdir=kwargs['dir']), direcs)
 
 if __name__ == '__main__':
     import os,sys, getopt
     sys.path.append(os.path.dirname(sys.argv[0]))
     
     try:
-        opts,arg = getopt.getopt(sys.argv[1:], [], ["dir=","sbctl=","start_date=","end_date="."sbdefaults="])
+        opts,arg = getopt.getopt(sys.argv[1:], [], ["dir=","sbctl=","start_date=","end_date=","sbdefaults="])
     except:
         print ('error in arguments')
         exit()
