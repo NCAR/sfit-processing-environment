@@ -3,7 +3,7 @@
 import sys
 sys.path.append('/home/mathias/sfit-processing-environment/ModLib')
 
-from Layer1Mods import errAnalysis
+from Layer1Mods_v2 import errAnalysis
 import sfitClasses as sc
 import os,shutil
 from multiprocessing import Pool
@@ -11,12 +11,12 @@ from functools import partial
 import random, time
 import gc
 
-def calc_now(direc,sbctl,sbdefaults,rootdir):
+def calc_now(direc,sbctl,sbDefaults,rootdir):
     ctl = sc.CtlInputFile(direc+'/sfit4.ctl')
     ctl.getInputs()
     Sbctl = sc.CtlInputFile(sbctl)
     Sbctl.getInputs()
-    SbctlDefaults = sc.CtlInputFile(sbdefaults)
+    SbctlDefaults = sc.CtlInputFile(sbDefaults)
     SbctlDefaults.getInputs()
     errAnalysis(ctl,Sbctl,SbctlDefaults,direc, False)
     try:    
