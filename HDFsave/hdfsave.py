@@ -233,7 +233,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_NOTES']            = 'None'
       dataStr['VAR_SIZE']             = str(nsize)
       if self.mtype.lower() == 'stationary':
-         dataStr['VAR_DEPEND']           = self.getDatetimeName()
+         dataStr['VAR_DEPEND']           = 'CONSTANT'
       elif self.mtype.lower() == 'mobile':
          dataStr['VAR_DEPEND']           = self.getDatetimeName()
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr

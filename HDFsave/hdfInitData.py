@@ -182,7 +182,7 @@ class HDFinitData(object):
         self.datesJD2K                      = pyData.HDFdatesJD2K
         self.latitude                       = pyData.HDFlat
         self.longitude                      = pyData.HDFlon
-        self.instAltitudes                  = pyData.HDFinstAlt
+        self.instAltitudes                  = pyData.HDFinstAlt[0]
         self.surfPressures                  = pyData.HDFsurfP
         self.surfTemperatures               = pyData.HDFsurfT
         self.altitudes                      = pyData.HDFz
