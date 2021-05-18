@@ -1189,7 +1189,7 @@ class ReadOutputData(_DateRange):
 
     def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,minsza=0.0,minDOF=1.0,
                  dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,
-                 szaFlg=False,maxCHI2=1000.0,maxVMR=-1e99,minVMR=1e99,
+                 szaFlg=False,chiFlg=False,maxCHI2=1000.0,maxVMR=-1e99,minVMR=1e99,
                  valFlg=False,co2Flg=False, minCO2=0.0, maxCO2=1e99,
                  mnthFltFlg=False,tcMinMaxFlg=False,maxTCTotErr=1e99):
 
@@ -1505,101 +1505,100 @@ class ReadOutputData(_DateRange):
                 self.refPrf[k] = np.asarray(self.refPrf[k])
 
     def readsummary(self,fname=''):
-            ''' Reads in summary data from SFIT output '''
-            self.summary = {}
-            self.t15asc  = {}
-                
-            if not fname: fname = 'summary'
+        ''' Reads in summary data from SFIT output '''
+        self.summary = {}
+        self.t15asc  = {}
+        
+        if not fname: fname = 'summary'
+        
+        #-----------------------------------
+        # Loop through collected directories
+        #-----------------------------------
+        for sngDir in self.dirLst:
             
-            #-----------------------------------
-            # Loop through collected directories
-            #-----------------------------------
-            for sngDir in self.dirLst:
-    
-                try:
-                    with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
-    
-                    #--------------------------------
-                    # Get retrieved column amount for 
-                    # each gas retrieved
-                    #--------------------------------
-                    ind1       = [ind for ind,line in enumerate(lines) if 'IRET' in line][0]
-                    ngas       = int(lines[ind1-1].strip())
-                    indGasName = lines[ind1].strip().split().index('GAS_NAME')
-                    indRETCOL  = lines[ind1].strip().split().index('RET_COLUMN')
-                    indAPRCOL  = lines[ind1].strip().split().index('APR_COLUMN')
+            try:
+                with open(sngDir + fname,'r') as fopen: lines = fopen.readlines()
+                
+                #--------------------------------
+                # Get retrieved column amount for 
+                # each gas retrieved
+                #--------------------------------
+                ind1       = [ind for ind,line in enumerate(lines) if 'IRET' in line][0]
+                ngas       = int(lines[ind1-1].strip())
+                indGasName = lines[ind1].strip().split().index('GAS_NAME')
+                indRETCOL  = lines[ind1].strip().split().index('RET_COLUMN')
+                indAPRCOL  = lines[ind1].strip().split().index('APR_COLUMN')
 
     
-                    for i in range(ind1+1,ind1+ngas+1):
-                        gasname = lines[i].strip().split()[indGasName]
-                        self.summary.setdefault(gasname.upper()+'_RetColmn',[]).append(float(lines[i].strip().split()[indRETCOL]))
-                        self.summary.setdefault(gasname.upper()+'_AprColmn',[]).append(float(lines[i].strip().split()[indAPRCOL]))
-
+                for i in range(ind1+1,ind1+ngas+1):
+                    gasname = lines[i].strip().split()[indGasName]
+                    self.summary.setdefault(gasname.upper()+'_RetColmn',[]).append(float(lines[i].strip().split()[indRETCOL]))
+                    self.summary.setdefault(gasname.upper()+'_AprColmn',[]).append(float(lines[i].strip().split()[indAPRCOL]))
     
-                    #---------------------------------------------------------
-                    # Get NPTSB, FOVDIA, and INIT_SNR
-                    # Currently set up to read SNR from summary file where the
-                    # summary file format has INIT_SNR on the line below IBAND 
-                    #---------------------------------------------------------
-                    ind2     = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
-                    self.nbands = int(lines[ind2-1].strip().split()[0])
-                    indNPTSB = lines[ind2].strip().split().index('NPTSB')
-                    indFOV   = lines[ind2].strip().split().index('FOVDIA')
-                    indSNR   = lines[ind2].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
-                    # --- DIFFERENTLY NAMED IN MY SFIT4 ----
-                    if lines[ind2].strip().split().count('CALC_SNR') > 0:
-                        indFitSNR= lines[ind2].strip().split().index('CALC_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
-                    else:
-                        indFitSNR= lines[ind2].strip().split().index('FIT_SNR') - 9 
-                            
-                    lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
-
-
-                    for lnum in range(ind2+1,lend,2):
-                        band = lines[lnum].strip().split()[0] # Get band number
-                        self.summary.setdefault('nptsb_'+band,[]).append(  float( lines[lnum].strip().split()[indNPTSB] ) )
-                        self.summary.setdefault('FOVDIA_'+band,[]).append( float( lines[lnum].strip().split()[indFOV]   ) )
-                        self.summary.setdefault('SNR_'+band,[]).append(    float( lines[lnum+1].strip().split()[indSNR] ) )       # Add 1 to line number because INIT_SNR exists on next line
-                        self.summary.setdefault('FIT_SNR_'+band,[]).append(float( lines[lnum+1].strip().split()[indFitSNR] ) )    # Add 1 to line number because FIT_SNR exists on next line
+                #---------------------------------------------------------
+                # Get NPTSB, FOVDIA, and INIT_SNR
+                # Currently set up to read SNR from summary file where the
+                # summary file format has INIT_SNR on the line below IBAND 
+                #---------------------------------------------------------
+                ind2     = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
+                self.nbands = int(lines[ind2-1].strip().split()[0])
+                indNPTSB = lines[ind2].strip().split().index('NPTSB')
+                indFOV   = lines[ind2].strip().split().index('FOVDIA')
+                indSNR   = lines[ind2].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
+                # --- DIFFERENTLY NAMED IN MY SFIT4 ----
+                if lines[ind2].strip().split().count('CALC_SNR') > 0:
+                    indFitSNR= lines[ind2].strip().split().index('CALC_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
+                else:
+                    indFitSNR= lines[ind2].strip().split().index('FIT_SNR') - 9 
                     
-                    #----------------------------------------------------------------
-                    # Get fit rms, chi_y^2, degrees of freedom target, converged flag
-                    #----------------------------------------------------------------
-                    ind2       = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0]
-                   
-                    indRMS     = lines[ind2].strip().split().index('FITRMS')
-                    indCHIY2   = lines[ind2].strip().split().index('CHI_2_Y')
-                    indDOFtrgt = lines[ind2].strip().split().index('DOFS_TRG')
-                    indCNVRG   = lines[ind2].strip().split().index('CONVERGED')
-    
-                    self.summary.setdefault(self.PrimaryGas.upper()+'_FITRMS'   ,[]).append( float( lines[ind2+1].strip().split()[indRMS]     ) )
-                    self.summary.setdefault(self.PrimaryGas.upper()+'_CHI_2_Y'  ,[]).append( float( lines[ind2+1].strip().split()[indCHIY2]   ) )
-                    self.summary.setdefault(self.PrimaryGas.upper()+'_DOFS_TRG' ,[]).append( float( lines[ind2+1].strip().split()[indDOFtrgt] ) )
-                    self.summary.setdefault(self.PrimaryGas.upper()+'_CONVERGED',[]).append(        lines[ind2+1].strip().split()[indCNVRG]     )                  
-                    if self.dirFlg:
-                        dirname = os.path.basename(os.path.normpath(sngDir)) 
-                        self.summary.setdefault('date',[]).append( dt.datetime(int(dirname[0:4]), int(dirname[4:6]), int(dirname[6:8]), 
-                                                                               int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))
+                lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
 
 
-                    #----------------------------------------------------------------
-                    #
-                    #----------------------------------------------------------------
+                for lnum in range(ind2+1,lend,2):
+                    band = lines[lnum].strip().split()[0] # Get band number
+                    self.summary.setdefault('nptsb_'+band,[]).append(  float( lines[lnum].strip().split()[indNPTSB] ) )
+                    self.summary.setdefault('FOVDIA_'+band,[]).append( float( lines[lnum].strip().split()[indFOV]   ) )
+                    self.summary.setdefault('SNR_'+band,[]).append(    float( lines[lnum+1].strip().split()[indSNR] ) )       # Add 1 to line number because INIT_SNR exists on next line
+                    self.summary.setdefault('FIT_SNR_'+band,[]).append(float( lines[lnum+1].strip().split()[indFitSNR] ) )    # Add 1 to line number because FIT_SNR exists on next line
+                    
+                #----------------------------------------------------------------
+                # Get fit rms, chi_y^2, degrees of freedom target, converged flag
+                #----------------------------------------------------------------
+                ind2       = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0]
+                
+                indRMS     = lines[ind2].strip().split().index('FITRMS')
+                indCHIY2   = lines[ind2].strip().split().index('CHI_2_Y')
+                indDOFtrgt = lines[ind2].strip().split().index('DOFS_TRG')
+                indCNVRG   = lines[ind2].strip().split().index('CONVERGED')
+                
+                self.summary.setdefault(self.PrimaryGas.upper()+'_FITRMS'   ,[]).append( float( lines[ind2+1].strip().split()[indRMS]     ) )
+                self.summary.setdefault(self.PrimaryGas.upper()+'_CHI_2_Y'  ,[]).append( float( lines[ind2+1].strip().split()[indCHIY2]   ) )
+                self.summary.setdefault(self.PrimaryGas.upper()+'_DOFS_TRG' ,[]).append( float( lines[ind2+1].strip().split()[indDOFtrgt] ) )
+                self.summary.setdefault(self.PrimaryGas.upper()+'_CONVERGED',[]).append(        lines[ind2+1].strip().split()[indCNVRG]     )                  
+                if self.dirFlg:
+                    dirname = os.path.basename(os.path.normpath(sngDir)) 
+                    self.summary.setdefault('date',[]).append( dt.datetime(int(dirname[0:4]), int(dirname[4:6]), int(dirname[6:8]), 
+                                                                           int(dirname[9:11]), int(dirname[11:13]), int(dirname[13:])))
 
-                except Exception as errmsg:
-                    print (errmsg)
-                    continue
-    
-            self.readsummaryFlg = True
-            #------------------------
-            # Convert to numpy arrays
-            # and sort based on date
-            #------------------------
-            for k in self.summary:
-                self.summary[k] = np.asarray(self.summary[k])
-    
-            if self.dirFlg: self.summary = sortDict(self.summary, 'date')
-            else:           return self.summary    
+
+                #----------------------------------------------------------------
+                #
+                #----------------------------------------------------------------
+
+            except Exception as errmsg:
+                print (errmsg)
+                continue
+            
+        self.readsummaryFlg = True
+        #------------------------
+        # Convert to numpy arrays
+        # and sort based on date
+        #------------------------
+        for k in self.summary:
+            self.summary[k] = np.asarray(self.summary[k])
+            
+        if self.dirFlg: self.summary = sortDict(self.summary, 'date')
+        else:           return self.summary    
             
         if not fname: fname = 't15asc.4'
         
@@ -2150,7 +2149,14 @@ class ReadOutputData(_DateRange):
                 # Only take the SZA from first micro-window
                 if i == 1: self.pbp.setdefault('sza',[]).append( float(lines[lstart].strip().split()[0])/ 1000.0 )
                 # Read the SAA
-                if i == 1: self.pbp.setdefault('saa',[]).append( float(lines[lstart-1].strip().split()[3].split(':')[1]))
+                print (lines[lstart-1].strip().split())
+                try:
+                    if i == 1: self.pbp.setdefault('saa',[]).append(
+                            float(lines[lstart-1].strip().split()[3].split(':')[1]))
+                except:
+                    if i == 1: self.pbp.setdefault('saa',[]).append(
+                            float(lines[lstart-1].strip().split()[4]))
+                    
 
                 nspac = float(lines[lstart].strip().split()[1])
                 npnts = int(lines[lstart].strip().split()[2])
@@ -2441,8 +2447,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
         #---------------
         # ReadOutputData
         #---------------
-        ReadOutputData.__init__(self,dataDir,primGas,ctlF,iyear,imnth,iday,fyear,fmnth,fday,incr)    
 
+        ReadOutputData.__init__(self,dataDir,primGas,ctlF,iyear,imnth,iday,fyear,fmnth,fday,incr)    
         #------------
         # DbInputFile
         #------------
@@ -2546,6 +2552,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
         
         for i,val in enumerate(self.HDFdates):
             tempSpecDB = self.dbFindDate(self.HDFdates[i])
+            if not tempSpecDB:
+                continue
             self.HDFlat[i]     = np.array(tempSpecDB['N_Lat'])
             if 'W_Lon' in tempSpecDB:
                 self.HDFlon[i]     = -np.array(tempSpecDB['W_Lon'])
@@ -2566,21 +2574,22 @@ class GatherHDF(ReadOutputData,DbInputFile):
             
             self.HDFintT[i] = tempSpecDB['Dur']
 
+            print (i)
             try:
                 #-----------------------------
                 # Latitude - defined as positive North in database
                 #-----------------------------
                 self.HDFazi[i]  = tempSpecDB['NAzm']
+                SAzmFlg = False
             except:
                 #-----------------------------
                 # Latitude - defined as positive South in database
                 #-----------------------------
                 self.HDFazi[i]  = tempSpecDB['SAzm']
 
-                if i == 0: 
-                    print ('\nSolar Azimuth defined as positive South in database')
-                    SAzmFlg = True
-
+                print ('\nSolar Azimuth defined as positive South in database')
+                SAzmFlg = True
+                    
         #----------------------------------------------
         # In the Database Solar Azimuth is defined as positive South. 
         # Convert to North Solar Azimuth (2016 GEOMS CONVENTION)
@@ -2594,9 +2603,12 @@ class GatherHDF(ReadOutputData,DbInputFile):
                 elif az < 180.0:
                     self.HDFazi[i] = 180. + az
                 
-                
             
-    def fltrHDFdata(self,maxRMS,minSZA,maxSZA,minDOF,maxDOF, maxCHI,minTC,maxTC,dofF,rmsF,tcF,pcF,cnvF,szaF,chiFlg,tcMMflg, h2oFlg, bckgFlg, minSlope, maxSlope, minCurv, maxCurv):
+    def fltrHDFdata(self,maxRMS=1e99,minSZA=0.0,maxSZA=90.0,minDOF=0.0,maxDOF=10.0,
+                maxCHI2=1e99,minTC=0.0,maxTC=1.0E99,dofF=False,rmsF=False,tcF=False,pcF=False,
+                cnvF=False,szaF=False,chiFlg=False,tcMMflg=False,
+                h2oFlg=False, bckgFlg=False, minSlope=-1e99, maxSlope=1e99, minCurv=-1e99,
+                maxCurv=1e99,minVMR=-1e99,maxVMR=1e99,co2F=False,minCO2=-1e99,maxCO2=1e99,valF=False,maxTCTotErr=1e99):
 
         #----------------------------------------------------
         # Print total number of observations before filtering
@@ -2676,7 +2688,6 @@ class PlotData(ReadOutputData):
         super(PlotData,self).__init__(dataDir,primGas,ctlF,iyear,imnth,iday,fyear,fmnth,fday,incr)
         
     def closeFig(self):
-<<<<<<< HEAD
         self.pdfsav.close()      
 
     def pltbnr(self):  
@@ -3918,7 +3929,6 @@ class PlotData(ReadOutputData):
         ''' Plot Averaging Kernel. Only for single retrieval '''
         
         print ('\nPlotting Averaging Kernel........\n')
-<<<<<<< HEAD
 
         #---------------------------------------
         # Get profile, summary and spectral data

@@ -10,7 +10,10 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import matplotlib.dates as dates
 old_epoch = '0000-12-31T00:00:00'
-dates.set_epoch(old_epoch) 
+try:
+    dates.set_epoch(old_epoch)
+except:
+    pass
 import matplotlib.gridspec as gridspec
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg,NavigationToolbar2Tk
 import numpy as np
