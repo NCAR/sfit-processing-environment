@@ -296,7 +296,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DESCRIPTION']      = 'Latitude of the instrument location, positive North'
       dataStr['VAR_NOTES']            = 'None'
       dataStr['VAR_SIZE']             = str(nsize)
-      dataStr['VAR_DEPEND']           = 'CONSTANT'
+      if nsize > 1: dataStr['VAR_DEPEND']  = self.getDatetimeName()
+      else:         dataStr['VAR_DEPEND']  = 'CONSTANT'
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = 'deg'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.74533E-2;rad'
@@ -344,7 +345,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DESCRIPTION']      = 'Longitude of the instrument location, positive East, negative West'
       dataStr['VAR_NOTES']            = 'Data up to 2015 defined 0-360 deg, positive East'
       dataStr['VAR_SIZE']             = str(nsize)
-      dataStr['VAR_DEPEND']           = 'CONSTANT'
+      if nsize > 1: dataStr['VAR_DEPEND']  = self.getDatetimeName()
+      else:         dataStr['VAR_DEPEND']  = 'CONSTANT'
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = 'deg'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.74533E-2;rad'
@@ -388,7 +390,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_DESCRIPTION']      = 'Altitude of the location of the instrument'
       dataStr['VAR_NOTES']            = 'None'
       dataStr['VAR_SIZE']             = str(nsize)
-      dataStr['VAR_DEPEND']           = 'CONSTANT'
+      if nsize > 1: dataStr['VAR_DEPEND']  = self.getDatetimeName()
+      else:         dataStr['VAR_DEPEND']  = 'CONSTANT'
       dataStr['VAR_DATA_TYPE']        = self.dTypeStr
       dataStr['VAR_UNITS']            = 'km'
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.0E3;m'
@@ -762,6 +765,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       
       return dataStr
 
+   #def tcAvkAttrbs(self,nlyrs,nsize, minval, maxval):
    def tcAvkAttrbs(self,nlyrs,nsize):
       ''' Attributes for total column from averaging kernel profile '''
 
@@ -777,6 +781,8 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_SI_CONVERSION']    = '0.0;1.0;1'
       dataStr['VAR_VALID_MIN']        = -10.0
       dataStr['VAR_VALID_MAX']        =  10.0
+      #dataStr['VAR_VALID_MIN']        = minval
+      #dataStr['VAR_VALID_MAX']        = maxval
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
       dataStr['VALID_RANGE']          = (-10.0,10.0)
       dataStr['units']                = '1'

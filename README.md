@@ -131,7 +131,7 @@ otherwise go to, e.g., the Layer1 folder and type
 $ python3 sfit4Layer1.py -?
 ```
 
-if succefully, the output might look like this
+if successfully, the output might look like this
 
 ```
   -i <file>                              : Flag to specify input file for Layer 1 processing. <file> is full path and filename of input file

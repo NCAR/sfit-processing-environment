@@ -115,7 +115,7 @@ def main(argv):
     #-------------------------
     # Create Instance of Class
     #-------------------------
-    gas = dc.PlotHDF(pltInputs['dataDir'], pltInputs['locID'], pltInputs['gasName'],saveFlg= pltInputs['saveFlg'], outFname=pltInputs['pltFile'])
+    gas = dc.PlotHDF(pltInputs['dataDir'], pltInputs['locID'], pltInputs['gasName'],saveFlg= pltInputs['saveFlg'], outFname=pltInputs['pltFile'], geomsTmpl=pltInputs['geomsTmpl'])
 
     #----------------------
     # Call to plot profiles

@@ -57,6 +57,8 @@ import numpy as np
 import sys
 import glob
 import getopt
+from netCDF4 import Dataset
+import myfunctions as mf
                                     #-------------------------#
                                     # Define helper functions #
                                     #-------------------------#
@@ -129,7 +131,8 @@ def main(argv):
     #----------------
     dataDir     = '/data1/ancillary_data/fl0/eol/'
     dataFileTag = 'flab'
-    fileExtTag  = 'cdf'
+    if int(yearstr) >= 2021: fileExtTag  = 'nc'   # >= 2021
+    else:  fileExtTag  = 'cdf'   # < 2021
     outDataDir  = '/data1/ancillary_data/fl0/eol/'
     yearstr     = yearstr
 
@@ -162,28 +165,60 @@ def main(argv):
     # Loop through found files
     #-------------------------
     for indvfile in files:
+        print("Processing: {}".format(indvfile))
 
-        cdfname = netcdf.netcdf_file(indvfile,'r',mmap=False)       # Open netcdf file
-        # Get variables
-        base_time   = cdfname.variables['base_time']
-        time_offset = cdfname.variables['time_offset']
-        temp        = cdfname.variables['tdry']
-        rh          = cdfname.variables['rh']
-        press       = cdfname.variables['pres']
-        tempDP      = cdfname.variables['dp']
-        wdir      = cdfname.variables['wdir']
-        wspd      = cdfname.variables['wspd']
-        wmax      = cdfname.variables['wmax']
-        wsdev      = cdfname.variables['wsdev']
-        cdfname.close()
+        if int(yearstr) >= 2021:
 
-        #----------------------------------
-        # Create an actual time vector from
-        # basetime and offset (unix time)
-        #----------------------------------
-        total_time = base_time[()] + time_offset.data
-        #total_time = [dt.datetime.utcfromtimestamp(indtime) for indtime in total_time]
-        total_time = total_time.tolist()                # Convert numpy array to list
+            cdfname = Dataset(indvfile , 'r')  # Dataset is the class behavior to open the file
+            nc_attrs, nc_dims, nc_vars = mf.ncdump(cdfname, verb=False)
+            
+            time_offset = cdfname.variables['time']
+            base_time   = cdfname.variables['time'].units[14:]
+            base_time   = dt.datetime.strptime(base_time, '%Y-%m-%d %H:%M:%S %z').timestamp()
+
+            temp        = cdfname.variables['tdry']
+            rh          = cdfname.variables['rh']
+            press       = cdfname.variables['pres']
+            tempDP      = cdfname.variables['dewpoint']
+            wdir        = cdfname.variables['wdir']
+            wspd        = cdfname.variables['wspd']
+            wmax        = cdfname.variables['wspd_max']
+
+            #----------------------------------
+            # Create an actual time vector from
+            # basetime and offset (unix time)
+            #----------------------------------
+
+            total_time = base_time + time_offset[0:]
+            total_time = total_time.tolist()                # Convert numpy array to list
+        
+
+        else:
+
+
+            cdfname = netcdf.netcdf_file(indvfile,'r',mmap=False)       # Open netcdf file
+            # Get variables
+            base_time   = cdfname.variables['base_time']
+            time_offset = cdfname.variables['time_offset']
+            temp        = cdfname.variables['tdry']
+            rh          = cdfname.variables['rh']
+            press       = cdfname.variables['pres']
+            tempDP      = cdfname.variables['dp']
+            wdir      = cdfname.variables['wdir']
+            wspd      = cdfname.variables['wspd']
+            wmax      = cdfname.variables['wmax']
+            wsdev      = cdfname.variables['wsdev']
+            cdfname.close()
+
+            #----------------------------------
+            # Create an actual time vector from
+            # basetime and offset (unix time)
+            #----------------------------------
+            total_time = base_time[()] + time_offset.data
+            #total_time = [dt.datetime.utcfromtimestamp(indtime) for indtime in total_time]
+            total_time = total_time.tolist()                # Convert numpy array to list
+
+        
 
         #------------------------------------------------------------
         # There seems to be a timing issue in some of the data files.
@@ -197,39 +232,48 @@ def main(argv):
             except ValueError:
                 total_time[ind] = -9999
                 rmind.append(ind)
+        
 
         #------------------------------------------------------
         # Remove observations with erroneous time_offset values
         #------------------------------------------------------
         total_time[:] = [item for ind,item in enumerate(total_time) if ind not in rmind]   # List
-        temp.data     = np.delete(temp.data,rmind)                                         # Numpy array
-        rh.data       = np.delete(rh.data,rmind)                                           # Numpy array
-        press.data    = np.delete(press.data,rmind)                                        # Numpy array
-        tempDP.data   = np.delete(tempDP.data,rmind)                                       # Numpy array
-        wdir.data     = np.delete(wdir.data,rmind)
-        wspd.data     = np.delete(wspd.data,rmind)
-        wmax.data     = np.delete(wmax.data,rmind)
-        wsdev.data     = np.delete(wsdev.data,rmind)                                       # Numpy array
+        temp_     = np.delete(temp[:],rmind)                                         # Numpy array
+        rh_       = np.delete(rh[:],rmind)                                           # Numpy array
+        press_    = np.delete(press[:],rmind)                                        # Numpy array
+        tempDP_   = np.delete(tempDP[:],rmind)                                       # Numpy array
+        wdir_     = np.delete(wdir[:],rmind)
+        wspd_     = np.delete(wspd[:],rmind)
+        wmax_     = np.delete(wmax[:],rmind)
 
+        # temp.data     = np.delete(temp.data,rmind)                                         # Numpy array
+        # rh.data       = np.delete(rh.data,rmind)                                           # Numpy array
+        # press.data    = np.delete(press.data,rmind)                                        # Numpy array
+        # tempDP.data   = np.delete(tempDP.data,rmind)                                       # Numpy array
+        # wdir.data     = np.delete(wdir.data,rmind)
+        # wspd.data     = np.delete(wspd.data,rmind)
+        # wmax.data     = np.delete(wmax.data,rmind)
+        #wsdev.data     = np.delete(wsdev.data,rmind)                                       # Numpy array
+        
         #---------------------
         # Append to main lists
         #---------------------
         timeList.extend(total_time)
-        tempList.extend(temp.data)
-        rhList.extend(rh.data)
-        pressList.extend(press.data)
-        tempDPList.extend(tempDP.data)
-        wdirList.extend(wdir.data)
-        wspdList.extend(wspd.data)
-        wmaxList.extend(wmax.data)
-        wsdevList.extend(wsdev.data)
+        tempList.extend(temp_)
+        rhList.extend(rh_)
+        pressList.extend(press_)
+        tempDPList.extend(tempDP_)
+        wdirList.extend(wdir_)
+        wspdList.extend(wspd_)
+        wmaxList.extend(wmax_)
+        #wsdevList.extend(wsdev.data)
         
 
     #------------------------
     # Sort list based on time
     # This returns a tuple
     #------------------------
-    timeList, tempList, rhList, pressList, tempDPList, wdirList, wspdList, wmaxList, wsdevList = zip(*sorted(zip(timeList, tempList, rhList, pressList, tempDPList, wdirList, wspdList, wmaxList, wsdevList)))
+    timeList, tempList, rhList, pressList, tempDPList, wdirList, wspdList, wmaxList = zip(*sorted(zip(timeList, tempList, rhList, pressList, tempDPList, wdirList, wspdList, wmaxList)))
 
     #-----------------------------------
     # Construct a vector of string years
