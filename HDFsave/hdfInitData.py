@@ -166,7 +166,7 @@ class HDFinitData(object):
     def initPy(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,
                mxRMS=1.0,minSZA=0.0,mxSZA=80.0,minDOF=0.0, maxDOF=10.0, maxCHI=2.0,minTC=1.0E15,maxTC=1.0E16,dofFlg=False,rmsFlg=True,
                tcFlg=True,pcFlg=True,cnvFlg=True,szaFlg=False,errFlg=True,chiFlg=False,tcMMflg=False, h2oFlg=False,
-               bckgFlg=False, minSlope=0.0, maxSlope=1e10, minCurv=0.0, maxCurv=1e10, geomsTmpl=False):
+               bckgFlg=False, minSlope=0.0, maxSlope=1e10, minCurv=0.0, maxCurv=1e10, geomsTmpl=False, mobFlg=False):
         ''' Interface for initializing data with python set of routines'''
         
         #---------------------------------------
@@ -188,13 +188,20 @@ class HDFinitData(object):
         #------------
         self.dates                          = pyData.HDFdates
         self.datesJD2K                      = pyData.HDFdatesJD2K
-        self.latitude                       = pyData.HDFlat
         #------------------------------------------------
         # Chenge in 2016 for the new GEOMS convention
         #------------------------------------------------
         #self.longitude                      = 360.0 - pyData.HDFlon               # Convert [West Long] -> [East Long]
-        self.longitude                      = pyData.HDFlon                        # -180 (West) to +180 (East)
-        self.instAltitudes                  = pyData.HDFinstAlt
+        if mobFlg:
+            self.longitude                      = pyData.HDFlon                        # -180 (West) to +180 (East)
+            self.instAltitudes                  = pyData.HDFinstAlt
+            self.latitude                       = pyData.HDFlat
+        else:
+            self.longitude                      = pyData.HDFlon[0]                        # -180 (West) to +180 (East)
+            self.instAltitudes                  = pyData.HDFinstAlt[0]
+            self.latitude                       = pyData.HDFlat[0]
+
+        
         self.surfPressures                  = pyData.HDFsurfP
         self.surfTemperatures               = pyData.HDFsurfT
         self.altitudes                      = pyData.HDFz

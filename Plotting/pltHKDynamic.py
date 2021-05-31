@@ -125,7 +125,7 @@ def utc2local(utc):
 class RemoteHK():
 
 
-    def __init__(self,Dir='', iyear='',iday='', imnth='', pdfFlg=False, DynamicFlg=False):
+    def __init__(self,Dir='', site='', iyear='',iday='', imnth='', pdfFlg=False, DynamicFlg=False):
 
         self.dir        = Dir
         self.pdfFlg     = pdfFlg
@@ -135,6 +135,7 @@ class RemoteHK():
         self.iyear      = iyear
         self.imnth      = imnth
         self.iday       = iday
+        self.site       = site
 
         #----------------------------
         # File and directory checking
@@ -265,7 +266,12 @@ class RemoteHK():
         # UTC to Local Time
         #----------------------
         from_zone = tz.gettz('UTC')
-        to_zone   = tz.gettz('Pacific/Honolulu')
+        print(self.site)
+        if    self.site.lower() == 'tab': to_zone   = tz.gettz('America/Thule')
+        elif  self.site.lower() == 'mlo': to_zone   = tz.gettz('Pacific/Honolulu')
+        elif  self.site.lower() == 'fl0': to_zone   = tz.gettz('America/Denver')
+
+        
         # America/Thule   Greenland 
 
         self.obsTimelt = [ i.replace(tzinfo=from_zone).astimezone(to_zone) for i in self.obsTime]
@@ -1110,7 +1116,7 @@ def main(argv):
             iday = "{0:02d}".format(now.day)
             imnth = "{0:02d}".format(now.month)
             
-            d = RemoteHK(Dir=Dir, iyear=iyear,iday=iday, imnth=imnth, pdfFlg=pdfFlg)
+            d = RemoteHK(Dir=Dir, site=site, iyear=iyear,iday=iday, imnth=imnth, pdfFlg=pdfFlg)
             
             if pdfFlg: d.openFig()
         
@@ -1130,7 +1136,7 @@ def main(argv):
             
     else:
         
-        d = RemoteHK(Dir=Dir, iyear=iyear,iday=iday, imnth=imnth, pdfFlg=pdfFlg)
+        d = RemoteHK(Dir=Dir, site=site, iyear=iyear,iday=iday, imnth=imnth, pdfFlg=pdfFlg)
         
         if pdfFlg: d.openFig()
         

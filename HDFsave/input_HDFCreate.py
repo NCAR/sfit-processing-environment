@@ -15,7 +15,7 @@
 #----------------------------------------------------------------------------------------
 loc          = 'tab'                # Name of station location; 
 gasName      = 'co'                 # Name of gas
-ver          = 'ATM18-Ret-2017'         # Name of retrieval version to process
+ver          = 'ATM18-Ret-2017'     # Name of retrieval version to process; typically the name of the folder with retrievals
 ctlF         = 'sfit4_v3.ctl'       # Name of ctl file
 
 #------
@@ -35,11 +35,6 @@ projectID    = ' '                  # Name of the project; space if none
 #------
 geoms_tmpl   = '003'                # 002 or 003; GEOMS TEMPLATE: currently GEOMS-TE-FTIR-002, but new geoms GEOMS-TE-FTIR-003, is required (2020))
 geoms_meta   = '04R998'             # Use 04R010 for GEOMS-TE-FTIR-002; and 04R998 or later for GEOMS-TE-FTIR-003
-
-#------
-# Python Flg: if True Use Python Interface (); if False use IDL Interface (not incorporated yet)
-#------
-pyFlg        = True            
 
 #------
 # yearly Flag: If True will create yearly files from Jan 1 to Dec 31 using initial and final years; if False will create use single file from date range below      
@@ -111,4 +106,5 @@ outDir       = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/HDF_'+ver+'/'
 #-----
 #dQuality = 'RD'            # Data_Source; e.g. RD (Rapid Delivery)
 #hdfMeta  = 'hdfsaveMLO'    # Input file with metedata; if not included here the script will try to find it as hdfsaveLOC
+#mobFlg    = True            # mobile platform flag; if True it will save instrument location with datetime dependence (Default is False and fixed/single location)
 

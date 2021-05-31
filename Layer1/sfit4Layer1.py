@@ -680,6 +680,7 @@ def main(argv):
                             # Determine which ILS file to use 
                             ilsFileList = glob.glob(mainInF.inputs['ilsDir'] + 'ils*')
 
+
                         
                             # Create a date list of ils files present
                             ilsYYYYMMDD = []
@@ -703,6 +704,7 @@ def main(argv):
                             for ilsFile in ilsFileList:
                                 if nearstDaystr in os.path.basename(ilsFile):
                                     ilsFname = ilsFile
+
 
                         # If file.....
                         elif os.path.isfile(mainInF.inputs['ilsDir']):

@@ -806,7 +806,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             #get the Sb for this gas
             sbcorkey=sbkey_rand.replace('.random','.correlation.width')
             #only take correlation into account if random and if it is a profile (gas or temperature) in KB!!
-            if tempcase and SbDict.get(sbkey_rand+'.scaled',['F'])[0]=='F': scale=sumVars.aprfs[gas];print(scale) #T std profile is given in Kelvin
+            if tempcase and SbDict.get(sbkey_rand+'.scaled',['F'])[0]=='F': scale=sumVars.aprfs[gas];#print(scale) #T std profile is given in Kelvin
             else: scale=1
             Sb=createCovar(SbDict[sbkey_rand]/scale,**(dict(sbcorkey=sbcorkey,z=z,Sbctldict=SbDict)))
             if np.array_equal(Sb,None): print ('Error building covariance matrix for %s'%sbcorkey);raise ValueError('Bad setting for %s'%sbcorkey)

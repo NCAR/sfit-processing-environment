@@ -59,6 +59,7 @@ import glob
 import shutil
 import sfitClasses as sc
 import datetime as dt
+import numpy as np
                                 #-------------------------#
                                 # Define helper functions #
                                 #-------------------------#
@@ -230,7 +231,10 @@ def main(argv):
     lstFile.info('nbands         = ' + str(len(ctlData.inputs['band']))        )
     lstFile.info('# End List File Meta-Data')
     lstFile.info('')
-    lstFile.info('Date         TimeStamp    Directory ')
+
+    msg_snr      =  "     ".join([str('SNR_band_'+str(n+1)) for n in range(len(ctlData.inputs['band']))])
+    msg_fit_snr  =  "     ".join([str('FIT_SNR_band_'+str(n+1)) for n in range(len(ctlData.inputs['band']))])
+    lstFile.info("{0:<13}".format('Date') + "{0:15}".format('TimeStamp') +"{0:60}".format('Directory') + "{0:35}".format(msg_snr) + "{0:37}".format(msg_fit_snr) + "{0:10}".format('RMS'))
 
     #START AND FINAL DATE TO CREATE THE LIST (IVAN)
     sdate = str(inVars.inputs['iyear']) + str(inVars.inputs['imnth']).zfill(2)   + str(inVars.inputs['iday']).zfill(2)
@@ -244,20 +248,50 @@ def main(argv):
     #----------------------------------------
     # Walk through first level of directories
     #----------------------------------------
+
+    
+
+
     lstDict = {}
     for drs in os.walk(baseDir).next()[1]:
         YYYYMMDD = drs[0:4]  + drs[4:6]   + drs[6:8]
         hhmmss   = drs[9:11] + drs[11:13] + drs[13:]
         if os.path.isfile(baseDir + drs + '/summary'):
+
+            #print(baseDir)
+            #print(drs)
+
+            ret = sc.RetOutput(baseDir + drs)
+            ret.readSum('summary')
+            
+            nmw = len(ctlData.inputs['band'])
+            
+
+            #try:
             lstDict.setdefault('date',[]).append(dt.datetime(int(drs[0:4]), int(drs[4:6]), int(drs[6:8]), int(drs[9:11]), int(drs[11:13]), int(drs[13:]) ))
             lstDict.setdefault('YYYYMMDD',[]).append(YYYYMMDD)
             lstDict.setdefault('hhmmss',[]).append(hhmmss)
             lstDict.setdefault('directory',[]).append(baseDir + drs)
+            lstDict.setdefault('RMS',[]).append(ret.summary['FITRMS'][0])
 
+            for n in range(nmw):
+                lstDict.setdefault('SNR_'+str(n+1),[]).append(ret.summary['SNR_'+str(n+1)][0])
+                lstDict.setdefault('FIT_SNR_'+str(n+1),[]).append(ret.summary['FIT_SNR_'+str(n+1)][0])
+
+            #except: pass
+
+    #print(lstDict['SNR_'+str(1)][0])
+    #exit()
     lstDict = sortDict(lstDict,'date')
     for ind,val in enumerate(lstDict['date']):
-        if int(lstDict['YYYYMMDD'][ind]) >= int(sdate) and int(lstDict['YYYYMMDD'][ind]) <= int(fdate):
-            lstFile.info("{0:<13}".format(lstDict['YYYYMMDD'][ind]) + "{0:6}".format(lstDict['hhmmss'][ind]) + '       ' + lstDict['directory'][ind]+'/')
+        #msg = header + "".join([str(i) for i in x])
+        #snr = [lstDict['SNR_1'][ind] for n in range(nmw)]
+
+        snr     = "     ".join(["{:10}".format(str(np.round(lstDict['SNR_'+str(n+1)][ind], 3))) for n in range(nmw)])
+        fit_snr = "     ".join(["{:14}".format(str(np.round(lstDict['FIT_SNR_'+str(n+1)][ind], 3))) for n in range(nmw)])
+  
+        #if int(lstDict['YYYYMMDD'][ind]) >= int(sdate) and int(lstDict['YYYYMMDD'][ind]) <= int(fdate):
+        lstFile.info("{0:<13}".format(lstDict['YYYYMMDD'][ind]) + "{0:15}".format(lstDict['hhmmss'][ind]) +"{0:60}".format(lstDict['directory'][ind]+'/') + "{0:35}".format(snr) + "{0:35}".format(fit_snr) + "{0:10}".format(lstDict['RMS'][ind])  )
 
 if __name__ == "__main__":
     main(sys.argv[1:])

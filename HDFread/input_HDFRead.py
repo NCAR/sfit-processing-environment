@@ -13,16 +13,18 @@
 #------------
 # Directories
 #------------ 
-loc        = 'tab'                  # location; typically 3 letter id 
-gasName    = 'c2h6'                 # gas
-ver        = ['Current_v2']         # Version Names; Note: it can be more than one version, must be in []; typically name of the folder containing retrievals
-locID      = 'thule'                # ID identifier in HDF file(s); e.g., site name
+loc        = 'mlo'                  # location; typically 3 letter id 
+gasName    = 'ch4'                 # gas
+ver        = ['Current_WP_RD']         # Version Names; Note: it can be more than one version, must be in []; typically name of the folder containing retrievals
+locID      = 'mauna'                # ID identifier in HDF file(s); e.g., site name
 
 pathDir    = '/data1/ebaumer/'+loc.lower()+'/'   # Absolute path of directory; typically constructed with the location
 
 #------
 # Flags
 #------
+geomsTmpl  = '002'                  # GEOMS Template: Currently either 002 or 003
+
 saveFlg    = True                   # Flag to either save data to pdf file (saveFlg=True) or plot to screen (saveFlg=False)
 errorFlg   = True                   # Flag to process error data
 
@@ -44,12 +46,12 @@ sclfctName = 'pptv'                 # Name of scale factor for labeling plots
 #----------------------
 # Date range to plot
 #----------------------
-iyear      = 2018	
+iyear      = 2021	
 imonth     = 1
 iday       = 1
-fyear      = 2018
-fmonth     = 12
-fday       = 31
+fyear      = 2021
+fmonth     = 4
+fday       = 30
 
 #----------------------
 # Construct directory name with HDF files; typically location and gasname is used in the path

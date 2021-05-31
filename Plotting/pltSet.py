@@ -101,12 +101,14 @@ def main(argv):
     # Retrieve command line arguments
     #--------------------------------
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:?')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:q?')
 
     except getopt.GetoptError as err:
         print (str(err))
         usage()
         sys.exit()
+
+    ckQualityFlg = False
 
     #-----------------------------
     # Parse command line arguments
@@ -130,8 +132,6 @@ def main(argv):
             if '__builtins__' in pltInputs:
                 del pltInputs['__builtins__']               
 
-
-        # Show all command line flags
         elif opt == '-?':
             usage()
             sys.exit()
@@ -154,7 +154,6 @@ def main(argv):
     #-------------------------
     gas = dc.PlotData(pltInputs['retDir'],pltInputs['ctlFile'],iyear=pltInputs['iyear'],imnth=pltInputs['imnth'],iday=pltInputs['iday'],
                 fyear=pltInputs['fyear'],fmnth=pltInputs['fmnth'],fday=pltInputs['fday'],saveFlg=pltInputs['saveFlg'], outFname=pltInputs['pltFile'])
-
 
     #----------------------
     # Call to plot profiles
@@ -192,15 +191,15 @@ def main(argv):
     #------------------
     # Plot Spectral fit
     #------------------
-    #try:
-    gas.pltSpectra(fltr=pltInputs['fltrFlg'],minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],minTC=pltInputs['minTC'],maxTC=pltInputs['maxTC'],
-                     maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'], maxDOF=pltInputs['maxDOF'],maxCHI=pltInputs['maxCHI'],dofFlg=pltInputs['dofFlg'],
-                     rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],mnthFltr=pltInputs["mnths"],mnthFltFlg=pltInputs["mnthFlg"],
-                     szaFlg=pltInputs['szaFlg'],chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'],tcMMflg=pltInputs['tcMMFlg'],
-                     bckgFlg=pltInputs['bckgFlg'], minSlope=pltInputs['minSlope'], maxSlope=pltInputs['maxSlope'], minCurv=pltInputs['minCurv'], maxCurv=pltInputs['maxCurv'])
+    try:
+        gas.pltSpectra(fltr=pltInputs['fltrFlg'],minSZA=pltInputs['minSZA'],maxSZA=pltInputs['maxSZA'],minTC=pltInputs['minTC'],maxTC=pltInputs['maxTC'],
+                         maxRMS=pltInputs['maxRMS'],minDOF=pltInputs['minDOF'], maxDOF=pltInputs['maxDOF'],maxCHI=pltInputs['maxCHI'],dofFlg=pltInputs['dofFlg'],
+                         rmsFlg=pltInputs['rmsFlg'],tcFlg=pltInputs['tcNegFlg'],pcFlg=pltInputs['pcNegFlg'],mnthFltr=pltInputs["mnths"],mnthFltFlg=pltInputs["mnthFlg"],
+                         szaFlg=pltInputs['szaFlg'],chiFlg=pltInputs['chiFlg'],cnvrgFlg=pltInputs['cnvrgFlg'],tcMMflg=pltInputs['tcMMFlg'],
+                         bckgFlg=pltInputs['bckgFlg'], minSlope=pltInputs['minSlope'], maxSlope=pltInputs['maxSlope'], minCurv=pltInputs['minCurv'], maxCurv=pltInputs['maxCurv'])
 
-    #except:
-    #    print ("Unable to plot spc!!")
+    except:
+        print ("Unable to plot Mean Fit!!")
 
     #--------------------
     # Create yearly plots

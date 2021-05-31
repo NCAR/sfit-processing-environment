@@ -34,6 +34,7 @@ def usage():
     ''' Prints to screen standard program usage'''
     print ('HDFCreate.py -i <inputfile> -?')
     print ('  -i <file> : Run HDFCreate.py with specified input file')
+    print ('  -h        : Creates h5 file (Default is HDF4)')
     print ('  -?        : Show all flags')
 
 def ckDir(dirName,logFlg=False,exit=False):
@@ -169,8 +170,9 @@ def main(argv):
     #----------------------
     # Checker
     #----------------------
-    variables = ['loc', 'gasName', 'ver', 'ctlFile', 'locID', 'sfitVer', 'fileVer', 'projectID', 'geoms_tmpl', 'geoms_meta', 'pyFlg', 'yrlFlg',
+    variables = ['loc', 'gasName', 'ver', 'ctlFile', 'locID', 'sfitVer', 'fileVer', 'projectID', 'geoms_tmpl', 'geoms_meta', 'yrlFlg',
             'spcDBFile', 'statLyrFile', 'iyear', 'fyear', 'errFlg', 'dataDir', 'outDir']
+    
     checker(Inputs, variables)
 
 
@@ -181,17 +183,10 @@ def main(argv):
     ckDir(Inputs['dataDir'], exit=True)
     ckFile(Inputs['ctlFile'], exit=True)
 
-    if Inputs['pyFlg']:
-        ckFile(Inputs['spcDBFile'], exit=True)
-        ckFile(Inputs['statLyrFile'], exit=True)
+    ckFile(Inputs['spcDBFile'], exit=True)
+    ckFile(Inputs['statLyrFile'], exit=True)
 
     ckDirMk(Inputs['outDir'])
-
-    #------------------
-    # For IDL interface
-    #------------------
-    if Inputs['pyFlg'] == False:
-        ckFile(Inputs['idlFname'], exit=True)
 
     #------------------
     # Import hdfsaveLOC.py should exist in order to save Meta Data
@@ -224,6 +219,9 @@ def main(argv):
     if 'dQuality' in Inputs: dQuality = Inputs['dQuality']
     else: dQuality =False
 
+    if 'mobFlg' in Inputs: mobFlg = Inputs['mobFlg']
+    else: mobFlg =False
+
     #------------------------------------------------------------
     # Here we create an instance of the HDFsave object. We define
     # that the data written to the HDF file will be REAL (float32)
@@ -251,33 +249,19 @@ def main(argv):
             fyear          = year
             fmonth         = 12
             fday           = 31
-
-            #------------------------------------------------
-            # Here we initialize the HDF object with our data
-            # using our pre-defined interface
-            #------------------------------------------------
-            if Inputs['pyFlg'] == False:
-                print ('\n')
-                print ('*************************************************')
-                print ('*************Using IDL Interface*****************')
-                print ('*************************************************')
-                print ('\n')
-                
-                myhdf.initIDL(Inputs['idlFname'],iyear,imonth,iday,fyear,fmonth,fday)
             
-            if Inputs['pyFlg'] == True:
-                print ('\n')
-                print ('*************************************************')
-                print ('*************Using Python Interface**************')
-                print ('*************************************************')
-                print ('\n') 
+            print ('\n')
+            print ('*************************************************')
+            print ('****HDF Creation using Using Python Interface****')
+            print ('*************************************************')
+            print ('\n') 
 
-                print("Creating HDF file for year: " + str(year) + '\n')
+            print("Creating HDF file for year: " + str(year) + '\n')
 
-                myhdf.initPy(Inputs['dataDir'],Inputs['ctlFile'],Inputs['spcDBFile'],Inputs['statLyrFile'],iyear,imonth,iday,fyear,fmonth,fday,
-                    mxRMS=Inputs['maxRMS'], minDOF=Inputs['minDOF'],maxDOF=Inputs['maxDOF'],minSZA=Inputs['minSZA'],mxSZA=Inputs['maxSZA'],maxCHI=Inputs['maxCHI'],minTC=Inputs['minTC'],
-                    maxTC=Inputs['maxTC'], dofFlg=Inputs['dofFlg'],rmsFlg=Inputs['rmsFlg'],tcFlg=Inputs['tcNegFlg'],pcFlg=Inputs['pcNegFlg'],cnvFlg=Inputs['cnvrgFlg'],
-                    szaFlg=Inputs['szaFlg'], chiFlg=Inputs['chiFlg'],errFlg=Inputs['errFlg'],tcMMflg=Inputs['tcMMFlg'], h2oFlg=Inputs['h2oFlg'], geomsTmpl=Inputs['geoms_tmpl'])
+            myhdf.initPy(Inputs['dataDir'],Inputs['ctlFile'],Inputs['spcDBFile'],Inputs['statLyrFile'],iyear,imonth,iday,fyear,fmonth,fday,
+                mxRMS=Inputs['maxRMS'], minDOF=Inputs['minDOF'],maxDOF=Inputs['maxDOF'],minSZA=Inputs['minSZA'],mxSZA=Inputs['maxSZA'],maxCHI=Inputs['maxCHI'],minTC=Inputs['minTC'],
+                maxTC=Inputs['maxTC'], dofFlg=Inputs['dofFlg'],rmsFlg=Inputs['rmsFlg'],tcFlg=Inputs['tcNegFlg'],pcFlg=Inputs['pcNegFlg'],cnvFlg=Inputs['cnvrgFlg'],
+                szaFlg=Inputs['szaFlg'], chiFlg=Inputs['chiFlg'],errFlg=Inputs['errFlg'],tcMMflg=Inputs['tcMMFlg'], h2oFlg=Inputs['h2oFlg'], geomsTmpl=Inputs['geoms_tmpl'], mobFlg=mobFlg)
          
             #--------------------------------------------
             # Here we are actually creating the HDF file.
@@ -303,7 +287,7 @@ def main(argv):
         myhdf.initPy(Inputs['dataDir'],Inputs['ctlFile'],Inputs['spcDBFile'],Inputs['statLyrFile'],Inputs['iyear'],Inputs['imnth'],Inputs['iday'],Inputs['fyear'],Inputs['fmnth'],Inputs['fday'],
             mxRMS=Inputs['maxRMS'], minDOF=Inputs['minDOF'],maxDOF=Inputs['maxDOF'],minSZA=Inputs['minSZA'],mxSZA=Inputs['maxSZA'],maxCHI=Inputs['maxCHI'],minTC=Inputs['minTC'],
             maxTC=Inputs['maxTC'], dofFlg=Inputs['dofFlg'],rmsFlg=Inputs['rmsFlg'],tcFlg=Inputs['tcNegFlg'],pcFlg=Inputs['pcNegFlg'],cnvFlg=Inputs['cnvrgFlg'],
-            szaFlg=Inputs['szaFlg'], chiFlg=Inputs['chiFlg'],errFlg=Inputs['errFlg'],tcMMflg=Inputs['tcMMFlg'], h2oFlg=Inputs['h2oFlg'],  geomsTmpl=Inputs['geoms_tmpl'])
+            szaFlg=Inputs['szaFlg'], chiFlg=Inputs['chiFlg'],errFlg=Inputs['errFlg'],tcMMflg=Inputs['tcMMFlg'], h2oFlg=Inputs['h2oFlg'],  geomsTmpl=Inputs['geoms_tmpl'], mobFlg=mobFlg)
 
         if h5Flg: myhdf.createHDF5(geomsTmpl=Inputs['geoms_tmpl'])
         else:     myhdf.createHDF4(geomsTmpl=Inputs['geoms_tmpl'])
