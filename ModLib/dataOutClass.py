@@ -1009,18 +1009,6 @@ def readRaytrace(rayf,longitude=None,azimuth=None,target_grid=None):
     logger.debug('Found raytrace grid boundaries %s'%gridboundaries)
     logger.debug('Found raytrace grid midpoints %s'%grid)
     while l:
-<<<<<<< HEAD
-      while l and (' APPARENT ZENITH ANGLE CALCULATIONS FINISHED.' not in l): l=fid.readline()
-      while l and ('CALCULATION OF THE REFRACTED PATH THROUGH THE ATMOSPHERE' not in l):
-        if '=' in l:
-            k,v=l.strip().rsplit('=',1)
-            header[k.split(',')[-1].strip()]=v.strip()
-          l=fid.readline()
-      if l: #to capture EOF
-        header['COLUMN_DESCRIPTION']=list(map(str.strip,fid.readline().split()))
-        header['COLUMN_DESCRIPTION'].insert(1,'ALTITUDE')
-        logger.debug('Updated raytrace output header \n\t%s'%'\n\t'.join(['%s=%s'%(k,v) for k,v in header.items()]))
-=======
       while l and (' APPARENT ZENITH ANGLE CALCULATIONS FINISHED.' not in l): l=fid.readline() #end of CALL to ASTRO in raytrace.f90, after this another call to RFPATH is done with a print statement "CALCULATION OF THE REFRACTED PATH THROUGH THE ATMOSPHERE"
       while l and ('CALCULATION OF THE REFRACTED PATH THROUGH THE ATMOSPHERE' not in l):
         if '=' in l:
@@ -1031,7 +1019,6 @@ def readRaytrace(rayf,longitude=None,azimuth=None,target_grid=None):
         header['COLUMN_DESCRIPTION']=list(map(str.strip,fid.readline().split()))
         header['COLUMN_DESCRIPTION'].insert(1,'ALTITUDE')
         logger.debug('Updated raytrace output header \n\t%s'%'\n\t'.join(['%s=%s'%(k,v) for k,v in list(header.items())]))
->>>>>>> Dev_Ivan
         for i in range(6): l=fid.readline()
         out=[]
         while l.strip():
@@ -1040,11 +1027,7 @@ def readRaytrace(rayf,longitude=None,azimuth=None,target_grid=None):
         out=np.array(out,dtype=np.float)
         logger.debug('Loaded data matrix with shape %s'%(out.shape,))
         if out.shape[-1]!=len(header['COLUMN_DESCRIPTION']): raise ValueError('Unexpected matrix shape')
-<<<<<<< HEAD
-    
-=======
-      
->>>>>>> Dev_Ivan
+
   #### Calculate lat/lon coordinates from azimuthal equidistant projection  
   if longitude!=None and azimuth!=None:
     latitude=np.float(header['REF_LAT'].split()[0])
@@ -4460,15 +4443,7 @@ class PlotData(ReadOutputData):
         if not self.readt15Flg: self.readt15()
 
         sza     = self.pbp['sza']
-<<<<<<< HEAD
-        saa     = self.pbp['saa']
-
-
-        
-        
-=======
         saa     = self.pbp['saa']        
->>>>>>> Dev_Ivan
 
         
         if errFlg:
