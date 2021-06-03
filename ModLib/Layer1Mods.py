@@ -482,7 +482,7 @@ def t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir5, mainInF, spcDBind, ctl_
                             #  -- Error Analysis --   #
                             #                         #
                             #-------------------------#    
-def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
+def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=False):
     """
     Calculates systematic and random uncertainty covariance matrix 
     using output from sfit4 and sb values from ctl file
@@ -769,7 +769,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             if sbkey_syst in SbDict and (np.diff(SbDict[sbkey_syst])==0).all(): print('   detected constant std profile for %s: might generate a zero uncertainty in case of Tikhonov'%sbkey_syst)
 
         if gas=='TEMPERATURE': print ('WARNING !! Temperature Sb substitution in regul matrix sa is not yet implemented for type 5 sainv input');continue #not sure when this happens TODO
- 
+
         if (sbkey_rand not in SbctlFileVars.inputs or sbkey_syst not in SbctlFileVars.inputs) and sbinputforsa: print ('Error !! The sb.ctl file must contain information on random & systematic profile uncertainty for %s'%gas);raise ValueError('Missing input in sb.ctl for profile uncertainty for %s because of Tikhonov type retrieval'%gas)
  
         if sbkey_rand in SbDict: #prefer the sb information above the sa matrix...
