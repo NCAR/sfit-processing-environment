@@ -2552,6 +2552,8 @@ class GatherHDF(ReadOutputData,DbInputFile):
         
         for i,val in enumerate(self.HDFdates):
             tempSpecDB = self.dbFindDate(self.HDFdates[i])
+            if not tempSpecDB:
+                continue
             self.HDFlat[i]     = np.array(tempSpecDB['N_Lat'])
             if 'W_Lon' in tempSpecDB:
                 self.HDFlon[i]     = -np.array(tempSpecDB['W_Lon'])
@@ -2572,21 +2574,22 @@ class GatherHDF(ReadOutputData,DbInputFile):
             
             self.HDFintT[i] = tempSpecDB['Dur']
 
+            print (i)
             try:
                 #-----------------------------
                 # Latitude - defined as positive North in database
                 #-----------------------------
                 self.HDFazi[i]  = tempSpecDB['NAzm']
+                SAzmFlg = False
             except:
                 #-----------------------------
                 # Latitude - defined as positive South in database
                 #-----------------------------
                 self.HDFazi[i]  = tempSpecDB['SAzm']
 
-                if i == 0: 
-                    print ('\nSolar Azimuth defined as positive South in database')
-                    SAzmFlg = True
-
+                print ('\nSolar Azimuth defined as positive South in database')
+                SAzmFlg = True
+                    
         #----------------------------------------------
         # In the Database Solar Azimuth is defined as positive South. 
         # Convert to North Solar Azimuth (2016 GEOMS CONVENTION)
@@ -2599,7 +2602,6 @@ class GatherHDF(ReadOutputData,DbInputFile):
                     self.HDFazi[i] = np.abs(360. - az - 180.)
                 elif az < 180.0:
                     self.HDFazi[i] = 180. + az
-                
                 
             
     def fltrHDFdata(self,maxRMS=1e99,minSZA=0.0,maxSZA=90.0,minDOF=0.0,maxDOF=10.0,
