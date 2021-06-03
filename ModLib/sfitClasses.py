@@ -73,7 +73,7 @@ def nearestDate(daysList, year, month, day=1):
     return min( daysList, key=lambda x:abs(x-testDate) )
 
 def nearestTime(daysList, year, month, day, hour, minute, second):
-    ''' Finds the nearest Time from a list of days based on a given year, month, and day'''
+    ''' Finds the nearest Time from a list of days based on a given yar, month, and day'''
     testDate = datetime.datetime(year, month, day, hour, minute, second)
     return min( daysList, key=lambda x:abs(x-testDate) )
 
