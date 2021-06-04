@@ -1,0 +1,11 @@
+geoms_tools version 2.03, 2020-04-27
+GEOMS Quality Assurance Tool
+Maintained by the Aura Validation Data Center, NASA/GSFC
+http://avdc.gsfc.nasa.gov/GEOMS
+
+Log started on Fri Jun  4 09:48:58 2021
+Result of performing Quality Assurance on /data/pbin/Dev_Ivan/HDFsave/hdf_GEOMS-TE-FTIR-003/GEOMS-TE-FTIR-003.csv
+(0=PASS, 1=GEOMS compliant with non-standard components, 2=FAIL)
+Unable to read HDF or NC file - IDLCR8ASCII procedure: No valid HDF4, HDF5, or netCDF3 file selected.
+
+2 (Failed QA)
