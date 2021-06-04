@@ -3,7 +3,7 @@ GEOMS Quality Assurance Tool
 Maintained by the Aura Validation Data Center, NASA/GSFC
 http://avdc.gsfc.nasa.gov/GEOMS
 
-Log started on Thu Aug  6 09:27:07 2020
+Log started on Fri Jun  4 09:53:19 2021
 Result of performing Quality Assurance on /data/pbin/Dev_Ivan/HDFsave/hdf_GEOMS-TE-FTIR-003/groundbased_ftir.co_ncar001_thule_20170323t202634z_20170330t215546z_004.hdf
 (0=PASS, 1=GEOMS compliant with non-standard components, 2=FAIL)
 Input TAV File: /data/pbin/Dev_Ivan/HDFsave/hdf_GEOMS-TE-FTIR-003/tableattrvalue_04R998.dat

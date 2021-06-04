@@ -45,7 +45,6 @@ yrlFlg       = False
 # SpcDatabase
 #------
 spcDBFile    = 'HRspDB_tab_2015_2019.dat'	# Spectral database (change below absolute paths); needed for Lat/Lon/Alt/Duration/Azimuth; headers in database are case sensitive                                      
-statLyrFile  = 'station.layers'     # station layer file
 
 #------
 # Files
@@ -98,8 +97,8 @@ maxCurv      = 1.0					  # Max Curvature
 # Directories
 #------------
 dataDir      = '/data1/ebaumer/'+loc.lower()+'/testbed/'+gasName.lower()+'/'+ver+'/'         # Directory with retrievals
-outDir       = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/HDF_'+ver+'/'     # Output Directory
-#outDir       = 'hdf_GEOMS-TE-FTIR-003/'     # Output Directory
+#outDir       = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/HDF_'+ver+'/'     # Output Directory
+outDir       = 'hdf_GEOMS-TE-FTIR-003/'     # Output Directory
 
 #------
 # OPTIONAL

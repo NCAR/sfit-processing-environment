@@ -452,9 +452,11 @@ class HDFbaseRetDat(object):
                                 self.surfpAttrbs(np.size(self.surfPressures)))
 
         if int(geomsTmpl) >= int(3):
-            datatowrite=str('\x10Test')
+            datatowrite=str('Test')
+            #datatowrite = array(list('Test'.decode('utf-8')),dtype='S1')
+            v=np.array(list(datatowrite),dtype='S1')            
             varvalidmin=varvalidmax=unit=siconversion=fill=self.nullascii
-            hdfFile.createDataSet(self.getSurfacePressureIndependentSourceName(),(10), \
+            hdfFile.createDataSet(self.getSurfacePressureIndependentSourceName(),(v.shape), \
                                     datatowrite, \
                                     self.surfpSourceAttrbs(varvalidmin, varvalidmax, unit,siconversion, fill), typeOvrd='string' )
 
@@ -466,9 +468,11 @@ class HDFbaseRetDat(object):
                                 self.surftAttrbs(np.size(self.surfTemperatures)))
 
         if int(geomsTmpl) >= int(3):
-            datatowrite=str('\x10Test')
+            datatowrite=str('Test')
+            v=np.array(list(datatowrite),dtype='S1') 
+
             varvalidmin=varvalidmax=unit=siconversion=fill=self.nullascii
-            hdfFile.createDataSet(self.getSurfaceTemperatureIndependentSourceName(),(10), \
+            hdfFile.createDataSet(self.getSurfaceTemperatureIndependentSourceName(),(v.shape), \
                                     datatowrite, \
                                     self.surftSourceAttrbs(varvalidmin, varvalidmax, unit,siconversion, fill), typeOvrd='string' )
 
@@ -502,9 +506,10 @@ class HDFbaseRetDat(object):
                                 self.pressAttrbs(self.pressures.shape[1],self.pressures.shape[0]))
         
         if int(geomsTmpl) >= int(3):
-            datatowrite=str('\x10Test')
+            datatowrite=str('Test')
+            v=np.array(list(datatowrite),dtype='S1') 
             varvalidmin=varvalidmax=unit=siconversion=fill=self.nullascii
-            hdfFile.createDataSet(self.getPressureIndependentSourceName(),(10), \
+            hdfFile.createDataSet(self.getPressureIndependentSourceName(),(v.shape), \
                                     datatowrite, \
                                     self.pressSourceAttrbs(varvalidmin, varvalidmax, unit,siconversion, fill), typeOvrd='string' )
         
@@ -518,9 +523,10 @@ class HDFbaseRetDat(object):
                                 self.tempAttrbs(self.temperatures.shape[1],self.temperatures.shape[0],float(self.temperatures.max())))
 
         if int(geomsTmpl) >= int(3):
-            datatowrite=str('\x10Test')
+            datatowrite=str('Test')
+            v=np.array(list(datatowrite),dtype='S1') 
             varvalidmin=varvalidmax=unit=siconversion=fill=self.nullascii
-            hdfFile.createDataSet(self.getTemperatureIndependentSourceName(),(10), \
+            hdfFile.createDataSet(self.getTemperatureIndependentSourceName(),(v.shape), \
                                     datatowrite, \
                                     self.tempSourceAttrbs(varvalidmin, varvalidmax, unit,siconversion, fill), typeOvrd='string' )
 
@@ -559,9 +565,10 @@ class HDFbaseRetDat(object):
 
         if int(geomsTmpl) >= int(3):
 
-            datatowrite=str('\x10Test')
+            datatowrite=str('Test')
+            v=np.array(list(datatowrite),dtype='S1') 
             varvalidmin=varvalidmax=unit=siconversion=fill=self.nullascii
-            hdfFile.createDataSet(self.gasNameUpper+"."+self.getMixingRatioAprioriDrySourceName(),(10), \
+            hdfFile.createDataSet(self.gasNameUpper+"."+self.getMixingRatioAprioriDrySourceName(),(v.shape), \
                                     datatowrite, \
                                     self.aprfSourceAttrbs(varvalidmin, varvalidmax, unit,siconversion, fill), typeOvrd='string' )
 
@@ -725,9 +732,12 @@ class HDFbaseRetDat(object):
 
 
 
-            datatowrite=str('\x10Test')
+            datatowrite=str('Test')
+            v=np.array(list(datatowrite),dtype='S1') 
+            #datatowrite=str('\x10Test')
+            #datatowrite=np.array('\x10Test',dtype='S')
             varvalidmin=varvalidmax=unit=siconversion=fill=self.nullascii
-            hdfFile.createDataSet(self.getDryAirColumnPartialSourceName(),(10), \
+            hdfFile.createDataSet(self.getDryAirColumnPartialSourceName(),(v.shape), \
                                     datatowrite, \
                                     self.DryAirSourceAttrbs(varvalidmin, varvalidmax, unit,siconversion, fill), typeOvrd='string' )
 
@@ -739,9 +749,10 @@ class HDFbaseRetDat(object):
             hdfFile.createDataSet(self.getHumidityName(),np.size(self.rh), self.rh, \
                                 self.humidityAttrbs(np.size(self.rh)))
 
-            datatowrite=str('\x10Test')
+            datatowrite=str('Test')
+            v=np.array(list(datatowrite),dtype='S1') 
             varvalidmin=varvalidmax=unit=siconversion=fill=self.nullascii
-            hdfFile.createDataSet(self.getHumiditySourceName(),(10), \
+            hdfFile.createDataSet(self.getHumiditySourceName(),(v.shape), \
                                     datatowrite, \
                                     self.humiditySourceAttrbs(varvalidmin, varvalidmax, unit,siconversion, fill), typeOvrd='string' )
 
@@ -759,9 +770,10 @@ class HDFbaseRetDat(object):
                                                            float(self.h2oMxRatAbsSolar.min()), \
                                                            float(self.h2oMxRatAbsSolar.max())))
 
-                datatowrite=str('\x10Test')
+                datatowrite=str('Test')
+                v=np.array(list(datatowrite),dtype='S1') 
                 varvalidmin=varvalidmax=unit=siconversion=fill=self.nullascii
-                hdfFile.createDataSet(self.getH2oMixingRatioVolumeDryAprioriSourceName(),(10), \
+                hdfFile.createDataSet(self.getH2oMixingRatioVolumeDryAprioriSourceName(),(v.shape), \
                                         datatowrite, \
                                         self.H2OVolDryAprSourceAttrbs(varvalidmin, varvalidmax, unit,siconversion, fill), typeOvrd='string' )
 
@@ -800,9 +812,10 @@ class HDFbaseRetDat(object):
             hdfFile.createDataSet(self.getwinddirectionName(),np.size(self.wd),self.wd, \
                                     self.winddirectionAttrbs(np.size(self.wd)))
 
-            datatowrite=str('\x10Test')
+            datatowrite=str('Test')
+            v=np.array(list(datatowrite),dtype='S1') 
             varvalidmin=varvalidmax=unit=siconversion=fill=self.nullascii
-            hdfFile.createDataSet(self.getwinddirectionSourceName(),(10), \
+            hdfFile.createDataSet(self.getwinddirectionSourceName(),(v.shape), \
                                     datatowrite, \
                                     self.winddirectionSourceAttrbs(varvalidmin, varvalidmax, unit,siconversion, fill), typeOvrd='string' )
 
@@ -811,9 +824,10 @@ class HDFbaseRetDat(object):
             hdfFile.createDataSet(self.getwindspeedName(),np.size(self.ws),self.ws, \
                                     self.windspeedAttrbs(np.size(self.ws)))
 
-            datatowrite=str('\x10Test')
+            datatowrite=str('Test')
+            v=np.array(list(datatowrite),dtype='S1') 
             varvalidmin=varvalidmax=unit=siconversion=fill=self.nullascii
-            hdfFile.createDataSet(self.getwindspeedSourceName(),(10), \
+            hdfFile.createDataSet(self.getwindspeedSourceName(),(v.shape), \
                                     datatowrite, \
                                     self.windspeedSourceAttrbs(varvalidmin, varvalidmax, unit,siconversion, fill), typeOvrd='string' )
 
