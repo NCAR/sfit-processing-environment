@@ -1746,7 +1746,10 @@ class ReadOutputData(_DateRange):
 
         for i, gas in enumerate(rtrvGasList):
 
+            #self.deflt['AIRMASS']      = np.asarray(self.deflt['AIRMASS'], dtype=np.float64)
             self.deflt[gas+'_tot_col'] = np.sum(self.deflt[gas] * self.deflt['AIRMASS'], axis=1)
+
+        #exit()
 
            
         #-------------------------------------------
