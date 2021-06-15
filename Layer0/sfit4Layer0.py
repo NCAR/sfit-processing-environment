@@ -72,6 +72,7 @@
 # Import modules
 #---------------
 import sys
+sys.path.append('/home/mathias/sfit-processing-environment/ModLib')
 import os
 import getopt
 import sfitClasses as sc
