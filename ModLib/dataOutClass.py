@@ -1872,6 +1872,8 @@ class ReadOutputData(_DateRange):
         #-----------------------------------
         # Loop through collected directories
         #-----------------------------------
+        self.badDir = []
+
         for sngDir in self.dirLst:          
             #-------------------------------
             # Read error summary information
@@ -1898,6 +1900,7 @@ class ReadOutputData(_DateRange):
 
             except Exception as errmsg:
                 print (errmsg)
+                self.badDir.append(sngDir)
                 continue                            
 
             #-------------------------
@@ -2834,6 +2837,28 @@ class ckRetrievals(ReadOutputData):
         print ('Number of total retrieval folders before filtering = {}'.format(nobs))
         print ('Number of bad/inconsistent folders                 = {}'.format(nbad))
         print ('Number of total retrieval folders after filtering  = {}\n'.format(nobs - nbad))
+
+        for f in self.badDir: 
+            print ('rm Directory: {}'.format(f))
+            try: 
+                shutil.rmtree(f)
+            except OSError as e:
+                print ("Error: %s - %s." % (e.filename, e.strerror))
+
+    def ckErrorSummary(self):
+        ''' Plot retrieved profiles '''
+        
+        print ('\nChecking Error Summary Files .......\n')    
+       
+        self.readError()   
+
+        nobs = len(np.asarray(self.dirLst))
+        nbad = len(np.asarray(self.badDir))
+        
+        print ('Number of total retrieval folders before filtering = {}'.format(nobs))
+        print ('Number of bad/inconsistent folders                 = {}'.format(nbad))
+        print ('Number of total retrieval folders after filtering  = {}\n'.format(nobs - nbad))
+       
 
         for f in self.badDir: 
             print ('rm Directory: {}'.format(f))
@@ -4207,7 +4232,7 @@ class PlotData(ReadOutputData):
                 avkVMR  = np.mean(avkVMR,axis=0)              
             else:
                 avkSCF  = self.error['AVK_scale_factor'][0][:,:]
-                avkVMR  = self.error['AVK_vmr'],axis=0[0][:,:]        
+                avkVMR  = self.error['AVK_vmr'][0][:,:]        
                 
             dofs    = np.trace(avkSCF)
             dofs_cs = np.cumsum(np.diag(avkSCF)[::-1])[::-1]            

@@ -1,4 +1,4 @@
-#! /bira-iasb/softs/19g/py37/bin/python
+#! /usr/bin/python3
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
 # Name:
@@ -118,12 +118,8 @@ def main(argv):
         'v3':   '/Users/jamesw/FDP/sfit/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
         'v4':   '/home/ebaumer/Code/sfit4/src/',
         'v5':   '/Users/jamesw/FDP/sfit/400/src/src-irwg14-mp',
-<<<<<<< HEAD
-        'v6':   '/data/ebaumer/Code/sfit4/Official_Release_1.0/src/'}
-=======
-        'v6':   '/data/ebaumer/Code/sfit4/Official_Release_1.0/src/',
+        'v6':   '/data/ebaumer/Code/sfit4/sfit-core-code_v1.0.14/src/',
         'v7':   '/data/tools/400/src/src.20210308/'}
->>>>>>> Dev_Ivan
 
         #----------
         # Run flags
