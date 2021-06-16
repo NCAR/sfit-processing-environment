@@ -94,7 +94,8 @@ def main():
     #------------------------
     # WACCM files
     #------------------------
-    inputDir   = '/data/Campaign/FL0/waccm/Boulder.V6/'
+    #inputDir   = '/data/Campaign/FL0/waccm/Boulder.V6/'
+    inputDir   = '/net/nitrogen/ftp/user/jamesw/IRWG/2021/WACCM.v7/Boulder.V7'
 
     #------------------------
     # In case a gas is not in WACCM use this reference file (example provided but each site is different)
@@ -109,12 +110,14 @@ def main():
     #------------------------
     # Header for WACCM (Comment for all WACCM species)
     #------------------------
-    ctitle     = 'WACCM-V4 CESM REFC1.3 1980-2020 CCMVal/CCMI, 2012' 
+    #ctitle     = 'WACCM-V4 CESM REFC1.3 1980-2020 CCMVal/CCMI, 2012' 
+    ctitle     ='CMIP6-historical-WACCM + CMIP6-SSP5-8.5-WACCM (1980-2040), 2021'
 
     #------------------------
     # Single Output file
     #------------------------
-    outputFile = '/data/Campaign/FL0/waccm/WACCMref_V6.FL0_v1p0'
+    #outputFile = '/data/Campaign/FL0/waccm/WACCMref_V6.FL0_v1p0'
+    outputFile = '/data/Campaign/FL0/waccm/WACCMref_V7.FL0'
 
     #---------------------------------------------------------------------------------------------
     #
