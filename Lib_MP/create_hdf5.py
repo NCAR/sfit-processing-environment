@@ -179,9 +179,9 @@ def create_hdf5(**kwargs):
             i_col = []
             for gas in gasnames[1:]:
                 vmr,z = rprf.get_gas_vmr(gas)
-                avmr,z = aprf.get_gas_vmr(gas)
                 i_rvmr = np.hstack((i_rvmr, np.reshape(vmr, (len_vmr,1))))
-                i_avmr = np.hstack((i_avmr, np.reshape(avmr, (len_vmr,1))))
+                vmr,z = aprf.get_gas_vmr(gas)
+                i_avmr = np.hstack((i_avmr, np.reshape(vmr, (len_vmr,1))))
                 col,z = rprf.get_gas_col(gas)
                 i_col.append(sum(col))
             i_col = np.array(i_col)
@@ -265,6 +265,7 @@ def create_hdf5(**kwargs):
                 if (flag_tret):
                      Tret = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
                                         (len_vmr,0), title="Temperature", expectedrows=nr_entries)
+                     avk_T = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
                 air_mass = h5file.create_earray("/", 'air_mass', hdf5.Float32Atom(), 
                                              (len_vmr,0), title="AIRMASS", expectedrows=nr_entries)
         
@@ -385,9 +386,15 @@ def create_hdf5(**kwargs):
                 AKv = h5file.create_earray("/", 'avk_vmr', hdf5.Float32Atom(), 
                                          (len_ak,len_ak,0), title="AVK (vmr)", 
                                          expectedrows=nr_entries)
+                if flag_tret:                                                  
+                        AKt = h5file.create_earray("/", 'avk_temperature', hdf5.Float32Atom(), 
+                                                   (len_ak,len_ak,0), title="AVK temperature (normalised)", 
+                                                   expectedrows=nr_entries)
             AK.append(np.reshape(avk,(len_ak,len_ak,1)))
             AKc.append(np.reshape(avk_col,(len_ak,len_ak,1)))
             AKv.append(np.reshape(avk_vmr,(len_ak,len_ak,1)))
+                if flag_tret:
+                        AKt.append(np.reshape(avk_temp,(len_ak,len_ak,1)))
         
         
         col_rt = col_rt[0,0:nr_res]

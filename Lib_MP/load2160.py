@@ -49,7 +49,7 @@ class sonde():
                 Time.append(np.reshape(mdate,(1)))
                 nr_entry = vals.shape[0]
                 o3 = np.nan*np.ones(10000)
-                o3[:nr_entry] = vals[:,5]/vals[:,1]
+                o3[:nr_entry] = vals[:,5]/vals[:,1]*10 # O3 ppat in mPa, P in hPa
                 o3 = np.reshape(o3, (10000,1))
                 o3ppmv.append(o3)
                 alt = np.nan*np.ones(10000)

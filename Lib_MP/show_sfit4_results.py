@@ -331,14 +331,14 @@ class show_results:
         ctl = sfit4.sfit4_ctl() 
         ctl.read(ctlfile)
         ak_m = ctl.get_value('file.out.ak_matrix')
-        print(ctl.get_value('gas.profile.list'))
-        tgas = ctl.get_value('gas.profile.list').split()[0]
-        logretrieval = ctl.get_value('gas.profile.%s.logstate'%tgas)
-        if logretrieval == 'T':
-            norm_prof = os.path.join(direc,'rprfs.table')
-        else:
-            norm_prof = os.path.join(direc,'aprfs.table')
-        print (norm_prof)
+        if ctl.get_value('gas.profile.list') != -1:
+            tgas = ctl.get_value('gas.profile.list').split()[0]
+            logretrieval = ctl.get_value('gas.profile.%s.logstate'%tgas)
+            if logretrieval == 'T':
+                norm_prof = os.path.join(direc,'rprfs.table')
+            else:
+                norm_prof = os.path.join(direc,'aprfs.table')
+            print (norm_prof)
         if ak_m == -1:
             ak_m = 'ak.out' # Default name of ak_matrix
         self.retprf = sfit4.read_table(direc+'/rprfs.table')
