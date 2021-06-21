@@ -496,7 +496,7 @@ class show_results:
             ey = event.ydata
 #            dnum = self.winfft.get_xdata()
 #            ind = np.argmin(np.abs(dnum-mdnum))
-            print (self.sp.mw_stop[band_nr-1] - self.sp.mw_start[band_nr-1])/(ex/10.0)
+            print ((self.sp.mw_stop[band_nr-1] - self.sp.mw_start[band_nr-1])/(ex/10.0))
         self.winfft.clf()
         fsp = np.fft.fft(self.sp.dif[band_nr-1],
                          10*self.sp.dif[band_nr-1].size)
