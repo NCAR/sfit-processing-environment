@@ -1872,6 +1872,8 @@ class ReadOutputData(_DateRange):
         #-----------------------------------
         # Loop through collected directories
         #-----------------------------------
+        self.badDir = []
+
         for sngDir in self.dirLst:          
             #-------------------------------
             # Read error summary information
@@ -1898,6 +1900,7 @@ class ReadOutputData(_DateRange):
 
             except Exception as errmsg:
                 print (errmsg)
+                self.badDir.append(sngDir)
                 continue                            
 
             #-------------------------
@@ -2258,10 +2261,16 @@ class ReadOutputData(_DateRange):
             # Determine number of micro-windows
             #----------------------------------
             if not 'nMW' in vars(): 
-                nMW = len(fnames)
+
+                try: 
+                    (PrimaryGas, ctlinfo) = readCtlF('sfit4.ctl')
+                    nMW = len(ctlinfo['band'])
+                except:
+                    nMW = len(fnames)
                 nstr = ['{:02d}'.format(f) for f in range(1,nMW+1)]
             
             self.spc['nMW'] = nMW
+            
             
             #---------------------------
             # Loop through micro-windows
@@ -2734,7 +2743,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
 
                 try:
 
-                    raytrace_header,line_of_sight=readRaytrace(self.dirLst[i] + 'raytrace.out',longitude=self.HDFlon,azimuth=az,target_grid=self.HDFz*1e3) 
+                    raytrace_header,line_of_sight=readRaytrace(self.dirLst[i] + 'raytrace.los',longitude=self.HDFlon,azimuth=az,target_grid=self.HDFz*1e3) 
 
                     self.HDFlonLOS[i,:] = line_of_sight[:,1]
                     self.HDFlatLOS[i,:] = line_of_sight[:,2]
@@ -2834,6 +2843,28 @@ class ckRetrievals(ReadOutputData):
         print ('Number of total retrieval folders before filtering = {}'.format(nobs))
         print ('Number of bad/inconsistent folders                 = {}'.format(nbad))
         print ('Number of total retrieval folders after filtering  = {}\n'.format(nobs - nbad))
+
+        for f in self.badDir: 
+            print ('rm Directory: {}'.format(f))
+            try: 
+                shutil.rmtree(f)
+            except OSError as e:
+                print ("Error: %s - %s." % (e.filename, e.strerror))
+
+    def ckErrorSummary(self):
+        ''' Plot retrieved profiles '''
+        
+        print ('\nChecking Error Summary Files .......\n')    
+       
+        self.readError()   
+
+        nobs = len(np.asarray(self.dirLst))
+        nbad = len(np.asarray(self.badDir))
+        
+        print ('Number of total retrieval folders before filtering = {}'.format(nobs))
+        print ('Number of bad/inconsistent folders                 = {}'.format(nbad))
+        print ('Number of total retrieval folders after filtering  = {}\n'.format(nobs - nbad))
+       
 
         for f in self.badDir: 
             print ('rm Directory: {}'.format(f))
@@ -2978,10 +3009,10 @@ class PlotData(ReadOutputData):
             if not self.readPrfFlgApr[self.PrimaryGas]: self.readprfs([self.PrimaryGas],retapFlg=0) 
             
             try:
-                raytrace_header,line_of_sight=readRaytrace(self.dirLst[0] + 'raytrace.out',longitude=lon,azimuth=saa,target_grid=self.aprfs['Z'][0]*1e3) #raytrace.out is the default...better to take file.out.raytrace? 
+                raytrace_header,line_of_sight=readRaytrace(self.dirLst[0] + 'raytrace.los',longitude=lon,azimuth=saa,target_grid=self.aprfs['Z'][0]*1e3) #raytrace.out is the default...better to take file.out.raytrace? 
                 self.rayFlg = True
             except: 
-                print('Unexpected error while reading raytrace.out')
+                print('Unexpected error while reading raytrace.los')
                 pass
 
         #--------------------
@@ -4207,7 +4238,7 @@ class PlotData(ReadOutputData):
                 avkVMR  = np.mean(avkVMR,axis=0)              
             else:
                 avkSCF  = self.error['AVK_scale_factor'][0][:,:]
-                avkVMR  = self.error['AVK_vmr'],axis=0[0][:,:]        
+                avkVMR  = self.error['AVK_vmr'][0][:,:]        
                 
             dofs    = np.trace(avkSCF)
             dofs_cs = np.cumsum(np.diag(avkSCF)[::-1])[::-1]            

@@ -1,4 +1,4 @@
-#! /bira-iasb/softs/19g/py37/bin/python
+#! /usr/bin/python3
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
 # Name:
