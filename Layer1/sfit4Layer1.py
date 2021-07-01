@@ -443,7 +443,9 @@ def main(argv):
                             SbctlFileVars.getInputs()
 
                     else:
+                        print('Error Flag: True')
                         print('Error: file.in.sbdflt is missing in {}'.format(ctlFile))
+                        exit()
      
 
             #-----------------------------
@@ -671,7 +673,6 @@ def main(argv):
                         
                             # Determine which ILS file to use 
                             ilsFileList = glob.glob(mainInF.inputs['ilsDir'] + 'ils*')
-                
                             # Create a date list of ils files present
                             ilsYYYYMMDD = []
                             for ilsFile in ilsFileList:
@@ -692,6 +693,7 @@ def main(argv):
                             for ilsFile in ilsFileList:
                                 if nearstDaystr in os.path.basename(ilsFile):
                                     ilsFname = ilsFile
+
 
                         # If file.....
                         elif os.path.isfile(mainInF.inputs['ilsDir']):

@@ -43,7 +43,7 @@
 import os, sys
 sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import sfitClasses as sc
-from Layer1Mods import errAnalysis
+from Layer1Mods_v2 import errAnalysis
 from dataOutClass import _DateRange as dRange
 
                                 #--------------------------#
@@ -92,17 +92,17 @@ def main():
     #--------------------------------
     # Initialize date and insitu vars
     #--------------------------------
-    loc        = 'mlo'
-    gas        = 'ch4'
-    ver        = 'Current_WP'
+    loc        = 'fl0'
+    gas        = 'ocs'
+    ver        = 'Current_v9'
     #sbFileName = '/data/pbin/Dev_Ivan/Layer1/sbDefaults.ctl'
     dataDir    = '/data1/ebaumer/'+loc.lower()+'/'+gas.lower()+'/'+ver+'/'
     
-    #sbFileName = '/Volumes/data/ebaumer/Err/sb_tab.ctl'
-    iyear      = 2018
+    sbFileName = '/data1/ebaumer/fl0/ocs/x.ocs/sb_v8.ctl'
+    iyear      = 2010
     imnth      = 1
     iday       = 1
-    fyear      = 2018
+    fyear      = 2019
     fmnth      = 12
     fday       = 31    
         
@@ -124,8 +124,8 @@ def main():
     #----------------------------------------------------
     # Initialize Sb ctl file. Assuming in single location
     #----------------------------------------------------
-    # sbCtlFile = sc.CtlInputFile(sbFileName)
-    # sbCtlFile.getInputs()    
+    sbCtlFile = sc.CtlInputFile(sbFileName)
+    sbCtlFile.getInputs()    
 
     # if 'sbdefflg' in sbCtlFile.inputs:
 
@@ -185,13 +185,14 @@ def main():
 
             else:
                 print('Error: file.in.sbdflt is missing in {}'.format(ctlFile))
-                exit()
+                #exit()
             
             #-------------------
             # Run error analysis
             #-------------------
             print (curDir)
-            rtn = errAnalysis(ctlFile,sbCtlFile,curDir)
+            rtn = errAnalysis(ctlFile,sbCtlFile,False,curDir)
+            #errAnalysis( ctlFileGlb, SbctlFileVars, False, wrkOutputDir3, logFile )
             if not rtn: print ('Unable to run error analysis in directory = {}'.format(curDir))
 
             
