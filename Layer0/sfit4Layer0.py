@@ -111,7 +111,7 @@ def main(argv):
          # Directories
          #------------
         wrkDir    = os.getcwd()                              # Set current directory as the data directory
-        binDir    = '/data/bin'                              # Default binary directory. Used of nothing is specified on command line
+        binDir    = '/data/ebaumer/Code/sfit4/sfit-core-code_v1.0.14/src/'                              # Default binary directory. Used of nothing is specified on command line
         binDirVer = {
         'v1':   '/data/ebaumer/Code/sfit-core-code/src/',    # Version 1 for binary directory (Eric)
         'v2':   '/data/tools/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
@@ -121,6 +121,7 @@ def main(argv):
         'v6':   '/data/ebaumer/Code/sfit4/sfit-core-code_v1.0.14/src/',
         'v7':   '/data/tools/400/src/src.20210308/'}
 
+        if not(binDir.endswith('/')): binDir = binDir + '/'
         #----------
         # Run flags
         #----------
@@ -262,7 +263,7 @@ def main(argv):
                 sbCtlFile.getInputs()
 
             
-
+        sc.ckFile(binDir+'sfit4', exitFlg=True)
         #---------------------------
         # Clean up output from sfit4
         #---------------------------
@@ -277,7 +278,10 @@ def main(argv):
                 for f in glob.glob(wrkDir + 'raytrace.*'): os.remove(f)
                 for f in glob.glob(wrkDir + '*Error.*'): os.remove(f)
                 for f in glob.glob(wrkDir + '*.output'): os.remove(f)
+                for f in glob.glob(wrkDir + '*.pdf'): os.remove(f)
 
+
+ 
         #----------
         # Run pspec
         #----------
