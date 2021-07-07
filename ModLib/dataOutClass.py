@@ -1026,6 +1026,8 @@ def readRaytrace(rayf,longitude=None,azimuth=None,target_grid=None):
           l=fid.readline()
         out=np.array(out,dtype=np.float)
         logger.debug('Loaded data matrix with shape %s'%(out.shape,))
+        #print(out.shape)
+        #print(len(header['COLUMN_DESCRIPTION']))
         if out.shape[-1]!=len(header['COLUMN_DESCRIPTION']): raise ValueError('Unexpected matrix shape')
 
   #### Calculate lat/lon coordinates from azimuthal equidistant projection  
