@@ -331,7 +331,7 @@ class show_results:
         ctl = sfit4.sfit4_ctl() 
         ctl.read(ctlfile)
         ak_m = ctl.get_value('file.out.ak_matrix')
-        if ctl.get_value('gas.profile.list') != -1:
+        if (ctl.get_value('gas.profile.list') != -1) and (len(ctl.get_value('gas.profile.list')) > 0):
             tgas = ctl.get_value('gas.profile.list').split()[0]
             logretrieval = ctl.get_value('gas.profile.%s.logstate'%tgas)
             if logretrieval == 'T':
