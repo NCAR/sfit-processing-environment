@@ -10,7 +10,10 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as tkr
 import matplotlib.dates as dates
 old_epoch = '0000-12-31T00:00:00'
-dates.set_epoch(old_epoch) 
+try:
+    dates.set_epoch(old_epoch)
+except:
+    pass
 import matplotlib.gridspec as gridspec
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg,NavigationToolbar2Tk
 import numpy as np
@@ -265,9 +268,9 @@ class show_tmph5:
 
     def save_values(self):
         fid = open('columns_show_and_filter.dat', 'w')
-        fid.write('date dnum retr apr ran, sys, aircol, P_S, T_S, DOFS, Min_VMR\n')
+        fid.write('date dnum retr apr ran, sys, aircol, P_S, T_S, DOFS, ,SZA, Min_VMR\n')
         min_vmr = np.min(self.res.vmr_rt,axis=0)
-        for d,r,a,rr,ss,ac,ps,ts,do,mv in zip(self.res.dnum[self.valid_ind],
+        for d,r,a,rr,ss,ac,ps,ts,do,sz,mv in zip(self.res.dnum[self.valid_ind],
                                               self.res.col_rt[self.valid_ind],
                                               self.res.col_ap[self.valid_ind],
                                               self.res.err_ran[self.valid_ind],
@@ -276,9 +279,10 @@ class show_tmph5:
                                               self.res.P_surface[self.valid_ind],
                                               self.res.T_surface[self.valid_ind],
                                               self.res.dofs[self.valid_ind],
+                                              self.res.sza[self.valid_ind],
                                               min_vmr[self.valid_ind]):
             dstring = dates.num2date(d).strftime('%Y%m%d%H%M%S')
-            fid.write('%s %d %g %g %g %g %g %g %g %g %g\n'%(dstring, d, r, a, rr, ss, ac, ps, ts,do,mv))
+            fid.write('%s %d %g %g %g %g %g %g %g %g %g %g\n'%(dstring, d, r, a, rr, ss, ac, ps, ts,do,sz,mv))
         fid.close()
             
 

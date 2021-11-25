@@ -1,0 +1,28 @@
+2,DATETIME,DATETIME,MJD2K,DOUBLE,Effective meas. time,x
+2,LATITUDE.INSTRUMENT,[CONSTANT|DATETIME],deg,REAL,Inst. geolocation,x
+2,LONGITUDE.INSTRUMENT,[CONSTANT|DATETIME],deg,REAL,Inst. geolocation; preferentially positive East ,x
+2,ALTITUDE.INSTRUMENT,[CONSTANT|DATETIME],km,REAL,Inst. geolocation,x
+2,SURFACE.PRESSURE_INDEPENDENT,DATETIME,hPa,REAL,Surface/ground pressure,x
+2,SURFACE.TEMPERATURE_INDEPENDENT,DATETIME,K,REAL,Surface/ground temperature,x
+2,ALTITUDE,[ALTITUDE|DATETIME;ALTITUDE],km,REAL,Retrieval effective altitude vector (if DATETIME independent) or matrix (if DATETIME dependent). The reporting of monotonically increasing values is recommended.,x
+2,ALTITUDE.BOUNDARIES,[INDEPENDENT;ALTITUDE|DATETIME;INDEPENDENT;ALTITUDE],km,REAL,2D (if DATETIME independent) or 3D (if DATETIME dependent) matrix with on each row the lower and upper boundaries of the layers for which the partial columns are reported. In layer-based retrieval these are equal to the lower and upper boundaries of the respective retrieval layers,x
+2,PRESSURE_INDEPENDENT,DATETIME;ALTITUDE,hPa,REAL,Effective air pressure at each altitude,x
+2,TEMPERATURE_INDEPENDENT,DATETIME;ALTITUDE,K,REAL,Effective air temperature at each altitude,x
+2,INTEGRATION.TIME,DATETIME,s,REAL,Duration of the measurement corresponding to the retrieved datapoint,x if [GAS].MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR] is provided
+2,[GAS].MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR],DATETIME;ALTITUDE,[ppmv|ppbv|pptv],REAL,Retrieved target vertical  profile in VMR units,o
+2,[GAS].MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR]_APRIORI,DATETIME;ALTITUDE,[ppmv|ppbv|pptv],REAL,A-priori  target vertical  profile in VMR units,x if [GAS].MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR] is provided
+2,[GAS].MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR]_AVK,DATETIME;ALTITUDE;ALTITUDE,1,REAL,A or Averaging kernel matrix for retrieved target profile (expressed in VMR/VMR units),x if [GAS].MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR] is provided
+2,[GAS].MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR]_UNCERTAINTY.RANDOM.COVARIANCE,DATETIME;ALTITUDE;ALTITUDE,[ppmv2|ppbv2|pptv2],REAL,Total random error covariance matrix associated with the retrieved vertical profile (expressed in same units as the profile) (without smoothing error!),x if [GAS].MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR] is provided
+2,[GAS].MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR]_UNCERTAINTY.SYSTEMATIC.COVARIANCE,DATETIME;ALTITUDE;ALTITUDE,[ppmv2|ppbv2|pptv2],REAL,Total systematic error covariance matrix associated with the retrieved vertical profile (expressed in same units as the profile),x if [GAS].MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR] is provided
+2,[GAS].COLUMN.PARTIAL_ABSORPTION.[SOLAR|LUNAR],DATETIME;ALTITUDE,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,Vertical profile of partial columns per layer,x if [GAS].MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR] is provided
+2,[GAS].COLUMN.PARTIAL_ABSORPTION.[SOLAR|LUNAR]_APRIORI,DATETIME;ALTITUDE,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,Vertical profile of a-priori partial columns per layer,x if [GAS].MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR] is provided
+2,[GAS].COLUMN_ABSORPTION.[SOLAR|LUNAR],DATETIME,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,Total vertical column of target gas,x
+2,[GAS].COLUMN_ABSORPTION.[SOLAR|LUNAR]_APRIORI,DATETIME,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,A-priori total vertical column of target gas,x
+2,[GAS].COLUMN_ABSORPTION.[SOLAR|LUNAR]_AVK,DATETIME;ALTITUDE,1,REAL,Averaging kernel matrix associated with the total vertical column of the target gas (in molec cm-2/molec cm-2 units),x
+2,[GAS].COLUMN_ABSORPTION.[SOLAR|LUNAR]_UNCERTAINTY.RANDOM.STANDARD,DATETIME,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,Total random uncertainty on the retrieved total column (expressed in same units as the column) (without smoothing error),x
+2,[GAS].COLUMN_ABSORPTION.[SOLAR|LUNAR]_UNCERTAINTY.SYSTEMATIC.STANDARD,DATETIME,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,Total systematic uncertainty on the retrieved partial columns (expressed in same units as the column),x
+2,ANGLE.[SOLAR|LUNAR]_ZENITH.ASTRONOMICAL,DATETIME,deg,REAL,The solar (or lunar) astronomical zenith angle at which the measurement was taken,x
+2,ANGLE.[SOLAR|LUNAR]_AZIMUTH,DATETIME,deg,REAL,The solar (or lunar) azimuth angle at which the measurement was taken,x
+2,H2O.MIXING.RATIO.VOLUME_ABSORPTION.[SOLAR|LUNAR],DATETIME;ALTITUDE,[ppmv|ppbv|pptv],REAL,Vertical profile of H2O adopted in the target gas retrieval in VMR units,x
+2,H2O.COLUMN_ABSORPTION.[SOLAR|LUNAR],DATETIME,molec cm-2 (or a unit scaled by 1E3*n ex. Pmolec cm-2),REAL,Total vertical column of H2O adopted in the target gas retrieval,x
+2,SOURCE.PRODUCT,INDEPENDENT,[empty],STRING,Information relevant to the source history of the Metadata and Data,o

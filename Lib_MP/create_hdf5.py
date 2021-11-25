@@ -171,7 +171,8 @@ def create_hdf5(**kwargs):
             nr_aux = len(aux_apriori)
 
             if flag_tret:
-                t_ret = stv.Tret
+                t_apriori = stv.T
+		t_ret = stv.Tret
                     
             nr_gas = len(gasnames)
             i_rvmr=np.zeros((len_vmr,0))
@@ -218,7 +219,8 @@ def create_hdf5(**kwargs):
                 P = np.zeros((len_vmr, nr_entries)) *np.nan
                 T = np.zeros((len_vmr, nr_entries)) *np.nan
                 if flag_tret:
-                        Tret = np.zeros((len_vmr, nr_entries)) *np.nan
+                        T_apriori = np.zeros((len_vmr, nr_entries)) *np.nan
+			Tret = np.zeros((len_vmr, nr_entries)) *np.nan
                 airmass = np.zeros((len_vmr, nr_entries)) *np.nan
                 vmr_h2o_ap = np.zeros((len_vmr, nr_entries)) *np.nan
 
@@ -263,9 +265,16 @@ def create_hdf5(**kwargs):
                 T = h5file.create_earray("/", 'T', hdf5.Float32Atom(), 
                                         (len_vmr,0), title="Temperature", expectedrows=nr_entries)
                 if (flag_tret):
+<<<<<<< HEAD
                      Tret = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
                                         (len_vmr,0), title="Temperature", expectedrows=nr_entries)
                      avk_T = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
+=======
+                     T_apriori = h5file.create_earray("/", 'Tapriori', hdf5.Float32Atom(), 
+                                        (len_vmr,0), title="Temperature apriori", expectedrows=nr_entries)
+		     Tret = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
+                                         (len_vmr,0), title="Temperature", expectedrows=nr_entries)
+>>>>>>> 6ed1af14024c23844001f429f9fc76a865762d25
                 air_mass = h5file.create_earray("/", 'air_mass', hdf5.Float32Atom(), 
                                              (len_vmr,0), title="AIRMASS", expectedrows=nr_entries)
         
@@ -366,7 +375,8 @@ def create_hdf5(**kwargs):
             P.append(np.reshape(p,(len_vmr, -1)))
             T.append(np.reshape(t,(len_vmr, -1)))
             if flag_tret:
-                    Tret.append(np.reshape(tret,(len_vmr, -1)))
+                    T_apriori.append(np.reshape(t_apriori,(len_vmr, -1)))
+		    Tret.append(np.reshape(t,(len_vmr, -1)))
             air_mass.append(np.reshape(ac,(len_vmr, -1)))
 
             h2o, z = aprf.get_gas_vmr('H2O')
@@ -442,7 +452,7 @@ def create_hdf5(**kwargs):
                 ddate = mdt.num2date(mdate[nr])
                 # Azimuth angle in hdf: 0 is south, clockwise increase, i.e. west is positive.
                 fid.write('%s %s %s %f %f %f %f %f %f %f %f\n'%(spectra[nr], ddate.strftime('%Y%m%d'),
-                       ddate.strftime('%H:%M:%S'), dur[nr], (90.0-sza[nr]),
+                       ddate.strftime('%H:%M:%S'), dur[nr], sza[nr],
                        np.mod(180.0+azi[nr],360), lat[nr], lon[nr], alt[nr],
                        p_surface[nr], t_surface[nr]))
         fid.close()

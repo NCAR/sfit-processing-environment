@@ -1300,7 +1300,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
     # Random
     for k in S_ran:
         totkey='sb.total.'+k
-        if (totkey in SbDict) and SbDict[totkey][0].upper() == 'T':
+        print (totkey)
+        flag_1 = (totkey not in SbDict) or SbDict[totkey][0].upper() != 'F'
+        flag_2 = ('sb.total.*' in SbDict) and SbDict['sb.total.*'][0].upper() == 'T'
+        if flag_1 and flag_2:
             S_tot_rndm_err  += S_ran[k][2]**2 #this is the uncertainty on the total column
             if  SbDict['vmroutflg'][0].upper()  =='T': S_tot_ran_vmr   += S_ran[k][0]
             else:						     S_tot_ran_vmr    = 0
@@ -1312,7 +1315,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
     # Systematic
     for k in S_sys:
         totkey='sb.total.'+k
-        if (totkey in SbDict) and SbDict[totkey][0].upper() == 'T' :
+        flag_1 = (totkey not in SbDict) or SbDict[totkey][0].upper() != 'F'
+        flag_2 = ('sb.total.*' in SbDict) and SbDict['sb.total.*'][0].upper() == 'T'
+        if flag_1 and flag_2:
+            print (totkey, flag_1, flag_2)
             S_tot_systematic_err += S_sys[k][2]**2
             if  SbDict['vmroutflg'][0].upper()  =='T': S_tot_sys_vmr   += S_sys[k][0]
             else:						     S_tot_sys_vmr    = 0
@@ -1339,8 +1345,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
         fout.write('Measurement error (Sm)                        = {0:15.3f} [%]\n'.format(S_ran['measurement'][2]      /retdenscol*100))
         fout.write('Interference error (retrieved params)         = {0:15.3f} [%]\n'.format(S_ran['retrieval_parameters'][2] /retdenscol*100))
         fout.write('Interference error (interfering spcs)         = {0:15.3f} [%]\n'.format(S_ran['interfering_species'][2]/retdenscol*100))
-        if temperature in S_ran:
-          fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_ran['temperature'][2] /retdenscol*100)     )
+        if 'temperature' in S_ran:          
+          fout.write('Temperature (Random)                          = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
           fout.write('Temperature (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['temperature'][2] /retdenscol*100)     )
         if 'h2o' in S_ran: fout.write('Water Vapor (Random)                          = {0:15.3f} [%]\n'.format(S_ran['h2o'][2]/retdenscol*100)              )
         if 'h2o' in S_sys: fout.write('Water Vapor (Systematic)                      = {0:15.3f} [%]\n'.format(S_sys['h2o'][2]/retdenscol*100)              )

@@ -10,25 +10,31 @@
 #       
 # Version History:
 #       Created, 2014   Nussbaumer Eric 
-#       Modified, 2019, Ivan Ortega (iortega@ucar.edu)
+#       Modified, 2019/2020, Ivan Ortega (iortega@ucar.edu)
 #
 #----------------------------------------------------------------------------------------
-loc          = 'mlo'                # Name of station location; 
+loc          = 'tab'                # Name of station location; 
 gasName      = 'co'                 # Name of gas
-ver          = 'Current_B3'      # Name of retrieval version to process
+ver          = 'ATM18-Ret-2017'     # Name of retrieval version to process; typically the name of the folder with retrievals
 ctlF         = 'sfit4_v3.ctl'       # Name of ctl file
 
 #------
-#Some Meta-data for hdf file (Global Attributes) --> More in hdfsave.py
+# id name in the HDF file
+#------
+locID        = 'THULE'             # IF USING 003 TEMPLATE IT NOW ACCEPTS EXTRA CHARACTERS; E.G., RD_THULE       
+
+#------
+# Some Meta-data for hdf file (Global Attributes) --> More in hdfsave.py
 #------
 sfitVer      = '0.9.4.4'			# sfit4 version
-fileVer      = '004'                # version
+fileVer      = '004'                # HDF version
 projectID    = ' '                  # Name of the project; space if none
 
 #------
-# Python Flg: if True Use Python Interface (); if False use IDL Interface (not incorporated yet)
+# GEOMS information
 #------
-pyFlg        = True            
+geoms_tmpl   = '003'                # 002 or 003; GEOMS TEMPLATE: currently GEOMS-TE-FTIR-002, but new geoms GEOMS-TE-FTIR-003, is required (2020))
+geoms_meta   = '04R998'             # Use 04R010 for GEOMS-TE-FTIR-002; and 04R998 or later for GEOMS-TE-FTIR-003
 
 #------
 # yearly Flag: If True will create yearly files from Jan 1 to Dec 31 using initial and final years; if False will create use single file from date range below      
@@ -36,26 +42,28 @@ pyFlg        = True
 yrlFlg       = False                   
 
 #------
-# If pyFlg is True the below files are needed
+# SpcDatabase
 #------
-spcDBFile    = 'HRspDB_mlo_1995_2019.dat'	# Spectral database (change below absolute paths); needed for Lat/Lon/Alt/Duration/Azimuth; headers in database are case sensitive                                      
+spcDBFile    = 'HRspDB_tab_2015_2019.dat'	# Spectral database (change below absolute paths); needed for Lat/Lon/Alt/Duration/Azimuth; headers in database are case sensitive                                      
 statLyrFile  = 'station.layers'     # station layer file
 
 #------
-# If pyFlg is False the below IDL file is needed (not incorporated yet)
-#------
-idlFname       = ' '
+# Files
+#-----
+spcDBFile     = '/data/Campaign/'+loc.upper()+'/Spectral_DB/HRspDB_tab_2015_2019.dat'                 # Path for the database
+statLyrFile   = '/data/Campaign/'+loc.upper()+'/local/station.layers'                                 # Path for station layers
+ctlFile       = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/'+'x.'+gasName.lower()+'/'+ctlF   # Path for ctl file
 
 #----------------------
 # Date range
 #----------------------        
-iyear        = 2018
-imnth        = 1
+iyear        = 2017
+imnth        = 3
 iday         = 1
 
-fyear        = 2018
-fmnth        = 12
-fday         = 31
+fyear        = 2017
+fmnth        = 3
+fday         = 30
 
 #------
 # Flags
@@ -89,20 +97,14 @@ maxCurv      = 1.0					  # Max Curvature
 #------------
 # Directories
 #------------
-dataDir      = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/'+ver+'/'         # Directory with retrievals
+dataDir      = '/data1/ebaumer/'+loc.lower()+'/testbed/'+gasName.lower()+'/'+ver+'/'         # Directory with retrievals
 outDir       = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/HDF_'+ver+'/'     # Output Directory
-
-#------
-# Files
-#-----
-spcDBFile     = '/data/Campaign/'+loc.upper()+'/Spectral_DB/'+spcDBFile              # Path for the database
-statLyrFile  = '/data/Campaign/'+loc.upper()+'/local/'+statLyrFile
-ctlFile      = '/data1/ebaumer/'+loc.lower()+'/'+gasName.lower()+'/'+'x.'+gasName.lower()+'/'+ctlF
+#outDir       = 'hdf_GEOMS-TE-FTIR-003/'     # Output Directory
 
 #------
 # OPTIONAL
 #-----
-#locID    = 'MAUNA.LOA.HI'  # id name in the HDF file
 #dQuality = 'RD'            # Data_Source; e.g. RD (Rapid Delivery)
 #hdfMeta  = 'hdfsaveMLO'    # Input file with metedata; if not included here the script will try to find it as hdfsaveLOC
+#mobFlg    = True            # mobile platform flag; if True it will save instrument location with datetime dependence (Default is False and fixed/single location)
 

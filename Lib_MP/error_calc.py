@@ -11,12 +11,12 @@ from functools import partial
 import random, time
 import gc
 
-def calc_now(direc, sbctl,rootdir):
+def calc_now(direc,sbctl,sbDefaults,rootdir):
     ctl = sc.CtlInputFile(direc+'/sfit4.ctl')
     ctl.getInputs()
     Sbctl = sc.CtlInputFile(sbctl)
     Sbctl.getInputs()
-    SbctlDefaults = sc.CtlInputFile('sbDefaults.ctl')
+    SbctlDefaults = sc.CtlInputFile(sbDefaults)
     SbctlDefaults.getInputs()
     errAnalysis(ctl,Sbctl,SbctlDefaults,direc, False)
     try:    
@@ -48,10 +48,15 @@ def error_calc(**kwargs):
         print ('Please provide the path to the sb.ctl (sbctl=...')
         return()
 
+    sbdefaults= kwargs['sbDefaults']        
+
+
     if 'start_date' in kwargs:
         start_date=kwargs['start_date']
     if 'end_date' in kwargs:
         end_date=kwargs['end_date']
+    if 'sbDefaults' in kwargs:
+        sbdefaults=kwargs['sbDefaults']
 
     
     dd = list(filter(lambda x: os.path.isfile(kwargs['dir'] + '/' + x+'/sfit4.ctl')
@@ -61,19 +66,21 @@ def error_calc(**kwargs):
     dd.sort()
     print (start_date, end_date)
     direcs = []
+    sbctl= kwargs['sbctl']
     for direc in dd:
         direcs.append(kwargs['dir']+'/'+direc)
-
+#        calc_now(kwargs['dir']+'/'+direc,sbctl=sbctl,sbDefaults=sbdefaults,rootdir=kwargs['dir'])
     p = Pool(processes=4)
-    sbctl= kwargs['sbctl']
-    p.map(partial(calc_now, sbctl=sbctl,rootdir=kwargs['dir']), direcs)
 
+    p.map(partial(calc_now, sbctl=sbctl,sbDefaults=sbdefaults,rootdir=kwargs['dir']), direcs)
+
+    
 if __name__ == '__main__':
     import os,sys, getopt
     sys.path.append(os.path.dirname(sys.argv[0]))
     
     try:
-        opts,arg = getopt.getopt(sys.argv[1:], [], ["dir=","sbctl=","start_date=","end_date="])
+        opts,arg = getopt.getopt(sys.argv[1:], [], ["dir=","sbctl=","start_date=","end_date=","sbdefaults="])
     except:
         print ('error in arguments')
         exit()
@@ -88,5 +95,8 @@ if __name__ == '__main__':
             args = args + 'start_date="' + arg + '",'
         if opt == '--end_date':
             args = args + 'end_date="' + arg + '",'
+        if opt == '--sbdefaults':
+            print(arg)
+            args = args + 'sbDefaults="' + arg + '",'
     args=args+')'
     eval(args)
