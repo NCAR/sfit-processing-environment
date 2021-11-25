@@ -122,7 +122,8 @@ class show_results:
             options.append('T')
         options.append('INTERF')
         if self.error.flag:
-            options =  options.append('ERR')
+            options.append('ERR')
+        print(options)
         options = tuple(options)
             
         self.show_var = StringVar(self.tkroot)

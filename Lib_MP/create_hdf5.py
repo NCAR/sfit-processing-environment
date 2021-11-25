@@ -265,16 +265,10 @@ def create_hdf5(**kwargs):
                 T = h5file.create_earray("/", 'T', hdf5.Float32Atom(), 
                                         (len_vmr,0), title="Temperature", expectedrows=nr_entries)
                 if (flag_tret):
-<<<<<<< HEAD
-                     Tret = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
-                                        (len_vmr,0), title="Temperature", expectedrows=nr_entries)
-                     avk_T = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
-=======
                      T_apriori = h5file.create_earray("/", 'Tapriori', hdf5.Float32Atom(), 
                                         (len_vmr,0), title="Temperature apriori", expectedrows=nr_entries)
 		     Tret = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
                                          (len_vmr,0), title="Temperature", expectedrows=nr_entries)
->>>>>>> 6ed1af14024c23844001f429f9fc76a865762d25
                 air_mass = h5file.create_earray("/", 'air_mass', hdf5.Float32Atom(), 
                                              (len_vmr,0), title="AIRMASS", expectedrows=nr_entries)
         
