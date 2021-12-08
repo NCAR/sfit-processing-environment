@@ -10,7 +10,7 @@ import read_result_sfit4 as sfit4
 import glob, pdb
 import argparse
 
-def spectra_by_gas(direc,ax=-1,nr_iter = -1, nr_band=1,gases='All'):
+def spectra_by_gas(direc,ax=-1,nr_iter = -1, nr_band=1,gases='All',keep=False):
 
     files = glob.glob(direc + '/spc*')
     sp = sfit4.pbp(direc+'/pbpfile')
@@ -30,7 +30,8 @@ def spectra_by_gas(direc,ax=-1,nr_iter = -1, nr_band=1,gases='All'):
             
     try:
         ax
-        ax.clear()
+        if not keep:
+            ax.clear()
     except:
         fig = plt.figure(5)
         fig.clf()
@@ -55,7 +56,7 @@ def spectra_by_gas(direc,ax=-1,nr_iter = -1, nr_band=1,gases='All'):
         else:
             #                pdb.set_trace()
             if int(s['iteration']) == nr_iter and int(s['band']) == nr_band and gases.count(s['gas'])>0:
-                ax1.plot(s['nu'], s['clc']/max_s,label=s['gas'])
+                ax1.plot(s['nu'], s['clc']/max_s,label='{}{}'.format(s['gas'],nr_iter))
 
 #    ax1.plot(nu_all, gas_all*np.max(gas_sum),label='ALL')
     
@@ -75,7 +76,7 @@ def spectra_by_gas(direc,ax=-1,nr_iter = -1, nr_band=1,gases='All'):
 #         ax2.plot(sp.nu[nr_band-1], sp.dif[nr_band-1])
 # #        plt.title('Iteration nr: ' + str(nr_iter) + ' Band Nr: ' + str(nr_band))
     plt.legend(loc=2, bbox_to_anchor = (1.0, 1.0))
-    fig.show()
+    plt.draw()
 
     return (spec)
     
