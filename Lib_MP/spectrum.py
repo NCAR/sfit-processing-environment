@@ -47,12 +47,13 @@ class spectrum:
             
                 spdf.nextline()
 
-            else:
-                spdf.nextline()
+#            else:
+#                spdf.nextline()
 
             self.comment.append(spdf.get_line())
             
             tmp = spdf.next(4)
+            print(tmp)
             if spdf.stat() == -1:
                 break
             self.nu_start.append(tmp[0])

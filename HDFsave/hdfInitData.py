@@ -154,7 +154,7 @@ class HDFinitData(object):
         
 
     def initPy(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,
-               mxRMS=1.0,mxSZA=80.0,minDOF=1.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,
+               mxRMS=1.0,mxSZA=80.0,minDOF=1.0,maxDOF=6.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,
                cnvFlg=True,szaFlg=False, validFlg=False,chiFlg=False,maxCHI2=-1.0,minVMR=1,maxVMR=-1,
                co2Flag=False, minCO2=-1e99, maxCO2=1e99,maxTCTotErr=1e99,mtype='stationary'):
 
@@ -163,15 +163,17 @@ class HDFinitData(object):
         #---------------------------------------
         # Gather data using python read routines
         #---------------------------------------
-        errFlg = True
-        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, statLyrFile, iyear, imonth, iday, fyear, fmonth, fday,mtype,errFlg)
+
+        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, statLyrFile, iyear, imonth, iday, fyear, fmonth, fday, errFlg=errFlg, geomsTmpl=geomsTmpl)
         
         #------------
         # Filter data
         #------------
-        pyData.fltrHDFdata(maxRMS=mxRMS, maxSZA=mxSZA,minDOF=minDOF,
-                           dofF=dofFlg,rmsF=rmsFlg, tcF=tcFlg,pcF=pcFlg,
-                           cnvF=cnvFlg, szaF=szaFlg,maxCHI2=maxCHI2,
+        pyData.fltrHDFdata(maxRMS=mxRMS,
+                           maxSZA=mxSZA,minDOF=minDOF,maxDOF=maxDOF,
+                           dofF=dofFlg,rmsF=rmsFlg,
+                           tcF=tcFlg,pcF=pcFlg, cnvF=cnvFlg,
+                           szaF=szaFlg,maxCHI2=maxCHI2,
                            maxVMR=maxVMR,minVMR=minVMR,co2F=co2Flag,
                            minCO2=minCO2,maxCO2=maxCO2,valF=validFlg,
                            maxTCTotErr=maxTCTotErr)
@@ -180,9 +182,20 @@ class HDFinitData(object):
         #------------
         self.dates                          = pyData.HDFdates
         self.datesJD2K                      = pyData.HDFdatesJD2K
-        self.latitude                       = pyData.HDFlat
-        self.longitude                      = pyData.HDFlon
-        self.instAltitudes                  = pyData.HDFinstAlt[0]
+        #------------------------------------------------
+        # Chenge in 2016 for the new GEOMS convention
+        #------------------------------------------------
+        #self.longitude                      = 360.0 - pyData.HDFlon               # Convert [West Long] -> [East Long]
+        if mobFlg:
+            self.longitude                      = pyData.HDFlon                        # -180 (West) to +180 (East)
+            self.instAltitudes                  = pyData.HDFinstAlt
+            self.latitude                       = pyData.HDFlat
+        else:
+            self.longitude                      = pyData.HDFlon[0]                        # -180 (West) to +180 (East)
+            self.instAltitudes                  = pyData.HDFinstAlt[0]
+            self.latitude                       = pyData.HDFlat[0]
+
+        
         self.surfPressures                  = pyData.HDFsurfP
         self.surfTemperatures               = pyData.HDFsurfT
         self.altitudes                      = pyData.HDFz
@@ -205,13 +218,21 @@ class HDFinitData(object):
         self.gasColAbsSolarUncSys           = pyData.HDFtcSysErr
         self.angleZastr                     = pyData.HDFsza
         self.angleSolAz                     = pyData.HDFazi
-        if 'H2O' not in pyData.PrimaryGas:
-            self.h2oMxRatAbsSolar               = pyData.HDFh2oVMR       / self.mxSclFctVal
-            self.h2oColAbsSol                   = pyData.HDFh2oTC
-        else:
-            del self.h2oMxRatAbsSolar
-            del self.h2oColAbsSol
-            
+        self.h2oMxRatAbsSolar               = pyData.HDFh2oVMR       / self.mxSclFctVal
+        self.h2oColAbsSol                   = pyData.HDFh2oTC
+
+        #------------------------------------------------
+        #
+        #------------------------------------------------
+        if int(geomsTmpl) >= int(3):
+            self.lonLOS                      = pyData.HDFlonLOS
+            self.latLOS                      = pyData.HDFlatLOS
+            self.airMass                     = pyData.HDFairMass    * self.mxSclFctZVal
+            self.h2oColApr                   = pyData.HDFh2oaprTC   * self.mxSclFctZVal
+            self.rh                          = pyData.HDFrh
+            self.ws                          = pyData.HDFws
+            self.wd                          = pyData.HDFwd
+        
         
     def initDummy(self):
         ''' Interface for initalizing with dummy data. For testing!!!'''

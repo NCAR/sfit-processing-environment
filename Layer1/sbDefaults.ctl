@@ -24,7 +24,7 @@
 #     phase                   Phase                                 Native [Radians]
 #     wshift                  Wavelength shift                      Fractional 
 #     dwshift                 Differential Wavelength shift         ******Currently NOT implemented***** 
-#     sza                     Solar zenith angle                    Native [degrees] or fractional ??
+#     sza                     Solar zenith angle                    Native [degrees] or fractional
 #     lineInt                 Line intensity                        Fractional
 #     lineTAir                Line temperature broadening           Fractional
 #     linePAir                Line pressure broadening              Fractional
@@ -44,7 +44,7 @@
 #     
 #-----------------------------------------------------------------
 #
-Kb_info =        temperature                TEMPERAT                fractional                    True
+Kb_info =        temperature                TEMPERAT                fractional               retrievable
                    solshft                 SolLnShft                      cm-1                      True
                  solstrnth                 SolLnStrn                fractional                      True
                      phase                   SPhsErr                   radians                      True
@@ -115,10 +115,20 @@ sb.profile.HDO.correlation.width      = 4
 sb.profile.HDO.random                 = 0.10 0.30  0.60  0.50  0.30  0.10  0.10   0.10  #relative units
 sb.profile.HDO.systematic             = 0.10  0.4  0.20  0.20  0.20  0.20  0.20   0.20 
 
-sb.profile.H2CO.grid                  = -0.02 0.1 10 16 40 120
-sb.profile.H2CO.correlation.width     = 4
-sb.profile.H2CO.random                = .30 0.5 0.5 0.5 .20 .20 #relative units
-sb.profile.H2CO.systematic            = .30 0.5 0.5 0.5 .20 .20
+sb.profile.H2CO.grid                  =-0.020    4     6    10   13     25     40    120 #coarse grid in km
+sb.profile.H2CO.correlation.width     =4 #in km, see sfit4 correlation def
+sb.profile.H2CO.random                = 0.10   0.30  0.60  0.50 0.30 0.10 0.10 0.10  #relative units
+sb.profile.H2CO.systematic            = -0.50 -0.50 -0.20 -0.10 0.10 0.08 0.05 0.05
+
+sb.profile.NO2.grid                   = -0.02 120
+sb.profile.NO2.correlation.width      = 4
+sb.profile.NO2.random                 = .10 .10 #relative units
+sb.profile.NO2.systematic             = .10 .10 #relative units, profile shape is not changed! Will vanish for Tikhonov retrievals
+
+sb.profile.N2O.grid                   =-0.020    4     6    10   13     25     40    120 #coarse grid in km
+sb.profile.N2O.correlation.width      =4 #in km, see sfit4 correlation def
+sb.profile.N2O.random                 = 0.025 0.025 0.025 0.025 0.025 0.035 0.20 0.65 #relative units
+sb.profile.N2O.systematic             = 0.02   0.02  0.02  0.02 0.02 0.03 0.03 0.05  #relative units
 
 sb.profile.*.grid                     = -0.02 120
 sb.profile.*.correlation.width        = 4
@@ -126,11 +136,9 @@ sb.profile.*.random                   = .10 .10 #relative units
 sb.profile.*.systematic               = .10 .10 #relative units, profile shape is not changed! Will vanish for Tikhonov retrievals
 
 sb.omega.*                            = 0.001
-#sb.sza.random                         = 0.005
-#sb.sza.systematic                     = 0.001
 
-sb.sza.random                         = 0.15
-sb.sza.systematic                     = 0.11
+sb.sza.random                         = 0.03
+sb.sza.systematic                     = 0.03
 
 
 sb.phase.*                            = 0.001
@@ -138,8 +146,9 @@ sb.wshift.*                           = 0.001
 sb.slope.*                            = 0.001
 sb.curvature.*                        = 0.001
 sb.max_opd.*                          = 0.0
-sb.band.*.zshift.*                    = 0.001                                   
-sb.solshft.*                          = 0.005                                       
+sb.band.*.zshift.*                    = 0.0015                                   
+sb.solshft.random                     = 0.0000008
+sb.solshft.systematic                 = 0.0000002
 sb.solstrnth.*                        = 0.01                                       
 sb.apod_fcn.*                         = 0.05
 sb.phase_fcn.*                        = 0.05
@@ -150,12 +159,11 @@ sb.phase_fcn.*                        = 0.05
 sb.line*_*.random                     = 0.
 sb.lineInt_CH4.systematic             = 0.03     
 sb.lineInt_CO.systematic              = 0.02
-sb.lineInt_NO2.systematic             = 0.10     
+sb.lineInt_NO2.systematic             = 0.05     
 sb.lineInt_HNO3.systematic            = 0.1     
 sb.lineInt_O3.systematic              = 0.03 
 sb.lineInt_N2O.systematic             = 0.02     
 sb.lineInt_HCl.systematic             = 0.05
-sb.lineInt_O3.systematic              = 0.05     
 sb.lineInt_HF.systematic              = 0.05     
 sb.lineInt_OCS.systematic             = 0.02
 sb.lineInt_NO.systematic              = 0.05     

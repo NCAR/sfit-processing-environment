@@ -43,8 +43,13 @@ def tryopen(fname):
         with open(fname, 'r' ) as fopen:
             return fopen.readlines()
     except IOError as errmsg:
-        print (errmsg)
+        print(errmsg)
         return False
+    #except:
+        #print ('Error reading: {}'.format(fname))
+        #return False
+
+
 
 def toYearFraction(dates):
     ''' Convert datetime to year and fraction of year'''
@@ -475,7 +480,7 @@ class MLOread():
         ''' '''
         #------------------------
         # Open house file and read data
-        #------------------------        
+        #------------------------       
         data = tryopen(fileName)
 
         if data:

@@ -91,13 +91,13 @@ def main():
     #-----------------
     #Inputs
     #-----------------
-    inputDir   = '/data/Campaign/TAB/waccm/Thule.V6/'
+    inputDir   = '/data/Campaign/FL0/waccm/Boulder.V6/'
     
-    gasoi      = 'co'  
+    gasoi      = 'no2'  
     
-    outputFld  = '/data/Campaign/TAB/waccm/'+ gasoi.lower() + '/test/'
+    outputFld  = '/data/Campaign/FL0/waccm/'+ gasoi.lower() + '/'
 
-    reffile    = '/data/Campaign/TAB/waccm/reference.prf.REFC1.3'   #In case a gas is not in WACCM use this reference file
+    reffile    = '/data/Campaign/FL0/waccm/reference.prf.REFC1.3'   #In case a gas is not in WACCM use this reference file
     
     #The order of the following 99 gases is important (see reference.prf.REFC1.3 file)
     gases      = ['H2O','CO2','O3','N2O','CO','CH4','O2','NO','SO2','NO2',
@@ -132,7 +132,7 @@ def main():
     # Open output file 
     #-----------------
 
-    prfgas = np.zeros((12, 43))
+    prfgas = np.zeros((12, 42))
 
     for mnth in range(1, 13):
 
@@ -232,7 +232,7 @@ def main():
 
     prfgas = np.asarray(prfgas)
 
-    fig1, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+    fig1, ax1 = plt.subplots(sharey=True)
     clmap = 'jet'  # jet, rainbow, gist_ncar
     
     cm             = plt.get_cmap(clmap)
@@ -242,11 +242,11 @@ def main():
     months = range(1, 13)
 
     ax1.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in months] ) )
-    ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in months] ) )
+    #ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in months] ) )
 
     for i in range(0, 12): 
         ax1.plot(prfgas[i,:]*1e9, alt, label=str(i+1))
-        ax2.plot(prfgas[i,:]*1e9, alt)
+        #ax2.plot(prfgas[i,:]*1e9, alt)
     ax1.grid(True,which='both')
     ax1.legend(prop={'size':9})
     ax1.set_ylabel('Altitude [km]', fontsize=12)
@@ -257,11 +257,11 @@ def main():
     #ax1.set_title(YYYY+'-'+MM+'-'+DD)
 
         
-    ax2.grid(True,which='both')
-    ax2.set_xlabel('VMR [ppb]', fontsize=12)
-    ax2.tick_params(which='both',labelsize=12)
-    #ax2.set_ylim((0,40))
-    ax2.set_xscale('log')
+    # ax2.grid(True,which='both')
+    # ax2.set_xlabel('VMR [ppb]', fontsize=12)
+    # ax2.tick_params(which='both',labelsize=12)
+    # #ax2.set_ylim((0,40))
+    # ax2.set_xscale('log')
 
     plt.show(block=False)
     user_input = raw_input('Press any key to exit >>> ')
