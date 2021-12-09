@@ -1,6 +1,6 @@
 #----------------------------------------------------------------------------------------
 # Name:
-#        dataHDFClass.py
+#        HDFClassRead.py
 #
 # Purpose:
 #       This is a collection of classes and functions used for processing and ploting HDF files
@@ -47,7 +47,7 @@ from collections import OrderedDict
 from os import listdir
 from os.path import isfile, join
 import re
-import hdfBaseRetDat
+#import hdfBaseRetDat
 
 from scipy.integrate import simps
 import matplotlib.animation as animation
@@ -662,10 +662,10 @@ def fit_driftfourier(x, data, weights, degree, half_period=0.5):
     results = np.linalg.lstsq(A * weights[:, np.newaxis],
                               data * weights)
     
-    params = results[0]
+    params    = results[0]
     intercept = params[0]
-    slope = params[1]
-    pfourier = params[2:]
+    slope     = params[1]
+    pfourier  = params[2:]
     
     f_drift = lambda t: slope * (t - xmin) + intercept
     f_fourier = lambda t: np.sum(fourier_basis(t - xmin, degree,
@@ -1043,19 +1043,21 @@ class _DateRange(object):
 #------------------------------------------------------------------------------------------------------------------------------                     
 class ReadHDFData():
 
-    def __init__(self, dataDir, locID, primGas=''):
+    def __init__(self, dataDir, locID, primGas='', geomsTmpl='002'):
 
 
         self.PrimaryGas = primGas
 
         self.dataDir    = dataDir
         self.locID      = locID
-       
-    
+        self.geoms      = int(geomsTmpl)
+
+
         self.HDF     = {}
 
-        #-------------------------
+        
         Vars = {}
+        
         Vars.setdefault(self.getDatetimeName(),[])
         Vars.setdefault(self.getLatitudeInstrumentName(),[])
         Vars.setdefault(self.getLongitudeInstrumentName(),[])
@@ -1069,20 +1071,43 @@ class ReadHDFData():
         Vars.setdefault(self.getAngleSolarAzimuthName(),[])
         Vars.setdefault(self.getAngleSolarZenithAstronomicalName(),[])
         Vars.setdefault(self.getIntegrationTimeName(),[])
-        Vars.setdefault(self.getH2oMixingRatioAbsorptionSolarName(),[])
-        Vars.setdefault(self.getH2oColumnAbsorptionSolarName(),[])        
-        Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName(),[])
-        Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAprioriName(),[])
-        Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAvkName(),[])
-        Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName(),[])
-        Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName(),[])
-        Vars.setdefault(primGas.upper()+'.'+self.getColumnPartialAbsorptionSolarName(),[])
-        Vars.setdefault(primGas.upper()+'.'+self.getColumnPartialAbsorptionSolarAprioriName(),[])
         Vars.setdefault(primGas.upper()+'.'+self.getColumnAbsorptionSolarName(),[])
-        Vars.setdefault(primGas.upper()+'.'+self.getColumnAbsorptionSolarAprioriName(),[])
+        
         Vars.setdefault(primGas.upper()+'.'+self.getColumnAbsorptionSolarAvkName(),[])
         Vars.setdefault(primGas.upper()+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName(),[])
         Vars.setdefault(primGas.upper()+'.'+self.getColumnAbsorptionSolarUncertaintySystematicName(),[])
+
+          
+        
+        if int(self.geoms) <= 2:
+           
+
+            Vars.setdefault(primGas.upper()+'.'+self.getColumnAbsorptionSolarAprioriName(),[])
+            Vars.setdefault(self.getH2oMixingRatioAbsorptionSolarName(),[])
+            Vars.setdefault(self.getH2oColumnAbsorptionSolarName(),[])   
+            Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAprioriName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAvkName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName(),[])   
+            Vars.setdefault(primGas.upper()+'.'+self.getColumnPartialAbsorptionSolarName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getColumnPartialAbsorptionSolarAprioriName(),[])
+
+        #-------------------------
+        # 003
+        #-------------------------
+        else:
+            Vars.setdefault(primGas.upper()+'.'+self.getColumnAprioriName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarDryName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAprioriDryName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAvkDryName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomDryName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicDryName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAprioriDryName(),[])
+            Vars.setdefault(self.getH2oMixingRatioVolumeDryAprioriName(),[])
+            Vars.setdefault(self.getH2oColumnAprioriName(),[])
+
+
 
 
         #---------------------------------
@@ -1090,13 +1115,32 @@ class ReadHDFData():
         #---------------------------------
         DirFiles = []
 
-        for d in dataDir:
-            if not( d.endswith('/') ):
-                d = d + '/'
 
-            DirFiles.append(glob.glob(d + '*'+primGas.lower()+ '*'+locID+'*.hdf'))
-            #DirFiles = glob.glob(dataDir + '*'+locID+'*.hdf')
+        if isinstance(dataDir, list):
+            #print('is instance')
+            for d in dataDir:
+                if not( d.endswith('/') ):
+                    d = d + '/'
+
+                DirFiles.append(glob.glob(d + '*.'+primGas.lower()+ '*'+locID+'*.hdf'))
+                #DirFiles.append(glob.glob(d + '*'+locID+'*.hdf'))
+                if not DirFiles[0]:
+                    DirFiles = []
+                    DirFiles.append(glob.glob(d + '*'+locID+'*.hdf'))
+
+        else:
+            #print('is NOT an instance')
+
+            if not( dataDir.endswith('/') ):
+                dataDir = dataDir + '/'
+
+            
+            DirFiles.append(glob.glob(dataDir + '*.'+primGas.lower()+ '*'+locID+'*.hdf'))
+            if not DirFiles[0]:
+                DirFiles = []
+                DirFiles.append(glob.glob(dataDir + '*'+locID+'*.hdf'))
         
+    
         DirFiles = [item for DirFiles in DirFiles for item in DirFiles]
 
         DirFiles.sort()
@@ -1123,18 +1167,19 @@ class ReadHDFData():
             
             for var in Vars.keys():
 
-                #try:
-                data  = hdfid.select(var)
-                #units       = data.units
-                units       = data.VAR_UNITS
-                conv        = data.VAR_SI_CONVERSION.strip().split(';')
+                try:
+                    #print(var)
+                    data        = hdfid.select(var)
+                    #units       = data.units
+                    units       = data.VAR_UNITS
+                    conv        = data.VAR_SI_CONVERSION.strip().split(';')
 
-                self.HDF.setdefault(var,[]).append(data)
-                self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
-                self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
+                    self.HDF.setdefault(var,[]).append(data)
+                    self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
+                    self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
             
-                #except Exception as errmsg:
-                    #print (errmsg, ' : ', var)
+                except Exception as errmsg:
+                    print (errmsg, ' : ', var)
                     #exit()
         #---------------------------------
         #FLATTENED THE ARRAYS
@@ -1229,6 +1274,42 @@ class ReadHDFData():
     def getH2oColumnAbsorptionSolarName(self):
         return 'H2O.COLUMN_ABSORPTION.SOLAR'
 
+    #--------------------------------
+    # 003
+    #--------------------------------
+    def getMixingRatioAbsorptionSolarDryName(self):
+        return 'MIXING.RATIO.VOLUME.DRY_ABSORPTION.SOLAR'
+
+    def getMixingRatioAprioriDryName(self):
+        return 'MIXING.RATIO.VOLUME.DRY_APRIORI'
+
+    def getMixingRatioAbsorptionSolarAvkDryName(self):
+        return 'MIXING.RATIO.VOLUME.DRY_ABSORPTION.SOLAR_AVK'
+
+    def getMixingRatioAbsorptionSolarUncertaintyRandomDryName(self):
+        return 'MIXING.RATIO.VOLUME.DRY_ABSORPTION.SOLAR_UNCERTAINTY.RANDOM.COVARIANCE'
+
+    def getMixingRatioAbsorptionSolarUncertaintySystematicDryName(self):
+        return 'MIXING.RATIO.VOLUME.DRY_ABSORPTION.SOLAR_UNCERTAINTY.SYSTEMATIC.COVARIANCE'
+
+    def getColumnPartialAprioriName(self):
+        return 'COLUMN.PARTIAL_APRIORI'
+
+    def getColumnAprioriName(self):
+        return 'COLUMN_APRIORI'
+
+    def getDryAirColumnPartialName(self):
+        return 'DRY.AIR.COLUMN.PARTIAL_INDEPENDENT'
+
+    def getH2oMixingRatioVolumeDryAprioriName(self):
+        return 'H2O.MIXING.RATIO.VOLUME.DRY_APRIORI'
+
+    def getH2oColumnAprioriName(self):
+        return 'H2O.COLUMN_APRIORI'
+
+    def getMixingRatioAprioriDrySourceName(self):
+        return 'MIXING.RATIO.VOLUME.DRY_APRIORI.SOURCE'
+
     def fltrData(self,gasName, iyear=False, imonth=False, iday=False, fyear=False, fmonth=False, fday=False, minsza=0.0,mxsza=80.0,minTC=1.0E15,maxTC=1.0E16,
                  tcFlg=True,pcFlg=True,szaFlg=False,tcMMFlg=False, dateFlg=False):
         
@@ -1248,20 +1329,22 @@ class ReadHDFData():
         #-----------------------------
         if dateFlg:
 
-            idate     = dt.date(iyear, imonth, iday)
-            fdate     = dt.date(fyear, fmonth, fday)
+            idate    = dt.date(iyear, imonth, iday)
+            fdate    = dt.date(fyear, fmonth, fday)
             #dates     = jdf_2_datetime(self.HDF[self.getDatetimeName()])
-            dates     = jd_to_datetime(self.HDF[self.getDatetimeName()])
-            dates2     = [dt.date(d.year, d.month, d.day) for d in dates]
+            dates    = jd_to_datetime(self.HDF[self.getDatetimeName()])
+            dates2   = [dt.date(d.year, d.month, d.day) for d in dates]
 
-            indsT1 =  np.where(np.asarray(dates2) < idate)[0]
-            indsT2 =  np.where(np.asarray(dates2) > fdate)[0]
-            indsT  = np.union1d(indsT1,indsT2)
-            
-            print ('Total number observations below date range = {}'.format(len(indsT1)))
-            print ('Total number observations above date range = {}'.format(len(indsT2)))
-            self.inds = np.union1d(indsT, self.inds)                
-        
+            dates2   = np.asarray(dates2)
+
+            indsT1   =  np.where(np.asarray(dates2) < idate)[0]
+            indsT2   =  np.where(np.asarray(dates2) > fdate)[0]
+            indsT    = np.union1d(indsT1,indsT2)
+    
+            print ('Total number observations below date {} = {}'.format(idate, len(indsT1)))
+            print ('Total number observations above date {} = {}'.format(fdate, len(indsT2)))
+            self.inds = np.union1d(indsT, self.inds) 
+     
         #-----------------------------
         # Find total column amount < 0
         #-----------------------------
@@ -1306,7 +1389,8 @@ class ReadHDFData():
             self.inds = np.union1d(sza_inds,self.inds)
 
     
-        self.inds = np.array(self.inds)
+        self.inds = np.array(self.inds, dtype=int)
+
         print ('Total number of observations filtered = {}'.format(len(self.inds)))
         
         self.fltrFlg = True
@@ -1321,7 +1405,7 @@ class ReadHDFData():
 
 class PlotHDF(ReadHDFData):
 
-    def __init__(self,dataDir, locID, gasName, saveFlg=False, outFname=''):
+    def __init__(self,dataDir, locID, gasName, saveFlg=False, outFname='', geomsTmpl='002'):
        
         primGas = gasName
         #------------------------------------------------------------
@@ -1336,7 +1420,7 @@ class PlotHDF(ReadHDFData):
         #---------------
         # ReadOutputData
         #---------------
-        ReadHDFData.__init__(self,dataDir,locID, primGas)   
+        ReadHDFData.__init__(self,dataDir,locID, primGas, geomsTmpl=geomsTmpl)   
        
         
     def closeFig(self):
@@ -1359,13 +1443,23 @@ class PlotHDF(ReadHDFData):
         dates        = jd_to_datetime(datesJD2K)    # python 2.7 and 3
         alt          = self.HDF[self.getAltitudeName()]
         sza          = self.HDF[self.getAngleSolarZenithAstronomicalName()]
-        conv         = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName()+'VAR_SI_CONVERSION']            
-        rPrf         = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName()]*float(conv[0][1])*sclfct
-        aprPrf       = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAprioriName()]*float(conv[0][1])*sclfct
+        if self.geoms <= 2:
+            conv         = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName()+'VAR_SI_CONVERSION']            
+            rPrf         = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName()]*float(conv[0][1])*sclfct
+            aprPrf       = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAprioriName()]*float(conv[0][1])*sclfct
+            avkVMR       = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAvkName()]
+        
+        else:
+            conv         = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarDryName()+'VAR_SI_CONVERSION']            
+            rPrf         = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarDryName()]*float(conv[0][1])*sclfct
+            aprPrf       = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAprioriDryName()]*float(conv[0][1])*sclfct
+            avkVMR       = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAvkDryName()]
+        
+
         totClmn      = self.HDF[self.PrimaryGas.upper()+'.'+self.getColumnAbsorptionSolarName()]
         #convTC       = self.HDF[self.PrimaryGas.upper()+'.'+self.getColumnAbsorptionSolarName()+'VAR_UNITS']
           
-        avkVMR       = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarAvkName()]
+        
 
         lat          = self.HDF[self.getLatitudeInstrumentName()]
         lon          = self.HDF[self.getLongitudeInstrumentName()]
@@ -1424,9 +1518,15 @@ class PlotHDF(ReadHDFData):
             vmr_sys_err  = np.zeros((npnts,nlvls))
 
             for i in range(npnts):
-                conv    = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()+'VAR_SI_CONVERSION']  
-                cov_rnd = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()]
-                cov_sys = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()]
+                if self.geoms <= 2:
+                    conv    = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()+'VAR_SI_CONVERSION']  
+                    cov_rnd = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomName()]
+                    cov_sys = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicName()]
+                else:
+                    conv    = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomDryName()+'VAR_SI_CONVERSION']  
+                    cov_rnd = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomDryName()]
+                    cov_sys = self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicDryName()]
+
      
                 vmr_rnd_err[i,:] = np.diag(cov_rnd[i][:,:])*float(conv[0][1])#*(sclfct**2)
                 vmr_sys_err[i,:] = np.diag(cov_sys[i][:,:])*float(conv[0][1])#*(sclfct**2)
@@ -1453,6 +1553,7 @@ class PlotHDF(ReadHDFData):
 
         except Exception as errmsg:
             print ('\nError: ', errmsg)
+
 
         if errFlg:
             try:

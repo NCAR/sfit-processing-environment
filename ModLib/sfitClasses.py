@@ -1,4 +1,3 @@
-#----------------------------------------------------------------------------------------
 # Name:
 #        sfitClass.py
 #
@@ -198,15 +197,21 @@ class Layer1InputFile():
     def getInputs(self,logFile=False):
         ''' Layer 1 input file is treated as a python
             script '''
+
         try:
             execfile(self.fname, self.inputs)
+
         except IOError as errmsg:
             print (errmsg)
             if logFile: logFile.error(errmsg)
             sys.exit()
 
+        except:
+            exec(compile(open(self.fname, "rb").read(), self.fname, 'exec'), self.inputs)
+
         if '__builtins__' in self.inputs:
             del self.inputs['__builtins__']          
+
 
 #----------------------------------------CtlInputFile-------------------------------------------------------
 class CtlInputFile():
@@ -263,7 +268,7 @@ class CtlInputFile():
                 #-------------------
                 if len(line) == 0: continue
 
-                #--------------------------
+                #------------------------------------
                 # Populate input dictionary
                 # Make sure all keys are LOWER case!!
                 #------------------------------------
@@ -401,7 +406,8 @@ class DbInputFile():
             #datestmp = [int(x) for x in val.split('/')]                                         # Convert date to integer (For date delimited by '/'
             if DateRangeClass.inRange(datestmp[0], datestmp[1], datestmp[2]):                    # Check if date stamp in spectral db is within range
                 inds.append(ind)
-        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())  # Rebuild filtered dictionary. Syntax compatible with python 2.6   
+        dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.items())      # Rebuild filtered dictionary. Syntax compatible with python 3 and 2.7
+        #dbFltInputs = dict((key, [val[i] for i in inds]) for (key, val) in fltDict.iteritems())  # Rebuild filtered dictionary. Syntax compatible with python 2.6      
         #dbFltInputs = {key: [val[i] for i in inds] for key, val in fltDict.iteritems()}         # Rebuild filtered dictionary. Not compatible with python 2.6
         return dbFltInputs
 
@@ -531,7 +537,7 @@ class RetOutput():
         # Add user specified retrieved gas list 
         # to standard retrievals
         #--------------------------------------
-        retrvdAll.append(gasName.upper())        
+        if gasName.upper() != 'H2O': retrvdAll.append(gasName.upper())        
 
         #--------------------------
         # Open and read output file
@@ -585,41 +591,58 @@ class RetOutput():
             ngas       = int(lines[ind1-1].strip())
             indGasName = lines[ind1].strip().split().index('GAS_NAME')
             indRETCOL  = lines[ind1].strip().split().index('RET_COLUMN')
+            indAPRCOL  = lines[ind1].strip().split().index('APR_COLUMN')
+
+
     
             for i in range(ind1+1,ind1+ngas+1):
                 gasname = lines[i].strip().split()[indGasName]
+               
                 self.summary.setdefault(gasname.upper()+'_RetColmn',[]).append(float(lines[i].strip().split()[indRETCOL]))
+                self.summary.setdefault(gasname.upper()+'_AprColmn',[]).append(float(lines[i].strip().split()[indAPRCOL]))
     
             #---------------------------------------------------------
             # Get NPTSB, FOVDIA, and INIT_SNR
             # Currently set up to read SNR from summary file where the
             # summary file format has INIT_SNR on the line below IBAND 
             #---------------------------------------------------------
-            ind2     = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]  
+            ind2     = [ind for ind,line in enumerate(lines) if 'IBAND' in line][0]
+            self.nbands = int(lines[ind2-1].strip().split()[0])
+            self.summary.setdefault('nbands', []).append(self.nbands)
+    
             indNPTSB = lines[ind2].strip().split().index('NPTSB')
             indFOV   = lines[ind2].strip().split().index('FOVDIA')
             indSNR   = lines[ind2].strip().split().index('INIT_SNR') - 9         # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
+            indFitSNR= lines[ind2].strip().split().index('FIT_SNR') - 9          # Subtract 9 because INIT_SNR is on seperate line therefore must re-adjust index
             lend     = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0] - 1
     
+            # for lnum in range(ind2+1,lend,2):
+            #     band = lines[lnum].strip().split()[0] 
+            #     self.summary.setdefault('nptsb_'+band,[]).append(  float( lines[lnum].strip().split()[indNPTSB] ) )
+            #     self.summary.setdefault('FOVDIA_'+band,[]).append( float( lines[lnum].strip().split()[indFOV]   ) )
+            #     self.summary.setdefault('SNR_'+band,[]).append(    float( lines[lnum+1].strip().split()[indSNR] ) )       # Add 1 to line number because INIT_SNR exists on next line
+            #     self.summary.setdefault('FIT_SNR_'+band,[]).append(float( lines[lnum+1].strip().split()[indFitSNR] ) )    # Add 1 to line number because FIT_SNR exists on next line
+
+
             for lnum in range(ind2+1,lend,2):
                 self.summary.setdefault('nptsb',[]).append(  float( lines[lnum].strip().split()[indNPTSB] ) )
                 self.summary.setdefault('FOVDIA',[]).append( float( lines[lnum].strip().split()[indFOV]   ) )
                 self.summary.setdefault('SNR',[]).append(    float( lines[lnum+1].strip().split()[indSNR] ) )       # Add 1 to line number because INIT_SNR exists on next line
-    
-    
+            
             #----------------------------------------------------------------
             # Get fit rms, chi_y^2, degrees of freedom target, converged flag
             #----------------------------------------------------------------
             ind3       = [ind for ind,line in enumerate(lines) if 'FITRMS' in line][0]
+            
             indRMS     = lines[ind3].strip().split().index('FITRMS')
             indCHIY2   = lines[ind3].strip().split().index('CHI_2_Y')
             indDOFtrgt = lines[ind3].strip().split().index('DOFS_TRG')
             indCNVRG   = lines[ind3].strip().split().index('CONVERGED')
     
-            self.summary.setdefault(gasname.upper()+'_FITRMS'   ,[]).append( float( lines[ind3+1].strip().split()[indRMS]     ) )
-            self.summary.setdefault(gasname.upper()+'_CHI_2_Y'  ,[]).append( float( lines[ind3+1].strip().split()[indCHIY2]   ) )
-            self.summary.setdefault(gasname.upper()+'_DOFS_TRG' ,[]).append( float( lines[ind3+1].strip().split()[indDOFtrgt] ) )
-            self.summary.setdefault(gasname.upper()+'_CONVERGED',[]).append(        lines[ind3+1].strip().split()[indCNVRG]     )   
+            self.summary.setdefault('FITRMS'   ,[]).append( float( lines[ind3+1].strip().split()[indRMS]     ) )
+            self.summary.setdefault('CHI_2_Y'  ,[]).append( float( lines[ind3+1].strip().split()[indCHIY2]   ) )
+            self.summary.setdefault('DOFS_TRG' ,[]).append( float( lines[ind3+1].strip().split()[indDOFtrgt] ) )
+            self.summary.setdefault('CONVERGED',[]).append(        lines[ind3+1].strip().split()[indCNVRG]     )   
 
         except Exception as errmsg:
             print ('Error occured while reading '+self.wrkDir + fName)

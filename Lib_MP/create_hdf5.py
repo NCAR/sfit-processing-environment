@@ -172,6 +172,7 @@ def create_hdf5(**kwargs):
 
             if flag_tret:
                 t_apriori = stv.T
+		t_ret = stv.Tret
                     
             nr_gas = len(gasnames)
             i_rvmr=np.zeros((len_vmr,0))
@@ -219,6 +220,7 @@ def create_hdf5(**kwargs):
                 T = np.zeros((len_vmr, nr_entries)) *np.nan
                 if flag_tret:
                         T_apriori = np.zeros((len_vmr, nr_entries)) *np.nan
+			Tret = np.zeros((len_vmr, nr_entries)) *np.nan
                 airmass = np.zeros((len_vmr, nr_entries)) *np.nan
                 vmr_h2o_ap = np.zeros((len_vmr, nr_entries)) *np.nan
 
@@ -265,6 +267,8 @@ def create_hdf5(**kwargs):
                 if (flag_tret):
                      T_apriori = h5file.create_earray("/", 'Tapriori', hdf5.Float32Atom(), 
                                         (len_vmr,0), title="Temperature apriori", expectedrows=nr_entries)
+		     Tret = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
+                                         (len_vmr,0), title="Temperature", expectedrows=nr_entries)
                 air_mass = h5file.create_earray("/", 'air_mass', hdf5.Float32Atom(), 
                                              (len_vmr,0), title="AIRMASS", expectedrows=nr_entries)
         
@@ -366,6 +370,7 @@ def create_hdf5(**kwargs):
             T.append(np.reshape(t,(len_vmr, -1)))
             if flag_tret:
                     T_apriori.append(np.reshape(t_apriori,(len_vmr, -1)))
+		    Tret.append(np.reshape(t,(len_vmr, -1)))
             air_mass.append(np.reshape(ac,(len_vmr, -1)))
 
             h2o, z = aprf.get_gas_vmr('H2O')
@@ -385,9 +390,15 @@ def create_hdf5(**kwargs):
                 AKv = h5file.create_earray("/", 'avk_vmr', hdf5.Float32Atom(), 
                                          (len_ak,len_ak,0), title="AVK (vmr)", 
                                          expectedrows=nr_entries)
+                if flag_tret:                                                  
+                        AKt = h5file.create_earray("/", 'avk_temperature', hdf5.Float32Atom(), 
+                                                   (len_ak,len_ak,0), title="AVK temperature (normalised)", 
+                                                   expectedrows=nr_entries)
             AK.append(np.reshape(avk,(len_ak,len_ak,1)))
             AKc.append(np.reshape(avk_col,(len_ak,len_ak,1)))
             AKv.append(np.reshape(avk_vmr,(len_ak,len_ak,1)))
+                if flag_tret:
+                        AKt.append(np.reshape(avk_temp,(len_ak,len_ak,1)))
         
         
         col_rt = col_rt[0,0:nr_res]
