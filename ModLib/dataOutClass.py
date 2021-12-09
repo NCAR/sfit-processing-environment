@@ -1187,7 +1187,7 @@ class ReadOutputData(_DateRange):
         # Read ctl File if given
         #-----------------------
 
-    def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,minsza=0.0,minDOF=1.0,
+    def fltrData(self,gasName,mxrms=1.0,mxsza=90.0,minsza=0.0,minDOF=1.0,maxDOF=10.0,
                  dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,cnvrgFlg=True,
                  szaFlg=False,chiFlg=False,maxCHI2=1000.0,maxVMR=-1e99,minVMR=1e99,
                  valFlg=False,co2Flg=False, minCO2=0.0, maxCO2=1e99,
@@ -1388,9 +1388,12 @@ class ReadOutputData(_DateRange):
                 print ('DOFs values do not exist...exiting..')
                 sys.exit() 
 
-            print (minDOF)
+            print (minDOF, maxDOF)
             indsT = np.where(np.asarray(self.summary[gasName+'_DOFS_TRG']) < minDOF)[0]
             print ('Total number observations found DOFs below {0:} = {1:}'.format(minDOF, len(indsT)))
+            self.inds = np.union1d(indsT, self.inds)      
+            indsT = np.where(np.asarray(self.summary[gasName+'_DOFS_TRG']) > maxDOF)[0]
+            print ('Total number observations found DOFs above {0:} = {1:}'.format(maxDOF, len(indsT)))
             self.inds = np.union1d(indsT, self.inds)      
 
 
@@ -2619,7 +2622,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         # Call to filter data
         #--------------------
         self.fltrData(self.PrimaryGas, mxrms=maxRMS, mxsza=maxSZA, rmsFlg=rmsF,
-                      minDOF=minDOF,dofFlg=dofF,tcFlg=tcF,pcFlg=pcF,
+                      minDOF=minDOF,maxDOF=maxDOF,dofFlg=dofF,tcFlg=tcF,pcFlg=pcF,
                       cnvrgFlg=cnvF,szaFlg=szaF,maxCHI2=maxCHI2, maxVMR=maxVMR,
                       minVMR=minVMR,valFlg=valF,co2Flg=co2F,minCO2=minCO2,
                       maxCO2=maxCO2,maxTCTotErr=maxTCTotErr)
