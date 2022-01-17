@@ -1633,36 +1633,10 @@ class ReadOutputData(_DateRange):
                     print (errmsg)
                     self.badDir.append(sngDir)
                     continue
-    
-            self.readsummaryFlg = True
-            #------------------------
-            # Convert to numpy arrays
-            # and sort based on date
-            #------------------------
-            for k in self.summary:
-                self.summary[k] = np.asarray(self.summary[k])
-    
-            if self.dirFlg: self.summary = sortDict(self.summary, 'date')
-            else:           return self.summary
 
-                #----------------------------------------------------------------
-                #
-                #----------------------------------------------------------------
-
-            except Exception as errmsg:
-                print (errmsg)
-                continue
-            
-        self.readsummaryFlg = True
-        #------------------------
-        # Convert to numpy arrays
-        # and sort based on date
-        #------------------------
-        for k in self.summary:
-            self.summary[k] = np.asarray(self.summary[k])
-            
-        if self.dirFlg: self.summary = sortDict(self.summary, 'date')
-        else:           return self.summary    
+    def readt15(self,fname=''):
+        ''' Reads in t15asc data from retrieval directory '''
+        self.t15asc = {}
             
         if not fname: 
             try: fname = self.spectrum[0]
