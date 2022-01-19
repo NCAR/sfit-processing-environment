@@ -210,6 +210,7 @@ def main(argv):
         #--------------------------
         # Call to plot spectral fit
         #--------------------------
+        #gas.pltSpectra()
         if spcFlg: 
             try: gas.pltSpectra()
             except: print ('\n*************ERROR IN PLOTTING FIT****************\n') 

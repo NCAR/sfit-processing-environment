@@ -69,6 +69,7 @@ import printStatmnts     as ps
 import datetime          as dt
 import h5py
 import fnmatch
+from numpy.linalg import inv
 
 
 
@@ -499,7 +500,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     """
     def getSFITversion(wrkingDir):
       """retrieves the version of sfit4 as a 4tuple from the output file"""
-      with open(wrkingDir+'sfit4.dtl','r') as fid: header=fid.readline().strip()
+      with open(os.path.join(wrkingDir,'sfit4.dtl'),'r') as fid: header=fid.readline().strip()
       # first integer found is SFIT 4: ('SFIT4:V')
       return tuple(map(int,re.sub('[^0-9.]','',header.strip().split(':')[1]).split('.')))
     version=getSFITversion(wrkingDir)
@@ -693,13 +694,26 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # output class for summary, profiles, and pbp
     #--------------------------------------------
     # Check for succesful retrieval
-    if not sc.ckFile(wrkingDir + ctlFileVars.inputs['file.out.summary'][0], exitFlg=False): return False
     sumVars = sc.RetOutput(wrkingDir,logFile)
-    rtn = sumVars.readSum(ctlFileVars.inputs['file.out.summary'][0])                           # Read Summary file parameters
+
+    if 'file.out.summary' in ctlFileVars.inputs:
+        if not sc.ckFile(wrkingDir + ctlFileVars.inputs['file.out.summary'][0], exitFlg=False): return False
+        rtn = sumVars.readSum(ctlFileVars.inputs['file.out.summary'][0])
+    else:
+        if not sc.ckFile(wrkingDir + 'summary', exitFlg=False): return False
+        rtn = sumVars.readSum('summary')
+    
+                               # Read Summary file parameters
     if not rtn: return False                                                                   # Bail if not able to read summary
-    sumVars.readPbp(ctlFileVars.inputs['file.out.pbpfile'][0])                                 # Read pbpfile (to get sza)
-    sumVars.readPrf(ctlFileVars.inputs['file.out.retprofiles'][0], primgas)                    # Read retreived profile file
-    sumVars.readPrf(ctlFileVars.inputs['file.out.aprprofiles'][0], primgas, retapFlg=0)        # Read a priori profile file
+    
+    try:    sumVars.readPbp(ctlFileVars.inputs['file.out.pbpfile'][0])
+    except: sumVars.readPbp('pbpfile')
+    
+    try:    sumVars.readPrf(ctlFileVars.inputs['file.out.retprofiles'][0], primgas) 
+    except: sumVars.readPrf('rprfs.table', primgas)    
+
+    try:    sumVars.readPrf(ctlFileVars.inputs['file.out.aprprofiles'][0], primgas, retapFlg=0)        # Read a priori profile file
+    except: sumVars.readPrf('aprfs.table', primgas, retapFlg=0) 
 
 
 
@@ -733,12 +747,25 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Both dicts allow std profile definitions on coarse grids.
     # These are interpolated to the retrieval grid using _expandgridsinputs
     #----------------------------------
-
     _expandgridsinputs(SbctlFileVars.inputs)
-    SbDict = DictWithDefaults({}, defaults=SbctlFileVars.inputs)
+    #----------------------------------
+    # in case sb variables are in the ctl file
+    #----------------------------------
+    sbctrllab = [sb for sb in ctlFileVars.inputs if sb[0:3] == 'sb.']
+    sbctrl    = {}
 
-    #SbDict = DictWithDefaults(SbctlFileVars.inputs, defaults=SbctlFileVars.inputs)
-    #_expandgridsinputs(SbDict) #in the case the user also uses coarse grids...
+    for k in sbctrllab:
+        sbctrl[k] = ctlFileVars.inputs[k]
+
+    SbDict = DictWithDefaults(sbctrl, defaults=SbctlFileVars.inputs)
+    _expandgridsinputs(SbDict)
+    
+
+    ##SbDict = DictWithDefaults(SbctlFileVars.inputs, defaults=SbctlFileVars.inputs)
+    ##SbDict = DictWithDefaults(ctlFileVars.inputs, defaults=SbctlFileVars.inputs)
+    
+    ##SbDict = DictWithDefaults(SbctlFileVars.inputs, defaults=SbctlFileVars.inputs)
+    ##_expandgridsinputs(SbDict) #in the case the user also uses coarse grids...
 
     #------------------------------------------------------------------------------
     # Read in output files from sfit4 run
@@ -751,13 +778,14 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     #------------------------------------------------------------------------------    
     # Read in K matrix
     #------------------
-    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.k_matrix'][0], logFile) 
+    try:    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.k_matrix'][0], logFile)
+    except: lines = tryopen(wrkingDir+'k.out', logFile)
+    
+
     if not lines: 
         print ('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
         if logFile: logFile.error('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
         return False # Critical file, if missing terminate program  
-
-    
    
     K_param = lines[2].strip().split()
 
@@ -771,7 +799,10 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     # Read in Sa matrix
     #------------------
     
-    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.sa_matrix'][0], logFile)
+    try:    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.sa_matrix'][0], logFile)
+    except: lines = tryopen(wrkingDir+'sa.complete', logFile)
+    
+
     if not lines: 
         print ('file.out.sa_matrix missing for observation, directory: ' + wrkingDir)
         if logFile: logFile.error('file.out.sa_matrix missing for observation, directory: ' + wrkingDir)
@@ -797,6 +828,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
             if  (not tempcase or (tempcase and temp_retrieval_tikhonov)) and sbkey_syst in SbDict and (np.diff(SbDict[sbkey_syst])==0).all(): print('   detected constant std profile for %s: might generate a zero uncertainty in case of Tikhonov'%sbkey_syst)
  
         if (sbkey_rand not in SbctlFileVars.inputs or sbkey_syst not in SbctlFileVars.inputs) and sbinputforsa: print ('Error !! The sb.ctl file must contain information on random & systematic profile uncertainty for %s'%gas);raise ValueError('Missing input in sb.ctl for profile uncertainty for %s because of Tikhonov type retrieval'%gas)
+        #if (sbkey_rand not in SbDict or sbkey_syst not in SbDict) and sbinputforsa: print ('Error !! The sb.ctl file must contain information on random & systematic profile uncertainty for %s'%gas);raise ValueError('Missing input in sb.ctl for profile uncertainty for %s because of Tikhonov type retrieval'%gas)
 
         if sbkey_rand in SbDict: #prefer the sb information above the sa matrix...
             #if gas in ('CH4','HDO'): continue #for debugging .... 
@@ -849,8 +881,13 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         snrList    = list(it.chain(*[[snrVal]*int(npnts) for snrVal,npnts in zip(sumVars.summary['SNR'],sumVars.summary['nptsb'])]))
         snrList[:] = [val**-2 for val in snrList]
     else:
-        if not sc.ckFile(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], exitFlg=False,quietFlg=False): return False
-        lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
+        if 'file.out.seinv_vector' in ctlFileVars.inputs:
+            if not sc.ckFile(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], exitFlg=False,quietFlg=False): return False
+            lines      = tryopen(wrkingDir+ctlFileVars.inputs['file.out.seinv_vector'][0], logFile)
+        else:
+            if not sc.ckFile(wrkingDir+'seinv.out', exitFlg=False,quietFlg=False): return False
+            lines      = tryopen(wrkingDir+'seinv.out', logFile)
+        
         snrList    = np.array([float(x) for line in lines[2:] for x in line.strip().split()])
         snrList[:] = 1.0/snrList
     #np.fill_diagonal(se,snrList)    
@@ -867,8 +904,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
         se[np.arange(c,c+se_chunck,dtype=int)]=float(SbDict['sb.snr.%d'%(i+1)][0])**-2
         print('Changed SNR for band %s to %s'%(i+1,SbDict['sb.snr.%d'%(i+1)][0]))
       c+=se_chunck    
-      
-   
 
     #-----------------------------------------------------
     # Test if Se matrix is symmetric and positive definite
@@ -880,21 +915,49 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
 
 
     #--------------------
-    # Read in Gain matrix
+    # Read in Gain matrix or calculate it
     #--------------------
-    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.g_matrix'][0], logFile)
-    if not lines: 
-        print ('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
-        if logFile: logFile.error('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
-        return False    # Critical file, if missing terminate program   
+    try:
+        if 'file.out.g_matrix' in ctlFileVars.inputs:lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.g_matrix'][0], logFile)
+        else: lines = tryopen(wrkingDir+'g.out', logFile)
+        if not lines: 
+            print ('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
+            if logFile: logFile.error('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
+            #return False    # Critical file, if missing terminate program   
 
-    D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
+        D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
+    except:
+        #------------------
+        # Calculate G matrix: G = (Sa^-1 + KT*S_e^-1K)^-1 (K^T S_e^-1)
+        #------------------
+        print ('Trying to calculate G matrix...')
+        if 'file.out.sainv_matrix' in ctlFileVars.inputs: 
+            lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.sainv_matrix'][0], logFile)
+        else: 
+            lines = tryopen(wrkingDir+ctlFileVars.inputs['sainv.out'][0], logFile)
 
+        if not lines: 
+            print ('file.out.sainv_matrix missing for observation, directory: ' + wrkingDir)
+            if logFile: logFile.error('file.out.sainv_matrix missing for observation, directory: ' + wrkingDir)
+            #return False    # Critical file, if missing terminate program   
+        
+        sainv     = np.array( [ [ float(x) for x in row.split()] for row in lines[3:] ] )
+
+        se_tmp    = np.zeros((np.sum(sumVars.summary['nptsb'],dtype=int),np.sum(sumVars.summary['nptsb'],dtype=int)), float)
+        np.fill_diagonal(se_tmp,snrList) 
+        se_tmpinv = inv(se_tmp)
+        m_        = np.dot( K.T, np.dot(se_tmpinv, K ) )       
+        m2_       = inv(sainv + m_)
+        m3_       = np.dot(K.T, se_tmpinv)
+
+        D         = np.dot(m2_, m3_)
     #------------------
     # Read in Kb matrix
     #------------------   
     print ('\nLoading kb matrix',)
-    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.kb_matrix'][0], logFile)
+    try:    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.kb_matrix'][0], logFile)
+    except: lines = tryopen(wrkingDir+'kb.out', logFile)
+    
     if not lines: 
         print ('file.out.kb_matrix missing for observation, directory: ' + wrkingDir)
         if logFile: logFile.error('file.out.kb_matrix missing for observation, directory: ' + wrkingDir)
@@ -902,6 +965,17 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     else: print ('... done')
 
     Kb_param = list(map(lambda x: x.replace('PROFILE_',''),lines[2].strip().split()))
+
+    #------------------
+    # check if retriev or target is isn kb matrix. It does not make sense to treat all gases which are retrieved as one
+    #------------------
+    for k in set(Kb_param): 
+        if  ((k.lower() == 'retriev') or (k.lower() == 'target')): 
+            print('{} in kb matrix and NOT ok... exiting!')
+            exit()
+
+
+
     #---------------------------------------------------------------
     # Some parameter names in the Kb file are appended by either 
     # micro-window or gas name. If they are appended by micro-window
