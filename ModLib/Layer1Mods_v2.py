@@ -499,7 +499,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
       print(wrkingDir)
       with open(wrkingDir+'/sfit4.dtl','r') as fid: header=fid.readline().strip()
       # first integer found is SFIT 4: ('SFIT4:V')
-      return tuple(map(int,re.sub('\D','',header)[1:5]))
+      return(tuple(map(int, header.split(':')[1][1:].split('.'))))
+#      return tuple(map(int,re.sub('\D','',header)[1:5]))
     version=getSFITversion(wrkingDir)
     
     print ('SFIT4 Version=%s'%(version,))
@@ -795,11 +796,14 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
     #------------------------------------------------------------------------------    
     # Read in K matrix
     #------------------
-    lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.k_matrix'][0], logFile) 
-    if not lines: 
-        print ('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
-        if logFile: logFile.error('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
-        return False # Critical file, if missing terminate program  
+    if 'file.out.k_matrix' in ctlFileVars.inputs:
+      lines = tryopen(wrkingDir+ctlFileVars.inputs['file.out.k_matrix'][0], logFile)
+    else:
+      lines = tryopen(wrkingDir+'/k.out', logFile)
+    if not lines:
+      print ('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
+      if logFile: logFile.error('file.out.k_matrix missing for observation, directory: ' + wrkingDir)
+      return False # Critical file, if missing terminate program  
 
     
    
@@ -912,6 +916,7 @@ def errAnalysis(ctlFileVars, SbctlFileVars, sbctldefaults, wrkingDir, logFile=Fa
         if logFile: logFile.error('file.out.g_matrix missing for observation, directory: ' + wrkingDir)
         return False    # Critical file, if missing terminate program   
 
+    
     D = np.array([[float(x) for x in row.split()] for row in lines[3:]])
 
     #------------------

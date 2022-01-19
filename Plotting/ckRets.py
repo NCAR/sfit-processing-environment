@@ -7,7 +7,8 @@
 #
 # Purpose:
 #       This program is use to check retrievl folders  
-#           - If error is found in the summary file, it will delete the directory
+#           - If summary file is not found or with error, it will delete the directory (DEFAULT)
+#           - OPTIONAL to check for Error summary
 #           - Recommended when issues arise when using pltSet.py (e.g., error while reading summary files)
 #
 # External called functions:
@@ -60,6 +61,7 @@ def usage():
     ''' Prints to screen standard program usage'''
     print ('ckRets.py -i <inputfile> -?')
     print ('  -i <file> : Run ckRets.py with specified input file (typically the setInput.py)')
+    print ('  -e        : optional: check for error summary file, if not error summary it will delete folder\n              Default is to check only for summary file')
     print ('  -?        : Show all flags')
 
 def ckDir(dirName,logFlg=False,exit=False):
@@ -90,12 +92,14 @@ def main(argv):
     # Retrieve command line arguments
     #--------------------------------
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:?')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:e?')
 
     except getopt.GetoptError as err:
         print (str(err))
         usage()
         sys.exit()
+
+    errFlg = False
 
     #-----------------------------
     # Parse command line arguments
@@ -120,6 +124,9 @@ def main(argv):
                 del pltInputs['__builtins__']
 
             mainInF  = True     
+
+        elif opt == '-e':
+            errFlg = True
 
         elif opt == '-?':
             usage()
@@ -153,6 +160,7 @@ def main(argv):
     # Call to check quality, e.g., if Summary is not good/present it will remove the directory
     #----------------------
     gas.ckSummary()
+    if errFlg: gas.ckErrorSummary()
 
 
 if __name__ == "__main__":

@@ -217,7 +217,7 @@ def main(argv):
     #
     #------------------
     if 'dQuality' in Inputs: dQuality = Inputs['dQuality']
-    else: dQuality =False
+    else: dQuality = False
 
     if 'mobFlg' in Inputs: mobFlg = Inputs['mobFlg']
     else: mobFlg =False
