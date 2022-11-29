@@ -224,7 +224,7 @@ def create_hdf5(**kwargs):
                 airmass = np.zeros((len_vmr, nr_entries)) *np.nan
                 vmr_h2o_ap = np.zeros((len_vmr, nr_entries)) *np.nan
 
-                h5file.create_array("/", 'Z', np.array(z), "Altitude levels (mid points)")
+                h5file.create_array("/", 'Z', np.array(z), "Altitude levels (mid points)")1
                 h5file.create_array("/", 'Zb', np.array(zb), "Altitude levels (boundaries)")
                 vmr_rt = h5file.create_earray("/", 'vmr_rt', hdf5.Float32Atom(), 
                                              (len_vmr,0), title="Retrieved VMR", expectedrows=nr_entries)
