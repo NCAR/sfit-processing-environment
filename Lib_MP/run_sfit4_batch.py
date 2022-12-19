@@ -3,7 +3,6 @@
 import sys
 sys.path.append('/home/mathias/sfit-processing-environment/ModLib')
 
-from Layer1Mods import errAnalysis
 import sfitClasses as sc
 import os,shutil
 from multiprocessing import Pool
