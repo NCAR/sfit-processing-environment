@@ -268,7 +268,7 @@ class show_tmph5:
 
     def save_values(self):
         fid = open('columns_show_and_filter.dat', 'w')
-        fid.write('date dnum retr apr ran, sys, aircol, P_S, T_S, DOFS, SZA, Min_VMR\n')
+        fid.write('date dnum retr apr ran, sys, aircol, P_S, T_S, DOFS, SZA, Min_VMR RMS\n')
 
         min_vmr = np.min(self.res.vmr_rt,axis=0)
         for d,r,a,rr,ss,ac,ps,ts,do,sz,mv in zip(self.res.dnum[self.valid_ind],
