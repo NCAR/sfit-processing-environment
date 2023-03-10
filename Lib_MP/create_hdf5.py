@@ -172,7 +172,7 @@ def create_hdf5(**kwargs):
 
             if flag_tret:
                 t_apriori = stv.T
-		t_ret = stv.Tret
+                t_ret = stv.Tret
                     
             nr_gas = len(gasnames)
             i_rvmr=np.zeros((len_vmr,0))
@@ -220,7 +220,7 @@ def create_hdf5(**kwargs):
                 T = np.zeros((len_vmr, nr_entries)) *np.nan
                 if flag_tret:
                         T_apriori = np.zeros((len_vmr, nr_entries)) *np.nan
-			Tret = np.zeros((len_vmr, nr_entries)) *np.nan
+                        Tret = np.zeros((len_vmr, nr_entries)) *np.nan
                 airmass = np.zeros((len_vmr, nr_entries)) *np.nan
                 vmr_h2o_ap = np.zeros((len_vmr, nr_entries)) *np.nan
 
@@ -267,7 +267,7 @@ def create_hdf5(**kwargs):
                 if (flag_tret):
                      T_apriori = h5file.create_earray("/", 'Tapriori', hdf5.Float32Atom(), 
                                         (len_vmr,0), title="Temperature apriori", expectedrows=nr_entries)
-		     Tret = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
+                     Tret = h5file.create_earray("/", 'Tret', hdf5.Float32Atom(), 
                                          (len_vmr,0), title="Temperature", expectedrows=nr_entries)
                 air_mass = h5file.create_earray("/", 'air_mass', hdf5.Float32Atom(), 
                                              (len_vmr,0), title="AIRMASS", expectedrows=nr_entries)
@@ -370,7 +370,7 @@ def create_hdf5(**kwargs):
             T.append(np.reshape(t,(len_vmr, -1)))
             if flag_tret:
                     T_apriori.append(np.reshape(t_apriori,(len_vmr, -1)))
-		    Tret.append(np.reshape(t,(len_vmr, -1)))
+                    Tret.append(np.reshape(t,(len_vmr, -1)))
             air_mass.append(np.reshape(ac,(len_vmr, -1)))
 
             h2o, z = aprf.get_gas_vmr('H2O')

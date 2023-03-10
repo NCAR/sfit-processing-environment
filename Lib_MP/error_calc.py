@@ -78,12 +78,11 @@ def error_calc(**kwargs):
 if __name__ == '__main__':
     import os,sys, getopt
     sys.path.append(os.path.dirname(sys.argv[0]))
-    
     try:
         opts,arg = getopt.getopt(sys.argv[1:], [], ["dir=","sbctl=","start_date=","end_date=","sbdefaults="])
-    except:
-        print ('error in arguments')
-        exit()
+    except getopt.GetoptError as err:
+        print(err)
+        sys.exit(2)
     
     args= 'error_calc('
     for opt,arg in opts:
