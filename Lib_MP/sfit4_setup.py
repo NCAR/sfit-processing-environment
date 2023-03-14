@@ -87,7 +87,7 @@ class reference_prf:
             if os.path.isdir(file):
                 continue
             t = np.loadtxt(refdir+'/'+file)
-            nr_gas = string.atoi(file[0:2])
+            nr_gas = int(file[0:2])
             self.gas[nr_gas-1] = nr_gas
             self.gasname.append(file[3:].rstrip())
             self.notes.append('created by sfit4_setup.py')            
@@ -177,7 +177,9 @@ class reference_prf:
 #            ipdb.set_trace()
             self.gas_nr[n] = reff.next(1).pop(0)
             self.gasname.extend(reff.next(1))
-            self.notes.append(reff.get_line())
+            ll = reff.get_line(only_remainder=True)
+            print (self.gasname[-1], ll)
+            self.notes.append(ll)#reff.get_line())
 #            reff.skip_reminder_of_line()
             self.vmr[n,0:nr_layers] = np.array(reff.next(nr_layers))
 #            reff.skip_reminder_of_line()

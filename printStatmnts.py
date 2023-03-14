@@ -94,5 +94,3 @@ def pspecInputStr():
          ]
 
     return dataStr
-
-

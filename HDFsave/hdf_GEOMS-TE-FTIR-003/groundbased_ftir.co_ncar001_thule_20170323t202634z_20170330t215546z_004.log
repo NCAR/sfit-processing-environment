@@ -1,0 +1,21 @@
+geoms_tools version 2.03, 2020-04-27
+GEOMS Quality Assurance Tool
+Maintained by the Aura Validation Data Center, NASA/GSFC
+http://avdc.gsfc.nasa.gov/GEOMS
+
+Log started on Fri Jun  4 09:53:19 2021
+Result of performing Quality Assurance on /data/pbin/Dev_Ivan/HDFsave/hdf_GEOMS-TE-FTIR-003/groundbased_ftir.co_ncar001_thule_20170323t202634z_20170330t215546z_004.hdf
+(0=PASS, 1=GEOMS compliant with non-standard components, 2=FAIL)
+Input TAV File: /data/pbin/Dev_Ivan/HDFsave/hdf_GEOMS-TE-FTIR-003/tableattrvalue_04R998.dat
+  INFORMATION: GEOMS compliant Table Attribute Values file input. GEOMS Reporting Guidelines apply
+  INFORMATION: Required Metadata Template: GEOMS-TE-FTIR-003
+
+0 (Passed QA)
+
+Analyzing compliance to GEOMS template: GEOMS-TE-FTIR-003.csv
+  INFORMATION: Variable option [SOLAR|LUNAR] found and analyzed.
+  INFORMATION: SOURCE.PRODUCT optional data variable is not found in HDF file.
+
+0 (Passed template checks)
+
+4 (Total QA/TC error)

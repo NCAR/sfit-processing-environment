@@ -47,12 +47,13 @@ class spectrum:
             
                 spdf.nextline()
 
-            else:
-                spdf.nextline()
+#            else:
+#                spdf.nextline()
 
             self.comment.append(spdf.get_line())
             
             tmp = spdf.next(4)
+            print(tmp)
             if spdf.stat() == -1:
                 break
             self.nu_start.append(tmp[0])
@@ -119,10 +120,47 @@ class spectrum:
 
         fid.close()
 
-    def plot_spectrum(self):
+    def read_two_col_spectrum(self, file):
+        # Reads a spectrum in DPG forma (created by OPUS) and creates all fields for sn sfit4 spectrum
+
+        try:
+            s = np.loadtxt(file)
+        except:
+            s = np.loadtxt(file, delimiter=',')
+
+
+        self.sza = [0.0]
+        self.earth_rad = [0.0]
+        self.latitude = [0.0]
+        self.longitude = [0.0]
+        self.snr = [1000]
+        self.meas_date = [0]
+        self.comment = ['Spectrum created by OPUS']
+        if s[0,0] > s[-1,0]:
+            s = np.flipud(s)
+        self.nu_start = s[0,0]
+        self.nu_stop = s[-1,0]
+        self.nr_nu = s.shape[0]
+        self.nu_res = (self.nu_stop - self.nu_start)/self.nr_nu
+        self.spectrum=[s[:,1]]
+        self.nu = [s[:,0]]
+
+        
+
+        
+    def plot_spectrum(self, keep=False):
+        def lambda2nu(x):
+            return x/10000.0
+        
+        def nu2lambda(x):
+            return 10000.0/x
+
         f = plt.figure('Spectrum')
-        f.clf()
+        if not keep:
+            f.clf()
         plt.plot(self.nu[0], self.spectrum[0])
+#        secax = f.gca().secondary_xaxis('top', functions=(nu2lambda, lambda2nu))
+
         f.show()
 
 

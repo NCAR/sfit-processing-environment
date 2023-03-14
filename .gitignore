@@ -7,6 +7,23 @@
 # Compiled source #
 ###################
 *.pyc
+<<<<<<< HEAD
 .*.py
+=======
+*.DS_Store
+*DS_Store
+*._*
+
+
+/HDFsave/__pycache__
+/HDFread/__pycache__
+/Layer0/__pycache__
+/Layer1/__pycache__
+/ModLib/__pycache__
+/Plotting/__pycache__
+/RefProfiles/__pycache__
+/SpectralDatabase/__pycache__
+
+>>>>>>> Dev_Ivan
 # Packages #
 ############

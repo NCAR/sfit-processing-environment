@@ -63,6 +63,7 @@ def main(args):
     szaFlag        = True
     validFlag      = True
     minDOFs        = 1.0
+    maxDOFs        = 6.0
     dofFlag        = False
     co2Flag        = False
     minCO2         = 0
@@ -91,7 +92,7 @@ def main(args):
         if gasName.lower() == 'h2o':
             source = 'sun'
             maxCHI2 = 50.0
-            maxDOFS = 4.0
+            maxDOFs = 4.0
             maxVMR = 1.0e-2
 
     elif loc1.lower() == 'cruise':    
@@ -106,7 +107,7 @@ def main(args):
         if gasName.lower() == 'h2o':
             source = 'Atmosphere'
             maxCHI2 = 50.0
-            maxDOFS = 2.5
+            maxDOFs = 2.5
             maxVMR = 1.0e-2
         else:
             source = 'Atmosphere'
@@ -176,6 +177,12 @@ def main(args):
         validFlag      = True
         maxCHI2        = 10.0
         minVMR         = -1e-7
+    if quality.lower()=='cams27':
+        maxSZA = 83
+        minDOFs = 2.5
+        maxDOFs = 6.5
+        dofFlag = True
+
 
     if gasName.lower() == 'ch4':
         gasName        = 'CH4'
@@ -424,7 +431,7 @@ def main(args):
                  iday,   fyear, fmonth, fday, mxRMS=maxRMS, mxSZA=maxSZA,
                  rmsFlg=rmsFlag, tcFlg=tcFlag,pcFlg=pcFlag,cnvFlg=cnvFlag,
                  szaFlg=szaFlag, validFlg=validFlag,chiFlg=chiFlg,maxCHI2=maxCHI2,
-                 minVMR=minVMR,maxVMR=maxVMR,dofFlg=dofFlag,minDOF=minDOFs,
+                 minVMR=minVMR,maxVMR=maxVMR,dofFlg=dofFlag,minDOF=minDOFs,maxDOF=maxDOFs,
                  co2Flag=co2Flag,minCO2=minCO2,maxCO2=maxCO2,
                  maxTCTotErr=maxTCTotErr)
 

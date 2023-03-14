@@ -122,7 +122,8 @@ class show_results:
             options.append('T')
         options.append('INTERF')
         if self.error.flag:
-            options =  options.append('ERR')
+            options.append('ERR')
+        print(options)
         options = tuple(options)
             
         self.show_var = StringVar(self.tkroot)
@@ -331,14 +332,14 @@ class show_results:
         ctl = sfit4.sfit4_ctl() 
         ctl.read(ctlfile)
         ak_m = ctl.get_value('file.out.ak_matrix')
-        print(ctl.get_value('gas.profile.list'))
-        tgas = ctl.get_value('gas.profile.list').split()[0]
-        logretrieval = ctl.get_value('gas.profile.%s.logstate'%tgas)
-        if logretrieval == 'T':
-            norm_prof = os.path.join(direc,'rprfs.table')
-        else:
-            norm_prof = os.path.join(direc,'aprfs.table')
-        print (norm_prof)
+        if (ctl.get_value('gas.profile.list') != -1) and (len(ctl.get_value('gas.profile.list')) > 0):
+            tgas = ctl.get_value('gas.profile.list').split()[0]
+            logretrieval = ctl.get_value('gas.profile.%s.logstate'%tgas)
+            if logretrieval == 'T':
+                norm_prof = os.path.join(direc,'rprfs.table')
+            else:
+                norm_prof = os.path.join(direc,'aprfs.table')
+            print (norm_prof)
         if ak_m == -1:
             ak_m = 'ak.out' # Default name of ak_matrix
         self.retprf = sfit4.read_table(direc+'/rprfs.table')
@@ -496,7 +497,7 @@ class show_results:
             ey = event.ydata
 #            dnum = self.winfft.get_xdata()
 #            ind = np.argmin(np.abs(dnum-mdnum))
-            print (self.sp.mw_stop[band_nr-1] - self.sp.mw_start[band_nr-1])/(ex/10.0)
+            print ((self.sp.mw_stop[band_nr-1] - self.sp.mw_start[band_nr-1])/(ex/10.0))
         self.winfft.clf()
         fsp = np.fft.fft(self.sp.dif[band_nr-1],
                          10*self.sp.dif[band_nr-1].size)

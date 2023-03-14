@@ -51,8 +51,8 @@ class read_from_file:
         self.count = 0
         self.nextline()
 
-    def get_line(self):
-        if self.count < 1:
+    def get_line(self, only_remainder=False):
+        if not only_remainder and self.count < 1:
             self.nextline()
         line = ' '.join(self.line)
         while len(line.strip()) == 0:

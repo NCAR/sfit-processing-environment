@@ -224,7 +224,7 @@ class calc_diagnostics(sfit4_ctl):
         self.F_K = True
         
     def read_sainv_matrix(self, filename):
-        self.sainv = np.genfromtxt(filename,skip_header=2)
+        self.sainv = np.genfromtxt(filename,skip_header=3)
         # if TP is used, construct the inverse SA matrix
 #        self.sainv = np.linalg.inv(self.sa)
         self.F_SA = True
@@ -254,7 +254,6 @@ class calc_diagnostics(sfit4_ctl):
             else:
                 SK = np.dot(np.diag(self.seinv),self.K_frac)
             KSK = np.dot(self.K_frac.T,SK)
-
             self.AK_frac = np.dot(np.linalg.inv(self.sainv + KSK), KSK)
 
         else:

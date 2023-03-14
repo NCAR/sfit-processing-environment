@@ -1,6 +1,5 @@
-#! /usr/bin/python
-##! /usr/bin/python
-##! /usr/bin/python
+#! /usr/bin/python3
+
 # Change the above line to point to the location of your python executable
 #----------------------------------------------------------------------------------------
 # Name:
@@ -71,8 +70,10 @@
 #---------------
 # Import modules
 #---------------
-import sys
-import os
+import os, sys
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
+sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
+import glob
 import getopt
 import sfitClasses as sc
 from Layer1Mods import errAnalysis
@@ -127,19 +128,20 @@ def sfit4Layer0(argv):
          # Directories
          #------------
         wrkDir    = os.getcwd()                              # Set current directory as the data directory
-        binDir    = '/data/bin'                              # Default binary directory. Used of nothing is specified on command line
+        binDir    = '/data/ebaumer/Code/sfit4/sfit-core-code_v1.0.14/src/'                              # Default binary directory. Used of nothing is specified on command line
         binDirVer = {
         'v1':   '/data/ebaumer/Code/sfit-core-code/src/',    # Version 1 for binary directory (Eric)
         'v2':   '/data/tools/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
         'v3':   '/Users/jamesw/FDP/sfit/400/sfit-core/src/',             # Version 2 for binary directory (Jim)
         'v4':   '/home/ebaumer/Code/sfit4/src/',
-        'v5':   '/Users/jamesw/FDP/sfit/400/src/src-irwg14-mp'
-        }
+        'v5':   '/Users/jamesw/FDP/sfit/400/src/src-irwg14-mp',
+        'v6':   '/data/ebaumer/Code/sfit4/Official_Release_1.0/src/'}
 
+        if not(binDir.endswith('/')): binDir = binDir + '/'
+        #----------
+        # Run flags
+        #----------
 
-         #----------
-         # Run flags
-         #----------
         hbinFlg  = False                                          # Flag to run hbin
         pspecFlg = False                                          # Flag to run pspec
         sfitFlg  = False                                          # Flag to run sfit4
@@ -191,8 +193,11 @@ def sfit4Layer0(argv):
                         sys.exit()                        
 
                 else:
-                        print 'Unhandled option: {}'.format(opt)
+                        print ('Unhandled option: {}'.format(opt))
                         sys.exit()
+
+        if pyv2Flg: from Layer1Mods_v3 import errAnalysis
+        else: from Layer1Mods import errAnalysis
 
         #--------------------------------------
         # If necessary change working directory
@@ -225,15 +230,25 @@ def sfit4Layer0(argv):
                 sbCtlFile = sc.CtlInputFile(sbCtlFileName)
                 sbCtlFile.getInputs()
 
+            
+        sc.ckFile(binDir+'sfit4', exitFlg=True)
         #---------------------------
         # Clean up output from sfit4
         #---------------------------
         if clnFlg:
-                for k in ctlFile.inputs['file.out']:
-                        if 'file.out' in k:
-                                try:            os.remove(wrkDir + ctlFile.inputs[k])
-                                except OSError: pass
+            for k in ctlFile.inputs:
+                if 'file.out' in k:
+                    try:            os.remove(wrkDir + ctlFile.inputs[k][0])
+                    except OSError: pass
 
+                for f in glob.glob(wrkDir + 'spc.*'): os.remove(f)
+                for f in glob.glob(wrkDir + 'raytrace.*'): os.remove(f)
+                for f in glob.glob(wrkDir + '*Error.*'): os.remove(f)
+                for f in glob.glob(wrkDir + '*.output'): os.remove(f)
+                for f in glob.glob(wrkDir + '*.pdf'): os.remove(f)
+
+
+ 
         #----------
         # Run pspec
         #----------

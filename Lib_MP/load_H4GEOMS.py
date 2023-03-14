@@ -3,6 +3,7 @@ import tables as h5
 import sys, re, os
 import matplotlib.pyplot as plt
 import matplotlib.dates as dates
+from matplotlib import _version 
 import numpy as np
 import string
 
@@ -33,8 +34,11 @@ class load_H4:
         self.keys = self.h4.datasets().keys()
         self.h4file = h4file
         # in hdf file datenum since 2000-1-1-0-0-0
-        self.dates = dates.num2date(self.h4.select('DATETIME').get()+730120.0)
-        self.data_template = self.h4.attributes()['DATA_TEMPLATE']
+        if _version.version_tuple < (3,3,0):
+            self.dates = dates.num2date(self.h4.select('DATETIME').get()+730120.0)
+        else:
+            self.dates = dates.num2date(self.h4.select('DATETIME').get()+730120.0 + dates.date2num(np.datetime64('0000-12-31')))
+            self.data_template = self.h4.attributes()['DATA_TEMPLATE']
 #        import pdb
 #        pdb.set_trace()
 
