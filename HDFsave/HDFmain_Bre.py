@@ -158,7 +158,12 @@ def main(args):
         maxCHI2        = 100.0
         if loc1.lower() == 'bremen':
             maxCHI2         = 35.0
-            
+
+
+    if gasName.lower() == 'f12':
+        gasName        = 'F12'
+        maxSZA         = 90.0
+        maxCHI2        = 100.0
 
     if gasName.lower() == 'o3':
         gasName        = 'O3'

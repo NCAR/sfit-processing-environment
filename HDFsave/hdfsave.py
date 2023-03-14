@@ -166,7 +166,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = -9000.0
       dataStr['VAR_VALID_MAX']        =  100000.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (-9000.0,100000.0)
+      dataStr['valid_range']          = (-9000.0,100000.0)
       dataStr['units']                = 'MJD2K'
       dataStr['_FillValue']           = self.getFillValue()
 
@@ -192,7 +192,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = -90.0
       dataStr['VAR_VALID_MAX']        =  90.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (-90.0,90.0)
+      dataStr['valid_range']          = (-90.0,90.0)
       dataStr['units']                = 'deg'
       dataStr['_FillValue']           = self.getFillValue()
 
@@ -217,7 +217,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = -180.0
       dataStr['VAR_VALID_MAX']        =  180.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (-180.0,180.0)
+      dataStr['valid_range']          = (-180.0,180.0)
       dataStr['units']                = 'deg'
       dataStr['_FillValue']           = self.getFillValue()
 
@@ -242,7 +242,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = -0.05
       dataStr['VAR_VALID_MAX']        =  10.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (-0.05,10.0)
+      dataStr['valid_range']          = (-0.05,10.0)
       dataStr['units']                = 'km'    
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -265,7 +265,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 1100.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,1100.0)
+      dataStr['valid_range']          = (0.0,1100.0)
       dataStr['units']                = 'hPa'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -288,7 +288,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 500.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,500.0)
+      dataStr['valid_range']          = (0.0,500.0)
       dataStr['units']                = 'K'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -310,7 +310,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = minval
       dataStr['VAR_VALID_MAX']        = maxval
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (minval,maxval)
+      dataStr['valid_range']          = (minval,maxval)
       dataStr['units']                = 'km'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -332,7 +332,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 150.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,150.0)
+      dataStr['valid_range']          = (0.0,150.0)
       dataStr['units']                = 'km'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -354,7 +354,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 1100.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,1100.0)
+      dataStr['valid_range']          = (0.0,1100.0)
       dataStr['units']                = 'hPa'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -376,7 +376,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 500.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,500.0)
+      dataStr['valid_range']          = (0.0,500.0)
       dataStr['units']                = 'K'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -399,7 +399,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 1E25
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,1E25)
+      dataStr['valid_range']          = (0.0,1E25)
       dataStr['units']                = 'TBD'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -421,7 +421,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = -maxval/10.0
       dataStr['VAR_VALID_MAX']        = maxval
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (-maxval/10.0,maxval)
+      dataStr['valid_range']          = (-maxval/10.0,maxval)
       dataStr['units']                = self.mxSclFctName
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -443,7 +443,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = maxval
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,maxval)
+      dataStr['valid_range']          = (0.0,maxval)
       dataStr['units']                = self.mxSclFctName
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -465,7 +465,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = -1000.0
       dataStr['VAR_VALID_MAX']        = 1000.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (-1000.0,1000.0)
+      dataStr['valid_range']          = (-1000.0,1000.0)
       dataStr['units']                = '1'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -487,7 +487,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 21600.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,21600.0)
+      dataStr['valid_range']          = (0.0,21600.0)
       dataStr['units']                = 's'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -511,7 +511,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = -1000.0
       dataStr['VAR_VALID_MAX']        = 1000.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (-1000.0,1000.0)
+      dataStr['valid_range']          = (-1000.0,1000.0)
       dataStr['units']                = self.mxSclFct2Name
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -535,7 +535,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = -1000.0
       dataStr['VAR_VALID_MAX']        = 1000.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (-1000.0,1000.0)
+      dataStr['valid_range']          = (-1000.0,1000.0)
       dataStr['units']                = self.mxSclFct2Name
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -557,11 +557,11 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       if self.gasName.upper() == 'H2O':
          dataStr['VAR_VALID_MIN']        = -1.0E17
          dataStr['VAR_VALID_MAX']        = 1.0E25
-         dataStr['VALID_RANGE']          = (-1.0E17,1.0E25)
+         dataStr['valid_range']          = (-1.0E17,1.0E25)
       else:
          dataStr['VAR_VALID_MIN']        = -1.0E17
          dataStr['VAR_VALID_MAX']        = 1.0E20
-         dataStr['VALID_RANGE']          = (-1.0E17,1.0E20)
+         dataStr['valid_range']          = (-1.0E17,1.0E20)
       dataStr['units']                = 'molec cm-2'
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()*dataStr['VAR_VALID_MAX']
       dataStr['_FillValue']           = self.getFillValue()*dataStr['VAR_VALID_MAX']
@@ -584,7 +584,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 1.0E20
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,1.0E20)
+      dataStr['valid_range']          = (0.0,1.0E20)
       dataStr['units']                = 'molec cm-2'
       dataStr['_FillValue']          = self.getFillValue()
       
@@ -606,7 +606,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 1.0E20
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,1.0E20)
+      dataStr['valid_range']          = (0.0,1.0E20)
       dataStr['units']                = 'molec cm-2'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -628,7 +628,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 1.0E20
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,1.0E20)
+      dataStr['valid_range']          = (0.0,1.0E20)
       dataStr['units']                = 'molec cm-2'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -650,7 +650,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = -10.0
       dataStr['VAR_VALID_MAX']        =  10.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (-10.0,10.0)
+      dataStr['valid_range']          = (-10.0,10.0)
       dataStr['units']                = '1'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -672,7 +672,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 1.0E20
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,1.0E20)
+      dataStr['valid_range']          = (0.0,1.0E20)
       dataStr['units']                = 'molec cm-2'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -694,7 +694,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 1.0E20
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,1.0E20)
+      dataStr['valid_range']          = (0.0,1.0E20)
       dataStr['units']                = 'molec cm-2'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -716,7 +716,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = 0.0
       dataStr['VAR_VALID_MAX']        = 90.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,90.0)
+      dataStr['valid_range']          = (0.0,90.0)
       dataStr['units']                = 'deg'
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -738,7 +738,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        =  0.0
       dataStr['VAR_VALID_MAX']        =  360.0
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (0.0,360.0)
+      dataStr['valid_range']          = (0.0,360.0)
 
       dataStr['units']                = 'deg'
       dataStr['_FillValue']           = self.getFillValue()
@@ -761,7 +761,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = minval
       dataStr['VAR_VALID_MAX']        = maxval
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()
-      dataStr['VALID_RANGE']          = (minval,maxval)
+      dataStr['valid_range']          = (minval,maxval)
       dataStr['units']                = self.mxSclFctName
       dataStr['_FillValue']           = self.getFillValue()
       
@@ -783,7 +783,7 @@ class HDFsave(hdfBaseRetDat.HDFbaseRetDat,hdfInitData.HDFinitData):
       dataStr['VAR_VALID_MIN']        = -1.0E24
       dataStr['VAR_VALID_MAX']        = 1.0E25
       dataStr['VAR_FILL_VALUE']       = self.getFillValue()*dataStr['VAR_VALID_MAX']
-      dataStr['VALID_RANGE']          = (-1.0E24,1.0E25)
+      dataStr['valid_range']          = (-1.0E24,1.0E25)
       dataStr['units']                = 'molec cm-2'
       dataStr['_FillValue']           = self.getFillValue()*dataStr['VAR_VALID_MAX']
       
