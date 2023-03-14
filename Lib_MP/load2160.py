@@ -19,6 +19,7 @@
 
 import numpy as np
 import sys, os, re
+from scipy.constants import Boltzmann
 import matplotlib.dates as dates
 from tables import open_file, Float32Atom
 class sonde():
@@ -34,40 +35,45 @@ class sonde():
 
         with open_file('o3sondes.h5','w') as h5file:
             Time  = h5file.create_earray("/", 'dnum', Float32Atom(),([0]), title="Time of measurement", expectedrows=366)
-            z = h5file.create_earray("/", 'Z', Float32Atom(),(10000,0), title="Altitude", expectedrows=366)
-            T = h5file.create_earray("/", 'T', Float32Atom(),(10000,0), title="Temperature", expectedrows=366)
-            o3ppmv = h5file.create_earray("/", 'O3', Float32Atom(),(10000,0), title="O3 PPMV", expectedrows=366)
+            z = h5file.create_earray("/", 'Z', Float32Atom(),(20000,0), title="Altitude", expectedrows=366)
+            T = h5file.create_earray("/", 'T', Float32Atom(),(20000,0), title="Temperature", expectedrows=366)
+            T = h5file.create_earray("/", 'T', Float32Atom(),(20000,0), title="Temperature", expectedrows=366)
+            o3ppmv = h5file.create_earray("/", 'O3', Float32Atom(),(20000,0), title="O3 PPMV", expectedrows=366)
+            o3cols = h5file.create_earray("/", 'O3', Float32Atom(),(20000,0), title="O3 PCOL", expectedrows=366)
 
             for sondefile in self.sondefiles:
+                vals, mdate, header = self.load2160(os.path.join(self.basedir,sondefile))
                 try:
-                    vals, mdate, header = self.load2160(sondefile)
+                    vals, mdate, header = self.load2160(os.path.join(self.basedir,sondefile))
                     print(sondefile)
                 except:
+                    print(sondefile+' failed')
                     continue
 
                 nr_entry = vals.shape[0]
                 Time.append(np.reshape(mdate,(1)))
                 nr_entry = vals.shape[0]
-                o3 = np.nan*np.ones(10000)
+                o3 = np.nan*np.ones(20000)
                 o3[:nr_entry] = vals[:,5]/vals[:,1]*10 # O3 ppat in mPa, P in hPa
-                o3 = np.reshape(o3, (10000,1))
+                o3 = np.reshape(o3, (20000,1))
                 o3ppmv.append(o3)
-                alt = np.nan*np.ones(10000)
+                alt = np.nan*np.ones(20000)
                 alt[:nr_entry] = vals[:,2]
-                alt = np.reshape(alt, (10000,1))
+                alt = np.reshape(alt, (20000,1))
                 z.append(alt)
-                temp = np.nan*np.ones(10000)
+                temp = np.nan*np.ones(20000)
                 temp[:nr_entry] = vals[:,3]
-                temp = np.reshape(temp, (10000,1))
+                temp = np.reshape(temp, (20000,1))
                 T.append(temp)
-                
+                dz = np.diff(vals[:,2])
+                cols = vals[:,7]/1000.0/(Boltzmann*(273.15+vals[:,3]))*np.hstack((dz, dz[-1]))
                 
     def load2160(self, name):
 
 
         #    import ipdb
         #    ipdb.set_trace()
-        fid = open(name)
+        fid = open(name,encoding='iso-8859-1') # because it is mainly German
         nlhead = fid.readline()
         ffi = fid.readline() # File format
         ffi = ffi.split()
@@ -205,8 +211,16 @@ class sonde():
         vals = np.zeros((nx1,nv+1))
         for n in range(0,nx1):
             l = fid.readline().split()
-            vals[n,:] = np.array(l)
+            try:
+                vals[n,:] = np.array(l)
+            except:
+                pass
 
         fid.close()
 
         return(vals, mdate, vname)
+
+
+if __name__ == '__main__':
+    o3s = sonde('/ftirrd02/proc/nyalesund_misc/o3sonde/2021/','ny')
+    o3s.convert_sonde_h5()
