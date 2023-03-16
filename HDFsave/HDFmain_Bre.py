@@ -75,7 +75,8 @@ def main(args):
     granularity    = 'yearly'
     mtype          = 'stationary'
     source         = 'sun'
-
+    errFlg = True
+    geomsTmpl=2
     if quality != 'nrt' and quality !='final' and quality != 'cams27':
         print ('quality has to be nrt, final or cams27, not %s'%quality)
         exit()
@@ -433,7 +434,7 @@ def main(args):
                  szaFlg=szaFlag, validFlg=validFlag,chiFlg=chiFlg,maxCHI2=maxCHI2,
                  minVMR=minVMR,maxVMR=maxVMR,dofFlg=dofFlag,minDOF=minDOFs,maxDOF=maxDOFs,
                  co2Flag=co2Flag,minCO2=minCO2,maxCO2=maxCO2,
-                 maxTCTotErr=maxTCTotErr)
+                 maxTCTotErr=maxTCTotErr,errFlg=errFlg,geomsTmpl=geomsTmpl)
 
     #--------------------------------------------
     # Here we are actually creating the HDF file.

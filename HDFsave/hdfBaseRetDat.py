@@ -645,6 +645,7 @@ class HDFbaseRetDat(object):
         #-------------------------------------------------------------------------------
         # Create gasname total random error covariance matrix profile dataset (variable) nlyrs,nsize,datatype,units,sclfctr,maxval
         #-------------------------------------------------------------------------------
+        geomsTmpl=int(1)
         if int(geomsTmpl) >= int(3):
             hdfFile.createDataSet(self.gasNameUpper+"."+self.getMixingRatioAbsorptionSolarUncertaintyRandomDryName(), \
                                     (self.gasMxRatAbsSolarUncRand.shape[0],self.gasMxRatAbsSolarUncRand.shape[1],self.gasMxRatAbsSolarUncRand.shape[2]), \
@@ -652,7 +653,7 @@ class HDFbaseRetDat(object):
         else:
             hdfFile.createDataSet(self.gasNameUpper+"."+self.getMixingRatioAbsorptionSolarUncertaintyRandomName(), \
                                     (self.gasMxRatAbsSolarUncRand.shape[0],self.gasMxRatAbsSolarUncRand.shape[1],self.gasMxRatAbsSolarUncRand.shape[2]), \
-                                    self.gasMxRatAbsSolarUncRand, self.mRandAttrbs(self.gasMxRatAbsSolarUncRand.shape[1],self.gasMxRatAbsSolarUncRand.shape[0], float(self.gasMxRatAbsSolarUncRand.min()), float(self.gasMxRatAbsSolarUncRand.max() )))
+                                    self.gasMxRatAbsSolarUncRand, self.mRandAttrbs(self.gasMxRatAbsSolarUncRand.shape[1],self.gasMxRatAbsSolarUncRand.shape[0]))
 
 
 
@@ -666,7 +667,7 @@ class HDFbaseRetDat(object):
         else:
             hdfFile.createDataSet(self.gasNameUpper+"."+self.getMixingRatioAbsorptionSolarUncertaintySystematicName(), \
                                 (self.gasMxRatAbsSolarUncSys.shape[0],self.gasMxRatAbsSolarUncSys.shape[1],self.gasMxRatAbsSolarUncSys.shape[2]), \
-                                self.gasMxRatAbsSolarUncSys, self.mSysAttrbs(self.gasMxRatAbsSolarUncSys.shape[1],self.gasMxRatAbsSolarUncSys.shape[0], float(self.gasMxRatAbsSolarUncSys.min()), float(self.gasMxRatAbsSolarUncSys.max() )))
+                                self.gasMxRatAbsSolarUncSys, self.mSysAttrbs(self.gasMxRatAbsSolarUncSys.shape[1],self.gasMxRatAbsSolarUncSys.shape[0]))
 
 
 
@@ -675,7 +676,7 @@ class HDFbaseRetDat(object):
         #-----------------------------------------------------------------------------
         hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnPartialAbsorptionSolarName(), \
                                 (self.gasColPartAbsSolar.shape[0],self.gasColPartAbsSolar.shape[1]), self.gasColPartAbsSolar, \
-                                self.pcRtrprfAttrbs(self.gasColPartAbsSolar.shape[1],self.gasColPartAbsSolar.shape[0], float(self.gasColPartAbsSolar.max()) ))
+                                self.pcRtrprfAttrbs(self.gasColPartAbsSolar.shape[1],self.gasColPartAbsSolar.shape[0]))
 
 
         
@@ -689,7 +690,7 @@ class HDFbaseRetDat(object):
         else:
             hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnPartialAbsorptionSolarAprioriName(), 
                                     (self.gasColPartAbsApriori.shape[0],self.gasColPartAbsApriori.shape[1]), self.gasColPartAbsApriori, \
-                                    self.pcaAprfAttrbs(self.gasColPartAbsApriori.shape[1],self.gasColPartAbsApriori.shape[0], float(self.gasColPartAbsApriori.max()) ))
+                                    self.pcaAprfAttrbs(self.gasColPartAbsApriori.shape[1],self.gasColPartAbsApriori.shape[0]))
 
         
         
@@ -701,7 +702,7 @@ class HDFbaseRetDat(object):
         # Create gasname total column profile dataset (variable)
         #-----------------------------------------------------------------------------
         hdfFile.createDataSet(self.gasNameUpper+"."+self.getColumnAbsorptionSolarName(),np.size(self.gasColAbsSolar), \
-                                self.gasColAbsSolar, self.tcRprfAttrbs(np.size(self.gasColAbsSolar), float(self.gasColAbsSolar.max()) ))
+                                self.gasColAbsSolar, self.tcRprfAttrbs(np.size(self.gasColAbsSolar)))
 
         #-----------------------------------------------------------------------------
         # Create gasname apriori total column profile dataset (variable)
@@ -709,12 +710,12 @@ class HDFbaseRetDat(object):
         if int(geomsTmpl) >= int(3):
             hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnAprioriName(), \
                                     np.size(self.gasColAbsSolarApriori), self.gasColAbsSolarApriori, 
-                                    self.tcAprf2Attrbs(np.size(self.gasColAbsSolarApriori), float(self.gasColAbsSolarApriori.max()) ))
+                                    self.tcAprf2Attrbs(np.size(self.gasColAbsSolarApriori)))
 
         else:
             hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnAbsorptionSolarAprioriName(), \
                                     np.size(self.gasColAbsSolarApriori), self.gasColAbsSolarApriori, 
-                                    self.tcAprfAttrbs(np.size(self.gasColAbsSolarApriori), float(self.gasColAbsSolarApriori.max()) ))
+                                    self.tcAprfAttrbs(np.size(self.gasColAbsSolarApriori), ))
 
 
         #-----------------------------------------------------------------------------
@@ -733,14 +734,14 @@ class HDFbaseRetDat(object):
         #-----------------------------------------------------------------------------
         hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnAbsorptionSolarUncertaintyRandomName(), \
                                 np.size(self.gasColAbsSolarUncRand), self.gasColAbsSolarUncRand, \
-                                self.tcRandAttrbs(np.size(self.gasColAbsSolarUncRand), float(self.gasColAbsSolarUncRand.max()) ))
+                                self.tcRandAttrbs(np.size(self.gasColAbsSolarUncRand)))
 
         #-----------------------------------------------------------------------------
         # Create gasname total column systematic uncertainty dataset (variable)
         #-----------------------------------------------------------------------------
         hdfFile.createDataSet(self.gasNameUpper+'.'+self.getColumnAbsorptionSolarUncertaintySystematicName(), \
                                 np.size(self.gasColAbsSolarUncSys),  self.gasColAbsSolarUncSys, \
-                                self.tcSysAttrbs(np.size(self.gasColAbsSolarUncSys), float(self.gasColAbsSolarUncSys.max()) ))
+                                self.tcSysAttrbs(np.size(self.gasColAbsSolarUncSys)))
 
 
 

@@ -156,7 +156,7 @@ class HDFinitData(object):
     def initPy(self,dataDir,ctlF,spcDBfile,statLyrFile,iyear,imonth,iday,fyear,fmonth,fday,
                mxRMS=1.0,mxSZA=80.0,minDOF=1.0,maxDOF=6.0,dofFlg=False,rmsFlg=True,tcFlg=True,pcFlg=True,
                cnvFlg=True,szaFlg=False, validFlg=False,chiFlg=False,maxCHI2=-1.0,minVMR=1,maxVMR=-1,
-               co2Flag=False, minCO2=-1e99, maxCO2=1e99,maxTCTotErr=1e99,mtype='stationary'):
+               co2Flag=False, minCO2=-1e99, maxCO2=1e99,maxTCTotErr=1e99,mtype='stationary',errFlg=True,geomsTmpl=100,mobFlg=False):
 
         ''' Interface for initializing data with python set of routines'''
         
@@ -164,7 +164,7 @@ class HDFinitData(object):
         # Gather data using python read routines
         #---------------------------------------
 
-        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, statLyrFile, iyear, imonth, iday, fyear, fmonth, fday, errFlg=errFlg, geomsTmpl=geomsTmpl)
+        pyData = dc.GatherHDF(dataDir, ctlF, spcDBfile, statLyrFile, iyear, imonth, iday, fyear, fmonth, fday, errFlg=errFlg)
         
         #------------
         # Filter data
@@ -191,10 +191,9 @@ class HDFinitData(object):
             self.instAltitudes                  = pyData.HDFinstAlt
             self.latitude                       = pyData.HDFlat
         else:
-            self.longitude                      = pyData.HDFlon[0]                        # -180 (West) to +180 (East)
-            self.instAltitudes                  = pyData.HDFinstAlt[0]
-            self.latitude                       = pyData.HDFlat[0]
-
+            self.longitude                      = np.array([pyData.HDFlon[0]])                        # -180 (West) to +180 (East)
+            self.instAltitudes                  = np.array([pyData.HDFinstAlt[0]])
+            self.latitude                        = np.array([pyData.HDFlat[0]])
         
         self.surfPressures                  = pyData.HDFsurfP
         self.surfTemperatures               = pyData.HDFsurfT

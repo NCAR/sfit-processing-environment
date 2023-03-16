@@ -24,7 +24,7 @@ class load_h5:
             er = self.h5.root.col_ran[:]
             es = self.h5.root.col_sys[:]
         except:
-            pass
+            print('er and es not found')
         return(rt,ap,er,es)
 
 
@@ -34,11 +34,15 @@ class load_H4:
         self.keys = self.h4.datasets().keys()
         self.h4file = h4file
         # in hdf file datenum since 2000-1-1-0-0-0
-        if _version.version_tuple < (3,3,0):
+        try:
+            vers = _version.version_tuple;
+        except:
+            vers = tuple([int(a) for a in _version.get_versions()['version'].split('.')])
+        if vers < (3,3,0):
             self.dates = dates.num2date(self.h4.select('DATETIME').get()+730120.0)
         else:
             self.dates = dates.num2date(self.h4.select('DATETIME').get()+730120.0 + dates.date2num(np.datetime64('0000-12-31')))
-            self.data_template = self.h4.attributes()['DATA_TEMPLATE']
+        self.data_template = self.h4.attributes()['DATA_TEMPLATE']
 #        import pdb
 #        pdb.set_trace()
 
@@ -415,8 +419,8 @@ class load_hdf:
             dd_max = np.max(np.hstack((dd_max, dd)))
             if len(ap) == len(rt):
                 ax.plot(dd, ap,'ro')
-            errax.plot(dd, er,'bx')
-            errax.plot(dd, es,'gx')
+#            errax.plot(dd, er,'bx')
+#            errax.plot(dd, es,'gx')
                 #      plt.sca(ax)
         errax.xaxis.set_major_formatter(dates.DateFormatter('%Y-%m-%d'))
         errax.set_xlim((dd_min,dd_max))
