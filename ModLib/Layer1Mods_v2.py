@@ -58,6 +58,7 @@ import glob
 import logging
 import shutil
 import re
+sys.path.append(os.path.join(os.path.dirname(__file__),'..'))
 from sfitClasses  import ExitError
 from numpy        import diag, inf
 from numpy        import copy, dot, interp
