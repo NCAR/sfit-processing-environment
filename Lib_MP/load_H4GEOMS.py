@@ -70,6 +70,7 @@ class load_H4:
         z = self.h4.select('ALTITUDE').get()
         return(rt,z)
 
+    
     def get_columns(self,gas):
         self.h4
         try:
@@ -227,8 +228,7 @@ class load_hdf:
             avmr = np.vstack((avmr,ap))
 
         return(rvmr,avmr,dd)
-        
-
+    
     def get_zpts(self, src='GEOMS'):
         if src=='TMPH5':
             src_hdf = self.h5

@@ -492,18 +492,19 @@ class show_results:
         
     def show_fft(self,band_nr = 1,gas=None):
         def oncall1(event):
-            print ('bla')
             ex = event.xdata
             ey = event.ydata
 #            dnum = self.winfft.get_xdata()
 #            ind = np.argmin(np.abs(dnum-mdnum))
-            print ((self.sp.mw_stop[band_nr-1] - self.sp.mw_start[band_nr-1])/(ex/10.0))
+            print ('Wavenumber of this wave:', (self.sp.mw_stop[band_nr-1] - self.sp.mw_start[band_nr-1])/(ex/1000.0))
         self.winfft.clf()
         fsp = np.fft.fft(self.sp.dif[band_nr-1],
-                         10*self.sp.dif[band_nr-1].size)
+                         1000*self.sp.dif[band_nr-1].size)
         spacing = self.sp.mw_res[band_nr-1]
         xax = np.fft.fftfreq(fsp.size, spacing)
+        specs = (self.sp.mw_stop[band_nr-1] - self.sp.mw_start[band_nr-1])/xax[xax>0]
         self.winfft.gca().plot(np.abs(fsp[xax>0]),picker=5)
+#        self.winfft.gca().xlabel('Nr. of cycles in MW * 1000')
         self.winfft.canvas.mpl_connect('button_press_event', oncall1)
         self.winfft.show()
 

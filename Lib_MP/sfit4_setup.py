@@ -421,7 +421,7 @@ class sfit4_ctl:
 
     def write(self, ctlfile):
         fid = open(ctlfile, 'w')
-        for k,v in self.value.iteritems():
+        for k,v in self.value.items():
             fid.write(k + ' = ' + v + '\n')
 
         fid.close()
