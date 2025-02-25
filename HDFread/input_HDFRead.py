@@ -13,12 +13,11 @@
 #------------
 # Directories
 #------------ 
-loc        = 'mlo'                  # location; typically 3 letter id 
-gasName    = 'ch4'                 # gas
-ver        = ['Current_WP_RD']         # Version Names; Note: it can be more than one version, must be in []; typically name of the folder containing retrievals
-locID      = 'mauna'                # ID identifier in HDF file(s); e.g., site name
-
-pathDir    = '/data1/ebaumer/'+loc.lower()+'/'   # Absolute path of directory; typically constructed with the location
+gasName    = 'nh3'                        # gas
+locID      = 'thule'                # ID identifier in HDF file(s); e.g., site name
+pathDir    = '/data1/ebaumer/tab/'       # Absolute path of directory; typically constructed with the location
+#dataDir    = [pathDir + gasName.lower() +'/HDF_Current_v5/', pathDir + gasName.lower() +'/HDF_Current_v5_RD/']
+dataDir    = [pathDir + gasName.lower() +'/HDF_Current_v4_GC/']
 
 #------
 # Flags
@@ -46,19 +45,19 @@ sclfctName = 'pptv'                 # Name of scale factor for labeling plots
 #----------------------
 # Date range to plot
 #----------------------
-iyear      = 2021	
+iyear      = 1999	
 imonth     = 1
 iday       = 1
-fyear      = 2021
-fmonth     = 4
-fday       = 30
+fyear      = 2022
+fmonth     = 12
+fday       = 31
 
 #----------------------
 # Construct directory name with HDF files; typically location and gasname is used in the path
 #----------------------
 if not( pathDir.endswith('/') ): pathDir = pathDir + '/'        
 
-dataDir    = [pathDir + gasName.lower() +'/HDF_'+v  for v in ver]          
+#dataDir    = [pathDir + gasName.lower() +'/HDF_'+v  for v in ver]          
 
 #----------------------
 # Name of pdf with plots (saved in current/running directory)

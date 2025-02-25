@@ -34,8 +34,8 @@
 
 import sys
 import os
-sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "HDFsave")))
-sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ExternalData")))
+#sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "HDFsave")))
+#sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ExternalData")))
 
 import datetime as dt
 import time
@@ -71,6 +71,8 @@ from pyhdf.SD import *
 from cycler import cycler
 np.warnings.filterwarnings('ignore')
 import h5py
+
+import shutil
 
 
 
@@ -1104,6 +1106,8 @@ class ReadHDFData():
             Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintyRandomDryName(),[])
             Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAbsorptionSolarUncertaintySystematicDryName(),[])
             Vars.setdefault(primGas.upper()+'.'+self.getMixingRatioAprioriDryName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getColumnPartialAbsorptionSolarName(),[])
+            Vars.setdefault(primGas.upper()+'.'+self.getColumnPartialAprioriName(),[])
             Vars.setdefault(self.getH2oMixingRatioVolumeDryAprioriName(),[])
             Vars.setdefault(self.getH2oColumnAprioriName(),[])
 
@@ -1117,16 +1121,15 @@ class ReadHDFData():
 
 
         if isinstance(dataDir, list):
-            #print('is instance')
             for d in dataDir:
                 if not( d.endswith('/') ):
                     d = d + '/'
 
                 DirFiles.append(glob.glob(d + '*.'+primGas.lower()+ '*'+locID+'*.hdf'))
-                #DirFiles.append(glob.glob(d + '*'+locID+'*.hdf'))
-                if not DirFiles[0]:
-                    DirFiles = []
-                    DirFiles.append(glob.glob(d + '*'+locID+'*.hdf'))
+                
+                #if not DirFiles[0]:
+                #    DirFiles = []
+                #    DirFiles.append(glob.glob(d + '*'+locID+'*.hdf'))
 
         else:
             #print('is NOT an instance')
@@ -1144,10 +1147,24 @@ class ReadHDFData():
         DirFiles = [item for DirFiles in DirFiles for item in DirFiles]
 
         DirFiles.sort()
-  
+
+
         for drs in DirFiles:
 
             print ('\nReading HDF File: %s' % (drs))
+
+
+            #-----------------------------
+            # Copy to ftp site (For Jin, July 2023)
+            #-----------------------------
+            # ftpFld_ot     = '/net/nitrogen/ftp/user/iortega/ocs/'
+
+            # try: 
+            #     #shutil.copy(join(pathHDF,HDF2upload),join(ftpFld_ot,HDF2upload))
+            #     shutil.copy(drs,ftpFld_ot)
+            #     print ('\nCopy file: {} to {}'.format(drs,ftpFld_ot))
+                
+            # except IOError: print ('Unable to copy file: {} to {}'.format(drs,ftpFld_ot))
 
             #--------------------------
             #TEST FOR HDF5 
@@ -1168,7 +1185,7 @@ class ReadHDFData():
             for var in Vars.keys():
 
                 try:
-                    #print(var)
+
                     data        = hdfid.select(var)
                     #units       = data.units
                     units       = data.VAR_UNITS
@@ -1177,7 +1194,7 @@ class ReadHDFData():
                     self.HDF.setdefault(var,[]).append(data)
                     self.HDF.setdefault(var+'VAR_SI_CONVERSION',[]).append(conv)
                     self.HDF.setdefault(var+'VAR_UNITS',[]).append(units)
-            
+
                 except Exception as errmsg:
                     print (errmsg, ' : ', var)
                     #exit()
@@ -1371,7 +1388,8 @@ class ReadHDFData():
         #-----------------------------------
         if pcFlg:
       
-            rprf_neg = np.asarray(self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName()]) <= 0.0
+            try:    rprf_neg = np.asarray(self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarName()]) <= 0.0
+            except: rprf_neg = np.asarray(self.HDF[self.PrimaryGas.upper()+'.'+self.getMixingRatioAbsorptionSolarDryName()]) <= 0.0
             indsT = np.where( np.sum(rprf_neg,axis=1) > 0 )[0]
             print ('Total number observations found with negative partial column = {}'.format(len(indsT)))
             self.inds = np.union1d(indsT, self.inds)
@@ -1983,13 +2001,25 @@ class PlotHDF(ReadHDFData):
         else:      DateFmt      = DateFormatter('%m\n%Y') 
 
         try:     
+
+            dateYearFrac = toYearFraction(dates)
+            weights      = np.ones_like(dateYearFrac)
+            res          = fit_driftfourier(dateYearFrac, totClmn, weights, 2)
+            f_drift, f_fourier, f_driftfourier = res[3:6]
         
             fig1,ax1 = plt.subplots()
             ax1.plot(dates,totClmn,'k.',markersize=4)
+            ax1.plot(dates,f_drift(dateYearFrac),label='Fitted Anual Trend')
+            #ax1.plot(dates,f_driftfourier(dateYearFrac),label='Fitted Anual Trend + intra-annual variability')
             ax1.grid(True)
             ax1.set_ylabel('Retrieved Total Column\n[molecules cm$^{-2}$]',multialignment='center')
-            ax1.set_xlabel('Date [MM]')
+            #ax1.set_xlabel('Date [MM]')
             ax1.set_title('Time Series of Retrieved Total Column',multialignment='center')
+
+            ax1.set_title('Trend Analysis with Boot Strap Resampling\nIndividual Retrievals',multialignment='center')
+            ax1.text(0.02,0.94,"Fitted trend -- slope: {0:.3E} ({1:.3f}%)".format(res[1],res[1]/np.mean(totClmn)*100.0),transform=ax1.transAxes)
+            ax1.text(0.02,0.9,"Fitted intercept at xmin: {:.3E}".format(res[0]),transform=ax1.transAxes)
+            ax1.text(0.02,0.86,"STD of residuals: {0:.3E} ({1:.3f}%)".format(res[6],res[6]/np.mean(totClmn)*100.0),transform=ax1.transAxes) 
             
             if yrsFlg:
                 #plt.xticks(rotation=45)

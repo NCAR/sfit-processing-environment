@@ -61,7 +61,8 @@ def usage():
     ''' Prints to screen standard program usage'''
     print ('ckRets.py -i <inputfile> -?')
     print ('  -i <file> : Run ckRets.py with specified input file (typically the setInput.py)')
-    print ('  -e        : optional: check for error summary file, if not error summary it will delete folder\n              Default is to check only for summary file')
+    print ('  -e        : optional: check for error summary file, if not error summary it will delete folder')
+    print ('  -p        : optional: check for profile file            \n              Default is to check only for summary file')
     print ('  -?        : Show all flags')
 
 def ckDir(dirName,logFlg=False,exit=False):
@@ -92,7 +93,7 @@ def main(argv):
     # Retrieve command line arguments
     #--------------------------------
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:e?')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:ep?')
 
     except getopt.GetoptError as err:
         print (str(err))
@@ -100,6 +101,7 @@ def main(argv):
         sys.exit()
 
     errFlg = False
+    prfFlg = False
 
     #-----------------------------
     # Parse command line arguments
@@ -127,6 +129,9 @@ def main(argv):
 
         elif opt == '-e':
             errFlg = True
+
+        elif opt == '-p':
+            prfFlg = True
 
         elif opt == '-?':
             usage()
@@ -161,6 +166,8 @@ def main(argv):
     #----------------------
     gas.ckSummary()
     if errFlg: gas.ckErrorSummary()
+
+    if prfFlg: gas.ckPrf()
 
 
 if __name__ == "__main__":

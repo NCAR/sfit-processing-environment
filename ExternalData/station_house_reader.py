@@ -60,6 +60,15 @@ def ckFile(fName):
         print ('File %s does not exist' % (fName))
         sys.exit()
 
+def ckDirMk(dirName,logFlg=False):
+    ''' '''
+    if not ( os.path.exists(dirName) ):
+        os.makedirs( dirName )
+        if logFlg: logFlg.info( 'Created folder %s' % dirName)  
+        return False
+    else:
+        return True
+
 def usage():
     ''' Prints to screen standard program usage'''
     print ('\nstation_house_reader.py [-s tab/mlo/fl0 -d 20180515_20180530 -?]')
@@ -147,15 +156,14 @@ def main(argv):
     dataDir     = '/data1/'+statstr.lower()+'/'
     #dataDir     = '/ya4/id/'+statstr.lower()+'/'
     outDataDir  = '/data/Campaign/'+statstr.upper()+'/House_Log_Files/'
-    
+
+    ckDirMk(outDataDir)
     
     #-------------------
     # Call to date class
     #-------------------
     DOI = dr.DateRange(iyear,imnth,iday,fyear,fmnth,fday)
 
-    
-        
     #----------------------------
     # Create list of unique years
     #----------------------------
@@ -185,6 +193,8 @@ def main(argv):
             houseData = hr.MLOread()
         elif (statstr.lower() == 'tab'):
             houseData = hr.TABread()
+        elif (statstr.lower() == 'fl0'):
+            houseData = hr.FL0read()
         else: print('site is not specified in station_house_reader'); exit()
             
         #--------------------------------------
@@ -222,7 +232,18 @@ def main(argv):
                     srchstr = 'house.log'
 
             elif (statstr.lower() == 'tab'):
-                srchstr = 'house.log'
+                if indvDay < dt.date(2022,4,25):
+                    srchstr = 'house.log'
+
+                elif indvDay >= dt.date(2022,4,25):
+                    
+                    srchstr  = 'house.log'
+                    srchstr2 = 'houseMet.log'
+
+            elif (statstr.lower() == 'fl0'):
+                if indvDay >= dt.date(2022,11,15):
+                    srchstr  = 'houseMet.log'
+                else: continue
                 
             #------------------------
             # Look for house log file
@@ -259,7 +280,12 @@ def main(argv):
                     houseData.formatD(houseFile,indvDay.year,indvDay.month,indvDay.day)
 
                 elif indvDay >= dt.date(2019,5,3):
-                    houseFileMet = glob.glob( dayDir + srchstr2 )[0]
+
+                    if ckDir(dayDir + srchstr2):
+                        houseFileMet = glob.glob( dayDir + srchstr2 )[0]
+                    else:
+                        houseFileMet = dayDir + srchstr2
+
 
                     houseData.formatF(houseFile,houseFileMet, indvDay.year,indvDay.month,indvDay.day)
 
@@ -267,21 +293,36 @@ def main(argv):
                 #elif indvDay >= dt.date(2017,12,10):
                 #    houseData.formatD(houseFile,indvDay.year,indvDay.month,indvDay.day)
 
-          
             elif (statstr.lower() == 'tab'):
                 if indvDay < dt.date(2015,1,1):
                 # Format A for (TAB) date < 20150101
                     houseData.formatA(houseFile,indvDay.year,indvDay.month,indvDay.day)
                # Format A for (TAB) date >= 20150101
-                elif indvDay >= dt.date(2015,1,1):
-                    houseData.formatB(houseFile,indvDay.year,indvDay.month,indvDay.day)    
-             
+                elif dt.date(2015,1,1) <= indvDay < dt.date(2022,4,25):
+                
+                    houseData.formatB(houseFile,indvDay.year,indvDay.month,indvDay.day) 
+
+                elif indvDay >= dt.date(2022,4,25):  
+
+                    if ckDir(dayDir + srchstr2):
+                        houseFileMet = glob.glob( dayDir + srchstr2 )[0]
+                    else:
+                        houseFileMet = dayDir + srchstr2
+
+                    houseData.formatC(houseFile,houseFileMet, indvDay.year,indvDay.month,indvDay.day)
+
+
+            elif (statstr.lower() == 'fl0'):
+                if indvDay >= dt.date(2022,11,15):
+                    houseData.formatA(houseFile,indvDay.year,indvDay.month,indvDay.day)
+
         #------------------------
         # Sort data based on date
         #------------------------
-
         houseData.sortData()
-        
+
+        #print(houseData.data['DateTime'][0:10])
+        #print(houseData.data['Time'][0:10])
         #-----------------------------------------
         # Open output file for year and write data
         #-----------------------------------------
@@ -367,7 +408,24 @@ def main(argv):
                 fopen.write('#   Temp_Upper_Seal             C              30        -9999        \n')
                 fopen.write('#   Temp_Lower_Seal             C              31        -9999        \n')
                 fopen.write('#   Temp_Lin_Actuator           C              32        -9999        \n')
-                fopen.write('#---------------------------------------------------------------------\n')          
+                fopen.write('#---------------------------------------------------------------------\n')       
+
+
+            elif (wmode == 'w') and (statstr.lower() == 'fl0'):
+                #-------------
+                # Print header
+                #-------------
+                fopen.write('#   LABEL                       Units          Column    Missing Value\n')
+                fopen.write('#---------------------------------------------------------------------\n')
+                fopen.write('#   Date                        YYYYMMDD       1         NA           \n')
+                fopen.write('#   Time                        HH:MM:SS       2         NA           \n')
+                fopen.write('#   Outside_T                   C              3        -9999        \n')
+                fopen.write('#   WindDir_E_of_N              DegE           4        -9999        \n')
+                fopen.write('#   Wind_Speed_mps              ms^-1          5        -9999        \n')
+                fopen.write('#   Atm_Press                   mbar           6        -9999        \n')
+                fopen.write('#   Outside_RH                  %              7        -9999        \n')
+                fopen.write('#   Radiance_V                  V              8        -9999        \n')
+                fopen.write('#---------------------------------------------------------------------\n')             
                    
  
  
@@ -398,12 +456,17 @@ def main(argv):
                          'Bruker_Optical_RH':16,'LN2_Dewar_P':17,'LasA_Rect':18,'LasB_Rect':19,\
                          'Det_Intern_T_Swtch':20,'Det_InSb_DC_Level':21,'Elev_angle':22,\
                          'Azimuth':23,'Clin_Roll':24,'Clin_Pitch':25,\
-                         'Ext_Solar_Sens':26,'Quad_Sens':27, 'Temp_El_Motor':28, 'Temp_Upper_Seal':29,'Temp_Lower_Seal':30, 'Temp_Lin_Actuator':31}            
+                         'Ext_Solar_Sens':26,'Quad_Sens':27, 'Temp_El_Motor':28, 'Temp_Upper_Seal':29,'Temp_Lower_Seal':30, 'Temp_Lin_Actuator':31}  
+
+            elif (statstr.lower() == 'fl0'):
+                order = {'Date':0,'Time':1, 'Outside_T':2, 'WindDir_E_of_N':3, 'Wind_Speed_mps':4, 'Atm_Press':5, 'Outside_RH':6, 'Radiance_V':7}            
             
             #-----------------------------
             # Write dictionary out to file
             #-----------------------------
             writer.writerows(zip(*(houseData.data[k] for k in sorted(houseData.data, key=order.get))))
+
+        os.chmod(houseFileNew,0o777)
         
 
 if __name__ == "__main__":

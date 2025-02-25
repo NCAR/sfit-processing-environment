@@ -228,6 +228,7 @@ def main(argv):
         # Starting
         DBinputs['year'] = year               # Year
        
+        #------
         # Flags
         #------
         DBinputs['readableFlg'] = True
@@ -236,27 +237,41 @@ def main(argv):
         #------------
         # directories
         #------------
-        if loc.lower() == 'mlo':     DBinputs['statDir']   = '/data1/ancillary_data/mlo/cmdl/Minute_Data/'   # Base directory with all external station data (mlo)
+        if loc.lower() == 'mlo':     
+            if DBinputs['year'] >= 2014:
+                DBinputs['statDir']   = '/data1/ancillary_data/mlo/cmdl/Minute_Data/'   # Base directory with all external station data (mlo)
+
+            elif DBinputs['year'] < 2014:
+                DBinputs['statDir']   = '/data1/ancillary_data/mlo/cmdl/Hourly_Data/'   # Base directory with all external station data (mlo)
+
+        
         elif loc.lower() == 'fl0':   DBinputs['statDir']   = '/data1/ancillary_data/fl0/eol/'
         #else:                        DBinputs['statDir'] = ''
         #statDir   = '/data/tools/gsfc/fl0/eol/'    # Base directory with all external station data (fl0)
 
         #------
-        # Files
+        # Files for RD
         #------
         DBinputs['specDBFile']         = '/data/Campaign/'+loc.upper()+'/Spectral_DB/spDB_'+loc.lower()+'_RD.dat'           # Old spectral database file
         DBinputs['readableSpecDBFile'] = '/data/Campaign/'+loc.upper()+'/Spectral_DB/HRspDB_'+loc.lower()+'_RD.dat'         # Easily readable new spectral database file
         DBinputs['csvSpecDBFile']      = '/data/Campaign/'+loc.upper()+'/Spectral_DB/CSVspDB_'+loc.lower()+'.dat'        # CSV new spectral database
+
+        #------
+        # Files
+        #------
+        #DBinputs['specDBFile']         = '/data/Campaign/'+loc.upper()+'/Spectral_DB/spDB_'+loc.lower()+'_'+str(year)+'.dat'          # Old spectral database file
+        #DBinputs['readableSpecDBFile'] = '/data/Campaign/'+loc.upper()+'/Spectral_DB/HRspDB_'+loc.lower()+'_'+str(year)+'_v2.dat'        # Easily readable new spectral database file
+        #DBinputs['csvSpecDBFile']      = '/data/Campaign/'+loc.upper()+'/Spectral_DB/CSVspDB_'+loc.lower()+'_'+str(year)+'_v2.dat'        # CSV new spectral database
+        
+
         DBinputs['houseFile']          = '/data/Campaign/'+loc.upper()+'/House_Log_Files/'+loc.upper()+'_HouseData_'+str(year)+'.dat'  # Yearly house data file
 
         #----------------------
         # Number of minutes to
         # include for averaging
         #----------------------
-        if loc.lower() == 'fl0': DBinputs['nminsStation'] = 30       # Number of minutes for averaging Temperature, Pressure, and RH from external station data (MLO)
-        else: DBinputs['nminsStation'] = 10
-        #nminsStation = 90        # Number of minutes for averaging Temperature, Pressure, and RH from external station data (TAB)
-        DBinputs['nminsHouse']   = 10        # Number of minutes for averaging Temperature, Pressure, and RH from House log data
+        DBinputs['nminsStation'] = 10       # Number of minutes for averaging Temperature, Pressure, and RH from external station data (MLO)
+        DBinputs['nminsHouse']   = 10       # Number of minutes for averaging Temperature, Pressure, and RH from House log data
     
 
     #-----------------------------------
@@ -311,6 +326,7 @@ def main(argv):
     #   Atm_Press                   mbar           15        -9999        
     #   Outside_RH                  %              16        -9999            
     #---------------------------------------------------------------------    
+
     if houseFlg:
         try:
             with open(DBinputs['houseFile'],'r') as fopen:
@@ -332,7 +348,9 @@ def main(argv):
                             except: houseData.setdefault('Pres',[]).append(-9999)     
                             houseData.setdefault('Det_Intern_T_Swtch',[]).append(-9999)
                             houseData.setdefault('Ext_Solar_Sens',[]).append(-9999)
-                            #houseData.setdefault('Quad_Sens',[]).append(-9999)                            
+                            #houseData.setdefault('Quad_Sens',[]).append(-9999)        
+                            houseData.setdefault('WindDir_N',[]).append(float(row[16]))
+                            houseData.setdefault('Wind_Speed_miles_hour',[]).append(float(row[14]))                     
                             
                         elif DBinputs['loc'].lower() == 'tab':
                             houseData.setdefault('Temp',[]).append(float(row[11]))
@@ -340,7 +358,9 @@ def main(argv):
                             houseData.setdefault('RH',[]).append(float(row[15]))      
                             houseData.setdefault('Det_Intern_T_Swtch',[]).append(float(row[20]))
                             houseData.setdefault('Ext_Solar_Sens',[]).append(float(row[26]))
-                            houseData.setdefault('Quad_Sens',[]).append(float(row[27]))  
+                            houseData.setdefault('Quad_Sens',[]).append(float(row[27]))                            
+                            houseData.setdefault('Wind_Dir_W_of_S',[]).append(float(row[12]))
+                            houseData.setdefault('Wind_Speed_meters_sec',[]).append(float(row[13])) 
 
                         elif DBinputs['loc'].lower() == 'fl0':
                             houseData.setdefault('Temp',[]).append(float(row[2]))
@@ -348,7 +368,30 @@ def main(argv):
                             houseData.setdefault('RH',[]).append(float(row[6]))      
                             houseData.setdefault('Ext_Solar_Sens',[]).append(float(row[7]))
                             houseData.setdefault('Quad_Sens',[]).append(-9999)  
-                            houseData.setdefault('Det_Intern_T_Swtch',[]).append(-9999)  
+                            houseData.setdefault('Det_Intern_T_Swtch',[]).append(-9999)
+                            houseData.setdefault('WindDir_N',[]).append(float(row[3]))
+                            houseData.setdefault('Wind_Speed_meters_sec',[]).append(float(row[4])) 
+
+            #------------------
+            # Convert W of South to North Wind Direction (only for TAB)
+            #------------------
+            def convert_west_of_south_to_North(wind_direction_array_west_of_south):
+               
+                # Convert to degrees from north
+                wind_direction_array_from_north = (wind_direction_array_west_of_south + 180) % 360
+                
+                return wind_direction_array_from_north
+
+            if DBinputs['loc'].lower() == 'tab':
+                WindDir_W_of_S   = np.array(houseData['Wind_Dir_W_of_S'])
+                houseData['WindDir_N']        = convert_west_of_south_to_North(WindDir_W_of_S)
+
+            #------------------
+            # Convert miles/hour to meters/seconds (only for MLO)
+            #------------------
+            if DBinputs['loc'].lower() == 'mlo':
+                ws_MPH   = np.array(houseData['Wind_Speed_miles_hour'])
+                houseData['Wind_Speed_meters_sec']        = ws_MPH/2.237 
 
                          
         except IOError:
@@ -376,21 +419,48 @@ def main(argv):
                 #cmdlFiles = glob( DBinputs['statDir'] + str(DBinputs['year']) + '/' + \
                 #                  'met_mlo_insitu_1_obop_minute_'+ str(DBinputs['year']) + '*')
 
-            #---------CHANGED BELOW. AFTER 2015 THE MONTHLY FILES ARE NOT SAVED BY YEAR (IVAN)
-            cmdlFiles = glob( DBinputs['statDir']  + \
-                              'met_mlo_insitu_1_obop_minute_'+ str(DBinputs['year']) + '*')
-            #---------                 
-            if not len(cmdlFiles) == 0:
-                statData = {}
-                for cmdlFile in cmdlFiles:
-                    with open(cmdlFile, 'r') as fopen:
-                        reader = csv.reader(fopen,delimiter=' ',skipinitialspace=True)
-                        for row in reader:
-                            statData.setdefault('DateTime',[]).append(dt.datetime(int(row[1]),int(row[2]),int(row[3]),\
-                                                                                  int(row[4]),int(row[5]),0))
-                            statData.setdefault('Pres',[]).append(float(row[9]))
-                            statData.setdefault('Temp',[]).append(float(row[10]))
-                            statData.setdefault('RH',[]).append(float(row[13]))
+            if DBinputs['year'] < 2014:
+                #---------CHANGED BELOW. AFTER 2015 THE MONTHLY FILES ARE NOT SAVED BY YEAR (IVAN)
+                cmdlFiles = glob( DBinputs['statDir']  + \
+                                  'met_mlo_insitu_1_obop_hour_'+ str(DBinputs['year']) + '*')
+
+                #---------                 
+                if not len(cmdlFiles) == 0:
+                    statData = {}
+                    for cmdlFile in cmdlFiles:
+                        with open(cmdlFile, 'r') as fopen:
+                            reader = csv.reader(fopen,delimiter=' ',skipinitialspace=True)
+                            for row in reader:
+                                statData.setdefault('DateTime',[]).append(dt.datetime(int(row[1]),int(row[2]),int(row[3]),\
+                                                                                      int(row[4]),0,0))
+                                statData.setdefault('Pres',[]).append(float(row[8]))
+                                statData.setdefault('Temp',[]).append(float(row[9]))
+                                statData.setdefault('RH',[]).append(float(row[12]))
+
+                                statData.setdefault('WindDir_N',[]).append(float(row[5]))
+                                statData.setdefault('Wind_Speed_meters_sec',[]).append(float(row[6]))
+
+
+            
+            elif DBinputs['year'] >= 2014:
+                #---------CHANGED BELOW. AFTER 2015 THE MONTHLY FILES ARE NOT SAVED BY YEAR (IVAN)
+                cmdlFiles = glob( DBinputs['statDir']  + \
+                                  'met_mlo_insitu_1_obop_minute_'+ str(DBinputs['year']) + '*')
+                #---------                 
+                if not len(cmdlFiles) == 0:
+                    statData = {}
+                    for cmdlFile in cmdlFiles:
+                        with open(cmdlFile, 'r') as fopen:
+                            reader = csv.reader(fopen,delimiter=' ',skipinitialspace=True)
+                            for row in reader:
+                                statData.setdefault('DateTime',[]).append(dt.datetime(int(row[1]),int(row[2]),int(row[3]),\
+                                                                                      int(row[4]),int(row[5]),0))
+                                statData.setdefault('Pres',[]).append(float(row[9]))
+                                statData.setdefault('Temp',[]).append(float(row[10]))
+                                statData.setdefault('RH',[]).append(float(row[13]))
+
+                                statData.setdefault('WindDir_N',[]).append(float(row[6]))
+                                statData.setdefault('Wind_Speed_meters_sec',[]).append(float(row[7]))
 
                             
         elif DBinputs['loc'].lower() == 'fl0':
@@ -415,10 +485,13 @@ def main(argv):
                     for row in reader:
                         statData.setdefault('DateTime',[]).append(dt.datetime(int(row[0]),int(row[1]),int(row[2]),\
                                                                               int(row[3]),int(row[4]),0))
-                        statData.setdefault('Pres',[]).append(float(row[7]))
                         statData.setdefault('Temp',[]).append(float(row[5]))
-                        statData.setdefault('RH',[]).append(float(row[6]))                        
-
+                        statData.setdefault('RH',[]).append(float(row[6]))
+                        statData.setdefault('Pres',[]).append(float(row[7]))
+                        statData.setdefault('WindDir_N',[]).append(float(row[9]))
+                        statData.setdefault('Wind_Speed_meters_sec',[]).append(float(row[10]))
+                        
+                                            
     #---------------------------------------------------------------
     # Cycle through each spectral DB entry and find corresponding
     # house and external station data. This depends on the averaging
@@ -441,7 +514,9 @@ def main(argv):
             specDBinputs.setdefault('HouseRH',[]).append('-999')
             specDBinputs.setdefault('Ext_Solar_Sens',[]).append('-9999')
             specDBinputs.setdefault('Quad_Sens',[]).append('-9999')
-            specDBinputs.setdefault('Det_Intern_T_Swtch',[]).append('-9999')            
+            specDBinputs.setdefault('Det_Intern_T_Swtch',[]).append('-9999')   
+            specDBinputs.setdefault('WindDir_N',[]).append('-9999')
+            specDBinputs.setdefault('WindSpeed_ms',[]).append('-9999')            
         
         else:
             # Filter house data dictionary
@@ -452,6 +527,8 @@ def main(argv):
             HouseRH   = np.array(fltrdData['RH']  )
             SolarSen  = np.array(fltrdData['Ext_Solar_Sens'])
             DetIntT   = np.array(fltrdData['Det_Intern_T_Swtch'])
+            WindDir   = np.array(fltrdData['WindDir_N'])
+            WindSpeed = np.array(fltrdData['Wind_Speed_meters_sec'])
 
           
             #--------------------------------------------------------------
@@ -470,12 +547,15 @@ def main(argv):
             avgSS     = np.mean(SolarSen[SolarSen   >= 0   ])
             avgQS     = np.mean(QuadSen[QuadSen     >= 0   ])
             avgDIT    = np.mean(DetIntT[DetIntT     >= 0   ])
+            avgWD     = np.mean(WindDir[WindDir     >= 0   ])
+            avgWS     = np.mean(WindSpeed[WindSpeed     >= 0   ])
             
+           
             if np.isnan(avgTemp): avgTemp = '-9999'     
             else: avgTemp = str(round(avgTemp,2))
             if np.isnan(avgPres): avgPres = '-9999'
             else: avgPres = str(round(avgPres,2))
-            if np.isnan(avgRH):   avgRH   = '-99'
+            if np.isnan(avgRH):   avgRH   = '-9999'
             else: avgRH = str(round(avgRH,2)) 
             if np.isnan(avgSS):   avgSS   = '-9999'
             else: avgSS = str(round(avgSS,2))
@@ -483,6 +563,10 @@ def main(argv):
             else: avgQS = str(round(avgQS,2))
             if np.isnan(avgDIT):   avgDIT   = '-9999'
             else: avgDIT = str(round(avgDIT,2))
+            if np.isnan(avgWD):   avgWD   = '-9999'
+            else: avgWD = str(round(avgWD,2))
+            if np.isnan(avgWS):   avgWS   = '-9999'
+            else: avgWS = str(round(avgWS,2))
 
             # Assign averages to main dictionary
             specDBinputs.setdefault('HouseTemp',[]).append(avgTemp)
@@ -490,7 +574,9 @@ def main(argv):
             specDBinputs.setdefault('HouseRH',[]).append(avgRH)   
             specDBinputs.setdefault('Ext_Solar_Sens',[]).append(avgSS)   
             specDBinputs.setdefault('Quad_Sens',[]).append(avgQS)   
-            specDBinputs.setdefault('Det_Intern_T_Swtch',[]).append(avgDIT)   
+            specDBinputs.setdefault('Det_Intern_T_Swtch',[]).append(avgDIT) 
+            specDBinputs.setdefault('WindDir_N',[]).append(avgWD)   
+            specDBinputs.setdefault('WindSpeed_ms',[]).append(avgWS)   
     
         #---------------------------------------
         # If no external station data exists for
@@ -499,7 +585,9 @@ def main(argv):
         if not 'statData' in vars():
             specDBinputs.setdefault('ExtStatTemp',[]).append('-9999')
             specDBinputs.setdefault('ExtStatPres',[]).append('-9999')
-            specDBinputs.setdefault('ExtStatRH',[]).append('-99')   
+            specDBinputs.setdefault('ExtStatRH',[]).append('-9999')
+            specDBinputs.setdefault('ExtWindDir_N',[]).append('-9999')
+            specDBinputs.setdefault('ExtWindSpeed_ms',[]).append('-9999')   
 
         else:
             # Filter external station data dictionary
@@ -508,26 +596,42 @@ def main(argv):
             StatTemp  = np.array(fltrdData['Temp'])
             StatPres  = np.array(fltrdData['Pres'])
             StatRH    = np.array(fltrdData['RH']  )
+            StatWSpeed = np.array(fltrdData['Wind_Speed_meters_sec'])
+            StatWDir   = np.array(fltrdData['WindDir_N']  )
+            
+
             avgTemp   = np.mean(StatTemp[StatTemp > -50 ])
             avgPres   = np.mean(StatPres[StatPres > 0   ])
             avgRH     = np.mean(StatRH[StatRH     >= 0   ])
+
+            avgWD    = np.mean(StatWDir[StatWDir > 0   ])
+            avgWS    = np.mean(StatWSpeed[StatWSpeed     >= 0   ])
+            
+
+
             if np.isnan(avgTemp): avgTemp = '-9999'     
             else: avgTemp = str(round(avgTemp,2))
             if np.isnan(avgPres): avgPres = '-9999'
             else: avgPres = str(round(avgPres,2))
-            if np.isnan(avgRH):   avgRH   = '-99'
-            else: avgRH = str(round(avgRH,2))        
+            if np.isnan(avgRH):   avgRH   = '-9999'
+            else: avgRH = str(round(avgRH,2))  
+            if np.isnan(avgWD):   avgWD   = '-9999'
+            else: avgWD = str(round(avgWD,2)) 
+            if np.isnan(avgWS):   avgWS   = '-9999'
+            else: avgWS = str(round(avgWS,2))        
 
             # Assign averages to main dictionary
             specDBinputs.setdefault('ExtStatTemp',[]).append(avgTemp)
             specDBinputs.setdefault('ExtStatPres',[]).append(avgPres)
-            specDBinputs.setdefault('ExtStatRH',[]).append(avgRH)   
+            specDBinputs.setdefault('ExtStatRH',[]).append(avgRH)  
+            specDBinputs.setdefault('ExtWindDir_N',[]).append(avgWD)
+            specDBinputs.setdefault('ExtWindSpeed_ms',[]).append(avgWS) 
                         
     #-----------------------------------
     # Write new data to spectral DB file
     #-----------------------------------
     # Append spectral DB file header with new house and external station data variables
-    DBfieldNames.extend(['HouseTemp','HousePres','HouseRH','ExtStatTemp','ExtStatPres','ExtStatRH','Ext_Solar_Sens','Quad_Sens','Det_Intern_T_Swtch'])
+    DBfieldNames.extend(['HouseTemp','HousePres','HouseRH','ExtStatTemp','ExtStatPres','ExtStatRH','Ext_Solar_Sens','Quad_Sens','Det_Intern_T_Swtch', 'WindDir_N', 'WindSpeed_ms', 'ExtWindDir_N', 'ExtWindSpeed_ms'])
     
     # Sort specDBinputs based on DateTime key
     specDBinputs = sortDict(specDBinputs,'DateTime')
@@ -560,8 +664,6 @@ def main(argv):
             for row in zip(*[specDBinputs[k] for k in sorted(specDBinputs, key=order.get)]):
                 fopen.write(strformat.format(*row))
             #fopen.writelines(strformat.format(zip([specDBinputs[k] for k in sorted(specDBinputs, key=order.get)])))
-
-        os.chmod(DBinputs['readableSpecDBFile'],0o777)
                
     # Create csv file
     if DBinputs['csvFlg']:
@@ -569,13 +671,6 @@ def main(argv):
             writer = csv.writer(fopen, delimiter=',',lineterminator='\n')
             writer.writerow([k for k in sorted(specDBinputs,key=order.get)])                       # Write header to file
             writer.writerows(zip(*(specDBinputs[k] for k in sorted(specDBinputs, key=order.get)))) # Write data to file
-
-        os.chmod(DBinputs['csvSpecDBFile'],0o777)
-
-    #-------------------------------------------
-    # change 
-    #-------------------------------------------
-    
                                                                               
 if __name__ == "__main__":
     main(sys.argv[1:])

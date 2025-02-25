@@ -335,7 +335,8 @@ def main(argv):
     #----------------------
     # Loop through day list
     #----------------------
-    for i,snglDay in enumerate(daysList):       
+    for i,snglDay in enumerate(daysList):    
+        print('Precessing {}'.format(snglDay))   
         waccmFlg = False
         
         #---------------------------
@@ -482,6 +483,7 @@ def main(argv):
         #-------------------
         # Write out ZPT file
         #-------------------
+        print('Creating ZPT.nmc.120 at {}'.format(outDir))
         with open(outDir+'ZPT.nmc.120', 'w') as fopen:
             fopen.write("{0:>5}{1:>5} \n".format(1,nlyrs))
             
@@ -527,6 +529,7 @@ def main(argv):
         # Create plots to pdf
         #--------------------
         if not waccmFlg:
+            print('Creating Pressure & Temperature Figures at {}'.format(outDir))
            # Pressure
             plt.plot(PressOut,Z,'rx-',label='Interpolated Pressure')
             plt.plot(waccmP[:,mnthInd],Z,'bx-',label='WACCM V5 Pressure')

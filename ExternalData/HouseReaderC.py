@@ -265,6 +265,7 @@ class MLOread():
             self.data['E_Radiance'].extend([row[17] for row in data])
             self.data['W_Radiance'].extend([row[18] for row in data])
             self.data['Atm_Press'].extend([-9999]*npoints)
+
             
     def formatC(self,fileName,year,month,day):
         ''' '''
@@ -571,10 +572,11 @@ class MLOread():
             #------------------------
             # Open house met file and read data
             #------------------------ 
+            data2 = tryopen(fileNameMet)#[1:]
 
-            data2 = tryopen(fileNameMet)[1:]
+            if data2:  
 
-            if data2:    
+                data2 = data2[1:]  
 
                 try:    
 
@@ -645,8 +647,15 @@ class MLOread():
                 self.data['WindDir_E_of_N'].extend([i for i in WinD_i]) 
 
             except:
+
+                self.data['Outside_T'].extend([-9999]*npoints)
+                self.data['Outside_RH'].extend([-9999]*npoints)
+                self.data['Atm_Press'].extend([-9999]*npoints)
+                self.data['Wind_Speed_mph'].extend([-9999]*npoints) 
+                self.data['WindDir_E_of_N'].extend([-9999]*npoints)
+
                 print ('Error interpolating Met to house time : %s' % fileNameMet)
-                pass
+                #pass
 
 
             
@@ -871,10 +880,264 @@ class TABread():
                 print ('Error in reading file: %s' % fileName)
                 pass 
 
+    #-----------------------  
+    # ADDED FORMAT B FOR TAB. USED AFTER 2022 --- IVAN
+    #----------------------
+    def formatC(self,fileName,fileNameMet, year,month,day):
+        ''' '''
+        #------------------------
+        # Open file and read data
+        #------------------------        
+
+        data = tryopen(fileName)
+
+      
+        if data:                
+            #--------------------------
+            # Remove header information 
+            #--------------------------
+            data[:] = [ row.strip().split() for row in data if not '#' in row and len(row.strip().split()) == 26 ]
+
+            #---------------------------------
+            # Determine number of observations
+            #---------------------------------
+            npoints = len(data)
+                   
+            #------------------------------------------------
+            # Create DateTime entry in Dictionary for sorting
+            #------------------------------------------------
+            #try:
+            self.data['DateTime'].extend([dt.datetime(int(time[0][0:4]),int(time[0][4:6]),int(time[0][6:8]),\
+                                                      int(time[1][0:2]),int(time[1][3:5]),int(time[1][6:8])) for time in data])           
+            
+            datehouse  = [dt.datetime(int(time[0][0:4]),int(time[0][4:6]),int(time[0][6:8]),\
+                                                          int(time[1][0:2]),int(time[1][3:5]),int(time[1][6:8])) for time in data]   
+
+            doyhouse = toYearFraction(datehouse)
+            #------------------
+            # Update dictionary
+            #------------------
+            self.data['Date'].extend([row[0] for row in data])            
+            self.data['Time'].extend([row[1] for row in data])            
+            self.data['Opt_Bnch_Src_T'].extend([-9999]*npoints)   
+            self.data['Beamsplitter_T'].extend([-9999]*npoints)   
+            self.data['Det_Dewar_T'].extend([-9999]*npoints)   
+            self.data['Opt_Bnch_Det_T'].extend([-9999]*npoints)  
+            self.data['Dolores_Int_HD_T'].extend([-9999]*npoints) 
+            self.data['Dolores_Trans_T'].extend([-9999]*npoints)
+            self.data['Room_Box_T'].extend([-9999]*npoints)   
+            self.data['Elec_T'].extend([-9999]*npoints)
+            self.data['Dolores_CPU_T'].extend([-9999]*npoints)        
+            #self.data['Outside_T'].extend([row[9] for row in data])  
+            #self.data['WindDir_W_of_S'].extend([row[8] for row in data])  
+            #self.data['Wind_Speed_mps'].extend([row[9] for row in data])         
+            #self.data['Atm_Press'].extend([row[8] for row in data])   
+            #self.data['Outside_RH'].extend([row[10] for row in data])
+            self.data['Bruker_Optical_RH'].extend([-9999]*npoints) 
+            self.data['LN2_Dewar_P'].extend([row[11] for row in data])
+            self.data['LasA_Rect'].extend([-9999]*npoints) 
+            self.data['LasB_Rect'].extend([-9999]*npoints)
+            self.data['Det_Intern_T_Swtch'].extend([-9999]*npoints)
+            self.data['Det_InSb_DC_Level'].extend([-9999]*npoints)
+            self.data['Elev_angle'].extend([-9999]*npoints) 
+            self.data['Azimuth'].extend([row[25] for row in data])
+            self.data['Clin_Roll'].extend([-9999]*npoints)
+            self.data['Clin_Pitch'].extend([-9999]*npoints)
+            
+            FXSOL = [row[2] for row in data]
+            NXSOL = [row[3] for row in data]
+
+            #    if FXSOL >= NXSOL:
+            self.data['Ext_Solar_Sens'].extend([row[2] for row in data])
+            #    else: 
+            #self.data['Ext_Solar_Sens'].extend([row[3] for row in data])  
+
+            self.data['Quad_Sens'].extend([-9999]*npoints)
+            self.data['Temp_El_Motor'].extend([row[4] for row in data])
+            self.data['Temp_Upper_Seal'].extend([row[5] for row in data])
+            self.data['Temp_Lower_Seal'].extend([row[6] for row in data])
+            self.data['Temp_Lin_Actuator'].extend([row[7] for row in data])
+
+            #except:
+            #    print ('Error in reading file: %s' % fileName)
+            #    pass 
+
+        #------------------------
+        # Open house met file and read data
+        #------------------------ 
+        data2 = tryopen(fileNameMet)#[1:]
+
+        if data2:  
+
+            data2 = data2[1:]  
+
+            if data2:
+
+                try:    
+
+                    print('Meteo File: {}'.format(fileNameMet))
+
+                    data2[:] = [ row.strip().split() for row in data2 if not '#' in row and len(row.strip().split()) == 8 ]
+                    
+
+                    Date = [row[0] for row in data2]
+                    Time = [row[1] for row in data2]
+                    Temp = [row[2] for row in data2]
+                    RelH = [row[3] for row in data2]
+                    Pres = [row[4] for row in data2]
+                    WinS = [row[5] for row in data2]
+                    WinG = [row[6] for row in data2]
+                    WinD = [row[7] for row in data2]
+
+                    # print(int(data2[10][1][0:2]), int(data2[10][1][3:5]), int(data2[10][1][6:8]) )
+                    # for d in data2:
+                    #     print(d)
+                    #     print(int(d[0][0:4]), int(d[0][4:6]), int(d[0][6:8]), int(d[1][0:2]), int(d[1][3:5]), int(d[1][6:8]) )
+                    #     dat = dt.datetime(int(d[0][0:4]), int(d[0][4:6]), int(d[0][6:8]), int(d[1][0:2]), int(d[1][3:5]), int(d[1][6:8]))
+                    # exit()
+
+
+                    dateT =  [dt.datetime(int(time[0][0:4]),int(time[0][4:6]),int(time[0][6:8]),\
+                                                              int(time[1][0:2]),int(time[1][3:5]),int(time[1][6:8])) for time in data2]
+
+
+                    doyMet = toYearFraction(dateT)
+            
+                    Temp = np.asarray(Temp, dtype=np.float)
+                    RelH = np.asarray(RelH, dtype=np.float)
+                    Pres = np.asarray(Pres, dtype=np.float)
+                    WinS = np.asarray(WinS, dtype=np.float)
+                    WinD = np.asarray(WinD, dtype=np.float)
+
+                    #try:
+
+                    Temp_i           = interp1d(doyMet, Temp, axis=0, fill_value=(Temp[0], Temp[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                    RelH_i           = interp1d(doyMet, RelH, axis=0, fill_value=(RelH[0], RelH[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                    Pres_i           = interp1d(doyMet, Pres, axis=0, fill_value=(Pres[0], Pres[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                    WinS_i           = interp1d(doyMet, WinS, axis=0, fill_value=(WinS[0], WinS[-1]), bounds_error=False, kind='nearest')(doyhouse )
+                    WinD_i           = interp1d(doyMet, WinD, axis=0, fill_value=(WinD[0], WinD[-1]), bounds_error=False, kind='nearest')(doyhouse )
+
+                    #except:
+
+                        # Temp_i           = np.interp(doyhouse, doyMet, Temp, left=Temp[0], right= Temp[-1])
+                        # RelH_i           = np.interp(doyhouse, doyMet, RelH, left=RelH[0], right= RelH[-1])
+                        # Pres_i           = np.interp(doyhouse, doyMet, Pres, left=Pres[0], right= Pres[-1])
+                        # WinS_i           = np.interp(doyhouse, doyMet, WinS, left=WinS[0], right= WinS[-1])
+                        # WinD_i           = np.interp(doyhouse, doyMet, WinD, left=WinD[0], right= WinD[-1])
+
+                    
+
+                    #WinS_i = 2.237 * WinS_i # Conversion m/s to miles/h (for TAB only)
+                    
+                    #converting E of N to S of W
+                    for n, wd in enumerate(WinD_i):
+                        wd = float(wd)
+                        if (wd >= 0.) & (wd < 180.):
+                            WinD_i[n] = wd + 180.
+                        elif (wd >= 180) & (wd <360.):
+                            WinD_i[n] = wd - 180.
+
+                    WinS_i = ["{0:.3f}".format(i) for i in WinS_i]
+                    Temp_i = ["{0:.3f}".format(i) for i in Temp_i]
+                    RelH_i = ["{0:.3f}".format(i) for i in RelH_i]
+                    Pres_i = ["{0:.3f}".format(i) for i in Pres_i]
+                    WinD_i = ["{0:.3f}".format(i) for i in WinD_i]
+
+            
+
+                #self.data['Date'].extend(["{0:02d}".format(indvDate.year)+"{0:02d}".format(indvDate.month)+"{0:02d}".format(indvDate.day) for indvDate in datetimeTemp])
+
+                except:
+                    print ('Error in reading file: %s' % fileNameMet)
+                    pass
+
+        try:
+
+        
+            self.data['Outside_T'].extend([i for i in Temp_i]) 
+            self.data['Outside_RH'].extend([i for i in RelH_i]) 
+            self.data['Atm_Press'].extend([i for i in Pres_i]) 
+            self.data['Wind_Speed_mps'].extend([i for i in WinS_i]) 
+            self.data['WindDir_W_of_S'].extend([i for i in WinD_i]) 
+
+        except:
+
+            self.data['Outside_T'].extend([-9999]*npoints)
+            self.data['Outside_RH'].extend([-9999]*npoints)
+            self.data['Atm_Press'].extend([-9999]*npoints)
+            self.data['Wind_Speed_mps'].extend([-9999]*npoints) 
+            self.data['WindDir_W_of_S'].extend([-9999]*npoints)
+
+            print ('Error interpolating Met to house time : %s' % fileNameMet)
+            #pass
+
+    def sortData(self):
+        ''' '''
+        base = self.data['DateTime']
+        for key in self.data:
+            self.data[key] = [y for (x,y) in sorted(zip(base,self.data[key]))]
+
+class FL0read():
+    '''  Class for reading FL0 house data  '''    
+    def __init__(self):
+        ''' Initializations '''
+        #-------------------------------------
+        # initialize dictionary for house data
+        #-------------------------------------
+        self.data = {'DateTime':[],                         # Internallly used for sorting entries
+                     'Date':[],                             # 
+                     'Time':[],
+                     'Outside_T':[],
+                     'Outside_RH':[],
+                     'Wind_Speed_mps':[],    # meters/s
+                     'WindDir_E_of_N':[],
+                     'Radiance_V':[],
+                     'Atm_Press':[]}         # hPa (mbar)
+        
+            
+    def formatA(self,fileNameMet,year,month,day):
+        ''' '''
+        #------------------------
+        # Open file and read data
+        #------------------------
+        data = tryopen(fileNameMet)
+
+        if data:  
+
+            data = data[1:]  
+
+            if data:  
+
+                print('Meteo File: {}'.format(fileNameMet))
+
+                data[:]  = [ row.strip().split() for row in data if not '#' in row and len(row.strip().split()) == 8 ]
+
+                npoints = len(data)
+
+                self.data['Date'].extend([row[0] for row in data])
+                self.data['Time'].extend([row[1] for row in data])
+                self.data['Outside_T'].extend(["{0:.3f}".format(float(row[2])) for row in data])
+                self.data['Outside_RH'].extend(["{0:.3f}".format(float(row[3])) for row in data])
+                self.data['Atm_Press'].extend(["{0:.3f}".format(float(row[4])) for row in data])
+                self.data['Wind_Speed_mps'].extend(["{0:.3f}".format(float(row[5])) for row in data])
+                self.data['WindDir_E_of_N'].extend(["{0:.3f}".format(float(row[7])) for row in data])
+
+                self.data['DateTime'].extend([dt.datetime(int(time[0][0:4]),int(time[0][4:6]),int(time[0][6:8]),\
+                                                          int(time[1][0:2]),int(time[1][3:5]),int(time[1][6:8])) for time in data]) 
+
+                self.data['Radiance_V'].extend([-9999]*npoints) 
+
+
+
+                
 
 ##############        
     def sortData(self):
         ''' '''
+
+        for key in self.data:
+            self.data[key] = np.asarray(self.data[key])
+
         base = self.data['DateTime']
         for key in self.data:
             self.data[key] = [y for (x,y) in sorted(zip(base,self.data[key]))]

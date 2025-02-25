@@ -381,6 +381,8 @@ def main(argv):
         #------------------------------------------
         for sngDir in dirListYr:
 
+            print(sngDir)
+
             #----------------------------
             # Get date in datetime format
             #----------------------------

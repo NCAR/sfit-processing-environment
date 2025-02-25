@@ -13,10 +13,10 @@
 # don't need these (e.g. they are not used in plotting program)
 #--------------------------------------------------------------
 
-loc        = 'tab'                  # Name of station location
-gasName    = 'c2h6'                   # Name of gas
-ver        = 'Current_v2'           # Name of retrieval version to process
-ctlF       = 'sfit4_v2.ctl'            # Name of ctl file
+loc        = 'fl0'                  # Name of station location
+gasName    = 'co'                   # Name of gas
+ver        = 'Current_v3_RD'           # Name of retrieval version to process
+ctlF       = 'sfit4.ctl'            # Name of ctl file
 
 #------
 # Flags
@@ -55,11 +55,11 @@ maxCurv    = 1.0
 #----------------------
 # Date range to process
 #----------------------
-iyear      = 1999
-imnth      = 1
-iday       = 1
-fyear      = 2019
-fmnth      = 12
+iyear      = 2024
+imnth      = 7
+iday       = 29
+fyear      = 2024
+fmnth      = 7
 fday       = 31
 
 #----------------------------

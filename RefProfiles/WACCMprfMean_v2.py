@@ -46,30 +46,36 @@ def segmnt(seq,n):
     for i in xrange(0,len(seq),n):
         yield seq[i:i+n]  
 
+from sys import intern
 def readRefPrf(fname='', parms=''):
 
         ''' Reads in reference profile, an input file for sfit4 (raytrace) '''
         refPrf = {}
         
-        try:
-            with open(fname,'r') as fopen: lines = fopen.readlines()
-                            
-            #----------------------------------------
-            # Get Altitude, Pressure, and Temperature
-            # from reference.prf file
-            #----------------------------------------
-            nlyrs  = int(lines[0].strip().split()[1])
-            nlines = int(np.ceil(nlyrs/5.0))
+        #try:
+        with open(fname,'r') as fopen: lines = fopen.readlines()
+                        
+        #----------------------------------------
+        # 
+        #---------------------------------------- 
+        nlyrs  = int(lines[0].strip().split()[1])
+        nlines = int(np.ceil(nlyrs/5.0))
+        
+        for ind,line in enumerate(lines):
             
-            for ind,line in enumerate(lines):
-                if any(p in line for p in parms):
+            if any(p in line for p in parms):
+
+
+                if len(line.strip().split()[0].lower()) == len(parms[0].lower()): 
 
                     val = [x for x in parms if x in line][0]
-                   
-                    refPrf.setdefault(val,[]).append([float(x[:-1]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
+                        
+                    #refPrf.setdefault(val,[]).append([float(x[:]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
+                    try: refPrf.setdefault(val,[]).append([float(x[:]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()])
+                    except:   refPrf.setdefault(val,[]).append([float(x.split(',')[0]) for row in lines[ind+1:ind+nlines+1] for x in row.strip().split()]  )
 
-        except Exception as errmsg:
-            print (errmsg)
+        #except Exception as errmsg:
+        #    print (errmsg)
         
         #------------------------
         # Convert to numpy arrays
@@ -117,7 +123,7 @@ def main():
     # Single Output file
     #------------------------
     #outputFile = '/data/Campaign/FL0/waccm/WACCMref_V6.FL0_v1p0'
-    outputFile = '/data/Campaign/FL0/waccm/WACCMref_V7.FL0'
+    outputFile = '/data/Campaign/FL0/waccm/WACCMref_V7.FL0_v2'
 
     #---------------------------------------------------------------------------------------------
     #
@@ -190,9 +196,7 @@ def main():
                         fout.write(strformat.format(*row))
 
                 else:
-
-                    print('Using: {}'.format(reffile))
-                    
+                    print('Using {} for gas {}'.format(reffile, gas))    
                     #-------------------------------------------
                     #if gas is not in waccm folder use reference profile
                     #-------------------------------------------
@@ -202,9 +206,16 @@ def main():
                     fout.write(line2txt)
                 
                     ckFile(reffile,exit=True)
-                    refprf = readRefPrf(fname=reffile, parms = [gas.upper()])
-                    refprf =  np.asarray(refprf[gas.upper()][0]) 
+
+                    #if gas.upper() == 'N2':  g_i = ['N2', '1976 U.S. STANDARD']
+                    #else:                    g_i = gas.upper()
                     
+                    g_i = gas.upper()
+
+                    refprf = readRefPrf(fname=reffile, parms = [g_i])
+                    #print(refprf[gas.upper()])
+                    #refprf =  np.asarray(refprf[gas.upper()][0]) 
+                    refprf =  np.asarray(refprf[gas.upper()])[0]
 
                     for row in segmnt(refprf, 5):
                         strformat = ','.join('{:>12.3e}' for i in row) + ', \n'

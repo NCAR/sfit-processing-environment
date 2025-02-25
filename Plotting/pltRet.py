@@ -90,6 +90,7 @@ import matplotlib.cm as mplcm
 import matplotlib.colors as colors
 import matplotlib.gridspec as gridspec
 
+matplotlib.use(backend="TkAgg")
 
 try:
     import warnings
@@ -123,7 +124,7 @@ def main(argv):
         # Retrieve command line arguments
         #--------------------------------
         try:
-                opts, args = getopt.getopt(sys.argv[1:], 'i:f:S?')
+                opts, args = getopt.getopt(sys.argv[1:], 'i:f:Ss?')
 
         except getopt.GetoptError as err:
                 print (str(err))
@@ -143,7 +144,7 @@ def main(argv):
                 if opt == '-i':
                     wrkDir = arg
                     dc.ckDir(wrkDir,exitFlg=True)
-                elif opt == '-S':
+                elif opt.upper() == '-S':
 
                     saveFlg = True
 
@@ -212,8 +213,9 @@ def main(argv):
         #--------------------------
         #gas.pltSpectra()
         if spcFlg: 
-            try: gas.pltSpectra()
-            except: print ('\n*************ERROR IN PLOTTING FIT****************\n') 
+            #try: 
+            gas.pltSpectra()
+            #except: print ('\n*************ERROR IN PLOTTING FIT****************\n') 
 
         #----------------------
         # Call to plot profiles

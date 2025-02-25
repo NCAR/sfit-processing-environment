@@ -41,6 +41,15 @@ def ckFile(fName,logFlg=False,exit=False):
         return False
     else: return True
 
+def ckDirMk(dirName,logFlg=False):
+    ''' '''
+    if not ( os.path.exists(dirName) ):
+        os.makedirs( dirName )
+        if logFlg: logFlg.info( 'Created folder %s' % dirName)  
+        return False
+    else:
+        return True
+
 def segmnt(seq,n):
     '''Yeilds successive n-sized segments from seq'''
     try:
@@ -91,7 +100,8 @@ def main():
     #-----------------
     #Inputs
     #-----------------
-    inputDir   = '/data/Campaign/FL0/waccm/Boulder.V6/'
+    #inputDir   = '/data/Campaign/TAB/waccm/Thule.V7/'
+    inputDir   = '/net/nitrogen/ftp/user/jamesw/IRWG/2021/WACCM.v7/Boulder.V7/'
 
     #------------------------
     # In case a gas is not in WACCM use this reference file (example provided but each site is different)
@@ -106,11 +116,12 @@ def main():
     #------------------------
     # Header for WACCM (Comment for all WACCM species)
     #------------------------
-    ctitle     = 'WACCM-V4 CESM REFC1.3 1980-2020 CCMVal/CCMI, 2012' 
+    #ctitle     = 'WACCM-V4 CESM REFC1.3 1980-2020 CCMVal/CCMI, 2012' 
+    ctitle     ='CMIP6-historical-WACCM + CMIP6-SSP5-8.5-WACCM (1980-2040), 2021'
     
-    gasoi      = 'no2'  
+    gasoi      = 'ch4'  
     
-    outputFld  = '/data/Campaign/FL0/waccm/'+ gasoi.lower() + 'x1.0/'
+    outputFld  = '/data/Campaign/FL0/waccm/'+ gasoi.lower()+'/'
 
     #---------------------------------------------------------------------------------------------
     #
@@ -129,6 +140,8 @@ def main():
 
         for ind,line in enumerate(lines[1:]): gases.append(line.strip().split()[1])
 
+    ckDirMk(outputFld)
+
     #-----------------
     #
     #-----------------
@@ -146,11 +159,12 @@ def main():
     # Open output file 
     #-----------------
 
-    prfgas = np.zeros((12, 42))
+    #prfgas = np.zeros((12, 42))
+    prfgas = []
 
     for mnth in range(1, 13):
 
-        outputFile = outputFld + 'WACCMref_V6-'+"{0:02d}".format(mnth)+'.dat'
+        outputFile = outputFld + 'WACCMref_V7-'+"{0:02d}".format(mnth)+'.dat'
 
         with open(outputFile,'w+') as fout:
 
@@ -231,7 +245,9 @@ def main():
 
                             print data_mean
 
-                            prfgas[mnth-1, :] = data_mean
+                            #prfgas[mnth-1, :] = data_mean
+                            prfgas.append(data_mean)
+
 
                     else:
                         #-------------------------------------------
@@ -249,9 +265,13 @@ def main():
                             strformat = ','.join('{:>12.3E}' for i in row) + ', \n'
                             fout.write(strformat.format(*row))
 
-    prfgas = np.asarray(prfgas)
 
-    fig1, ax1 = plt.subplots(sharey=True, figsize=(6,7))
+    prfgas = np.asarray(prfgas)
+    #print(prfgas.shape)
+    #exit()
+
+    #fig1, ax1 = plt.subplots(sharey=True, figsize=(6,7))
+    fig1, (ax1, ax2) = plt.subplots(1, 2, sharey=True, figsize=(6,6))
     clmap = 'jet'  # jet, rainbow, gist_ncar
     
     cm             = plt.get_cmap(clmap)
@@ -261,29 +281,29 @@ def main():
     months = range(1, 13)
 
     ax1.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in months] ) )
-    #ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in months] ) )
+    ax2.set_prop_cycle( cycler('color', [scalarMap.to_rgba(x) for x in months] ) )
 
     for i in range(0, 12): 
         ax1.plot(prfgas[i,:]*1e9, alt, label=str(i+1))
-        #ax2.plot(prfgas[i,:]*1e9, alt)
+        ax2.plot(prfgas[i,:]*1e9, alt)
     ax1.grid(True,which='both')
     ax1.legend(prop={'size':9})
     ax1.set_ylabel('Altitude [km]', fontsize=12)
     ax1.set_xlabel('VMR [ppb]', fontsize=12 )
     ax1.tick_params(which='both',labelsize=12)
-    ax1.set_ylim((0,80))
+    ax1.set_ylim((0,120))
     #ax1.set_xlim((0,np.max((waccmW[-1,mnthInd],Q_day[-1]))))
     #ax1.set_title(YYYY+'-'+MM+'-'+DD)
 
         
-    # ax2.grid(True,which='both')
-    # ax2.set_xlabel('VMR [ppb]', fontsize=12)
-    # ax2.tick_params(which='both',labelsize=12)
-    # #ax2.set_ylim((0,40))
-    # ax2.set_xscale('log')
+    ax2.grid(True,which='both')
+    ax2.set_xlabel('VMR [ppb]', fontsize=12)
+    ax2.tick_params(which='both',labelsize=12)
+    #ax2.set_ylim((0,40))
+    ax2.set_xscale('log')
 
     plt.show(block=False)
-    plt.savefig(outputFld+gasoi+'.png', bbox_inches='tight')
+    plt.savefig(outputFld+gasoi+'_waccmv7.png', bbox_inches='tight')
     user_input = raw_input('Press any key to exit >>> ')
     sys.exit()
 

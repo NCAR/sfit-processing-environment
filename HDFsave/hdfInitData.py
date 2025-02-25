@@ -178,10 +178,15 @@ class HDFinitData(object):
         #------------
         # Filter data
         #------------
+
+        if pyData.empty: return
         
         pyData.fltrHDFdata(maxRMS=mxRMS,minSZA=minSZA,maxSZA=mxSZA,minDOF=minDOF, maxDOF=maxDOF, maxCHI=maxCHI,minTC=minTC,maxTC=maxTC,dofF=dofFlg,
                            rmsF=rmsFlg, tcF=tcFlg, pcF=pcFlg, cnvF=cnvFlg, szaF=szaFlg,chiFlg=chiFlg,tcMMflg=tcMMflg, h2oFlg=h2oFlg,
                            bckgFlg=bckgFlg, minSlope=minSlope, maxSlope=maxSlope, minCurv=minCurv, maxCurv=maxCurv)
+
+
+
         
         #------------
         # Assign data

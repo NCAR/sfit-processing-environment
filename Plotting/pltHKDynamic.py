@@ -58,6 +58,7 @@ import matplotlib
 from dateutil import tz
 import matplotlib.backends.backend_tkagg as tkagg
 matplotlib.get_backend()
+import math
 #'TkAgg'
 #matplotlib.use("TkAgg")
     
@@ -148,16 +149,18 @@ class RemoteHK():
         if self.pdfFlg:
             pdfPath  = os.path.dirname(self.dir + self.date)
             pdfFile  = pdfPath + "/HousePlots.pdf"
+            #self.pdfFile  = 'HousePlots.pdf'
 
-            #if ckFile(pdfFile): os.remove(pdfFile)
+            if ckFile(pdfFile): os.remove(pdfFile)
                 
-            ckDir(os.path.dirname(pdfFile),exitFlg=True)
-            pdfSave = PdfPages(pdfFile)
+            #ckDir(os.path.dirname(pdfFile),exitFlg=True)
+            pdfSave = PdfPages(self.pdfFile)
 
     def openFig(self):
     
         pdfPath  = self.dir + self.date
         pdfFile  = pdfPath + "/HousePlots.pdf"
+        #pdfFile  = "HousePlots.pdf"
                 
         ckDir(os.path.dirname(pdfFile),exitFlg=True)
         self.pdfSave = PdfPages(pdfFile)
@@ -265,79 +268,482 @@ class RemoteHK():
         #----------------------
         # UTC to Local Time
         #----------------------
-        from_zone = tz.gettz('UTC')
-        print(self.site)
-        if    self.site.lower() == 'tab': to_zone   = tz.gettz('America/Thule')
-        elif  self.site.lower() == 'mlo': to_zone   = tz.gettz('Pacific/Honolulu')
-        elif  self.site.lower() == 'fl0': to_zone   = tz.gettz('America/Denver')
+        if self.hkFlg:
 
+            from_zone = tz.gettz('UTC')
+            print(self.site)
+            if    self.site.lower() == 'tab': to_zone   = tz.gettz('America/Thule')
+            elif  self.site.lower() == 'mlo': to_zone   = tz.gettz('Pacific/Honolulu')
+            elif  self.site.lower() == 'fl0': to_zone   = tz.gettz('America/Denver')
+
+            
+            # America/Thule   Greenland 
+
+            self.obsTimelt = [ i.replace(tzinfo=from_zone).astimezone(to_zone) for i in self.obsTime]
+
+
+            if dt.date(int(self.iyear), int(self.imnth), int(self.iday) ) >= dt.date(2019,5,5):
+
+                try:
+                    self.fname2 = self.dir + self.date + '/houseMet.log'
+
+                    with open(self.fname2,"r") as fopen: lines = fopen.readlines()
+                    
+                    #---------------
+                    # Read in Header
+                    #---------------
+                    #for line in lines:
+                        #if line.strip().startswith("#$"):
+                        #   hdrs = [ val for val in line.strip().split()[3:]]
+                    
+                    hdrs = [ val for val in lines[0].strip().split()[2:]]
+                    
+                    #-------------------------
+                    # Choose variables to plot
+                    #-------------------------
+                    ii    = []
+                    idValMet = []
+                    for i,v in enumerate(hdrs):
+                        ii.append(ii)
+                        idValMet.append(v)
+                        print("{0:4}= {1:}".format(i,v))
+
+                    #----------------------
+                    # Read in date and time
+                    #----------------------
+                    #self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
+                    #                            int(line[17:19]),int(line[20:22]),int(line[23:25])) for line in lines[1:-2] if (not line.startswith("#"))])
+                    
+                    self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
+                                        int(line[13:15]),int(line[16:18]),int(line[19:21])) for line in lines[1:-2] if (not line.startswith("#"))])
+
+                    for i, v in enumerate(idValMet):
+                        try:
+                            self.vars.setdefault(v,[]).append(np.array([float(line.strip().split()[i+2]) for line in lines[1:-2] if not line.startswith("#")]))
+                            #self.vars[v] = np.interp(self.obsTime, self.obsTime2, np.asarray(self.vars[v]) )
+                        except ValueError:
+                            #print v
+                            self.vars.setdefault(v,[]).append(np.array([line.strip().split()[i+2] for line in lines[1:-2] if not line.startswith("#")]))
+
+                    doyhouse = toYearFraction(self.obsTime)
+                    doyMet   = toYearFraction(self.obsTime2)  
+
+                    
+                    #----------------------
+
+                    for i, v in enumerate(idValMet):
+
+                        self.vars[v]  = interpolate.interp1d(doyMet, self.vars[v][0], axis=0, fill_value=(self.vars[v][0][0], self.vars[v][0][-1]), bounds_error=False, kind='nearest')(doyhouse )
+
+
+                    self.flgMet = True
+
+                except Exception as errmsg:
+                    print('Error reading houseMet.log: ', errmsg)
+
+    #----------------------------
+    # READ HK MET
+    #----------------------------
+    def readHKmet(self):
         
-        # America/Thule   Greenland 
+        #----------------------------
+        # File and directory checking
+        #----------------------------
+        ckDir(self.dir,exitFlg=True)
 
-        self.obsTimelt = [ i.replace(tzinfo=from_zone).astimezone(to_zone) for i in self.obsTime]
+        self.varsMet = {}
+
+        self.flgMet = False
+
+        try:
+            self.fname2 = self.dir + self.date + '/houseMet.log'
+
+            with open(self.fname2,"r") as fopen: lines = fopen.readlines()
+            
+            
+            hdrs = [ val for val in lines[0].strip().split()[2:]]
+            
+            #-------------------------
+            # Choose variables to plot
+            #-------------------------
+            ii    = []
+            idValMet = []
+            for i,v in enumerate(hdrs):
+                ii.append(ii)
+                idValMet.append(v)
+                print("{0:4}= {1:}".format(i,v))
+
+            #----------------------
+            # Read in date and time
+            #----------------------
+            #self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
+            #                            int(line[17:19]),int(line[20:22]),int(line[23:25])) for line in lines[1:-2] if (not line.startswith("#"))])
+            
+            self.varsMet['DT'] = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
+                                int(line[13:15]),int(line[16:18]),int(line[19:21])) for line in lines[1:-2] if (not line.startswith("#"))])
+
+            for i, v in enumerate(idValMet):
+                try:
+                    self.varsMet.setdefault(v,[]).append(np.array([float(line.strip().split()[i+2]) for line in lines[1:-2] if not line.startswith("#")]))
+                    #self.vars[v] = np.interp(self.obsTime, self.obsTime2, np.asarray(self.vars[v]) )
+                except ValueError:
+                    #print v
+                    self.varsMet.setdefault(v,[]).append(np.array([line.strip().split()[i+2] for line in lines[1:-2] if not line.startswith("#")]))
+
+            
 
 
-        if dt.date(int(self.iyear), int(self.imnth), int(self.iday) ) >= dt.date(2019,5,5):
+            self.flgMet = True
 
+        except Exception as errmsg:
+            print('Error reading houseMet.log: ', errmsg)
+
+
+
+    #----------------------------
+    # READ MEASUREMENT LOG FILE (...internal use at NCAR)
+    #----------------------------
+    def readAtdsis(self):
+        
+        #----------------------------
+        # File and directory checking
+        #----------------------------
+
+        #----------------------------
+        # File and directory checking
+        #----------------------------
+        ckDir(self.dir,exitFlg=True)
+
+        self.atdsis = {}
+
+        self.atdsisFlg  = False
+       
+        #-----------------------------------------------
+        # 
+        #-----------------------------------------------
+        self.fname = self.dir + self.date + '/atdsis.log'
+
+        #-------------------
+        # Open and read file
+        #-------------------
+        with open(self.fname,"r") as fopen: lines = fopen.readlines()
+
+        # hdrs = [ val for val in lines[0].strip().split('\t')[:]]
+       
+        
+        #---------------
+        # Read in Header
+        #---------------
+        hdrs   = ['ATDSIS_DATE', 'ATDSIS_TIME', 'ATDSIS_EPHSZA', 'ATDSIS_EPHAZI', 'ATDSIS_MOTAZI', 'ATDSIS_ANIN1(0X2314.07)', 'ATDSIS_ANIN2(0X2314.08)', 'ATDSIS_ANIN1(0X2313.04)', 'ATDSIS_ANIN2(0X2313.14)']
+         
+        #-------------------------
+        # Choose variables to plot
+        #-------------------------
+        ii    = []
+        idVal = []
+        for i,v in enumerate(hdrs):
+            ii.append(ii)
+            idVal.append(v)      
+
+        #----------------------
+        # Read in date and time
+        #----------------------
+        self.atdsis['DT_Meas'] = np.array([dt.datetime(int(self.iyear),int(self.imnth),int(self.iday),
+                                    int(line[13:15]),int(line[16:18]),int(line[19:21])) for line in lines[1:-2] ])
+
+        if len(self.atdsis['DT_Meas']) >= 1: self.atdsisFlg = True
+
+        for i, v in enumerate(idVal):
+            print(i, v)
             try:
-                self.fname2 = self.dir + self.date + '/houseMet.log'
+                self.atdsis.setdefault(v,[]).append(np.asarray([float(line.strip().split()[i]) for line in lines[1:-2] ]) )
+            except:
+                self.atdsis.setdefault(v,[]).append(np.asarray([line.strip().split()[i] for line in lines[1:-2] ]) )
 
-                with open(self.fname2,"r") as fopen: lines = fopen.readlines()
+        for i, v in enumerate(idVal):
+            self.atdsis[v] = self.atdsis[v][0]
+
+        self.atdsisFlg  = True   
+
+        #except Exception as errmsg:
+        #    print('Error reading Measurement.log: ', errmsg)
+
+ 
+
+    #----------------------------
+    # PLOT atdsis
+    #----------------------------
+    def plt_atdsis(self, Groups= False, Groups_Lab= False, showID=False):
+
+        self.readAtdsis()
+
+        print('Plotting atdsis.log!')
+
+
+
+        if self.atdsisFlg:
+
+            epsza     = self.atdsis['ATDSIS_EPHSZA']
+            epsaa     = self.atdsis['ATDSIS_EPHAZI']
+            mosaa     = self.atdsis['ATDSIS_MOTAZI']
+            DT        = self.atdsis['DT_Meas']
+
+            from_zone = tz.gettz('UTC')
+            
+            if    self.site.lower() == 'tab': to_zone   = tz.gettz('America/Thule')
+            elif  self.site.lower() == 'mlo': to_zone   = tz.gettz('Pacific/Honolulu')
+            elif  self.site.lower() == 'fl0': to_zone   = tz.gettz('America/Denver')
+
+            # America/Thule   Greenland 
+            LT = [ i.replace(tzinfo=from_zone).astimezone(to_zone) for i in DT]
+
+            #lab   = [ ['ATDSIS_ANIN1(0X2314.07)', 'ATDSIS_ANIN2(0X2314.08)'], ['ATDSIS_ANIN1(0X2313.04)', 'ATDSIS_ANIN2(0X2313.14)']]
+            lab   = [ ['ATDSIS_ANIN1(0X2314.07)', 'ATDSIS_ANIN2(0X2314.08)']]
+
+            for li in lab:
+
+                anin1     = self.atdsis[li[0]]
+                anin2     = self.atdsis[li[1]]
+                 
+                #----------------------------
+                # 
+                #----------------------------
+                fig1, ax1 = plt.subplots(figsize=(10,6))
+
+                ax1.plot(LT, anin1*-1., "o" ,markersize=2, linestyle='-', label=li[0])
+                ax1.plot(LT, anin2*-1., "o" ,markersize=2, linestyle='-', label=li[1])
+
+                axr1 = ax1.twinx()
+                axr2 = ax1.twinx()
+                #axr2.spines.right.set_position(("axes", 1.2))
+                axr2.spines["right"].set_position(("axes", 1.1)) # red one
+
+                axr1.plot(LT,epsza,"." , markersize=2, label = 'sza', color='red', alpha=0.5)
+                axr2.plot(LT,epsaa,"o" , markersize=2, label = 'epsaa', color='gray', alpha=0.5)
+                axr2.plot(LT,mosaa,"^" , markersize=2, label = 'mosaa', color='black', alpha=0.5)
+
+                ax1.set_ylabel('Analog Input')
+                ax1.grid(True)
+                ax1.set_xlabel("LT")
+                #ax1.set_ylim(-0.05, ymax=4)
+                #ax1.xaxis.set_major_locator(HourLocator())
+                #ax1.xaxis.set_major_formatter(DateFormatter("%H:%M"))
+                #ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                ax1.set_title("Date = {:%Y-%B-%d}".format(DT[1]))
+                ax1.legend(prop={'size':9})#, loc=1)
+                #axr1.legend(prop={'size':9})#, loc=2)
+
+                #axr1.spines["right"].set_position(("axes", -0.4)) # red one
+                #axr2.spines["left"].set_position(("axes", -0.1)) # red one
+
+                axr1.tick_params(axis ='y', labelcolor = 'red')
+                axr1.set_ylabel('sza', color = 'red')
+
+                axr2.tick_params(axis ='y', labelcolor = 'gray')
+                axr2.set_ylabel('saa', color = 'gray')
+                #plt.suptitle("Date = {:%Y-%B-%d}".format(self.vars['DT_Meas'][2]), fontsize=16)
+
+                fig1.subplots_adjust(left=0.1, bottom=0.1, right=0.85, top=0.93)
+            
+                if self.pdfFlg: 
+                    self.pdfSave.savefig(fig1,dpi=600, bbox_inches='tight')
+                else:
+                    plt.show(block=False)
+
+                #----------------------------
+                # 
+                #----------------------------
+                fig1, ax1 = plt.subplots(figsize=(10,6))
+
+                ax1.plot(epsaa, anin1, "o" ,markersize=2, linestyle='-', label=li[0])
+                ax1.plot(epsaa, anin2, "o" ,markersize=2, linestyle='-', label=li[1])
+
+                axr1 = ax1.twinx()
+
+                axr1.plot(epsaa,epsza,"." , markersize=2, label = 'sza', color='red', alpha=0.5)
                 
-                #---------------
-                # Read in Header
-                #---------------
-                #for line in lines:
-                    #if line.strip().startswith("#$"):
-                    #   hdrs = [ val for val in line.strip().split()[3:]]
+                ax1.set_ylabel('Analog Inputs')
+                ax1.grid(True)
+                ax1.set_xlabel("SAA")
+                #ax1.set_ylim(-0.05, ymax=4)
+            
+                ax1.legend(prop={'size':9})#, loc=1)
+                ax1.set_title("Date = {:%Y-%B-%d}".format(DT[1]))
+                #axr1.legend(prop={'size':9})#, loc=2)
+
+                #axr1.spines["right"].set_position(("axes", -0.4)) # red one
+                #axr2.spines["left"].set_position(("axes", -0.1)) # red one
+
+                axr1.tick_params(axis ='y', labelcolor = 'red')
+                axr1.set_ylabel('sza', color = 'red')
+
+                #plt.suptitle("Date = {:%Y-%B-%d}".format(self.vars['DT_Meas'][2]), fontsize=16)
+
+                #----------------------------
+                # 
+                #----------------------------
+                epsza_rad = np.asarray([math.radians(sza_i) for sza_i in epsza])
+
+
+                fig1, ax1 = plt.subplots(figsize=(10,6))
+
+                ax1.plot(epsaa, anin1/ np.cos(epsza_rad), "o" ,markersize=2, linestyle='-', label=li[0])
+                ax1.plot(epsaa, anin2/ np.cos(epsza_rad), "o" ,markersize=2, linestyle='-', label=li[1])
+
+                axr1 = ax1.twinx()
+
+                axr1.plot(epsaa,epsza,"." , markersize=2, label = 'sza', color='red', alpha=0.5)
                 
-                hdrs = [ val for val in lines[0].strip().split()[2:]]
+                ax1.set_ylabel('Analog Inputs - scaled by /cosine(sza)')
+                ax1.grid(True)
+                ax1.set_xlabel("SAA")
+                #ax1.set_ylim(-0.05, ymax=4)
+            
+                ax1.legend(prop={'size':9})#, loc=1)
+                ax1.set_title("Date = {:%Y-%B-%d}".format(DT[1]))
+                #axr1.legend(prop={'size':9})#, loc=2)
+
+                #axr1.spines["right"].set_position(("axes", -0.4)) # red one
+                #axr2.spines["left"].set_position(("axes", -0.1)) # red one
+
+                axr1.tick_params(axis ='y', labelcolor = 'red')
+                axr1.set_ylabel('sza', color = 'red')
+
+                #----------------------------
+                # 
+                #----------------------------
                 
-                #-------------------------
-                # Choose variables to plot
-                #-------------------------
-                ii    = []
-                idValMet = []
-                for i,v in enumerate(hdrs):
-                    ii.append(ii)
-                    idValMet.append(v)
-                    print("{0:4}= {1:}".format(i,v))
 
-                #----------------------
-                # Read in date and time
-                #----------------------
-                #self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
-                #                            int(line[17:19]),int(line[20:22]),int(line[23:25])) for line in lines[1:-2] if (not line.startswith("#"))])
+                fig1, ax1 = plt.subplots(figsize=(10,6))
+
+                ax1.plot(LT, anin1 / np.cos(epsza_rad), "o" ,markersize=2, linestyle='-', label=li[0])
+                ax1.plot(LT, anin2 / np.cos(epsza_rad), "o" ,markersize=2, linestyle='-', label=li[1])
+
+                axr1 = ax1.twinx()
+                axr2 = ax1.twinx()
+                #axr2.spines.right.set_position(("axes", 1.2))
+                axr2.spines["right"].set_position(("axes", 1.1)) # red one
+
+                axr1.plot(LT,epsza,"." , markersize=2, label = 'sza', color='red', alpha=0.5)
+                axr2.plot(LT,epsaa,"o" , markersize=2, label = 'epsaa', color='gray', alpha=0.5)
+                axr2.plot(LT,mosaa,"^" , markersize=2, label = 'mosaa', color='black', alpha=0.5)
+
+                ax1.set_ylabel('Analog Input')
+                ax1.grid(True)
+                ax1.set_xlabel("LT")
+                #ax1.set_ylim(-0.05, ymax=10)
+                #ax1.xaxis.set_major_locator(HourLocator())
+                #ax1.xaxis.set_major_formatter(DateFormatter("%H:%M"))
+                #ax1.xaxis.set_minor_locator(AutoMinorLocator())
+                ax1.set_title("Date = {:%Y-%B-%d}".format(DT[1]))
+                ax1.legend(prop={'size':9})#, loc=1)
+                #axr1.legend(prop={'size':9})#, loc=2)
+
+                #axr1.spines["right"].set_position(("axes", -0.4)) # red one
+                #axr2.spines["left"].set_position(("axes", -0.1)) # red one
+
+                axr1.tick_params(axis ='y', labelcolor = 'red')
+                axr1.set_ylabel('sza', color = 'red')
+
+                axr2.tick_params(axis ='y', labelcolor = 'gray')
+                axr2.set_ylabel('saa', color = 'gray')
+                #plt.suptitle("Date = {:%Y-%B-%d}".format(self.vars['DT_Meas'][2]), fontsize=16)
+
+                fig1.subplots_adjust(left=0.1, bottom=0.1, right=0.85, top=0.93)
                 
-                self.obsTime2 = np.array([dt.datetime(int(line[0:4]),int(line[4:6]),int(line[6:8]),
-                                    int(line[13:15]),int(line[16:18]),int(line[19:21])) for line in lines[1:-2] if (not line.startswith("#"))])
-
-                for i, v in enumerate(idValMet):
-                    try:
-                        self.vars.setdefault(v,[]).append(np.array([float(line.strip().split()[i+2]) for line in lines[1:-2] if not line.startswith("#")]))
-                        #self.vars[v] = np.interp(self.obsTime, self.obsTime2, np.asarray(self.vars[v]) )
-                    except ValueError:
-                        #print v
-                        self.vars.setdefault(v,[]).append(np.array([line.strip().split()[i+2] for line in lines[1:-2] if not line.startswith("#")]))
-
-                doyhouse = toYearFraction(self.obsTime)
-                doyMet   = toYearFraction(self.obsTime2)  
-
-                
-                #----------------------
-
-                for i, v in enumerate(idValMet):
-
-                    self.vars[v]  = interpolate.interp1d(doyMet, self.vars[v][0], axis=0, fill_value=(self.vars[v][0][0], self.vars[v][0][-1]), bounds_error=False, kind='nearest')(doyhouse )
+                if self.pdfFlg: 
+                    self.pdfSave.savefig(fig1,dpi=600, bbox_inches='tight')
+                else:
+                    plt.show(block=False)
 
 
-                self.flgMet = True
+            #except Exception as errmsg:
+            #    print('Error plotting Measurement.log: ', errmsg)
 
-            except Exception as errmsg:
-                print('Error reading houseMet.log: ', errmsg)
+    #----------------------------
+    # PLOT atdsis
+    #----------------------------
+    def plt_HKmet(self, Groups= False, Groups_Lab= False, showID=False):
 
+        self.readHKmet()
+
+    
+
+        print('Plotting hk met!')
+
+
+        if self.flgMet :
+
+            tm        = self.varsMet['Atm_Temperature'][0]
+            rh        = self.varsMet['Atm_Rel_Humidity'][0]
+            ws        = self.varsMet['Atm_Wind_Speed'][0]
+            wd        = self.varsMet['Atm_Wind_Dir'][0]
+            wg        = self.varsMet['Atm_Wind_Gust'][0]
+            DT        = self.varsMet['DT']
+
+            #print(DT)
+
+            from_zone = tz.gettz('UTC')
+            
+            if    self.site.lower() == 'tab': to_zone   = tz.gettz('America/Thule')
+            elif  self.site.lower() == 'mlo': to_zone   = tz.gettz('Pacific/Honolulu')
+            elif  self.site.lower() == 'fl0': to_zone   = tz.gettz('America/Denver')
+
+            # America/Thule   Greenland 
+            LT = [ i.replace(tzinfo=from_zone).astimezone(to_zone) for i in DT]
+
+         
+            #----------------------------
+            # 
+            #----------------------------
+            fig1, (ax, ax1, ax2) = plt.subplots(3, figsize=(10,10), sharex=True)
+
+            ax.plot(LT, tm, "o" ,markersize=2, linestyle='-', label='Temperature')
         
+            axr = ax.twinx()
+            axr.plot(LT,rh,"." , markersize=2, label = 'RH', color='red', alpha=0.5)
 
+            ax1.plot(LT, ws, "o" ,markersize=2, linestyle='-', label='Speed')
+            ax1.plot(LT, wg, "o" ,markersize=2, linestyle='-', label='Gust')
+
+            ax2.plot(LT, wd, "o" ,markersize=2, linestyle='-')
+           
+
+            ax.set_ylabel('Temperature')
+            ax.grid(True)
+            #ax.set_xlabel("LT")
+            #ax1.set_ylim(-0.05, ymax=4)
+            #ax1.xaxis.set_major_locator(HourLocator())
+            #ax1.xaxis.set_major_formatter(DateFormatter("%H:%M"))
+            #ax1.xaxis.set_minor_locator(AutoMinorLocator())
+            ax.set_title("Date = {:%Y-%B-%d}".format(DT[1]))
+            ax.legend(prop={'size':9})#, loc=1)
+            #axr1.legend(prop={'size':9})#, loc=2)
+
+            #axr1.spines["right"].set_position(("axes", -0.4)) # red one
+            #axr2.spines["left"].set_position(("axes", -0.1)) # red one
+
+            axr.tick_params(axis ='y', labelcolor = 'red')
+            axr.set_ylabel('RH', color = 'red')
+            axr.legend(prop={'size':9})
+
+            ax1.set_ylabel('Wind Speed/Gust')
+            ax1.grid(True)
+            #ax1.set_xlabel("LT")
+
+            ax2.set_ylabel('Wind Direction')
+            ax2.grid(True)
+            ax2.set_xlabel("LT")
+
+           
+            #plt.suptitle("Date = {:%Y-%B-%d}".format(self.vars['DT_Meas'][2]), fontsize=16)
+
+            fig1.subplots_adjust(left=0.1, bottom=0.1, right=0.85, top=0.93)
+        
+            if self.pdfFlg: 
+                self.pdfSave.savefig(fig1,dpi=600, bbox_inches='tight')
+            else:
+                plt.show(block=False)
 
     #----------------------------
     # PLOT HK DEF - 24h
@@ -450,7 +856,7 @@ class RemoteHK():
 
                     ax1[vi].set_xlim(self.obsTime[0], self.obsTime[-1])
                     #ax1[0].set_ylim(ymin=-15, ymax=90)
-                    ax1[1].set_ylim(ymin=-0.5, ymax=10.5)
+                    #ax1[1].set_ylim(ymin=-0.5, ymax=10.5)
                     
                     
                     # Move twinned axis ticks and label from top to bottom
@@ -1075,7 +1481,8 @@ def main(argv):
         Group_1     = [ ['szenith'], ['sazimuth']] # --> USE THIS SYNTAX FOR LEFT AND RIGHT AXIS
         Group_2     = [ ['FXSOL', 'NXSOL'] ] 
         Group_3     = [['LQN2P']]
-        Group_4     = [ ['WSPD'], ['OTEMP', 'ELMOT', 'UPSLT', 'ACTUT' ]] 
+        Group_4     = [ ['OTEMP', 'ELMOT', 'UPSLT', 'ACTUT' ]] 
+        #Group_4     = [ ['WSPD'], ['OTEMP', 'ELMOT', 'UPSLT', 'ACTUT' ]] 
         Group_5       = [ ['LQDN2', 'HOPNC']]
 
         Group_1_label = ['Zenith Angle', 'Azimuth Angle']
@@ -1091,16 +1498,19 @@ def main(argv):
 
     elif site.lower() == 'fl0':
 
-        Groups        = []
-        Groups_Lab    = []
+        Group_1          = []
+        Group_1_label    = []
 
         # FILTERS ID
         fltid          = ['s0','s1', 's2', 's3', 's4', 's5', 's6', 's9','sa', 'sb']
 
+        Groups        = [Group_1]
+        Groups_Lab    = [Group_1_label]
+
 
 
     else:
-        print('!! ERROR !!: Include Site:')
+        usage()
         exit()
 
     
@@ -1129,7 +1539,7 @@ def main(argv):
             if pdfFlg: 
                 d.closeFig()
             else: 
-                user_input = raw_input('Press any key to exit >>> ')
+                user_input = input('Press any key to exit >>> ')
                 sys.exit()
             
             time.sleep(sleepTime)
@@ -1146,6 +1556,10 @@ def main(argv):
         #d.plt_HK_Day2(Groups=Groups , Groups_Lab=Groups_Lab )
 
         #d.plt_Meas(fltid=fltid)
+
+        if site.lower() == 'fl0':
+            d.plt_atdsis()
+            d.plt_HKmet()
         
 
         if pdfFlg: 

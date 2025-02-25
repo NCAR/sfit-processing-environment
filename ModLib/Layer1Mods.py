@@ -716,8 +716,6 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
     except: sumVars.readPrf('aprfs.table', primgas, retapFlg=0) 
 
 
-
-
     #----------------------------------
     # Insert retrieval grid in sbctldefaults and substitute default values for SbctlFileVars
     #----------------------------------
@@ -734,6 +732,8 @@ def errAnalysis(ctlFileVars, SbctlFileVars, wrkingDir, logFile=False):
           defk=gk.replace('grid',ErrType)
           
           d[defk]=interp(z,*zip(*sorted(zip(grid,d[defk]),key=lambda x: x[0])))
+
+
         del d[gk]
       return
 

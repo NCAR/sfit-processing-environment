@@ -43,7 +43,8 @@
 import os, sys
 sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "ModLib")))
 import sfitClasses as sc
-from Layer1Mods_v2 import errAnalysis
+#from Layer1Mods_v2 import errAnalysis
+from Layer1Mods import errAnalysis
 from dataOutClass import _DateRange as dRange
 
                                 #--------------------------#
@@ -92,17 +93,18 @@ def main():
     #--------------------------------
     # Initialize date and insitu vars
     #--------------------------------
-    loc        = 'fl0'
-    gas        = 'ocs'
-    ver        = 'Current_v9'
+    loc        = 'mlo'
+    gas        = 'o3'
+    ver        = 'v1'
     #sbFileName = '/data/pbin/Dev_Ivan/Layer1/sbDefaults.ctl'
-    dataDir    = '/data1/ebaumer/'+loc.lower()+'/'+gas.lower()+'/'+ver+'/'
+    dataDir    = '/data/iortega/'+loc.lower()+'/'+gas.lower()+'/'+ver+'/'
     
-    sbFileName = '/data1/ebaumer/fl0/ocs/x.ocs/sb_v8.ctl'
-    iyear      = 2010
+    #sbFileName = '/data1/ebaumer/fl0/testbed/n2o/x.n2o/sb.ctl' # optional for older versions of sfit4 - in case file.in.sbdflt is missing
+    
+    iyear      = 1995
     imnth      = 1
     iday       = 1
-    fyear      = 2019
+    fyear      = 2023
     fmnth      = 12
     fday       = 31    
         
@@ -114,7 +116,7 @@ def main():
     #-------------------------------
     # Check existance of sb.ctl file
     #-------------------------------
-    ckFile(sbFileName,exit=True)
+    #ckFile(sbFileName,exit=True)
     
     #---------------------
     # Establish date range
@@ -124,8 +126,7 @@ def main():
     #----------------------------------------------------
     # Initialize Sb ctl file. Assuming in single location
     #----------------------------------------------------
-    sbCtlFile = sc.CtlInputFile(sbFileName)
-    sbCtlFile.getInputs()    
+        
 
     # if 'sbdefflg' in sbCtlFile.inputs:
 
@@ -180,20 +181,42 @@ def main():
             if 'file.in.sbdflt' in ctlFile.inputs:
                 if ckFile(ctlFile.inputs['file.in.sbdflt'][0], exit=True): 
                     sbCtlFileName = ctlFile.inputs['file.in.sbdflt'][0]
+                    #sbCtlFileName = '/data/pbin/Dev_Ivan/Layer1/sbDefaults_mlo.ctl'
                     sbCtlFile = sc.CtlInputFile(sbCtlFileName)
                     sbCtlFile.getInputs()
 
+                from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis
+
+
+                #-------------------
+                # Run error analysis
+                #-------------------
+                print (curDir)
+                try:
+                    rtn = errAnalysis(ctlFile,sbCtlFile,curDir)
+                except: continue
+                #errAnalysis( ctlFileGlb, SbctlFileVars, False, wrkOutputDir3, logFile )
+                if not rtn: print ('Unable to run error analysis in directory = {}'.format(curDir))
+
+
+
             else:
+                sbCtlFile = sc.CtlInputFile(sbFileName)
+                sbCtlFile.getInputs()
                 print('Error: file.in.sbdflt is missing in {}'.format(ctlFile))
+
+                from Layer1Mods_v2 import refMkrNCAR, t15ascPrep, errAnalysis
+
+                #-------------------
+                # Run error analysis
+                #-------------------
+                print (curDir)
+                rtn = errAnalysis(ctlFile,sbCtlFile,False,curDir)
+                #errAnalysis( ctlFileGlb, SbctlFileVars, False, wrkOutputDir3, logFile )
+                if not rtn: print ('Unable to run error analysis in directory = {}'.format(curDir))
                 #exit()
             
-            #-------------------
-            # Run error analysis
-            #-------------------
-            print (curDir)
-            rtn = errAnalysis(ctlFile,sbCtlFile,False,curDir)
-            #errAnalysis( ctlFileGlb, SbctlFileVars, False, wrkOutputDir3, logFile )
-            if not rtn: print ('Unable to run error analysis in directory = {}'.format(curDir))
+            
 
             
         

@@ -42,7 +42,7 @@
 #
 #
 # References:
-#
+# https://www.eol.ucar.edu/content/ncar-foothills-lab-weather-station-information
 #----------------------------------------------------------------------------------------
 
 
@@ -191,7 +191,8 @@ def main(argv):
 
             total_time = base_time + time_offset[0:]
             total_time = total_time.tolist()                # Convert numpy array to list
-        
+
+
 
         else:
 
@@ -237,14 +238,16 @@ def main(argv):
         #------------------------------------------------------
         # Remove observations with erroneous time_offset values
         #------------------------------------------------------
-        total_time[:] = [item for ind,item in enumerate(total_time) if ind not in rmind]   # List
-        temp_     = np.delete(temp[:],rmind)                                         # Numpy array
-        rh_       = np.delete(rh[:],rmind)                                           # Numpy array
-        press_    = np.delete(press[:],rmind)                                        # Numpy array
-        tempDP_   = np.delete(tempDP[:],rmind)                                       # Numpy array
-        wdir_     = np.delete(wdir[:],rmind)
-        wspd_     = np.delete(wspd[:],rmind)
-        wmax_     = np.delete(wmax[:],rmind)
+        try:
+            total_time[:] = [item for ind,item in enumerate(total_time) if ind not in rmind]   # List
+            temp_     = np.delete(temp[:],rmind)                                         # Numpy array
+            rh_       = np.delete(rh[:],rmind)                                           # Numpy array
+            press_    = np.delete(press[:],rmind)                                        # Numpy array
+            tempDP_   = np.delete(tempDP[:],rmind)                                       # Numpy array
+            wdir_     = np.delete(wdir[:],rmind)
+            wspd_     = np.delete(wspd[:],rmind)
+            wmax_     = np.delete(wmax[:],rmind)
+        except: pass
 
         # temp.data     = np.delete(temp.data,rmind)                                         # Numpy array
         # rh.data       = np.delete(rh.data,rmind)                                           # Numpy array
@@ -292,6 +295,8 @@ def main(argv):
         fopen.write('Year Month Day Hour Minute Temperature[C] RelativeHumidity[%] Pressure[mbars] DewPointTemperature[C] WinDir[rN] WinSpeed[m/s] WindSpeedMax[m/s]\n')
         for line in zip(years,months,days,hours,minutes,tempList,rhList,pressList,tempDPList,wdirList,wspdList,wmaxList):
             fopen.write('%-4s %-5s %-3s %-4s %-6s %-14.1f %-19.1f %-15.1f %-22.6f %-15.4f %-15.4f %-15.4f\n' % line)
+
+    os.chmod(outDataDir+'fl0_met_data_'+years[0]+'_v2.txt',0o777)
 
 
 if __name__ == "__main__":

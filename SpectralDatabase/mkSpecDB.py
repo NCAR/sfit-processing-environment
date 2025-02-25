@@ -474,12 +474,59 @@ def main(argv):
                     
                 paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-D'+SBlockTemp]   # Build initial parameter list for ckopus call
                 paramList.extend(DBinputs['ckopusFlgs'])                                 # Add flags from input file to parameter list
-                paramList.append(indvfile)                                               # Add OPUS filename to parameter list
+                                                              # Add OPUS filename to parameter list
                 
                 #if (DBinputs['loc'].lower() == 'mlo') and (indvday < dt.date(1995,01,01)):
                     #paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-U','-t-150',indvfile]
                 #else:    
                     #paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-D',indvfile]
+                
+                #-------------------------------------------
+                # Time Offset Correction at MLO (Win PC time was not sync) - 630s ahead on 07/08/2022
+                #-------------------------------------------
+                ini_day = dt.date(2021,3,4)
+                fin_day = dt.date(2022,7,8)
+
+                if (DBinputs['loc'].lower() == 'mlo') and (indvday >= ini_day) and (indvday < fin_day):
+
+                    print('Time Offset Correction...')
+
+                    def toYearFraction(dates):
+                        import numpy as np
+                        import time
+                        ''' Convert datetime to year and fraction of year'''
+
+                        ep_fnc = lambda x: time.mktime(x.timetuple())
+                        
+                        retrnDates = np.zeros(len(dates))
+                        
+                        for i,sngDate in enumerate(dates):
+                            year = sngDate.year
+                            startOfThisYear = dt.datetime(year=year, month=1, day=1)
+                            startOfNextYear = dt.datetime(year=year+1, month=1, day=1)
+                        
+                            yearElapsed = ep_fnc(sngDate) - ep_fnc(startOfThisYear)
+                            yearDuration = ep_fnc(startOfNextYear) - ep_fnc(startOfThisYear)
+                            fraction = yearElapsed/yearDuration
+                            retrnDates[i] = sngDate.year + fraction
+
+                        return retrnDates
+                    
+                    ini_day_frac =  toYearFraction([ini_day])[0]
+                    fin_day_frac =  toYearFraction([fin_day])[0]
+                    indvday_frac =  toYearFraction([indvday])[0]
+
+                    dx           = fin_day_frac - ini_day_frac
+                    dy           = 630.
+                    m            = dy/dx
+
+                    sec2corr     = m*(indvday_frac - ini_day_frac)
+
+                    paramList.extend(['-t-{0:.2f}'.format(sec2corr)]) 
+                #-------------------------------------------
+
+                paramList.append(indvfile) 
+                
                     
                 rtn = sp.Popen( paramList, stdout=sp.PIPE, stderr=sp.PIPE )
                 stdoutParam, stderr = rtn.communicate()
@@ -515,6 +562,8 @@ def main(argv):
                     strformat = ['{0:<15}'] + [' {'+str(i)+':<12}' for i in range(1,len(outstr))]
                     strformat = ''.join(strformat).lstrip().rstrip() + '\n'
 
+
+
                     #--------------------------------------
                     # Do not include spectra different than S* (iom, Dec 4 2018)
                     #--------------------------------------
@@ -529,7 +578,7 @@ def main(argv):
 
                     #--------------------------------------
                     # print in file
-                    #--------------------------------------                                
+                    #--------------------------------------                               
                     fopen.write(strformat.format(*outstr))
                                     
                     #fopen.write( stdoutParam )
@@ -581,14 +630,24 @@ def main(argv):
                     paramList = [DBinputs['Fckopus'],'-S'+DBinputs['loc']]   # Build initial parameter list for ckopus call
                     paramList.append('-' + DBinputs['bnrType'] + SBlock)     # Add bnr and spectral block type
                     paramList.extend(DBinputs['ckopusFlgs'])                 # Add flags from input file to parameter list
-                    paramList.append(indvfile)                               # Add OPUS filename to parameter list                    
+
+                    #-------------------------------------------
+                    # Time Offset Correction at MLO (Win PC time was not sync) - 630s ahead
+                    #-------------------------------------------
+                    if (DBinputs['loc'].lower() == 'mlo') and (indvday >= ini_day) and (indvday < fin_day):
+                        paramList.extend(['-t-{0:.2f}'.format(sec2corr)]) 
                     
+                    #-------------------------------------------
+                    paramList.append(indvfile)                               # Add OPUS filename to parameter list   
+
                     
                     #if (DBinputs['loc'].lower() == 'mlo') and (indvday < dt.date(1995,01,01)):
                         #paramList    = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-U','-t-150','-'+DBinputs['bnrType']+SBlock,indvfile]
                     #else:    
                         #paramList    = [DBinputs['Fckopus'],'-S'+DBinputs['loc'],'-'+DBinputs['bnrType']+SBlock,indvfile]
+
                     
+                    #-------------------------------------------
                     rtn = sp.Popen( paramList, stdout=sp.PIPE, stderr=sp.PIPE )
                     stdoutParam, stderr = rtn.communicate()   
 
@@ -614,6 +673,12 @@ def main(argv):
                         shutil.move(fpath+'/'+bnrFname, fpath+'/'+TStamp+'.bnr')
                     else:
                         print ('Unable to move file: %s to %s' %(indvfile,fpath+'/'+TStamp+'.bnr'))
+
+
+    #-------------------------------------------
+    # change 
+    #-------------------------------------------
+    os.chmod(DBinputs['outputDBfile'],0o777)
                     
     #-------------------------------------------
     # Write list of folders that where processed

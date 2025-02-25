@@ -88,6 +88,9 @@ import dataOutClass as dc
 import shutil
 #from Layer1Mods import refMkrNCAR, t15ascPrep, errAnalysis  
 import matplotlib.pyplot as plt
+import matplotlib
+
+matplotlib.use(backend="TkAgg")
 
 
 
@@ -657,7 +660,10 @@ def main(argv):
                     try:
                         shutil.copyfile(ctlPath + '/hbin.input', wrkOutputDir3 + '/hbin.input')          # Copy hbin.input file
                     except IOError:
-                        print ('Unable to copy file: %s' % (ctlPath + '/hbin.input'))
+                        #print ('Unable to copy file: %s' % (ctlPath + '/hbin.input'))
+                        if logFile: logFile.error(IOError)
+                    except:
+                        shutil.copyfile(ctlPath + '/hbin.ctl', wrkOutputDir3 + '/hbin.ctl')
                         if logFile: logFile.error(IOError)
 
 
@@ -745,13 +751,15 @@ def main(argv):
                         print ('*****************************************************')
                         print ('Running PSPEC for ctl file: %s' % msgstr1)
                         print ('Processing spectral observation date: %s' % msgstr2)
+                        print ('Ouput Directory: %s' % wrkOutputDir3)
                         print ('*****************************************************')
 
                         rtn = t15ascPrep(dbFltData_2, wrkInputDir2, wrkOutputDir3, mainInF, spcDBind, ctl_ind, logFile)
 
                         if logFile: 
                             logFile.info('Ran PSPEC for ctl file: %s' % msgstr1)
-                            logFile.info('Processed spectral observation date: %s' % msgstr2)                    
+                            logFile.info('Processed spectral observation date: %s' % msgstr2)  
+
 
 
                                         #----------------------------#
@@ -767,7 +775,9 @@ def main(argv):
                         if 'waccmFlg' in mainInF.inputs:
                             if mainInF.inputs['waccmFlg']:
                                 ckDir( mainInF.inputs['WACCMfolder'], logFlg=logFile, exit=True )
-                                waccmFile = mainInF.inputs['WACCMfolder'] + 'WACCMref_V6-'+mnthstr+'.dat'
+                                #waccmFile = mainInF.inputs['WACCMfolder'] + 'WACCMref_*'+'-'+mnthstr+'.dat'
+                                waccmFile = glob.glob(mainInF.inputs['WACCMfolder'] + 'WACCMref*'+'-'+mnthstr+'.dat')[0]
+                            
                             else: waccmFile = mainInF.inputs['WACCMfile']
 
                         else:
@@ -988,6 +998,8 @@ def main(argv):
                         # Exit out of while loop
                         #-----------------------
                         if brkFlg: break
+
+                    break
 
 
 if __name__ == "__main__":

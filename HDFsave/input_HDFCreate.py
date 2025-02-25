@@ -21,7 +21,8 @@ ctlF         = 'sfit4_v3.ctl'       # Name of ctl file
 #------
 # id name in the HDF file
 #------
-locID        = 'THULE'             # IF USING 003 TEMPLATE IT NOW ACCEPTS EXTRA CHARACTERS; E.G., RD_THULE       
+locID        = 'THULE'             # IF USING TEMPLATE 003 IT NOW ACCEPTS EXTRA CHARACTERS; E.G., RD_THULE       
+vTag         = 'IRWG2023'          # USED ONLY FOR GEOMS 003 & IGNORED FOR 002
 
 #------
 # Some Meta-data for hdf file (Global Attributes) --> More in hdfsave.py
@@ -34,7 +35,7 @@ projectID    = ' '                  # Name of the project; space if none
 # GEOMS information
 #------
 geoms_tmpl   = '003'                # 002 or 003; GEOMS TEMPLATE: currently GEOMS-TE-FTIR-002, but new geoms GEOMS-TE-FTIR-003, is required (2020))
-geoms_meta   = '04R998'             # Use 04R010 for GEOMS-TE-FTIR-002; and 04R998 or later for GEOMS-TE-FTIR-003
+geoms_meta   = '04R081'             # Use 04R073 for GEOMS-TE-FTIR-002; and 04R081 or later for GEOMS-TE-FTIR-003
 
 #------
 # yearly Flag: If True will create yearly files from Jan 1 to Dec 31 using initial and final years; if False will create use single file from date range below      

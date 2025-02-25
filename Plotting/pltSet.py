@@ -67,12 +67,14 @@ sys.path.append((os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(_
 import getopt
 import dataOutClass as dc
 import time
-
+import matplotlib
+matplotlib.use(backend="TkAgg")
 
 def usage():
     ''' Prints to screen standard program usage'''
     print ('pltSet.py -i <inputfile> -?')
     print ('  -i <file> : Run pltSet.py with specified input file')
+    print ('  -d <20190101> or <20190101_20191231>   : Date or Date range (optional or use input file)')
     print ('  -?        : Show all flags')
 
 def ckDir(dirName,logFlg=False,exit=False):
@@ -97,11 +99,13 @@ def ckFile(fName,logFlg=False,exit=False):
 
 def main(argv):
 
+    overDFlg = False
+
     #--------------------------------
     # Retrieve command line arguments
     #--------------------------------
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'i:q?')
+        opts, args = getopt.getopt(sys.argv[1:], 'i:d:q?')
 
     except getopt.GetoptError as err:
         print (str(err))
@@ -130,7 +134,41 @@ def main(argv):
                 exec(compile(open(arg, "rb").read(), arg, 'exec'), pltInputs)
 
             if '__builtins__' in pltInputs:
-                del pltInputs['__builtins__']               
+                del pltInputs['__builtins__']    
+
+        elif opt == '-d':
+
+            if len(arg) == 8:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][0:4])
+                fmnth   = int(dates[0][4:6])
+                fday    = int(dates[0][6:8])
+
+
+            elif len(arg) == 17:
+
+                dates   = arg.strip().split()
+
+                iyear   = int(dates[0][0:4])
+                imnth   = int(dates[0][4:6])
+                iday    = int(dates[0][6:8])
+
+                fyear   = int(dates[0][9:13])
+                fmnth   = int(dates[0][13:15])
+                fday    = int(dates[0][15:17])
+
+            else:
+                print ('Error in input date')
+                usage()
+                sys.exit()
+
+            overDFlg = True           
 
         elif opt == '-?':
             usage()
@@ -139,6 +177,22 @@ def main(argv):
         else:
             print ('Unhandled option: ' + opt)
             sys.exit()
+
+    # overwrite dates
+    if overDFlg:
+        pltInputs['iyear'] = iyear
+        pltInputs['imnth'] = imnth
+        pltInputs['iday']  = iday
+        
+        pltInputs['fyear'] = fyear
+        pltInputs['fmnth'] = fmnth
+        pltInputs['fday']  = fday
+
+        if(iyear == fyear):
+            pltInputs['pltFile']  = '/data1/ebaumer/'+pltInputs['loc'].lower()+'/'+pltInputs['gasName'].lower()+'/'+pltInputs['gasName'].upper()+'_'+str(iyear)+'_'+pltInputs['ver']+'.pdf'
+        else:
+            pltInputs['pltFile']  = '/data1/ebaumer/'+pltInputs['loc'].lower()+'/'+pltInputs['gasName'].lower()+'/'+pltInputs['gasName'].upper()+'_'+str(iyear)+'_'+str(fyear)+'_'+pltInputs['ver']+'.pdf'
+         
 
 
     #---------------------------------
@@ -153,7 +207,7 @@ def main(argv):
     # Create Instance of Class
     #-------------------------
     gas = dc.PlotData(pltInputs['retDir'],pltInputs['ctlFile'],iyear=pltInputs['iyear'],imnth=pltInputs['imnth'],iday=pltInputs['iday'],
-                fyear=pltInputs['fyear'],fmnth=pltInputs['fmnth'],fday=pltInputs['fday'],saveFlg=pltInputs['saveFlg'], outFname=pltInputs['pltFile'])
+                fyear=pltInputs['fyear'],fmnth=pltInputs['fmnth'],fday=pltInputs['fday'],saveFlg=pltInputs['saveFlg'], errFlg= pltInputs['errorFlg'],outFname=pltInputs['pltFile'])
 
     #----------------------
     # Call to plot profiles

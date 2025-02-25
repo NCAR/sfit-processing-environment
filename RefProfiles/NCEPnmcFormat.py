@@ -62,7 +62,7 @@ def usage():
     ''' Prints to screen standard program usage'''
     print ('\nThere are two options to run NCEPnmcFormat.py:')
     print ('(1) NCEPnmcFormat.py -i <File>. In this case the input file needs to be modified accordingly.')
-    print ('(2) NCEPnmcFormat.py -s tab/mlo/fl0 -y 2018')
+    print ('(2) NCEPnmcFormat.py -s tab/mlo/fl0/eur/prs -y 2018')
     print ('Note: Additional paths are hardcoded in NCEPnmcFormat.py\n')
 
 
@@ -91,6 +91,7 @@ def readNMCFile(fname,dataDict,statstr,dateTime):
     elif statstr.lower() == 'tab': srchstr = 'Thule'
     elif statstr.lower() == 'fl0': srchstr = 'Bolder'
     elif statstr.lower() == 'eur': srchstr = 'Eureka'
+    elif statstr.lower() == 'prs': srchstr = 'Paris'
     
     #if 'PressureLevels' in dataDict: pFlg = False
     #else: pFlg = True
@@ -254,24 +255,28 @@ def main(argv):
         
         if len(nmcHgtFiles) == 0:
             print ('No .nmc files found in: '+ inputs['dataDir'] + 'height' + '/' + str(curYear))
-            sys.exit()
+            print('Exiting...')
+            exit()
             
         nmcHgtData  = {}
-        
-        for hgtfile in nmcHgtFiles:        
+
+        for hgtfile in nmcHgtFiles:    
+            print("Reading: {}".format(hgtfile))    
             _,hgtFname = os.path.split(hgtfile) 
             year = int(curYear)
             
             dateTime   = dt.date(year,int(hgtFname[4:6]),int(hgtFname[6:8]))
             nmcHgtData = readNMCFile(hgtfile,nmcHgtData,inputs['loc'],dateTime)
-    
+
         #------------------------------------
         # Open and read nmc TEmperature files
         #------------------------------------
         nmcTempFiles = glob( inputs['dataDir'] + 'temp' + '/' + str(curYear) + '/te*.nmc')
         nmcTempData  = {}
         
-        for TempFile in nmcTempFiles:        
+        print("\n")
+        for TempFile in nmcTempFiles:  
+            print("Reading: {}".format(TempFile))      
             _,TempFname = os.path.split(TempFile) 
             year = int(curYear)
             
@@ -336,6 +341,7 @@ def main(argv):
         strformat = ''.join(strformat).lstrip() + '\n'
         
         if inputs['NonIntrpFileFlg']:
+            print("\nSaving data: {}".format(inputs['HgtBaseDir']+'HgtNMC_'+inputs['loc'].lower()+'_'+str(year)+'.dat'))
             #----------------
             # NMC height file
             #----------------
@@ -369,7 +375,8 @@ def main(argv):
                     YYYYMMDD = "{0:02d}".format(k.year)+"{0:02d}".format(k.month)+"{0:02d}".format(k.day) 
                     val.insert(0,YYYYMMDD)
                     fopen.write(strformat.format(*val))    
-                    
+
+            print("\nSaving data: {}".format(inputs['TempBaseDir']+'TempNMC_'+inputs['loc'].lower()+'_'+str(year)+'.dat'))        
             #--------------                
             # NMC Temp file
             #--------------
