@@ -298,6 +298,7 @@ def main(argv):
 
     dirLst.sort()
 
+
     #--------------------------------------------------------
     # Loop through folders for individual years. This is done
     # because NCEP NetCDF files are by year. Therefore only
@@ -363,6 +364,16 @@ def main(argv):
         timeHrs = timeShum - timeShum[0]
         timeAll = np.array([dt.datetime(year,1,1)+dt.timedelta(hours=int(h)) for h in timeHrs])
 
+        print('-'*30)
+        print('Initial day with NCEP data (within the date range of interest): {}'.format(timeAll[0]))
+        print('Final day with NCEP data (within the date range of interest):   {}'.format(timeAll[-1]))
+        print('-'*30)
+
+        if len(dirListYr) == 0: 
+            print('\nNumber of folders with FTIR observationw within the range of interest is 0.. exiting!')
+            exit()
+      
+
         #-------------------------
         # Geopotential Height file
         #-------------------------
@@ -381,7 +392,7 @@ def main(argv):
         #------------------------------------------
         for sngDir in dirListYr:
 
-            print(sngDir)
+            print('\nProcessing: {}'.format(sngDir))
 
             #----------------------------
             # Get date in datetime format
@@ -399,6 +410,10 @@ def main(argv):
             ind        = np.where(timeAll == oneDay)[0]
             dayHghtMat = np.squeeze(hgt[ind,:,:,:])
             dayShumMat = np.squeeze(shum[ind,:,:,:])
+
+            if len(ind) == 0: 
+                print('NCEP data not found for {}'.format(oneDay))
+                continue
 
             #-----------------------------------------------------------
             # 'Unpack' the data => (data[int])*scale_factor + add_offset
@@ -441,7 +456,7 @@ def main(argv):
             
             #Remove axis=1
             Zin  = np.concatenate( ( Z[0:(topInd-nSkip)]             , np.flipud(dayHgt)))
-            SHin = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], np.flipud(dayShum)))
+            SHin = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], np.flipudß(dayShum)))
 
             #--------------------------------------------------------------
             # Interpolate to specific humidity on WACCM grid. X data must

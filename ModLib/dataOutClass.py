@@ -5732,7 +5732,8 @@ class PlotData(ReadOutputData):
         # Plot time series of daily SNR, RMS, and DOF
         #----------------------------
         fig, ax = plt.subplots(3,1,sharex=True)
-        clr = ('k', 'r', 'b', 'g', 'gray' )
+        #clr = ('k', 'r', 'b', 'g', 'gray' )
+        clr = plt.cm.rainbow(np.linspace(0, 1, nbands+1))
 
         for i in range(1, nbands+1):
         #for i in range(1, 2):          
