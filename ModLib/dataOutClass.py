@@ -2931,7 +2931,7 @@ class GatherHDF(ReadOutputData,DbInputFile):
         for i,val in enumerate(self.HDFdates):
 
             tempSpecDB = self.dbFindDate(self.HDFdates[i])
-          
+
             #-----------------------------
             # Latitude - North
             #-----------------------------
@@ -4913,6 +4913,7 @@ class PlotData(ReadOutputData):
         rPrfMol = np.asarray(self.rprfs[self.PrimaryGas]) * Airmass
         alt     = np.asarray(self.rprfs['Z'][0,:])
 
+
         try: zeroOff    = np.asarray(self.t15asc['ZERO'])
         except: pass
 
@@ -5865,7 +5866,7 @@ class PlotData(ReadOutputData):
         if len(list(set(months))) > 1:
 
             fig, ax = plt.subplots(3,1,sharex=True)
-            clr = ('k', 'r', 'b', 'g', 'gray' )
+            #clr = ('k', 'r', 'b', 'g', 'gray' )
 
             for i in range(1, nbands+1):
             #for i in range(1, 2):

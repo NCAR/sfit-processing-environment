@@ -456,7 +456,7 @@ def main(argv):
             
             #Remove axis=1
             Zin  = np.concatenate( ( Z[0:(topInd-nSkip)]             , np.flipud(dayHgt)))
-            SHin = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], np.flipudß(dayShum)))
+            SHin = np.concatenate( ( waccmW[0:(topInd-nSkip),mnthInd], np.flipud(dayShum)))
 
             #--------------------------------------------------------------
             # Interpolate to specific humidity on WACCM grid. X data must
